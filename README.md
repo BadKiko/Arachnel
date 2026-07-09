@@ -5,7 +5,8 @@
 По духу близок к Hydra Launcher, но вместо одной универсальной схемы загрузки/установки — **отдельный плагин на каждый тип источника** (Online-Fix, FreeTP, …), потому что у них разные форматы: portable, installer, встроенный фикс, отдельный патч.
 
 **Видение и отличия:** [docs/VISION.md](docs/VISION.md)  
-**Архитектура и контракт плагинов:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+**Архитектура и контракт плагинов:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)  
+**Карта движения (roadmap):** [docs/ROADMAP.md](docs/ROADMAP.md)
 
 ## Запуск
 
