@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Qt6 REQUIRED COMPONENTS
     Core
     Gui
+    Network
     Qml
     Quick
     QuickControls2
@@ -29,7 +30,17 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(qml_material)
 
-qt_add_executable(arachnel_app src/main.cpp)
+set(CMAKE_AUTOMOC ON)
+
+qt_add_executable(arachnel_app
+    src/main.cpp
+    src/core/install_kind.cpp
+    src/core/library_model.cpp
+    src/core/source_plugin_model.cpp
+    src/core/catalog_model.cpp
+    src/core/job_model.cpp
+    src/core/core_controller.cpp
+)
 
 file(GLOB_RECURSE ARACHNEL_QML_FILES CONFIGURE_DEPENDS
      RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
@@ -46,6 +57,7 @@ qt_add_qml_module(arachnel_app
         ${ARACHNEL_QML_FILES}
     DEPENDENCIES
         Qcm.Material
+        QtQuick.Effects
 )
 
 add_dependencies(arachnel_app qml_materialplugin)
@@ -58,6 +70,7 @@ target_link_libraries(arachnel_app
     PRIVATE
         Qt6::Core
         Qt6::Gui
+        Qt6::Network
         Qt6::Qml
         Qt6::Quick
         qml_material::qml_material
