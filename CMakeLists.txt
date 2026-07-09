@@ -1,0 +1,56 @@
+cmake_minimum_required(VERSION 3.20)
+project(arachnel LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+find_package(Qt6 REQUIRED COMPONENTS
+    Core
+    Gui
+    Qml
+    Quick
+    QuickControls2
+    ShaderTools
+    QuickPrivate
+)
+if(UNIX AND NOT APPLE AND NOT ANDROID)
+    find_package(Qt6 REQUIRED COMPONENTS DBus)
+endif()
+
+qt_standard_project_setup(REQUIRES 6.8)
+
+include(FetchContent)
+FetchContent_Declare(
+    qml_material
+    GIT_REPOSITORY https://github.com/hypengw/QmlMaterial.git
+    GIT_TAG main
+    GIT_SHALLOW TRUE
+    EXCLUDE_FROM_ALL
+)
+FetchContent_MakeAvailable(qml_material)
+
+qt_add_executable(arachnel_app main.cpp)
+
+qt_add_qml_module(arachnel_app
+    URI arachnel
+    QML_FILES
+        Main.qml
+        SettingsPage.qml
+    DEPENDENCIES
+        Qcm.Material
+)
+
+add_dependencies(arachnel_app qml_materialplugin)
+
+target_compile_definitions(arachnel_app PRIVATE
+    "QT_QML_MATERIAL_IMPORT_PATH=\"${CMAKE_BINARY_DIR}/qml_modules\""
+)
+
+target_link_libraries(arachnel_app
+    PRIVATE
+        Qt6::Core
+        Qt6::Gui
+        Qt6::Qml
+        Qt6::Quick
+        qml_material::qml_material
+)
