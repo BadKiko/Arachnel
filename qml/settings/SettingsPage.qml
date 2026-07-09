@@ -7,34 +7,19 @@ import Qcm.Material as MD
 ColumnLayout {
     id: root
 
-    required property var appearance
-    required property var applyAppearance
     required property var closeSheet
 
     spacing: 0
 
     readonly property int contentMargin: MD.Token.spacing.large
 
-    property bool applyingSavedAppearance: false
-
-    readonly property var accentPalette: [
-        { name: "Unicase", color: "#984300" },
-        { name: "Red", color: "#F44336" },
-        { name: "Pink", color: "#E91E63" },
-        { name: "Purple", color: "#9C27B0" },
-        { name: "Indigo", color: "#3F51B5" },
-        { name: "Teal", color: "#009688" },
-        { name: "LightGreen", color: "#8BC34A" },
-        { name: "Yellow", color: "#FFEB3B" },
-        { name: "Amber", color: "#FFC107" },
-        { name: "Orange", color: "#FF9800" }
-    ]
+    property bool applying: false
 
     function syncFromStore() {
-        applyingSavedAppearance = true
-        applyAppearance()
-        paletteListView.currentIndex = appearance.paletteType
-        applyingSavedAppearance = false
+        applying = true
+        Appearance.apply()
+        paletteListView.currentIndex = Appearance.paletteType
+        applying = false
     }
 
     MD.DialogHeader {
@@ -70,11 +55,9 @@ ColumnLayout {
             MD.Switch {
                 checked: MD.Token.isDarkTheme
                 onCheckedChanged: {
-                    if (root.applyingSavedAppearance)
+                    if (root.applying)
                         return
-                    const mode = checked ? MD.Enum.Dark : MD.Enum.Light
-                    appearance.themeMode = mode
-                    MD.Token.themeMode = mode
+                    Appearance.setThemeMode(checked ? MD.Enum.Dark : MD.Enum.Light)
                 }
             }
 
@@ -111,11 +94,10 @@ ColumnLayout {
                     checked: paletteListView.currentIndex === index
                     text: model.name
                     onTriggered: {
-                        if (root.applyingSavedAppearance)
+                        if (root.applying)
                             return
                         paletteListView.currentIndex = index
-                        appearance.paletteType = index
-                        MD.Token.color.paletteType = index
+                        Appearance.setPaletteType(index)
                     }
                 }
             }
@@ -140,19 +122,17 @@ ColumnLayout {
             columns: 5
 
             Repeater {
-                model: root.accentPalette
+                model: AccentColors.palette
 
                 MD.ColorRadio {
                     required property var modelData
                     size: 32
                     color: modelData.color
-                    checked: appearance.accentColor === modelData.color
+                    checked: Appearance.accentColor === modelData.color
                     onClicked: {
-                        if (root.applyingSavedAppearance)
+                        if (root.applying)
                             return
-                        appearance.accentColor = modelData.color
-                        MD.Token.color.useSysAccentColor = false
-                        MD.Token.color.accentColor = modelData.color
+                        Appearance.setAccentColor(modelData.color)
                     }
                 }
             }
