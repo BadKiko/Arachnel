@@ -5,6 +5,8 @@
 #include <QString>
 #include <cstdio>
 
+#include "core/core_controller.h"
+
 #ifndef QT_QML_MATERIAL_IMPORT_PATH
 #define QT_QML_MATERIAL_IMPORT_PATH ""
 #endif
@@ -16,6 +18,8 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationDomain(QStringLiteral("petwork.local"));
     QCoreApplication::setApplicationName(QStringLiteral("Arachnel"));
     QCoreApplication::setApplicationVersion(QStringLiteral("0.0.1"));
+
+    arachnel::core::registerCoreTypes();
 
     QQmlApplicationEngine engine;
 
