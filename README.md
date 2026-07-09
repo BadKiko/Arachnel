@@ -1,6 +1,11 @@
 # Arachnel
 
-Qt 6 + QmlMaterial (Material 3).
+Лаунчер игр с упором на **online-fix** и **плагинную систему источников**.
+
+По духу близок к Hydra Launcher, но вместо одной универсальной схемы загрузки/установки — **отдельный плагин на каждый тип источника** (Online-Fix, FreeTP, …), потому что у них разные форматы: portable, installer, встроенный фикс, отдельный патч.
+
+**Видение и отличия:** [docs/VISION.md](docs/VISION.md)  
+**Архитектура и контракт плагинов:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 ## Запуск
 
@@ -11,21 +16,25 @@ Qt 6 + QmlMaterial (Material 3).
 ## Структура
 
 ```
-src/                 C++ entry point
+src/                 C++ entry (далее — core, plugin host)
 qml/
   Main.qml           точка входа QML
-  app/               оболочка приложения и страницы
-  settings/          bottom sheet и экран настроек
-  theme/             singleton'ы темы и константы цветов
+  app/               оболочка и страницы (библиотека, каталог, …)
+  settings/          настройки
+  theme/             тема Material 3
+plugins/             плагины источников (online-fix, freetp, …)
+docs/                видение и архитектура
 ```
 
 ### Куда добавлять новое
 
 | Задача | Куда |
 |--------|------|
-| Новая страница | `qml/app/<Name>Page.qml`, подключить в `AppWindow.qml` |
-| Настройки / секция | `qml/settings/` |
-| Тема, палитра, токены | `qml/theme/Appearance.qml`, `AccentColors.qml` |
+| Новая страница UI | `qml/app/<Name>Page.qml` → `AppWindow.qml` |
+| Настройки | `qml/settings/` |
+| Тема | `qml/theme/` |
+| Логика ядра | `src/core/` (планируется) |
+| Плагин источника | `plugins/<source-id>/` |
 | C++ backend | `src/` + регистрация в `main.cpp` |
 
 ## Сборка
