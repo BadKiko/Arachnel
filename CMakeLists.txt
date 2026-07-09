@@ -29,13 +29,21 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(qml_material)
 
-qt_add_executable(arachnel_app main.cpp)
+qt_add_executable(arachnel_app src/main.cpp)
+
+file(GLOB_RECURSE ARACHNEL_QML_FILES CONFIGURE_DEPENDS
+     RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
+     "${CMAKE_CURRENT_SOURCE_DIR}/qml/*.qml")
+
+set_source_files_properties(
+    qml/theme/Appearance.qml
+    qml/theme/AccentColors.qml
+    PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
 
 qt_add_qml_module(arachnel_app
     URI arachnel
     QML_FILES
-        Main.qml
-        SettingsPage.qml
+        ${ARACHNEL_QML_FILES}
     DEPENDENCIES
         Qcm.Material
 )
