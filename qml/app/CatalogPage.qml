@@ -10,7 +10,7 @@ Item {
     readonly property int minCardWidth: 160
     readonly property int gridSpacing: MD.Token.spacing.medium
     readonly property int metaHeight: 64
-    property string selectedSourceId: "online-fix"
+    property string selectedSourceId: "freetp"
 
     signal openGame(string entryId)
 
@@ -83,10 +83,38 @@ Item {
 
                 MD.Label {
                     Layout.fillWidth: true
-                    text: qsTr("Найдено: %1").arg(Core.catalog.rowCount())
+                    text: Core.catalogLoading
+                        ? qsTr("Загрузка каталога…")
+                        : qsTr("Найдено: %1").arg(Core.catalog.rowCount())
                     color: MD.Token.color.on_surface_variant
                     typescale: MD.Token.typescale.label_large
                 }
+
+                MD.IconButton {
+                    mdState.type: MD.Enum.IBtStandard
+                    icon.name: MD.Token.icon.refresh
+                    enabled: !Core.catalogLoading
+                    onClicked: Core.refreshCatalog(root.selectedSourceId)
+                }
+            }
+
+            MD.Label {
+                Layout.fillWidth: true
+                Layout.leftMargin: MD.Token.spacing.large
+                Layout.rightMargin: MD.Token.spacing.large
+                visible: Core.catalogStatus.length > 0
+                text: Core.catalogStatus
+                color: MD.Token.color.on_surface_variant
+                typescale: MD.Token.typescale.body_small
+                wrapMode: Text.WordWrap
+            }
+
+            MD.LinearIndicator {
+                Layout.fillWidth: true
+                Layout.leftMargin: MD.Token.spacing.large
+                Layout.rightMargin: MD.Token.spacing.large
+                visible: Core.catalogLoading
+                indeterminate: true
             }
 
             Item {

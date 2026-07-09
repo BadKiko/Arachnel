@@ -2,6 +2,20 @@
 
 namespace arachnel::core {
 
+namespace {
+
+int installedComponentCount(const QVector<InstalledComponent>& components)
+{
+    int count = 0;
+    for (const auto& component : components) {
+        if (component.installed)
+            ++count;
+    }
+    return count;
+}
+
+} // namespace
+
 LibraryModel::LibraryModel(QObject* parent)
     : QAbstractListModel(parent)
 {
@@ -47,6 +61,14 @@ QVariant LibraryModel::data(const QModelIndex& index, int role) const
         return installKindLabel(game.installKind);
     case HasUpdateRole:
         return game.hasUpdate;
+    case UploadDateRole:
+        return game.uploadDate;
+    case DownloadPathRole:
+        return game.downloadPath;
+    case ComponentCountRole:
+        return game.components.size();
+    case InstalledComponentCountRole:
+        return installedComponentCount(game.components);
     default:
         return {};
     }
@@ -68,6 +90,10 @@ QHash<int, QByteArray> LibraryModel::roleNames() const
         {InstallKindRole, "installKind"},
         {InstallKindLabelRole, "installKindLabel"},
         {HasUpdateRole, "hasUpdate"},
+        {UploadDateRole, "uploadDate"},
+        {DownloadPathRole, "downloadPath"},
+        {ComponentCountRole, "componentCount"},
+        {InstalledComponentCountRole, "installedComponentCount"},
     };
 }
 
@@ -104,6 +130,10 @@ QVariantMap LibraryModel::toMap(const LibraryGame& game) const
         {QStringLiteral("installKind"), static_cast<int>(game.installKind)},
         {QStringLiteral("installKindLabel"), installKindLabel(game.installKind)},
         {QStringLiteral("hasUpdate"), game.hasUpdate},
+        {QStringLiteral("uploadDate"), game.uploadDate},
+        {QStringLiteral("downloadPath"), game.downloadPath},
+        {QStringLiteral("componentCount"), game.components.size()},
+        {QStringLiteral("installedComponentCount"), installedComponentCount(game.components)},
         {QStringLiteral("installed"), true},
     };
 }

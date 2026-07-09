@@ -1,5 +1,7 @@
 #include "job_model.h"
 
+#include "job_kind.h"
+
 namespace arachnel::core {
 
 JobModel::JobModel(QObject* parent)
@@ -29,6 +31,20 @@ QVariant JobModel::data(const QModelIndex& index, int role) const
         return job.status;
     case ProgressRole:
         return job.progress;
+    case KindRole:
+        return static_cast<int>(job.kind);
+    case KindLabelRole:
+        return jobKindLabel(job.kind);
+    case DetailRole:
+        return job.detail;
+    case BytesDownloadedRole:
+        return job.bytesDownloaded;
+    case TotalBytesRole:
+        return job.totalBytes;
+    case EntryIdRole:
+        return job.entryId;
+    case SourceIdRole:
+        return job.sourceId;
     default:
         return {};
     }
@@ -41,6 +57,13 @@ QHash<int, QByteArray> JobModel::roleNames() const
         {TitleRole, "title"},
         {StatusRole, "status"},
         {ProgressRole, "progress"},
+        {KindRole, "kind"},
+        {KindLabelRole, "kindLabel"},
+        {DetailRole, "detail"},
+        {BytesDownloadedRole, "bytesDownloaded"},
+        {TotalBytesRole, "totalBytes"},
+        {EntryIdRole, "entryId"},
+        {SourceIdRole, "sourceId"},
     };
 }
 
@@ -59,6 +82,16 @@ void JobModel::addJob(JobEntry job)
     endInsertRows();
 }
 
+void JobModel::updateJob(const JobEntry& job)
+{
+    const int row = indexOfJob(job.id);
+    if (row < 0)
+        return;
+    m_jobs[row] = job;
+    const QModelIndex idx = index(row);
+    emit dataChanged(idx, idx);
+}
+
 void JobModel::updateJob(const QString& jobId, const QString& status, int progress)
 {
     const int row = indexOfJob(jobId);
@@ -68,6 +101,16 @@ void JobModel::updateJob(const QString& jobId, const QString& status, int progre
     m_jobs[row].progress = progress;
     const QModelIndex idx = index(row);
     emit dataChanged(idx, idx, {StatusRole, ProgressRole});
+}
+
+void JobModel::removeJob(const QString& jobId)
+{
+    const int row = indexOfJob(jobId);
+    if (row < 0)
+        return;
+    beginRemoveRows({}, row, row);
+    m_jobs.removeAt(row);
+    endRemoveRows();
 }
 
 int JobModel::indexOfJob(const QString& jobId) const

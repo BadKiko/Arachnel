@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Templates as T
 
+import Arachnel.Core 1.0
 import Qcm.Material as MD
 
 ColumnLayout {
@@ -19,12 +20,15 @@ ColumnLayout {
         applying = true
         Appearance.apply()
         paletteListView.currentIndex = Appearance.paletteType
+        libraryPathField.text = Core.settings.libraryRoot
+        downloadsPathField.text = Core.settings.downloadsRoot
+        catalogUrlField.text = Core.settings.freetpCatalogUrl
         applying = false
     }
 
     MD.DialogHeader {
         Layout.fillWidth: true
-        title: qsTr("Внешний вид")
+        title: qsTr("Настройки")
     }
 
     ColumnLayout {
@@ -32,7 +36,59 @@ ColumnLayout {
         Layout.leftMargin: contentMargin
         Layout.rightMargin: contentMargin
         Layout.topMargin: MD.Token.spacing.small
-        spacing: MD.Token.spacing.medium
+        spacing: MD.Token.spacing.large
+
+        MD.Label {
+            Layout.fillWidth: true
+            text: qsTr("Хранилище и загрузки")
+            typescale: MD.Token.typescale.title_medium
+        }
+
+        MD.Label {
+            Layout.fillWidth: true
+            text: qsTr("Папка библиотеки — куда плагины будут устанавливать игры. Папка загрузок — торренты до установки.")
+            wrapMode: Text.WordWrap
+            color: MD.Token.color.on_surface_variant
+            typescale: MD.Token.typescale.body_medium
+        }
+
+        MD.TextField {
+            id: libraryPathField
+            Layout.fillWidth: true
+            placeholderText: qsTr("Папка библиотеки")
+            onEditingFinished: {
+                if (!root.applying)
+                    Core.settings.libraryRoot = text
+            }
+        }
+
+        MD.TextField {
+            id: downloadsPathField
+            Layout.fillWidth: true
+            placeholderText: qsTr("Папка загрузок")
+            onEditingFinished: {
+                if (!root.applying)
+                    Core.settings.downloadsRoot = text
+            }
+        }
+
+        MD.TextField {
+            id: catalogUrlField
+            Layout.fillWidth: true
+            placeholderText: qsTr("Каталог FreeTP (JSON)")
+            onEditingFinished: {
+                if (!root.applying)
+                    Core.settings.freetpCatalogUrl = text
+            }
+        }
+
+        MD.AutoDivider { Layout.fillWidth: true }
+
+        MD.Label {
+            Layout.fillWidth: true
+            text: qsTr("Внешний вид")
+            typescale: MD.Token.typescale.title_medium
+        }
 
         MD.Label {
             Layout.fillWidth: true

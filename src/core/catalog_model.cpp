@@ -1,5 +1,6 @@
 #include "catalog_model.h"
 
+#include "catalog_types.h"
 #include "install_kind.h"
 
 namespace arachnel::core {
@@ -43,6 +44,18 @@ QVariant CatalogModel::data(const QModelIndex& index, int role) const
         return static_cast<int>(entry.installKind);
     case InstallKindLabelRole:
         return installKindLabel(entry.installKind);
+    case UploadDateRole:
+        return entry.uploadDate;
+    case ItemKindRole:
+        return static_cast<int>(entry.itemKind);
+    case ItemKindLabelRole:
+        return catalogItemKindLabel(entry.itemKind);
+    case AddonCountRole:
+        return entry.addons.size();
+    case HasAddonsRole:
+        return !entry.addons.isEmpty();
+    case MetadataPendingRole:
+        return entry.metadataPending;
     default:
         return {};
     }
@@ -61,6 +74,12 @@ QHash<int, QByteArray> CatalogModel::roleNames() const
         {GenresRole, "genres"},
         {InstallKindRole, "installKind"},
         {InstallKindLabelRole, "installKindLabel"},
+        {UploadDateRole, "uploadDate"},
+        {ItemKindRole, "itemKind"},
+        {ItemKindLabelRole, "itemKindLabel"},
+        {AddonCountRole, "addonCount"},
+        {HasAddonsRole, "hasAddons"},
+        {MetadataPendingRole, "metadataPending"},
     };
 }
 
@@ -96,6 +115,12 @@ QVariantMap CatalogModel::toMap(const CatalogEntry& entry) const
         {QStringLiteral("sizeLabel"), entry.sizeLabel},
         {QStringLiteral("installKind"), static_cast<int>(entry.installKind)},
         {QStringLiteral("installKindLabel"), installKindLabel(entry.installKind)},
+        {QStringLiteral("uploadDate"), entry.uploadDate},
+        {QStringLiteral("itemKind"), static_cast<int>(entry.itemKind)},
+        {QStringLiteral("itemKindLabel"), catalogItemKindLabel(entry.itemKind)},
+        {QStringLiteral("addonCount"), entry.addons.size()},
+        {QStringLiteral("hasAddons"), !entry.addons.isEmpty()},
+        {QStringLiteral("metadataPending"), entry.metadataPending},
         {QStringLiteral("hasUpdate"), false},
         {QStringLiteral("installed"), false},
     };
@@ -107,6 +132,27 @@ QVariantMap CatalogModel::entryInfo(const QString& id) const
     if (!entry)
         return {};
     return toMap(*entry);
+}
+
+QVariantList CatalogModel::addonsFor(const QString& entryId) const
+{
+    const CatalogEntry* entry = entryById(entryId);
+    if (!entry)
+        return {};
+
+    QVariantList addons;
+    addons.reserve(entry->addons.size());
+    for (const auto& addon : entry->addons) {
+        addons.append(QVariantMap{
+            {QStringLiteral("id"), addon.id},
+            {QStringLiteral("title"), addon.title},
+            {QStringLiteral("fileSize"), addon.fileSize},
+            {QStringLiteral("uploadDate"), addon.uploadDate},
+            {QStringLiteral("kind"), static_cast<int>(addon.kind)},
+            {QStringLiteral("kindLabel"), catalogItemKindLabel(addon.kind)},
+        });
+    }
+    return addons;
 }
 
 void CatalogModel::clear()
