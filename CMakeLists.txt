@@ -18,6 +18,9 @@ if(UNIX AND NOT APPLE AND NOT ANDROID)
     find_package(Qt6 REQUIRED COMPONENTS DBus)
 endif()
 
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(LIBTORRENT REQUIRED IMPORTED_TARGET libtorrent-rasterbar)
+
 qt_standard_project_setup(REQUIRES 6.8)
 
 include(FetchContent)
@@ -35,10 +38,18 @@ set(CMAKE_AUTOMOC ON)
 qt_add_executable(arachnel_app
     src/main.cpp
     src/core/install_kind.cpp
+    src/core/job_kind.cpp
+    src/core/catalog_types.cpp
     src/core/library_model.cpp
     src/core/source_plugin_model.cpp
     src/core/catalog_model.cpp
     src/core/job_model.cpp
+    src/core/settings_store.cpp
+    src/core/library_store.cpp
+    src/core/catalog_feed_loader.cpp
+    src/core/game_metadata_service.cpp
+    src/core/torrent_session.cpp
+    src/core/job_orchestrator.cpp
     src/core/core_controller.cpp
 )
 
@@ -73,5 +84,6 @@ target_link_libraries(arachnel_app
         Qt6::Network
         Qt6::Qml
         Qt6::Quick
+        PkgConfig::LIBTORRENT
         qml_material::qml_material
 )

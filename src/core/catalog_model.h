@@ -1,5 +1,6 @@
 #pragma once
 
+#include "catalog_types.h"
 #include "install_kind.h"
 
 #include <QAbstractListModel>
@@ -7,18 +8,6 @@
 #include <QVariantMap>
 
 namespace arachnel::core {
-
-struct CatalogEntry {
-    QString id;
-    QString title;
-    QString coverUrl;
-    QString sourceId;
-    QString version;
-    QString sizeLabel;
-    QString description;
-    QString genres;
-    InstallKind installKind = InstallKind::PortableArchive;
-};
 
 class CatalogModel : public QAbstractListModel
 {
@@ -36,6 +25,12 @@ public:
         GenresRole,
         InstallKindRole,
         InstallKindLabelRole,
+        UploadDateRole,
+        ItemKindRole,
+        ItemKindLabelRole,
+        AddonCountRole,
+        HasAddonsRole,
+        MetadataPendingRole,
     };
     Q_ENUM(Role)
 
@@ -48,6 +43,7 @@ public:
     void setEntries(QVector<CatalogEntry> entries);
     const CatalogEntry* entryById(const QString& id) const;
     Q_INVOKABLE QVariantMap entryInfo(const QString& id) const;
+    Q_INVOKABLE QVariantList addonsFor(const QString& entryId) const;
     void clear();
 
 private:

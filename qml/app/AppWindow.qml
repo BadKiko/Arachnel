@@ -33,6 +33,7 @@ MD.ApplicationWindow {
     property bool detailsOpen: false
     property string detailsGameId: ""
     property bool detailsFromCatalog: false
+    property string catalogSourceId: "freetp"
 
     function openGameDetails(gameId, fromCatalog) {
         detailsGameId = gameId
@@ -105,7 +106,8 @@ MD.ApplicationWindow {
                         onAccepted: {
                             root.closeGameDetails()
                             root.pageIndex = 1
-                            Core.searchCatalog("online-fix", searchText)
+                            root.catalogSourceId = "freetp"
+                            Core.searchCatalog(root.catalogSourceId, searchText)
                         }
                     }
 
@@ -129,6 +131,7 @@ MD.ApplicationWindow {
                 }
                 CatalogPage {
                     onOpenGame: function (id) { root.openGameDetails(id, true) }
+                    onSelectedSourceIdChanged: root.catalogSourceId = selectedSourceId
                 }
                 GameDetailsPage {
                     gameId: root.detailsGameId

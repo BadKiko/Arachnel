@@ -11,7 +11,7 @@ Item {
     readonly property int gridSpacing: MD.Token.spacing.medium
     readonly property int metaHeight: 48
 
-    property string selectedSourceId: "online-fix"
+    property string selectedSourceId: "freetp"
     property var featuredGame: Core.library.gameAt(0)
 
     signal openGame(string gameId)
@@ -191,34 +191,14 @@ Item {
                     Repeater {
                         model: Core.jobs
 
-                        ColumnLayout {
+                        DownloadJobCard {
+                            required property string jobId
                             required property string title
+                            required property string kindLabel
                             required property string status
                             required property int progress
+                            required property string detail
                             Layout.fillWidth: true
-                            spacing: 4
-
-                            RowLayout {
-                                Layout.fillWidth: true
-                                MD.Label {
-                                    Layout.fillWidth: true
-                                    text: title
-                                    color: MD.Token.color.on_secondary_container
-                                    typescale: MD.Token.typescale.body_medium
-                                    elide: Text.ElideRight
-                                }
-                                MD.Label {
-                                    text: status
-                                    color: MD.Token.color.on_secondary_container
-                                    typescale: MD.Token.typescale.label_medium
-                                    opacity: 0.8
-                                }
-                            }
-
-                            MD.LinearIndicator {
-                                Layout.fillWidth: true
-                                value: progress / 100
-                            }
                         }
                     }
                 }

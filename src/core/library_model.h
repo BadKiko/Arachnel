@@ -5,8 +5,16 @@
 #include <QAbstractListModel>
 #include <QString>
 #include <QVariantMap>
+#include <QVector>
 
 namespace arachnel::core {
+
+struct InstalledComponent {
+    QString id;
+    QString title;
+    QString uploadDate;
+    bool installed = false;
+};
 
 struct LibraryGame {
     QString id;
@@ -21,6 +29,10 @@ struct LibraryGame {
     QString sizeLabel;
     InstallKind installKind = InstallKind::PortableArchive;
     bool hasUpdate = false;
+    QString uploadDate;
+    QString magnetUri;
+    QString downloadPath;
+    QVector<InstalledComponent> components;
 };
 
 class LibraryModel : public QAbstractListModel
@@ -42,6 +54,10 @@ public:
         InstallKindRole,
         InstallKindLabelRole,
         HasUpdateRole,
+        UploadDateRole,
+        DownloadPathRole,
+        ComponentCountRole,
+        InstalledComponentCountRole,
     };
     Q_ENUM(Role)
 

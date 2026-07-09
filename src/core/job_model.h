@@ -1,5 +1,7 @@
 #pragma once
 
+#include "job_kind.h"
+
 #include <QAbstractListModel>
 #include <QString>
 
@@ -8,8 +10,14 @@ namespace arachnel::core {
 struct JobEntry {
     QString id;
     QString title;
+    JobKind kind = JobKind::Download;
     QString status;
     int progress = 0;
+    QString detail;
+    qint64 bytesDownloaded = 0;
+    qint64 totalBytes = 0;
+    QString entryId;
+    QString sourceId;
 };
 
 class JobModel : public QAbstractListModel
@@ -22,6 +30,13 @@ public:
         TitleRole,
         StatusRole,
         ProgressRole,
+        KindRole,
+        KindLabelRole,
+        DetailRole,
+        BytesDownloadedRole,
+        TotalBytesRole,
+        EntryIdRole,
+        SourceIdRole,
     };
     Q_ENUM(Role)
 
@@ -33,11 +48,12 @@ public:
 
     void setJobs(QVector<JobEntry> jobs);
     void addJob(JobEntry job);
+    void updateJob(const JobEntry& job);
     void updateJob(const QString& jobId, const QString& status, int progress);
-
-private:
+    void removeJob(const QString& jobId);
     int indexOfJob(const QString& jobId) const;
 
+private:
     QVector<JobEntry> m_jobs;
 };
 

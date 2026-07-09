@@ -7,7 +7,7 @@ APP="${BUILD}/arachnel_app"
 export QT_QML_MATERIAL_IMPORT_PATH="${BUILD}/qml_modules"
 
 build() {
-  cmake -S "${ROOT}" -B "${BUILD}" -DCMAKE_BUILD_TYPE="${BUILD_TYPE:-Debug}"
+  cmake -S "${ROOT}" -B "${BUILD}" -DCMAKE_BUILD_TYPE="${BUILD_TYPE:-Debug}" -DCMAKE_CXX_COMPILER=g++
   cmake --build "${BUILD}" -j"$(nproc)"
 }
 
