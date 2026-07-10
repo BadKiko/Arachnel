@@ -19,6 +19,7 @@ Item {
 
     signal openGame(string gameId)
     signal openCatalog()
+    signal openDownloads()
     signal openSettings()
     signal addSourceRequested()
 
@@ -432,36 +433,44 @@ Item {
                 Layout.fillWidth: true
                 Layout.leftMargin: root.pageMargin
                 Layout.rightMargin: root.pageMargin
-                visible: Core.jobs.count > 0
+                visible: Core.jobs.activeCount > 0
                 padding: MD.Token.spacing.medium
                 radius: root.cardRadius
                 backgroundColor: MD.Token.color.secondary_container
                 clip: true
 
-                ColumnLayout {
+                RowLayout {
                     anchors.fill: parent
-                    spacing: MD.Token.spacing.small
+                    spacing: MD.Token.spacing.medium
 
-                    MD.Label {
-                        Layout.fillWidth: true
-                        text: qsTr("Активные задачи")
+                    MD.Icon {
+                        name: MD.Token.icon.downloading
+                        size: 24
                         color: MD.Token.color.on_secondary_container
-                        typescale: MD.Token.typescale.title_small
-                        elide: Text.ElideRight
                     }
 
-                    Repeater {
-                        model: Core.jobs
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: 2
 
-                        DownloadJobCard {
-                            required property string jobId
-                            required property string title
-                            required property string kindLabel
-                            required property string status
-                            required property int progress
-                            required property string detail
+                        MD.Label {
                             Layout.fillWidth: true
+                            text: qsTr("%1 активных загрузок").arg(Core.jobs.activeCount)
+                            color: MD.Token.color.on_secondary_container
+                            typescale: MD.Token.typescale.title_small
                         }
+
+                        MD.Label {
+                            Layout.fillWidth: true
+                            text: qsTr("Загрузки продолжаются после перезапуска")
+                            color: MD.Token.color.on_secondary_container
+                            typescale: MD.Token.typescale.label_medium
+                        }
+                    }
+
+                    MD.Button {
+                        text: qsTr("Открыть")
+                        onClicked: root.openDownloads()
                     }
                 }
             }

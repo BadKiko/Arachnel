@@ -8,6 +8,7 @@ MD.Pane {
 
     property int currentIndex: 0
     property var model: []
+    property int downloadBadge: 0
 
     signal activated(int index)
     signal settingsRequested()
@@ -98,6 +99,15 @@ MD.Pane {
                                 color: railEntry.selected
                                        ? MD.Token.color.on_secondary_container
                                        : MD.Token.color.on_surface_variant
+                            }
+
+                            MD.Badge {
+                                anchors.right: parent.right
+                                anchors.top: parent.top
+                                anchors.rightMargin: 4
+                                anchors.topMargin: 2
+                                visible: railEntry.modelData.navIndex === 2 && root.downloadBadge > 0
+                                text: root.downloadBadge > 9 ? "9+" : String(root.downloadBadge)
                             }
                         }
                     }

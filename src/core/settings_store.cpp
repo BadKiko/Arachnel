@@ -71,6 +71,7 @@ SettingsStore::SettingsStore(QObject* parent)
     : QObject(parent)
     , m_libraryRoot(defaultLibraryRoot())
     , m_downloadsRoot(defaultDownloadsRoot())
+    , m_maxConcurrentDownloads(2)
     , m_sources(defaultSources())
 {
 }
@@ -125,6 +126,16 @@ void SettingsStore::setDownloadsRoot(const QString& path)
     save();
 }
 
+void SettingsStore::setMaxConcurrentDownloads(int count)
+{
+    const int clamped = qBound(1, count, 8);
+    if (m_maxConcurrentDownloads == clamped)
+        return;
+    m_maxConcurrentDownloads = clamped;
+    emit maxConcurrentDownloadsChanged();
+    save();
+}
+
 void SettingsStore::load()
 {
     QFile file(settingsFilePath());
@@ -132,6 +143,7 @@ void SettingsStore::load()
         m_sources.clear();
         emit libraryRootChanged();
         emit downloadsRootChanged();
+        emit maxConcurrentDownloadsChanged();
         emit sourcesChanged();
         return;
     }
@@ -141,6 +153,8 @@ void SettingsStore::load()
         m_libraryRoot = obj.value(QStringLiteral("libraryRoot")).toString(m_libraryRoot);
     if (obj.contains(QStringLiteral("downloadsRoot")))
         m_downloadsRoot = obj.value(QStringLiteral("downloadsRoot")).toString(m_downloadsRoot);
+    if (obj.contains(QStringLiteral("maxConcurrentDownloads")))
+        m_maxConcurrentDownloads = qBound(1, obj.value(QStringLiteral("maxConcurrentDownloads")).toInt(2), 8);
 
     QVector<SourcePluginInfo> loaded;
     const QJsonArray sources = obj.value(QStringLiteral("sources")).toArray();
@@ -176,6 +190,7 @@ void SettingsStore::load()
 
     emit libraryRootChanged();
     emit downloadsRootChanged();
+    emit maxConcurrentDownloadsChanged();
     emit sourcesChanged();
 }
 
@@ -184,6 +199,7 @@ void SettingsStore::save()
     QJsonObject obj;
     obj.insert(QStringLiteral("libraryRoot"), m_libraryRoot);
     obj.insert(QStringLiteral("downloadsRoot"), m_downloadsRoot);
+    obj.insert(QStringLiteral("maxConcurrentDownloads"), m_maxConcurrentDownloads);
 
     QJsonArray sources;
     for (const auto& source : m_sources)

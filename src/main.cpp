@@ -51,6 +51,10 @@ int main(int argc, char *argv[])
         },
         Qt::QueuedConnection);
 
+    QObject::connect(&app, &QCoreApplication::aboutToQuit, &app, []() {
+        arachnel::core::CoreController::instance().prepareShutdown();
+    });
+
     engine.loadFromModule(QStringLiteral("arachnel"), QStringLiteral("Main"));
     return app.exec();
 }

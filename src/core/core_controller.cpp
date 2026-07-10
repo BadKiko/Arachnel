@@ -4,6 +4,7 @@
 #include "cover_image_cache.h"
 #include "game_metadata_service.h"
 #include "job_orchestrator.h"
+#include "job_store.h"
 #include "library_store.h"
 #include "settings_store.h"
 #include "torrent_session.h"
@@ -31,12 +32,13 @@ CoreController& CoreController::instance()
 CoreController::CoreController(QObject* parent)
     : QObject(parent)
 {
-    initializeServices();
     m_settings.load();
+    m_jobStore.load();
+    m_libraryStore.load();
+    initializeServices();
     syncSourcesFromSettings();
     connect(&m_sources, &SourcePluginModel::sourcesChanged, this,
             &CoreController::persistSourcesToSettings);
-    m_libraryStore.load();
     syncLibraryFromStore();
 }
 
@@ -47,7 +49,8 @@ void CoreController::initializeServices()
     m_coverCache = new CoverImageCache(this);
     m_torrentSession = new TorrentSession(this);
     m_jobOrchestrator =
-        new JobOrchestrator(&m_settings, m_torrentSession, &m_jobs, this);
+        new JobOrchestrator(&m_settings, &m_jobStore, m_torrentSession, &m_jobs, this);
+    m_jobOrchestrator->restoreJobs();
 
     connect(m_catalogLoader, &CatalogFeedLoader::feedLoaded, this,
             [this](const QString& sourceId, const QVector<CatalogEntry> entries) {
@@ -590,6 +593,28 @@ void CoreController::cancelJob(const QString& jobId)
 {
     m_jobOrchestrator->cancelJob(jobId);
     setLastAction(QStringLiteral("Задача отменена"));
+}
+
+void CoreController::toggleJobPause(const QString& jobId)
+{
+    if (jobId.isEmpty())
+        return;
+    m_jobOrchestrator->toggleJobPause(jobId);
+    setLastAction(QStringLiteral("Пауза загрузки"));
+}
+
+void CoreController::clearFinishedJobs()
+{
+    m_jobOrchestrator->clearFinishedJobs();
+    setLastAction(QStringLiteral("История загрузок очищена"));
+}
+
+void CoreController::prepareShutdown()
+{
+    if (m_jobOrchestrator)
+        m_jobOrchestrator->flushPersistence();
+    if (m_torrentSession)
+        m_torrentSession->flushResumeData();
 }
 
 void registerCoreTypes()
