@@ -160,7 +160,7 @@ Item {
                     model: Core.catalog
                     cellWidth: gridHost.cardWidth + root.gridSpacing
                     cellHeight: gridHost.cardHeight + root.gridSpacing
-                    cacheBuffer: 0
+                    cacheBuffer: gridHost.cardHeight * 2
                     delegate: CatalogGameCard {
                         width: Math.max(0, gridHost.cardWidth - root.gridSpacing)
                         height: gridHost.cardHeight

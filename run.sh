@@ -6,8 +6,16 @@ BUILD="${ROOT}/build"
 APP="${BUILD}/arachnel_app"
 export QT_QML_MATERIAL_IMPORT_PATH="${BUILD}/qml_modules"
 
+ensure_material_fonts() {
+  if [[ -x "${ROOT}/scripts/setup-material-fonts.sh" ]]; then
+    bash "${ROOT}/scripts/setup-material-fonts.sh"
+  fi
+}
+
 build() {
+  ensure_material_fonts
   cmake -S "${ROOT}" -B "${BUILD}" -DCMAKE_BUILD_TYPE="${BUILD_TYPE:-Debug}" -DCMAKE_CXX_COMPILER=g++
+  ensure_material_fonts
   cmake --build "${BUILD}" -j"$(nproc)"
 }
 

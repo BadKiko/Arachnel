@@ -51,13 +51,12 @@ void CoreController::initializeServices()
                     return;
 
                 m_catalogCache = entries;
-                setCatalogLoading(false);
-                setCatalogStatus(
-                    QStringLiteral("Загружено %1 игр, обогащение метаданных…").arg(entries.size()));
-                applyCatalogFilter(sourceId, m_activeQuery);
+                for (auto& entry : m_catalogCache)
+                    applyCachedMetadata(entry);
 
-                auto* mutableCache = &m_catalogCache;
-                m_metadataService->enrichEntries(*mutableCache);
+                setCatalogLoading(false);
+                setCatalogStatus(QStringLiteral("Каталог готов · %1 игр").arg(entries.size()));
+                applyCatalogFilter(sourceId, m_activeQuery);
             });
 
     connect(m_catalogLoader, &CatalogFeedLoader::feedFailed, this,
@@ -69,12 +68,23 @@ void CoreController::initializeServices()
                 setLastAction(QStringLiteral("Ошибка каталога: %1").arg(error));
             });
 
-    connect(m_metadataService, &GameMetadataService::entryEnriched, this,
-            [this](const QString& entryId) {
+    connect(m_metadataService, &GameMetadataService::coverReady, this,
+            [this](const QString& entryId, const QString& coverUrl) {
                 for (auto& entry : m_catalogCache) {
                     if (entry.id != entryId)
                         continue;
-                    const GameMetadata metadata = m_metadataService->metadataForTitle(entry.title);
+                    entry.coverUrl = coverUrl;
+                    entry.metadataPending = false;
+                    syncEntryToCatalogModel(entryId);
+                    break;
+                }
+            });
+
+    connect(m_metadataService, &GameMetadataService::metadataReady, this,
+            [this](const QString& entryId, const GameMetadata& metadata) {
+                for (auto& entry : m_catalogCache) {
+                    if (entry.id != entryId)
+                        continue;
                     if (!metadata.coverUrl.isEmpty())
                         entry.coverUrl = metadata.coverUrl;
                     if (!metadata.description.isEmpty())
@@ -82,14 +92,10 @@ void CoreController::initializeServices()
                     if (!metadata.genres.isEmpty())
                         entry.genres = metadata.genres;
                     entry.metadataPending = false;
+                    syncEntryToCatalogModel(entryId);
                     break;
                 }
-                applyCatalogFilter(m_activeSourceId, m_activeQuery);
             });
-
-    connect(m_metadataService, &GameMetadataService::enrichmentFinished, this, [this]() {
-        setCatalogStatus(QStringLiteral("Каталог готов · %1 игр").arg(m_catalog.rowCount()));
-    });
 
     connect(m_jobOrchestrator, &JobOrchestrator::downloadCompleted, this,
             [this](const QString& jobId, const QString& entryId, const QString& sourceId,
@@ -213,6 +219,45 @@ const CatalogComponent* CoreController::findCatalogAddon(const CatalogEntry& ent
             return &addon;
     }
     return nullptr;
+}
+
+void CoreController::applyCachedMetadata(CatalogEntry& entry) const
+{
+    const GameMetadata metadata = m_metadataService->metadataForTitle(entry.title);
+    if (!metadata.coverUrl.isEmpty())
+        entry.coverUrl = metadata.coverUrl;
+    if (!metadata.description.isEmpty())
+        entry.description = metadata.description;
+    if (!metadata.genres.isEmpty())
+        entry.genres = metadata.genres;
+    entry.metadataPending = entry.coverUrl.isEmpty();
+}
+
+void CoreController::syncEntryToCatalogModel(const QString& entryId)
+{
+    for (const auto& entry : m_catalogCache) {
+        if (entry.id != entryId)
+            continue;
+        if (!m_catalog.updateEntry(entry))
+            applyCatalogFilter(m_activeSourceId, m_activeQuery);
+        return;
+    }
+}
+
+void CoreController::requestCatalogCover(const QString& entryId)
+{
+    const CatalogEntry* entry = findCatalogEntry(entryId);
+    if (!entry || !entry->coverUrl.isEmpty())
+        return;
+    m_metadataService->queueFetch(entryId, entry->title, MetadataFetchMode::CoverOnly);
+}
+
+void CoreController::enrichCatalogEntry(const QString& entryId)
+{
+    const CatalogEntry* entry = findCatalogEntry(entryId);
+    if (!entry)
+        return;
+    m_metadataService->queueFetch(entryId, entry->title, MetadataFetchMode::Full);
 }
 
 void CoreController::applyCatalogFilter(const QString& sourceId, const QString& query)

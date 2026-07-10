@@ -4,7 +4,8 @@
 
 #include <QObject>
 #include <QHash>
-#include <QVector>
+#include <QSet>
+#include <QStringList>
 
 class QNetworkAccessManager;
 class QNetworkReply;
@@ -18,6 +19,11 @@ struct GameMetadata {
     QString steamAppId;
 };
 
+enum class MetadataFetchMode {
+    CoverOnly = 0,
+    Full,
+};
+
 class GameMetadataService : public QObject
 {
     Q_OBJECT
@@ -25,23 +31,36 @@ class GameMetadataService : public QObject
 public:
     explicit GameMetadataService(QObject* parent = nullptr);
 
-    void enrichEntries(QVector<CatalogEntry>& entries);
+    void loadCache();
+    void saveCache();
+
+    void queueFetch(const QString& entryId, const QString& title, MetadataFetchMode mode);
     GameMetadata metadataForTitle(const QString& title) const;
 
 signals:
-    void entryEnriched(const QString& entryId);
-    void enrichmentFinished();
+    void coverReady(const QString& entryId, const QString& coverUrl);
+    void metadataReady(const QString& entryId, const GameMetadata& metadata);
 
 private:
+    struct PendingRequest {
+        QString entryId;
+        QString title;
+        MetadataFetchMode mode;
+    };
+
     void requestNext();
     void handleSearchFinished(QNetworkReply* reply);
     void handleDetailsFinished(QNetworkReply* reply);
+    void finishCover(const QString& entryId, const QString& title, const GameMetadata& metadata);
 
     QNetworkAccessManager* m_network = nullptr;
     QHash<QString, GameMetadata> m_cache;
-    QVector<CatalogEntry*> m_pending;
+    QList<PendingRequest> m_pending;
+    QSet<QString> m_queuedIds;
     int m_activeRequests = 0;
-    static constexpr int kMaxConcurrent = 4;
+
+    static constexpr int kMaxConcurrent = 3;
+    static constexpr int kMaxQueueSize = 48;
 };
 
 } // namespace arachnel::core
