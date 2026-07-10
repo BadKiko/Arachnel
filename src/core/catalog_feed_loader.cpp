@@ -6,6 +6,7 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
+#include <QVariant>
 
 #include <algorithm>
 
@@ -60,7 +61,8 @@ CatalogEntry parseDownloadObject(const QJsonObject& obj, const QString& sourceId
     entry.version = entry.uploadDate.left(10);
     entry.itemKind = itemKindFromString(obj.value(QStringLiteral("kind")).toString());
     entry.parentEntryId = obj.value(QStringLiteral("parentTitle")).toString();
-    entry.metadataPending = true;
+    // metadataPending is set only when a visible card requests a cover fetch.
+    entry.metadataPending = false;
 
     const QJsonArray uris = obj.value(QStringLiteral("uris")).toArray();
     for (const QJsonValue& uri : uris)
@@ -143,18 +145,49 @@ CatalogFeedLoader::CatalogFeedLoader(QObject* parent)
 {
 }
 
+void CatalogFeedLoader::abortActiveReply()
+{
+    if (!m_activeReply)
+        return;
+    QNetworkReply* reply = m_activeReply;
+    m_activeReply.clear();
+    reply->disconnect(this);
+    reply->abort();
+    reply->deleteLater();
+}
+
 void CatalogFeedLoader::loadFeed(const QUrl& url, const QString& sourceId)
 {
+    abortActiveReply();
+
+    const quint64 serial = ++m_requestSerial;
     QNetworkRequest request(url);
     request.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("Arachnel/0.1"));
     QNetworkReply* reply = m_network->get(request);
     reply->setProperty("sourceId", sourceId);
+    reply->setProperty("requestSerial", QVariant::fromValue(serial));
+    m_activeReply = reply;
     connect(reply, &QNetworkReply::finished, this, [this, reply]() { handleFinished(reply); });
 }
 
 void CatalogFeedLoader::handleFinished(QNetworkReply* reply)
 {
     const QString sourceId = reply->property("sourceId").toString();
+    const quint64 serial = reply->property("requestSerial").toULongLong();
+    const bool isActive = (m_activeReply == reply);
+    if (isActive)
+        m_activeReply.clear();
+
+    if (serial != m_requestSerial || !isActive) {
+        reply->deleteLater();
+        return;
+    }
+
+    if (reply->error() == QNetworkReply::OperationCanceledError) {
+        reply->deleteLater();
+        return;
+    }
+
     if (reply->error() != QNetworkReply::NoError) {
         emit feedFailed(sourceId, reply->errorString());
         reply->deleteLater();

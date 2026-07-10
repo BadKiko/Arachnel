@@ -29,6 +29,7 @@ Item {
             GamePoster {
                 anchors.fill: parent
                 source: root.coverUrl
+                seed: root.title
                 fallbackText: root.title.charAt(0)
                 cornerRadius: MD.Token.shape.corner.extra_large
                 onClicked: root.openDetails(root.gameId)

@@ -12,6 +12,7 @@ namespace arachnel::core {
 class CatalogModel : public QAbstractListModel
 {
     Q_OBJECT
+    Q_PROPERTY(int count READ count NOTIFY countChanged)
 
 public:
     enum Role {
@@ -40,6 +41,8 @@ public:
     QVariant data(const QModelIndex& index, int role) const override;
     QHash<int, QByteArray> roleNames() const override;
 
+    int count() const { return m_entries.size(); }
+
     void setEntries(QVector<CatalogEntry> entries);
     bool updateEntry(const CatalogEntry& entry);
     int indexOfEntry(const QString& id) const;
@@ -47,6 +50,9 @@ public:
     Q_INVOKABLE QVariantMap entryInfo(const QString& id) const;
     Q_INVOKABLE QVariantList addonsFor(const QString& entryId) const;
     void clear();
+
+signals:
+    void countChanged();
 
 private:
     QVariantMap toMap(const CatalogEntry& entry) const;

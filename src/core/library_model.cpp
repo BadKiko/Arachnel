@@ -102,6 +102,7 @@ void LibraryModel::setGames(QVector<LibraryGame> games)
     beginResetModel();
     m_games = std::move(games);
     endResetModel();
+    emit countChanged();
 }
 
 const LibraryGame* LibraryModel::gameById(const QString& id) const
