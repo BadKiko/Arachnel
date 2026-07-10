@@ -8,6 +8,8 @@
 #include "source_plugin_model.h"
 
 #include <QObject>
+#include <QHash>
+#include <QSet>
 #include <QVector>
 
 class QQmlEngine;
@@ -16,6 +18,7 @@ class QJSEngine;
 namespace arachnel::core {
 
 class CatalogFeedLoader;
+class CoverImageCache;
 class GameMetadataService;
 class JobOrchestrator;
 class TorrentSession;
@@ -81,6 +84,9 @@ private:
                                              const QString& addonId) const;
     void syncEntryToCatalogModel(const QString& entryId);
     void applyCachedMetadata(CatalogEntry& entry) const;
+    void applyCoverToEntry(const QString& entryId, const QString& coverUrl);
+    void ensureDiskCover(const QString& entryId, const QString& remoteUrl);
+    static bool isRemoteLibraryCover(const QString& url);
 
     LibraryModel m_library;
     SourcePluginModel m_sources;
@@ -90,10 +96,12 @@ private:
     LibraryStore m_libraryStore;
     CatalogFeedLoader* m_catalogLoader = nullptr;
     GameMetadataService* m_metadataService = nullptr;
+    CoverImageCache* m_coverCache = nullptr;
     TorrentSession* m_torrentSession = nullptr;
     JobOrchestrator* m_jobOrchestrator = nullptr;
 
     QVector<CatalogEntry> m_catalogCache;
+    QHash<QString, QSet<QString>> m_coverWaiters;
     QString m_activeSourceId;
     QString m_activeQuery;
     QString m_lastAction;

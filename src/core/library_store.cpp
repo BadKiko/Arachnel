@@ -91,12 +91,11 @@ void LibraryStore::upsertGame(const LibraryGame& game)
 
 void LibraryStore::removeGame(const QString& id)
 {
-    const int index = std::find_if(m_games.begin(), m_games.end(),
-                                   [&](const LibraryGame& game) { return game.id == id; })
-                      - m_games.begin();
-    if (index < 0)
+    const auto it = std::find_if(m_games.begin(), m_games.end(),
+                                 [&](const LibraryGame& game) { return game.id == id; });
+    if (it == m_games.end())
         return;
-    m_games.removeAt(index);
+    m_games.erase(it);
     emit gamesChanged();
     save();
 }

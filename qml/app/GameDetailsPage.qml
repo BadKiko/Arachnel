@@ -36,10 +36,15 @@ Item {
 
     signal backRequested()
 
-    onGameIdChanged: {
+    onGameIdChanged: root.maybeEnrich()
+    onFromCatalogChanged: root.maybeEnrich()
+
+    function maybeEnrich() {
         if (gameId.length > 0 && fromCatalog)
             Core.enrichCatalogEntry(gameId)
     }
+
+    Component.onCompleted: root.maybeEnrich()
 
     Flickable {
         id: flick

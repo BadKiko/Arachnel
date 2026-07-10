@@ -111,13 +111,20 @@ void TorrentSession::pollAlerts()
                 m_impl->handles.remove(jobId);
                 m_impl->savePaths.remove(jobId);
             }
+            if (failed->handle.is_valid())
+                m_impl->session.remove_torrent(failed->handle);
             continue;
         }
 
         if (auto* finished = lt::alert_cast<lt::torrent_finished_alert>(alert)) {
             const QString jobId = m_impl->handles.key(finished->handle, QString());
-            if (!jobId.isEmpty())
-                emit torrentFinished(jobId, m_impl->savePaths.value(jobId));
+            if (!jobId.isEmpty()) {
+                const QString savePath = m_impl->savePaths.take(jobId);
+                m_impl->handles.remove(jobId);
+                emit torrentFinished(jobId, savePath);
+                // Keep the torrent in session for seeding, but drop our job mapping
+                // so cancel() cannot delete_files on an already-finished download.
+            }
             continue;
         }
     }

@@ -72,6 +72,7 @@ qt_add_executable(arachnel_app
     src/core/library_store.cpp
     src/core/catalog_feed_loader.cpp
     src/core/game_metadata_service.cpp
+    src/core/cover_image_cache.cpp
     src/core/torrent_session.cpp
     src/core/job_orchestrator.cpp
     src/core/core_controller.cpp
