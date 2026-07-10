@@ -41,6 +41,8 @@ public:
     QHash<int, QByteArray> roleNames() const override;
 
     void setEntries(QVector<CatalogEntry> entries);
+    bool updateEntry(const CatalogEntry& entry);
+    int indexOfEntry(const QString& id) const;
     const CatalogEntry* entryById(const QString& id) const;
     Q_INVOKABLE QVariantMap entryInfo(const QString& id) const;
     Q_INVOKABLE QVariantList addonsFor(const QString& entryId) const;

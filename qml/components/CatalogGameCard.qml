@@ -16,6 +16,16 @@ Item {
 
     signal openDetails(string entryId)
 
+    Component.onCompleted: {
+        if (!root.coverUrl || root.coverUrl.length === 0)
+            Core.requestCatalogCover(root.entryId)
+    }
+
+    onCoverUrlChanged: {
+        if ((!coverUrl || coverUrl.length === 0) && entryId.length > 0)
+            Core.requestCatalogCover(entryId)
+    }
+
     ColumnLayout {
         anchors.fill: parent
         anchors.rightMargin: MD.Token.spacing.small

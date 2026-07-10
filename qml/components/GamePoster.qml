@@ -23,8 +23,8 @@ Item {
         fillMode: Image.PreserveAspectCrop
         asynchronous: true
         cache: true
-        sourceSize.width: Math.max(1, Math.round(width))
-        sourceSize.height: Math.max(1, Math.round(height))
+        sourceSize.width: Math.min(240, Math.max(1, Math.round(width)))
+        sourceSize.height: Math.min(320, Math.max(1, Math.round(height)))
     }
 
     Rectangle {

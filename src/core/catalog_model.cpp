@@ -90,6 +90,26 @@ void CatalogModel::setEntries(QVector<CatalogEntry> entries)
     endResetModel();
 }
 
+bool CatalogModel::updateEntry(const CatalogEntry& entry)
+{
+    const int row = indexOfEntry(entry.id);
+    if (row < 0)
+        return false;
+    m_entries[row] = entry;
+    const QModelIndex idx = index(row);
+    emit dataChanged(idx, idx);
+    return true;
+}
+
+int CatalogModel::indexOfEntry(const QString& id) const
+{
+    for (int i = 0; i < m_entries.size(); ++i) {
+        if (m_entries.at(i).id == id)
+            return i;
+    }
+    return -1;
+}
+
 const CatalogEntry* CatalogModel::entryById(const QString& id) const
 {
     for (const auto& entry : m_entries) {

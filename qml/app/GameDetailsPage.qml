@@ -30,6 +30,11 @@ Item {
 
     signal backRequested()
 
+    onGameIdChanged: {
+        if (gameId.length > 0 && fromCatalog)
+            Core.enrichCatalogEntry(gameId)
+    }
+
     Flickable {
         id: flick
         anchors.fill: parent

@@ -16,9 +16,11 @@
 - g++, cmake, pkg-config
 
 ```bash
-sudo apt install build-essential cmake pkg-config \
+sudo apt install build-essential cmake pkg-config git-lfs \
   libtorrent-rasterbar-dev qt6-base-dev qt6-declarative-dev qt6-tools-dev
 ```
+
+`git-lfs` нужен для иконок Material (QmlMaterial хранит шрифты через LFS). `run.sh` подтянет их автоматически.
 
 ## Запуск
 

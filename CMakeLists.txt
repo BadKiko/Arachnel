@@ -33,6 +33,30 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(qml_material)
 
+# QmlMaterial icon fonts are Git LFS objects — pull before qml_material compiles qrc.
+set(_QM_FONT "${qml_material_SOURCE_DIR}/assets/MaterialSymbolsRounded.wght_400.opsz_24.fill_0.woff2")
+if(EXISTS "${_QM_FONT}")
+    file(READ "${_QM_FONT}" _QM_FONT_HEAD LIMIT 40)
+    if(_QM_FONT_HEAD MATCHES "^version https://git-lfs")
+        find_program(GIT_LFS_EXECUTABLE git-lfs)
+        if(GIT_LFS_EXECUTABLE)
+            execute_process(
+                COMMAND ${GIT_LFS_EXECUTABLE} pull
+                WORKING_DIRECTORY "${qml_material_SOURCE_DIR}"
+                RESULT_VARIABLE _QM_LFS_RESULT
+            )
+            if(NOT _QM_LFS_RESULT EQUAL 0)
+                message(WARNING "git lfs pull failed for QmlMaterial fonts; icons may be missing")
+            endif()
+        else()
+            message(WARNING "git-lfs not found; Material icon fonts may be missing")
+        endif()
+    endif()
+endif()
+unset(_QM_FONT)
+unset(_QM_FONT_HEAD)
+unset(_QM_LFS_RESULT)
+
 set(CMAKE_AUTOMOC ON)
 
 qt_add_executable(arachnel_app

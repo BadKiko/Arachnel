@@ -54,6 +54,8 @@ public:
     Q_INVOKABLE void checkUpdates();
     Q_INVOKABLE void cancelJob(const QString& jobId);
     Q_INVOKABLE void refreshCatalog(const QString& sourceId);
+    Q_INVOKABLE void requestCatalogCover(const QString& entryId);
+    Q_INVOKABLE void enrichCatalogEntry(const QString& entryId);
 
 signals:
     void lastActionChanged();
@@ -74,6 +76,8 @@ private:
     const CatalogEntry* findCatalogEntry(const QString& entryId) const;
     const CatalogComponent* findCatalogAddon(const CatalogEntry& entry,
                                              const QString& addonId) const;
+    void syncEntryToCatalogModel(const QString& entryId);
+    void applyCachedMetadata(CatalogEntry& entry) const;
 
     LibraryModel m_library;
     SourcePluginModel m_sources;
