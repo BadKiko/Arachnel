@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Templates as T
+import QtQuick.Controls
 
 import Qcm.Material as MD
 
@@ -12,136 +12,175 @@ ColumnLayout {
     spacing: 0
 
     readonly property int contentMargin: MD.Token.spacing.large
+    readonly property int pageHeight: 480
 
-    property bool applying: false
+    property string pendingSection: ""
+    property bool pendingCreateSource: false
+
+    readonly property string pageTitle: {
+        const item = stack.currentItem
+        if (!item)
+            return qsTr("Настройки")
+        if (item.pageTitle)
+            return item.pageTitle
+        return qsTr("Настройки")
+    }
 
     function syncFromStore() {
-        applying = true
         Appearance.apply()
-        paletteListView.currentIndex = Appearance.paletteType
-        applying = false
+        rebuildHub()
+
+        // While the sheet is sliding in, push targets without a second fade —
+        // otherwise sheet enter + page fade stack and feel jumpy.
+        if (pendingSection === "sources") {
+            pendingSection = ""
+            stack.navigatePush(sourcesComponent, {}, true)
+            if (pendingCreateSource) {
+                pendingCreateSource = false
+                const page = stack.navigatePush(sourceFormComponent, {}, true)
+                if (page)
+                    page.loadCreate()
+            }
+        } else if (pendingSection.length) {
+            const section = pendingSection
+            pendingSection = ""
+            if (section === "storage")
+                stack.navigatePush(storageComponent, {}, true)
+            else if (section === "appearance")
+                stack.navigatePush(appearanceComponent, {}, true)
+            else
+                openSection(section)
+        } else {
+            pendingCreateSource = false
+        }
     }
 
-    MD.DialogHeader {
-        Layout.fillWidth: true
-        title: qsTr("Внешний вид")
+    function prepareOpen(sectionId, createSource) {
+        pendingSection = sectionId || ""
+        pendingCreateSource = !!createSource
     }
 
-    ColumnLayout {
+    function rebuildHub() {
+        stack.navigateReset(hubComponent)
+    }
+
+    function openSection(sectionId) {
+        if (sectionId === "sources")
+            openSources()
+        else if (sectionId === "storage")
+            stack.navigatePush(storageComponent)
+        else if (sectionId === "appearance")
+            stack.navigatePush(appearanceComponent)
+    }
+
+    function openSources() {
+        stack.navigatePush(sourcesComponent)
+    }
+
+    function openSourceCreate() {
+        const page = stack.navigatePush(sourceFormComponent)
+        if (page)
+            page.loadCreate()
+    }
+
+    function openSourceEdit(pluginId, name, catalogUrl, description, sourceEnabled) {
+        const page = stack.navigatePush(sourceFormComponent)
+        if (page)
+            page.loadEdit(pluginId, name, catalogUrl, description, sourceEnabled)
+    }
+
+    function goBack() {
+        if (stack.canPop) {
+            stack.navigatePop()
+            return
+        }
+        root.closeSheet()
+    }
+
+    function resetOnClose() {
+        pendingSection = ""
+        pendingCreateSource = false
+        rebuildHub()
+    }
+
+    Component {
+        id: hubComponent
+        SettingsHubPage {
+            property string pageTitle: qsTr("Настройки")
+            contentMargin: root.contentMargin
+            onOpenSection: function (sectionId) { root.openSection(sectionId) }
+        }
+    }
+
+    Component {
+        id: sourcesComponent
+        SettingsSourcesPage {
+            property string pageTitle: qsTr("Источники")
+            contentMargin: root.contentMargin
+            onAddSourceRequested: root.openSourceCreate()
+            onEditSourceRequested: function (pluginId, name, catalogUrl, description, sourceEnabled) {
+                root.openSourceEdit(pluginId, name, catalogUrl, description, sourceEnabled)
+            }
+        }
+    }
+
+    Component {
+        id: sourceFormComponent
+        SettingsSourceFormPage {
+            property string pageTitle: editing ? qsTr("Изменить источник") : qsTr("Новый источник")
+            contentMargin: root.contentMargin
+            onSaved: stack.navigatePop()
+            onCancelled: stack.navigatePop()
+        }
+    }
+
+    Component {
+        id: storageComponent
+        SettingsStoragePage {
+            property string pageTitle: qsTr("Хранилище")
+            contentMargin: root.contentMargin
+        }
+    }
+
+    Component {
+        id: appearanceComponent
+        SettingsAppearancePage {
+            property string pageTitle: qsTr("Внешний вид")
+            contentMargin: root.contentMargin
+        }
+    }
+
+    RowLayout {
         Layout.fillWidth: true
-        Layout.leftMargin: contentMargin
+        Layout.leftMargin: MD.Token.spacing.small
         Layout.rightMargin: contentMargin
         Layout.topMargin: MD.Token.spacing.small
-        spacing: MD.Token.spacing.medium
+        spacing: MD.Token.spacing.extra_small
 
-        MD.Label {
-            Layout.fillWidth: true
-            text: qsTr("Тема и палитра Material 3 применяются ко всему приложению.")
-            color: MD.Token.color.on_surface_variant
-            wrapMode: Text.WordWrap
-            typescale: MD.Token.typescale.body_medium
-        }
-
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: MD.Token.spacing.medium
-
-            MD.Label {
-                text: MD.Token.isDarkTheme ? qsTr("Тёмная тема") : qsTr("Светлая тема")
-                color: MD.Token.color.on_surface_variant
-                typescale: MD.Token.typescale.label_large
-            }
-
-            MD.Switch {
-                checked: MD.Token.isDarkTheme
-                onCheckedChanged: {
-                    if (root.applying)
-                        return
-                    Appearance.setThemeMode(checked ? MD.Enum.Dark : MD.Enum.Light)
-                }
-            }
-
-            Item { Layout.fillWidth: true }
+        MD.IconButton {
+            mdState.type: MD.Enum.IBtStandard
+            icon.name: stack.depth > 1 ? MD.Token.icon.arrow_back : MD.Token.icon.close
+            onClicked: root.goBack()
         }
 
         MD.Label {
             Layout.fillWidth: true
-            text: qsTr("Палитра")
-            color: MD.Token.color.on_surface_variant
-            typescale: MD.Token.typescale.label_large
+            text: root.pageTitle
+            typescale: MD.Token.typescale.headline_small
+            elide: Text.ElideRight
         }
+    }
 
-        MD.HorizontalListView {
-            id: paletteListView
-            Layout.fillWidth: true
-            expand: true
-            spacing: MD.Token.spacing.small
-            implicitHeight: 40
-            model: MD.PaletteModel {}
-
-            MD.ActionGroup {
-                id: paletteActionGroup
-            }
-
-            delegate: MD.InputChip {
-                required property int index
-                required property var model
-
-                action: MD.Action {
-                    T.ActionGroup.group: paletteActionGroup
-                    icon.name: ""
-                    checkable: true
-                    checked: paletteListView.currentIndex === index
-                    text: model.name
-                    onTriggered: {
-                        if (root.applying)
-                            return
-                        paletteListView.currentIndex = index
-                        Appearance.setPaletteType(index)
-                    }
-                }
-            }
-        }
-
-        MD.AutoDivider {
-            Layout.fillWidth: true
-        }
-
-        MD.Label {
-            Layout.fillWidth: true
-            text: qsTr("Primary")
-            color: MD.Token.color.on_surface_variant
-            typescale: MD.Token.typescale.label_large
-        }
-
-        Grid {
-            Layout.alignment: Qt.AlignHCenter
-            Layout.topMargin: MD.Token.spacing.small
-            spacing: MD.Token.spacing.medium
-            rows: 2
-            columns: 5
-
-            Repeater {
-                model: AccentColors.palette
-
-                MD.ColorRadio {
-                    required property var modelData
-                    size: 32
-                    color: modelData.color
-                    checked: Appearance.accentColor === modelData.color
-                    onClicked: {
-                        if (root.applying)
-                            return
-                        Appearance.setAccentColor(modelData.color)
-                    }
-                }
-            }
-        }
+    PageNavigator {
+        id: stack
+        Layout.fillWidth: true
+        Layout.preferredHeight: root.pageHeight
+        clip: true
+        Component.onCompleted: rebuildHub()
     }
 
     MD.Divider {
         Layout.fillWidth: true
-        Layout.topMargin: MD.Token.spacing.medium
         Layout.leftMargin: contentMargin
         Layout.rightMargin: contentMargin
     }
@@ -152,6 +191,24 @@ ColumnLayout {
         Layout.rightMargin: contentMargin
         Layout.bottomMargin: MD.Token.spacing.large
         Layout.topMargin: MD.Token.spacing.small
+        // Keep footer height stable — toggling visible on «Назад» resizes the
+        // BottomSheet (childrenRect) and makes page fades look jumpy.
+        Layout.preferredHeight: 40
+
+        MD.Button {
+            opacity: stack.depth > 1 ? 1 : 0
+            enabled: stack.depth > 1
+            mdState.type: MD.Enum.BtText
+            text: qsTr("Назад")
+            onClicked: root.goBack()
+
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: MD.Token.duration.short4
+                    easing: MD.Token.easing.emphasized_decelerate
+                }
+            }
+        }
 
         MD.Button {
             mdState.type: MD.Enum.BtText

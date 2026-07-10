@@ -6,7 +6,21 @@
 
 **Видение и отличия:** [docs/VISION.md](docs/VISION.md)  
 **Архитектура и контракт плагинов:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)  
-**Карта движения (roadmap):** [docs/ROADMAP.md](docs/ROADMAP.md)
+**Карта движения (roadmap):** [docs/ROADMAP.md](docs/ROADMAP.md)  
+**Формат каталога (JSON/magnet):** [docs/CATALOG_FORMAT.md](docs/CATALOG_FORMAT.md)
+
+## Зависимости сборки
+
+- Qt 6.8+ (Core, Gui, Network, Qml, Quick)
+- libtorrent-rasterbar (`libtorrent-rasterbar-dev`)
+- g++, cmake, pkg-config
+
+```bash
+sudo apt install build-essential cmake pkg-config git-lfs \
+  libtorrent-rasterbar-dev qt6-base-dev qt6-declarative-dev qt6-tools-dev
+```
+
+`git-lfs` нужен для иконок Material (QmlMaterial хранит шрифты через LFS). `run.sh` подтянет их автоматически.
 
 ## Запуск
 
@@ -34,7 +48,7 @@ docs/                видение и архитектура
 | Новая страница UI | `qml/app/<Name>Page.qml` → `AppWindow.qml` |
 | Настройки | `qml/settings/` |
 | Тема | `qml/theme/` |
-| Логика ядра | `src/core/` (планируется) |
+| Логика ядра | `src/core/` |
 | Плагин источника | `plugins/<source-id>/` |
 | C++ backend | `src/` + регистрация в `main.cpp` |
 

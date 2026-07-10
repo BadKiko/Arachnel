@@ -5,8 +5,16 @@
 #include <QAbstractListModel>
 #include <QString>
 #include <QVariantMap>
+#include <QVector>
 
 namespace arachnel::core {
+
+struct InstalledComponent {
+    QString id;
+    QString title;
+    QString uploadDate;
+    bool installed = false;
+};
 
 struct LibraryGame {
     QString id;
@@ -21,11 +29,16 @@ struct LibraryGame {
     QString sizeLabel;
     InstallKind installKind = InstallKind::PortableArchive;
     bool hasUpdate = false;
+    QString uploadDate;
+    QString magnetUri;
+    QString downloadPath;
+    QVector<InstalledComponent> components;
 };
 
 class LibraryModel : public QAbstractListModel
 {
     Q_OBJECT
+    Q_PROPERTY(int count READ count NOTIFY countChanged)
 
 public:
     enum Role {
@@ -42,6 +55,10 @@ public:
         InstallKindRole,
         InstallKindLabelRole,
         HasUpdateRole,
+        UploadDateRole,
+        DownloadPathRole,
+        ComponentCountRole,
+        InstalledComponentCountRole,
     };
     Q_ENUM(Role)
 
@@ -51,11 +68,16 @@ public:
     QVariant data(const QModelIndex& index, int role) const override;
     QHash<int, QByteArray> roleNames() const override;
 
+    int count() const { return m_games.size(); }
+
     void setGames(QVector<LibraryGame> games);
     const LibraryGame* gameById(const QString& id) const;
     Q_INVOKABLE QVariantMap gameAt(int row) const;
     Q_INVOKABLE QVariantMap gameInfo(const QString& id) const;
     Q_INVOKABLE int updateCount() const;
+
+signals:
+    void countChanged();
 
 private:
     QVariantMap toMap(const LibraryGame& game) const;
