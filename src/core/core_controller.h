@@ -2,6 +2,7 @@
 
 #include "catalog_model.h"
 #include "job_model.h"
+#include "job_store.h"
 #include "library_store.h"
 #include "library_model.h"
 #include "settings_store.h"
@@ -56,11 +57,14 @@ public:
     Q_INVOKABLE void updateCatalogEntry(const QString& entryId);
     Q_INVOKABLE void checkUpdates();
     Q_INVOKABLE void cancelJob(const QString& jobId);
+    Q_INVOKABLE void toggleJobPause(const QString& jobId);
+    Q_INVOKABLE void clearFinishedJobs();
     Q_INVOKABLE void refreshCatalog(const QString& sourceId);
     Q_INVOKABLE void requestCatalogCover(const QString& entryId);
     Q_INVOKABLE void cancelCatalogCover(const QString& entryId);
     Q_INVOKABLE void invalidateCatalogCover(const QString& entryId);
     Q_INVOKABLE void enrichCatalogEntry(const QString& entryId);
+    void prepareShutdown();
 
 signals:
     void lastActionChanged();
@@ -94,6 +98,7 @@ private:
     JobModel m_jobs;
     SettingsStore m_settings;
     LibraryStore m_libraryStore;
+    JobStore m_jobStore;
     CatalogFeedLoader* m_catalogLoader = nullptr;
     GameMetadataService* m_metadataService = nullptr;
     CoverImageCache* m_coverCache = nullptr;

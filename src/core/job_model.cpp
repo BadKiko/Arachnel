@@ -1,8 +1,37 @@
 #include "job_model.h"
 
 #include "job_kind.h"
+#include "job_status.h"
 
 namespace arachnel::core {
+
+namespace {
+
+QVariantMap jobToMap(const JobEntry& job)
+{
+    return {
+        {QStringLiteral("jobId"), job.id},
+        {QStringLiteral("title"), job.title},
+        {QStringLiteral("status"), job.status},
+        {QStringLiteral("statusLabel"), jobStatusLabel(job.status)},
+        {QStringLiteral("progress"), job.progress},
+        {QStringLiteral("kind"), static_cast<int>(job.kind)},
+        {QStringLiteral("kindLabel"), jobKindLabel(job.kind)},
+        {QStringLiteral("detail"), job.detail},
+        {QStringLiteral("bytesDownloaded"), job.bytesDownloaded},
+        {QStringLiteral("totalBytes"), job.totalBytes},
+        {QStringLiteral("entryId"), job.entryId},
+        {QStringLiteral("sourceId"), job.sourceId},
+        {QStringLiteral("coverUrl"), job.coverUrl},
+        {QStringLiteral("savePath"), job.savePath},
+        {QStringLiteral("createdAt"), job.createdAt},
+        {QStringLiteral("completedAt"), job.completedAt},
+        {QStringLiteral("inProgress"), isJobInProgress(job.status)},
+        {QStringLiteral("paused"), isJobPaused(job.status)},
+    };
+}
+
+} // namespace
 
 JobModel::JobModel(QObject* parent)
     : QAbstractListModel(parent)
@@ -45,6 +74,18 @@ QVariant JobModel::data(const QModelIndex& index, int role) const
         return job.entryId;
     case SourceIdRole:
         return job.sourceId;
+    case StatusLabelRole:
+        return jobStatusLabel(job.status);
+    case MagnetUriRole:
+        return job.magnetUri;
+    case SavePathRole:
+        return job.savePath;
+    case CoverUrlRole:
+        return job.coverUrl;
+    case CreatedAtRole:
+        return job.createdAt;
+    case CompletedAtRole:
+        return job.completedAt;
     default:
         return {};
     }
@@ -64,7 +105,56 @@ QHash<int, QByteArray> JobModel::roleNames() const
         {TotalBytesRole, "totalBytes"},
         {EntryIdRole, "entryId"},
         {SourceIdRole, "sourceId"},
+        {StatusLabelRole, "statusLabel"},
+        {MagnetUriRole, "magnetUri"},
+        {SavePathRole, "savePath"},
+        {CoverUrlRole, "coverUrl"},
+        {CreatedAtRole, "createdAt"},
+        {CompletedAtRole, "completedAt"},
     };
+}
+
+int JobModel::activeCount() const
+{
+    int count = 0;
+    for (const auto& job : m_jobs) {
+        if (isJobRunning(job.status))
+            ++count;
+    }
+    return count;
+}
+
+QVariantMap JobModel::jobForEntry(const QString& entryId) const
+{
+    if (entryId.isEmpty())
+        return {};
+
+    const JobEntry* activeMatch = nullptr;
+    const JobEntry* anyMatch = nullptr;
+    for (const auto& job : m_jobs) {
+        if (job.entryId != entryId)
+            continue;
+        anyMatch = &job;
+        if (isJobInProgress(job.status)) {
+            activeMatch = &job;
+            break;
+        }
+    }
+
+    if (activeMatch)
+        return jobToMap(*activeMatch);
+    if (anyMatch)
+        return jobToMap(*anyMatch);
+    return {};
+}
+
+QVariantMap JobModel::primaryActiveJob() const
+{
+    for (const auto& job : m_jobs) {
+        if (isJobInProgress(job.status))
+            return jobToMap(job);
+    }
+    return {};
 }
 
 void JobModel::setJobs(QVector<JobEntry> jobs)
@@ -73,6 +163,7 @@ void JobModel::setJobs(QVector<JobEntry> jobs)
     m_jobs = std::move(jobs);
     endResetModel();
     emit countChanged();
+    emit jobsChanged();
 }
 
 void JobModel::addJob(JobEntry job)
@@ -82,6 +173,7 @@ void JobModel::addJob(JobEntry job)
     m_jobs.append(std::move(job));
     endInsertRows();
     emit countChanged();
+    emit jobsChanged();
 }
 
 void JobModel::updateJob(const JobEntry& job)
@@ -89,9 +181,14 @@ void JobModel::updateJob(const JobEntry& job)
     const int row = indexOfJob(job.id);
     if (row < 0)
         return;
+
+    const int prevActive = activeCount();
     m_jobs[row] = job;
     const QModelIndex idx = index(row);
     emit dataChanged(idx, idx);
+    if (activeCount() != prevActive)
+        emit countChanged();
+    emit jobsChanged();
 }
 
 void JobModel::updateJob(const QString& jobId, const QString& status, int progress)
@@ -103,6 +200,7 @@ void JobModel::updateJob(const QString& jobId, const QString& status, int progre
     m_jobs[row].progress = progress;
     const QModelIndex idx = index(row);
     emit dataChanged(idx, idx, {StatusRole, ProgressRole});
+    emit jobsChanged();
 }
 
 void JobModel::removeJob(const QString& jobId)
@@ -114,6 +212,7 @@ void JobModel::removeJob(const QString& jobId)
     m_jobs.removeAt(row);
     endRemoveRows();
     emit countChanged();
+    emit jobsChanged();
 }
 
 int JobModel::indexOfJob(const QString& jobId) const

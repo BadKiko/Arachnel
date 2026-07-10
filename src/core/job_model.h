@@ -4,6 +4,7 @@
 
 #include <QAbstractListModel>
 #include <QString>
+#include <QVariantMap>
 
 namespace arachnel::core {
 
@@ -18,12 +19,18 @@ struct JobEntry {
     qint64 totalBytes = 0;
     QString entryId;
     QString sourceId;
+    QString magnetUri;
+    QString savePath;
+    QString coverUrl;
+    QString createdAt;
+    QString completedAt;
 };
 
 class JobModel : public QAbstractListModel
 {
     Q_OBJECT
     Q_PROPERTY(int count READ count NOTIFY countChanged)
+    Q_PROPERTY(int activeCount READ activeCount NOTIFY countChanged)
 
 public:
     enum Role {
@@ -38,6 +45,12 @@ public:
         TotalBytesRole,
         EntryIdRole,
         SourceIdRole,
+        StatusLabelRole,
+        MagnetUriRole,
+        SavePathRole,
+        CoverUrlRole,
+        CreatedAtRole,
+        CompletedAtRole,
     };
     Q_ENUM(Role)
 
@@ -48,6 +61,10 @@ public:
     QHash<int, QByteArray> roleNames() const override;
 
     int count() const { return m_jobs.size(); }
+    int activeCount() const;
+
+    Q_INVOKABLE QVariantMap jobForEntry(const QString& entryId) const;
+    Q_INVOKABLE QVariantMap primaryActiveJob() const;
 
     void setJobs(QVector<JobEntry> jobs);
     void addJob(JobEntry job);
@@ -58,6 +75,7 @@ public:
 
 signals:
     void countChanged();
+    void jobsChanged();
 
 private:
     QVector<JobEntry> m_jobs;

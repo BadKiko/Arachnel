@@ -38,6 +38,7 @@ MD.ApplicationWindow {
     property string detailsGameId: ""
     property bool detailsFromCatalog: false
     property string catalogSourceId: Core.sources.firstEnabledId
+    readonly property int downloadBadge: Core.jobs.activeCount
 
     function goToPage(index) {
         if (pageStack.depth > 1)
@@ -82,6 +83,11 @@ MD.ApplicationWindow {
         {
             name: qsTr("Каталог"),
             icon: MD.Token.icon.storefront
+        },
+        {
+            name: qsTr("Загрузки"),
+            icon: MD.Token.icon.downloading,
+            navIndex: 2
         }
     ]
 
@@ -109,6 +115,7 @@ MD.ApplicationWindow {
                 transformOrigin: Item.Center
                 onOpenGame: function (id) { root.openGameDetails(id, false) }
                 onOpenCatalog: root.goToPage(1)
+                onOpenDownloads: root.goToPage(2)
                 onOpenSettings: settingsSheet.openSettings()
                 onAddSourceRequested: settingsSheet.openSources(true)
 
@@ -152,6 +159,28 @@ MD.ApplicationWindow {
                     }
                 }
             }
+
+            DownloadsPage {
+                anchors.fill: parent
+                opacity: mainPages.pageIndex === 2 ? 1 : 0
+                scale: mainPages.pageIndex === 2 ? 1 : 0.97
+                enabled: mainPages.pageIndex === 2 && opacity > 0.99
+                transformOrigin: Item.Center
+
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: pageStack.enterDuration
+                        easing: MD.Token.easing.emphasized_decelerate
+                    }
+                }
+                Behavior on scale {
+                    NumberAnimation {
+                        duration: pageStack.enterDuration
+                        easing.type: Easing.OutBack
+                        easing.overshoot: 1.2
+                    }
+                }
+            }
         }
     }
 
@@ -172,6 +201,7 @@ MD.ApplicationWindow {
             Layout.fillHeight: true
             model: root.navModel
             currentIndex: root.pageIndex
+            downloadBadge: root.downloadBadge
             onActivated: function (index) { root.goToPage(index) }
             onSettingsRequested: settingsSheet.openSettings()
         }

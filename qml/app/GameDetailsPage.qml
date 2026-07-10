@@ -25,6 +25,39 @@ Item {
     }
 
     readonly property bool installed: !!(info.installed)
+
+    property var downloadJob: ({})
+
+    readonly property bool downloadPaused: downloadJob.status === "paused" || !!downloadJob.paused
+    readonly property bool downloadActive: !!(downloadJob.inProgress) && !downloadPaused
+    readonly property bool downloadCompleted: downloadJob.status === "completed"
+    readonly property bool showDownloadProgress: !!(downloadJob.inProgress) || downloadCompleted
+
+    function refreshDownloadJob() {
+        downloadJob = Core.jobs.jobForEntry(root.gameId)
+    }
+
+    Connections {
+        target: Core.jobs
+        function onJobsChanged() { root.refreshDownloadJob() }
+    }
+
+    onGameIdChanged: {
+        refreshDownloadJob()
+        maybeEnrich()
+    }
+    onFromCatalogChanged: maybeEnrich()
+
+    function maybeEnrich() {
+        if (gameId.length > 0 && fromCatalog)
+            Core.enrichCatalogEntry(gameId)
+    }
+
+    Component.onCompleted: {
+        refreshDownloadJob()
+        maybeEnrich()
+    }
+
     readonly property string sourceLabel: {
         const sid = info.sourceId ?? ""
         if (!sid.length)
@@ -35,16 +68,6 @@ Item {
     }
 
     signal backRequested()
-
-    onGameIdChanged: root.maybeEnrich()
-    onFromCatalogChanged: root.maybeEnrich()
-
-    function maybeEnrich() {
-        if (gameId.length > 0 && fromCatalog)
-            Core.enrichCatalogEntry(gameId)
-    }
-
-    Component.onCompleted: root.maybeEnrich()
 
     Flickable {
         id: flick
@@ -168,26 +191,34 @@ Item {
                             onClicked: Core.launchGame(root.gameId)
                         }
 
-                        MD.Button {
-                            visible: root.fromCatalog || !root.installed
-                            text: qsTr("Скачать торрент")
-                            icon.name: MD.Token.icon.download
-                            mdState.type: MD.Enum.BtFilled
-                            onClicked: Core.installCatalogEntry(root.gameId)
+                        DownloadProgressButton {
+                            visible: (root.fromCatalog || !root.installed || root.showDownloadProgress)
+                                     && !(root.installed && !!(root.info.installPath && root.info.installPath.length))
+                            progress: root.downloadJob.progress ?? 0
+                            downloading: root.downloadActive
+                            paused: root.downloadPaused
+                            completed: root.downloadCompleted
+                            onActivated: Core.installCatalogEntry(root.gameId)
+                            onPauseToggleRequested: Core.toggleJobPause(root.downloadJob.jobId)
                         }
 
                         MD.Button {
-                            visible: root.installed && !!(root.info.hasUpdate)
+                            visible: root.installed && !!(root.info.hasUpdate) && !root.downloadJob.inProgress
                             text: qsTr("Обновить")
                             icon.name: MD.Token.icon.update
                             mdState.type: MD.Enum.BtFilledTonal
-                            onClicked: {
-                                if (root.fromCatalog)
-                                    Core.updateCatalogEntry(root.gameId)
-                                else
-                                    Core.updateCatalogEntry(root.gameId)
-                            }
+                            onClicked: Core.updateCatalogEntry(root.gameId)
                         }
+                    }
+
+                    MD.Label {
+                        Layout.fillWidth: true
+                        visible: root.showDownloadProgress && !root.downloadCompleted && !!(root.downloadJob.detail)
+                        text: root.downloadJob.detail ?? ""
+                        color: MD.Token.color.on_surface_variant
+                        typescale: MD.Token.typescale.label_medium
+                        elide: Text.ElideRight
+                        maximumLineCount: 1
                     }
                 }
             }

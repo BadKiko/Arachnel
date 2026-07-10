@@ -68,6 +68,8 @@ qt_add_executable(arachnel_app
     src/core/source_plugin_model.cpp
     src/core/catalog_model.cpp
     src/core/job_model.cpp
+    src/core/job_status.cpp
+    src/core/job_store.cpp
     src/core/settings_store.cpp
     src/core/library_store.cpp
     src/core/catalog_feed_loader.cpp
