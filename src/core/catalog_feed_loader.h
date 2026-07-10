@@ -3,6 +3,7 @@
 #include "catalog_types.h"
 
 #include <QObject>
+#include <QPointer>
 #include <QUrl>
 #include <QVector>
 
@@ -26,8 +27,11 @@ signals:
 
 private:
     void handleFinished(QNetworkReply* reply);
+    void abortActiveReply();
 
     QNetworkAccessManager* m_network = nullptr;
+    QPointer<QNetworkReply> m_activeReply;
+    quint64 m_requestSerial = 0;
 };
 
 QVector<CatalogEntry> parseCatalogFeed(const QByteArray& payload, const QString& sourceId);

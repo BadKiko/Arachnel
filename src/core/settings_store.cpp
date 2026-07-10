@@ -2,6 +2,7 @@
 
 #include <QDir>
 #include <QFile>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QStandardPaths>
@@ -12,8 +13,7 @@ namespace {
 
 QString settingsFilePath()
 {
-    const QString dir =
-        QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    const QString dir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     QDir().mkpath(dir);
     return dir + QStringLiteral("/settings.json");
 }
@@ -28,10 +28,41 @@ QString defaultDownloadsRoot()
     return QDir::homePath() + QStringLiteral("/Downloads/Arachnel");
 }
 
-QString defaultFreetpCatalogUrl()
+SourcePluginInfo sourceFromJson(const QJsonObject& obj)
 {
-    return QStringLiteral(
-        "https://gitlab.com/BadKiko/freetp-hydra-link/-/raw/main/games.json?ref_type=heads");
+    SourcePluginInfo info;
+    info.id = obj.value(QStringLiteral("id")).toString();
+    info.name = obj.value(QStringLiteral("name")).toString();
+    info.description = obj.value(QStringLiteral("description")).toString();
+    info.catalogUrl = obj.value(QStringLiteral("catalogUrl")).toString();
+    info.iconName = obj.value(QStringLiteral("iconName")).toString(QStringLiteral("storefront"));
+    info.enabled = obj.value(QStringLiteral("enabled")).toBool(true);
+
+    const QJsonArray caps = obj.value(QStringLiteral("capabilities")).toArray();
+    for (const QJsonValue& cap : caps)
+        info.capabilities.append(cap.toString());
+    if (info.capabilities.isEmpty()) {
+        info.capabilities = {QStringLiteral("search"), QStringLiteral("install"),
+                             QStringLiteral("update")};
+    }
+    return info;
+}
+
+QJsonObject sourceToJson(const SourcePluginInfo& info)
+{
+    QJsonObject obj;
+    obj.insert(QStringLiteral("id"), info.id);
+    obj.insert(QStringLiteral("name"), info.name);
+    obj.insert(QStringLiteral("description"), info.description);
+    obj.insert(QStringLiteral("catalogUrl"), info.catalogUrl);
+    obj.insert(QStringLiteral("iconName"), info.iconName);
+    obj.insert(QStringLiteral("enabled"), info.enabled);
+
+    QJsonArray caps;
+    for (const QString& cap : info.capabilities)
+        caps.append(cap);
+    obj.insert(QStringLiteral("capabilities"), caps);
+    return obj;
 }
 
 } // namespace
@@ -40,14 +71,29 @@ SettingsStore::SettingsStore(QObject* parent)
     : QObject(parent)
     , m_libraryRoot(defaultLibraryRoot())
     , m_downloadsRoot(defaultDownloadsRoot())
-    , m_freetpCatalogUrl(defaultFreetpCatalogUrl())
+    , m_sources(defaultSources())
 {
+}
+
+void SettingsStore::setSources(QVector<SourcePluginInfo> sources)
+{
+    m_sources = std::move(sources);
+    emit sourcesChanged();
+    save();
+}
+
+void SettingsStore::persistSources(QVector<SourcePluginInfo> sources)
+{
+    m_sources = std::move(sources);
+    save();
 }
 
 QString SettingsStore::catalogUrlForSource(const QString& sourceId) const
 {
-    if (sourceId == QStringLiteral("freetp"))
-        return m_freetpCatalogUrl;
+    for (const auto& source : m_sources) {
+        if (source.id == sourceId)
+            return source.catalogUrl;
+    }
     return {};
 }
 
@@ -79,33 +125,58 @@ void SettingsStore::setDownloadsRoot(const QString& path)
     save();
 }
 
-void SettingsStore::setFreetpCatalogUrl(const QString& url)
-{
-    if (m_freetpCatalogUrl == url)
-        return;
-    m_freetpCatalogUrl = url;
-    emit freetpCatalogUrlChanged();
-    save();
-}
-
 void SettingsStore::load()
 {
     QFile file(settingsFilePath());
-    if (!file.open(QIODevice::ReadOnly))
+    if (!file.open(QIODevice::ReadOnly)) {
+        m_sources.clear();
+        emit libraryRootChanged();
+        emit downloadsRootChanged();
+        emit sourcesChanged();
         return;
+    }
 
     const QJsonObject obj = QJsonDocument::fromJson(file.readAll()).object();
     if (obj.contains(QStringLiteral("libraryRoot")))
         m_libraryRoot = obj.value(QStringLiteral("libraryRoot")).toString(m_libraryRoot);
     if (obj.contains(QStringLiteral("downloadsRoot")))
         m_downloadsRoot = obj.value(QStringLiteral("downloadsRoot")).toString(m_downloadsRoot);
-    if (obj.contains(QStringLiteral("freetpCatalogUrl")))
-        m_freetpCatalogUrl =
-            obj.value(QStringLiteral("freetpCatalogUrl")).toString(m_freetpCatalogUrl);
+
+    QVector<SourcePluginInfo> loaded;
+    const QJsonArray sources = obj.value(QStringLiteral("sources")).toArray();
+    for (const QJsonValue& value : sources) {
+        SourcePluginInfo info = sourceFromJson(value.toObject());
+        if (!info.id.isEmpty() && !info.name.isEmpty())
+            loaded.append(std::move(info));
+    }
+
+    // Legacy: only promote old FreeTP URL field if the user actually had one configured.
+    bool migrated = false;
+    if (loaded.isEmpty()) {
+        const QString legacyUrl = obj.value(QStringLiteral("freetpCatalogUrl")).toString().trimmed();
+        if (!legacyUrl.isEmpty()) {
+            SourcePluginInfo freetp;
+            freetp.id = QStringLiteral("freetp");
+            freetp.name = QStringLiteral("FreeTP");
+            freetp.description =
+                QStringLiteral("Торрент-каталог FreeTP — magnet-ссылки и дополнения");
+            freetp.catalogUrl = legacyUrl;
+            freetp.iconName = QStringLiteral("storefront");
+            freetp.enabled = true;
+            freetp.capabilities = {QStringLiteral("search"), QStringLiteral("install"),
+                                   QStringLiteral("update")};
+            loaded.append(std::move(freetp));
+            migrated = true;
+        }
+    }
+
+    m_sources = std::move(loaded);
+    if (migrated)
+        save();
 
     emit libraryRootChanged();
     emit downloadsRootChanged();
-    emit freetpCatalogUrlChanged();
+    emit sourcesChanged();
 }
 
 void SettingsStore::save()
@@ -113,7 +184,11 @@ void SettingsStore::save()
     QJsonObject obj;
     obj.insert(QStringLiteral("libraryRoot"), m_libraryRoot);
     obj.insert(QStringLiteral("downloadsRoot"), m_downloadsRoot);
-    obj.insert(QStringLiteral("freetpCatalogUrl"), m_freetpCatalogUrl);
+
+    QJsonArray sources;
+    for (const auto& source : m_sources)
+        sources.append(sourceToJson(source));
+    obj.insert(QStringLiteral("sources"), sources);
 
     QFile file(settingsFilePath());
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate))

@@ -31,8 +31,10 @@ CoreController::CoreController(QObject* parent)
     : QObject(parent)
 {
     initializeServices();
-    loadSources();
     m_settings.load();
+    syncSourcesFromSettings();
+    connect(&m_sources, &SourcePluginModel::sourcesChanged, this,
+            &CoreController::persistSourcesToSettings);
     m_libraryStore.load();
     syncLibraryFromStore();
 }
@@ -54,9 +56,11 @@ void CoreController::initializeServices()
                 for (auto& entry : m_catalogCache)
                     applyCachedMetadata(entry);
 
-                setCatalogLoading(false);
-                setCatalogStatus(QStringLiteral("Каталог готов · %1 игр").arg(entries.size()));
+                // Model first, then status/loading — otherwise QML can show
+                // "Каталог готов · N" with stale "Найдено: 0" / empty state.
                 applyCatalogFilter(sourceId, m_activeQuery);
+                setCatalogStatus(QStringLiteral("Каталог готов · %1 игр").arg(entries.size()));
+                setCatalogLoading(false);
             });
 
     connect(m_catalogLoader, &CatalogFeedLoader::feedFailed, this,
@@ -148,18 +152,14 @@ void CoreController::initializeServices()
             });
 }
 
-void CoreController::loadSources()
+void CoreController::syncSourcesFromSettings()
 {
-    m_sources.setPlugins({
-        {QStringLiteral("freetp"),
-         QStringLiteral("FreeTP"),
-         QStringLiteral("Торрент-каталог FreeTP, magnet-ссылки, дополнения"),
-         {QStringLiteral("search"), QStringLiteral("install"), QStringLiteral("update")}},
-        {QStringLiteral("online-fix"),
-         QStringLiteral("Online-Fix"),
-         QStringLiteral("Portable-архивы (плагин в разработке)"),
-         {QStringLiteral("search"), QStringLiteral("install"), QStringLiteral("update")}},
-    });
+    m_sources.setPlugins(m_settings.sources());
+}
+
+void CoreController::persistSourcesToSettings()
+{
+    m_settings.persistSources(m_sources.plugins());
 }
 
 void CoreController::syncLibraryFromStore()
@@ -230,7 +230,7 @@ void CoreController::applyCachedMetadata(CatalogEntry& entry) const
         entry.description = metadata.description;
     if (!metadata.genres.isEmpty())
         entry.genres = metadata.genres;
-    entry.metadataPending = entry.coverUrl.isEmpty();
+    // Leave metadataPending alone — it tracks an in-flight/queued fetch, not "missing cover".
 }
 
 void CoreController::syncEntryToCatalogModel(const QString& entryId)
@@ -246,9 +246,58 @@ void CoreController::syncEntryToCatalogModel(const QString& entryId)
 
 void CoreController::requestCatalogCover(const QString& entryId)
 {
-    const CatalogEntry* entry = findCatalogEntry(entryId);
-    if (!entry || !entry->coverUrl.isEmpty())
+    CatalogEntry* entry = nullptr;
+    for (auto& candidate : m_catalogCache) {
+        if (candidate.id == entryId) {
+            entry = &candidate;
+            break;
+        }
+    }
+    if (!entry)
         return;
+    if (entry->coverUrl.contains(QStringLiteral("library_capsule"))
+        || entry->coverUrl.contains(QStringLiteral("library_600x900")))
+        return;
+
+    if (!entry->metadataPending) {
+        entry->metadataPending = true;
+        syncEntryToCatalogModel(entryId);
+    }
+    m_metadataService->queueFetch(entryId, entry->title, MetadataFetchMode::CoverOnly);
+}
+
+void CoreController::cancelCatalogCover(const QString& entryId)
+{
+    if (!m_metadataService->cancelPending(entryId))
+        return;
+
+    for (auto& entry : m_catalogCache) {
+        if (entry.id != entryId)
+            continue;
+        if (!entry.metadataPending)
+            break;
+        entry.metadataPending = false;
+        syncEntryToCatalogModel(entryId);
+        break;
+    }
+}
+
+void CoreController::invalidateCatalogCover(const QString& entryId)
+{
+    CatalogEntry* entry = nullptr;
+    for (auto& candidate : m_catalogCache) {
+        if (candidate.id == entryId) {
+            entry = &candidate;
+            break;
+        }
+    }
+    if (!entry)
+        return;
+
+    m_metadataService->clearCachedCover(entry->title);
+    entry->coverUrl.clear();
+    entry->metadataPending = true;
+    syncEntryToCatalogModel(entryId);
     m_metadataService->queueFetch(entryId, entry->title, MetadataFetchMode::CoverOnly);
 }
 
@@ -295,7 +344,7 @@ void CoreController::launchGame(const QString& gameId)
 
 void CoreController::refreshCatalog(const QString& sourceId)
 {
-    const QString url = m_settings.catalogUrlForSource(sourceId);
+    const QString url = m_sources.catalogUrlFor(sourceId);
     if (url.isEmpty()) {
         setCatalogStatus(QStringLiteral("Для источника %1 не задан URL каталога").arg(sourceId));
         return;
@@ -304,14 +353,22 @@ void CoreController::refreshCatalog(const QString& sourceId)
     m_activeSourceId = sourceId;
     setCatalogLoading(true);
     setCatalogStatus(QStringLiteral("Загрузка каталога…"));
+    m_catalog.clear();
+    m_catalogCache.clear();
     m_catalogLoader->loadFeed(QUrl(url), sourceId);
 }
 
 void CoreController::searchCatalog(const QString& sourceId, const QString& query)
 {
-    if (!m_sources.pluginById(sourceId)) {
+    const SourcePluginInfo* source = m_sources.pluginById(sourceId);
+    if (!source) {
         m_catalog.clear();
         setLastAction(QStringLiteral("Неизвестный источник: %1").arg(sourceId));
+        return;
+    }
+    if (!source->enabled) {
+        m_catalog.clear();
+        setCatalogStatus(QStringLiteral("Источник «%1» выключен в настройках").arg(source->name));
         return;
     }
 
@@ -391,7 +448,12 @@ void CoreController::updateCatalogEntry(const QString& entryId)
 void CoreController::checkUpdates()
 {
     if (m_catalogCache.isEmpty()) {
-        refreshCatalog(QStringLiteral("freetp"));
+        const QString sourceId = m_sources.firstEnabledId();
+        if (sourceId.isEmpty()) {
+            setLastAction(QStringLiteral("Нет включённых источников каталога"));
+            return;
+        }
+        refreshCatalog(sourceId);
         setLastAction(QStringLiteral("Сначала загружаем каталог для проверки обновлений…"));
         return;
     }

@@ -88,6 +88,7 @@ void CatalogModel::setEntries(QVector<CatalogEntry> entries)
     beginResetModel();
     m_entries = std::move(entries);
     endResetModel();
+    emit countChanged();
 }
 
 bool CatalogModel::updateEntry(const CatalogEntry& entry)
@@ -182,6 +183,7 @@ void CatalogModel::clear()
     beginResetModel();
     m_entries.clear();
     endResetModel();
+    emit countChanged();
 }
 
 } // namespace arachnel::core

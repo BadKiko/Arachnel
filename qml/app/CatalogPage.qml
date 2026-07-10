@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Controls
 
 import Arachnel.Core 1.0
 import Qcm.Material as MD
@@ -7,166 +8,273 @@ import Qcm.Material as MD
 Item {
     id: root
 
-    readonly property int minCardWidth: 160
-    readonly property int gridSpacing: MD.Token.spacing.medium
-    readonly property int metaHeight: 64
-    property string selectedSourceId: "freetp"
+    readonly property int cellWidth: 176
+    readonly property int cellHeight: 284
+    readonly property int cardWidth: 160
+    readonly property int cardHeight: 268
+    readonly property int pageMargin: MD.Token.spacing.large
+    readonly property int cardRadius: MD.Token.shape.corner.extra_large
+    readonly property bool noSources: Core.sources.enabledCount === 0
+    readonly property bool catalogEmpty: !Core.catalogLoading && Core.catalog.count === 0
+
+    property string selectedSourceId: Core.sources.firstEnabledId
 
     signal openGame(string entryId)
+    signal openSettings()
+    signal addSourceRequested()
 
-    Component.onCompleted: Core.searchCatalog(selectedSourceId, "")
+    function ensureValidSource() {
+        if (Core.sources.isSourceEnabled(root.selectedSourceId))
+            return
+        const first = Core.sources.firstEnabledId
+        if (!first.length) {
+            root.selectedSourceId = ""
+            return
+        }
+        root.selectedSourceId = first
+        Core.searchCatalog(first, "")
+    }
 
-    Flickable {
-        id: flick
+    Component.onCompleted: {
+        if (selectedSourceId.length)
+            Core.searchCatalog(selectedSourceId, "")
+    }
+
+    Connections {
+        target: Core.sources
+        function onSourcesChanged() {
+            root.ensureValidSource()
+        }
+    }
+
+    ColumnLayout {
         anchors.fill: parent
-        contentWidth: width
-        contentHeight: contentCol.implicitHeight + MD.Token.spacing.large
-        clip: true
-        boundsBehavior: Flickable.StopAtBounds
+        spacing: MD.Token.spacing.medium
+        visible: !root.noSources
 
         ColumnLayout {
-            id: contentCol
-            width: flick.width
-            spacing: MD.Token.spacing.large
+            Layout.fillWidth: true
+            Layout.leftMargin: pageMargin
+            Layout.rightMargin: pageMargin
+            Layout.topMargin: MD.Token.spacing.medium
+            spacing: 4
 
-            ColumnLayout {
-                Layout.fillWidth: true
-                Layout.leftMargin: MD.Token.spacing.large
-                Layout.rightMargin: MD.Token.spacing.large
-                Layout.topMargin: MD.Token.spacing.medium
-                spacing: 4
-
-                MD.Label {
-                    text: qsTr("Каталог")
-                    typescale: MD.Token.typescale.headline_medium
-                }
-
-                MD.Label {
-                    Layout.fillWidth: true
-                    text: qsTr("Источник определяет способ установки — у каждого плагина свой пайплайн.")
-                    wrapMode: Text.WordWrap
-                    color: MD.Token.color.on_surface_variant
-                    typescale: MD.Token.typescale.body_medium
-                }
-            }
-
-            Flow {
-                Layout.fillWidth: true
-                Layout.leftMargin: MD.Token.spacing.large
-                Layout.rightMargin: MD.Token.spacing.large
-                spacing: MD.Token.spacing.small
-
-                Repeater {
-                    model: Core.sources
-
-                    MD.FilterChip {
-                        required property string pluginId
-                        required property string name
-
-                        text: name
-                        checked: root.selectedSourceId === pluginId
-                        icon.name: pluginId === "online-fix"
-                            ? MD.Token.icon.cloud_download
-                            : MD.Token.icon.storefront
-                        onClicked: {
-                            root.selectedSourceId = pluginId
-                            Core.searchCatalog(pluginId, "")
-                        }
-                    }
-                }
-            }
-
-            RowLayout {
-                Layout.fillWidth: true
-                Layout.leftMargin: MD.Token.spacing.large
-                Layout.rightMargin: MD.Token.spacing.large
-
-                MD.Label {
-                    Layout.fillWidth: true
-                    text: Core.catalogLoading
-                        ? qsTr("Загрузка каталога…")
-                        : qsTr("Найдено: %1").arg(Core.catalog.rowCount())
-                    color: MD.Token.color.on_surface_variant
-                    typescale: MD.Token.typescale.label_large
-                }
-
-                MD.IconButton {
-                    mdState.type: MD.Enum.IBtStandard
-                    icon.name: MD.Token.icon.refresh
-                    enabled: !Core.catalogLoading
-                    onClicked: Core.refreshCatalog(root.selectedSourceId)
-                }
+            MD.Label {
+                text: qsTr("Каталог")
+                typescale: MD.Token.typescale.headline_medium
             }
 
             MD.Label {
                 Layout.fillWidth: true
-                Layout.leftMargin: MD.Token.spacing.large
-                Layout.rightMargin: MD.Token.spacing.large
-                visible: Core.catalogStatus.length > 0
-                text: Core.catalogStatus
-                color: MD.Token.color.on_surface_variant
-                typescale: MD.Token.typescale.body_small
+                text: qsTr("Источник определяет способ установки — у каждого плагина свой пайплайн.")
                 wrapMode: Text.WordWrap
+                color: MD.Token.color.on_surface_variant
+                typescale: MD.Token.typescale.body_medium
             }
+        }
 
-            MD.LinearIndicator {
-                Layout.fillWidth: true
-                Layout.leftMargin: MD.Token.spacing.large
-                Layout.rightMargin: MD.Token.spacing.large
-                visible: Core.catalogLoading
-                indeterminate: true
-            }
+        Flow {
+            Layout.fillWidth: true
+            Layout.leftMargin: pageMargin
+            Layout.rightMargin: pageMargin
+            spacing: MD.Token.spacing.small
 
-            Item {
-                id: gridHost
-                Layout.fillWidth: true
-                Layout.leftMargin: MD.Token.spacing.large
-                Layout.rightMargin: MD.Token.spacing.large
+            Repeater {
+                model: Core.sources
 
-                property int columns: 3
-                property real cardWidth: 160
-                property real cardHeight: 280
+                MD.FilterChip {
+                    required property string pluginId
+                    required property string name
+                    required property bool sourceEnabled
 
-                function relayout() {
-                    const cols = Math.max(2, Math.floor((width + root.gridSpacing) / (root.minCardWidth + root.gridSpacing)))
-                    const cardW = (width - root.gridSpacing * (cols - 1)) / cols
-                    columns = cols
-                    cardWidth = cardW
-                    cardHeight = cardW * 4 / 3 + root.metaHeight
-                    const rows = Math.max(1, Math.ceil(Core.catalog.rowCount() / cols))
-                    Layout.preferredHeight = rows * (cardHeight + root.gridSpacing)
-                }
-
-                Timer {
-                    id: layoutTimer
-                    interval: 50
-                    onTriggered: gridHost.relayout()
-                }
-
-                onWidthChanged: layoutTimer.restart()
-                Component.onCompleted: relayout()
-
-                Connections {
-                    target: Core.catalog
-                    function onModelReset() { gridHost.relayout() }
-                    function onRowsInserted() { gridHost.relayout() }
-                    function onRowsRemoved() { gridHost.relayout() }
-                }
-
-                GridView {
-                    anchors.fill: parent
-                    clip: true
-                    interactive: false
-                    model: Core.catalog
-                    cellWidth: gridHost.cardWidth + root.gridSpacing
-                    cellHeight: gridHost.cardHeight + root.gridSpacing
-                    cacheBuffer: gridHost.cardHeight * 2
-                    delegate: CatalogGameCard {
-                        width: Math.max(0, gridHost.cardWidth - root.gridSpacing)
-                        height: gridHost.cardHeight
-                        onOpenDetails: function (id) { root.openGame(id) }
+                    visible: sourceEnabled
+                    text: name
+                    checked: root.selectedSourceId === pluginId
+                    onClicked: {
+                        root.selectedSourceId = pluginId
+                        Core.searchCatalog(pluginId, "")
                     }
                 }
+            }
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.leftMargin: pageMargin
+            Layout.rightMargin: pageMargin
+
+            MD.Label {
+                Layout.fillWidth: true
+                text: Core.catalogLoading
+                    ? qsTr("Загрузка каталога…")
+                    : qsTr("Найдено: %1").arg(Core.catalog.count)
+                color: MD.Token.color.on_surface_variant
+                typescale: MD.Token.typescale.label_large
+            }
+
+            MD.IconButton {
+                mdState.type: MD.Enum.IBtStandard
+                icon.name: MD.Token.icon.refresh
+                enabled: !Core.catalogLoading && root.selectedSourceId.length > 0
+                onClicked: Core.refreshCatalog(root.selectedSourceId)
+            }
+        }
+
+        MD.Label {
+            Layout.fillWidth: true
+            Layout.leftMargin: pageMargin
+            Layout.rightMargin: pageMargin
+            visible: Core.catalogStatus.length > 0
+            text: Core.catalogStatus
+            color: MD.Token.color.on_surface_variant
+            typescale: MD.Token.typescale.body_small
+            wrapMode: Text.WordWrap
+            maximumLineCount: 2
+            elide: Text.ElideRight
+        }
+
+        MD.LinearIndicator {
+            Layout.fillWidth: true
+            Layout.leftMargin: pageMargin
+            Layout.rightMargin: pageMargin
+            visible: Core.catalogLoading
+            indeterminate: true
+        }
+
+        // Empty results (source selected, but nothing found)
+        Item {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            Layout.leftMargin: pageMargin
+            Layout.rightMargin: pageMargin
+            Layout.bottomMargin: MD.Token.spacing.medium
+            visible: root.catalogEmpty && !Core.catalogLoading
+
+            Item {
+                id: emptyResultsCard
+                anchors.centerIn: parent
+                width: Math.min(parent.width, 720)
+                height: 220
+                clip: true
+
+                layer.enabled: true
+                layer.effect: MD.RoundClip {
+                    corners: MD.Util.corners(root.cardRadius)
+                    size: Qt.vector2d(emptyResultsCard.width, emptyResultsCard.height)
+                }
+
+                Rectangle {
+                    anchors.fill: parent
+                    color: MD.Token.color.surface_container_high
+                }
+
+                SpiderWebMark {
+                    width: 260
+                    height: 260
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.right: parent.right
+                    anchors.rightMargin: -130
+                    strokeColor: MD.Token.color.primary
+                    strokeWidth: 2.5
+                    opacity: 0.18
+                }
+
+                ColumnLayout {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.leftMargin: MD.Token.spacing.extra_large
+                    anchors.rightMargin: MD.Token.spacing.extra_large + 80
+                    spacing: MD.Token.spacing.small
+
+                    MD.Label {
+                        Layout.fillWidth: true
+                        text: qsTr("Ничего не найдено")
+                        typescale: MD.Token.typescale.title_large
+                    }
+
+                    MD.Label {
+                        Layout.fillWidth: true
+                        text: qsTr("Попробуйте другой запрос или обновите каталог.")
+                        color: MD.Token.color.on_surface_variant
+                        typescale: MD.Token.typescale.body_medium
+                        wrapMode: Text.WordWrap
+                    }
+
+                    MD.Button {
+                        text: qsTr("Обновить")
+                        icon.name: MD.Token.icon.refresh
+            mdState.type: MD.Enum.BtFilledTonal
+                        onClicked: Core.refreshCatalog(root.selectedSourceId)
+                    }
+                }
+            }
+        }
+
+        GridView {
+            id: grid
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            Layout.leftMargin: pageMargin
+            Layout.rightMargin: pageMargin
+            Layout.bottomMargin: MD.Token.spacing.medium
+            visible: !root.catalogEmpty || Core.catalogLoading
+            clip: true
+            model: Core.catalog
+            cellWidth: root.cellWidth
+            cellHeight: root.cellHeight
+            cacheBuffer: root.cellHeight * 2
+            reuseItems: false
+            boundsBehavior: Flickable.StopAtBounds
+            pixelAligned: true
+
+            ScrollBar.vertical: ScrollBar {
+                policy: ScrollBar.AsNeeded
+            }
+
+            delegate: CatalogGameCard {
+                width: root.cardWidth
+                height: root.cardHeight
+                onOpenDetails: function (id) { root.openGame(id) }
+            }
+        }
+    }
+
+    // ── No sources / empty catalog ───────────────────────────────────────────
+    Item {
+        anchors.fill: parent
+        visible: root.noSources
+
+        ColumnLayout {
+            anchors.centerIn: parent
+            spacing: MD.Token.spacing.medium
+            width: Math.min(parent.width - pageMargin * 2, 420)
+
+            SpiderWebMark {
+                Layout.alignment: Qt.AlignHCenter
+                Layout.preferredWidth: 160
+                Layout.preferredHeight: 160
+                width: 160
+                height: 160
+                strokeColor: MD.Token.color.primary
+                strokeWidth: 2.5
+                opacity: 0.35
+            }
+
+            MD.Label {
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
+                text: qsTr("Нет игр")
+                typescale: MD.Token.typescale.title_large
+            }
+
+            MD.Label {
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
+                text: qsTr("Добавьте источник в настройках — и каталог заполнится.")
+                color: MD.Token.color.on_surface_variant
+                typescale: MD.Token.typescale.body_medium
+                wrapMode: Text.WordWrap
             }
         }
     }

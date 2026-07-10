@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Controls
 
 import Arachnel.Core 1.0
 import Qcm.Material as MD
@@ -13,37 +14,54 @@ MD.ApplicationWindow {
     minimumWidth: 1100
     minimumHeight: 720
     title: qsTr("Arachnel")
-    color: MD.Token.color.surface
+    color: MD.Token.color.surface_container
 
     MD.MProp.textColor: MD.MProp.color.on_surface
-    MD.MProp.backgroundColor: MD.MProp.color.surface
+    MD.MProp.backgroundColor: MD.MProp.color.surface_container
 
     property int windowClass: MD.Token.window_class.select_type(width)
     MD.MProp.size.windowClass: windowClass
 
-    // Debounce window class updates during resize
     Timer {
         id: windowClassTimer
-        interval: 80
-        onTriggered: root.windowClass = MD.Token.window_class.select_type(root.width)
+        interval: 200
+        onTriggered: {
+            const next = MD.Token.window_class.select_type(root.width)
+            if (next !== root.windowClass)
+                root.windowClass = next
+        }
     }
     onWidthChanged: windowClassTimer.restart()
 
     property int pageIndex: 0
-    property bool detailsOpen: false
+    property bool detailsOpen: pageStack.depth > 1
     property string detailsGameId: ""
     property bool detailsFromCatalog: false
-    property string catalogSourceId: "freetp"
+    property string catalogSourceId: Core.sources.firstEnabledId
+
+    function goToPage(index) {
+        if (pageStack.depth > 1)
+            pageStack.navigateToRoot()
+
+        root.detailsGameId = ""
+        root.pageIndex = index
+        if (pageStack.currentItem && pageStack.currentItem.pageIndex !== undefined)
+            pageStack.currentItem.pageIndex = index
+    }
 
     function openGameDetails(gameId, fromCatalog) {
-        detailsGameId = gameId
-        detailsFromCatalog = !!fromCatalog
-        detailsOpen = true
+        root.detailsGameId = gameId
+        root.detailsFromCatalog = !!fromCatalog
+        pageStack.navigatePush(detailsPageComponent, {
+                                   "gameId": gameId,
+                                   "fromCatalog": !!fromCatalog
+                               })
     }
 
     function closeGameDetails() {
-        detailsOpen = false
-        detailsGameId = ""
+        if (pageStack.canPop)
+            pageStack.navigatePop()
+        root.detailsGameId = ""
     }
 
     Component.onCompleted: Appearance.apply()
@@ -67,6 +85,84 @@ MD.ApplicationWindow {
         }
     ]
 
+    Component {
+        id: mainPagesComponent
+        Item {
+            id: mainPages
+
+            property int pageIndex: root.pageIndex
+
+            transformOrigin: Item.Center
+
+            Rectangle {
+                anchors.fill: parent
+                color: MD.Token.color.surface
+            }
+
+            // Keep both pages alive (catalog load must not restart on tab switch).
+            // Soft crossfade + light bounce on the active tab.
+            LibraryPage {
+                anchors.fill: parent
+                opacity: mainPages.pageIndex === 0 ? 1 : 0
+                scale: mainPages.pageIndex === 0 ? 1 : 0.97
+                enabled: mainPages.pageIndex === 0 && opacity > 0.99
+                transformOrigin: Item.Center
+                onOpenGame: function (id) { root.openGameDetails(id, false) }
+                onOpenCatalog: root.goToPage(1)
+                onOpenSettings: settingsSheet.openSettings()
+                onAddSourceRequested: settingsSheet.openSources(true)
+
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: pageStack.enterDuration
+                        easing: MD.Token.easing.emphasized_decelerate
+                    }
+                }
+                Behavior on scale {
+                    NumberAnimation {
+                        duration: pageStack.enterDuration
+                        easing.type: Easing.OutBack
+                        easing.overshoot: 1.2
+                    }
+                }
+            }
+
+            CatalogPage {
+                anchors.fill: parent
+                opacity: mainPages.pageIndex === 1 ? 1 : 0
+                scale: mainPages.pageIndex === 1 ? 1 : 0.97
+                enabled: mainPages.pageIndex === 1 && opacity > 0.99
+                transformOrigin: Item.Center
+                onOpenGame: function (id) { root.openGameDetails(id, true) }
+                onSelectedSourceIdChanged: root.catalogSourceId = selectedSourceId
+                onOpenSettings: settingsSheet.openSettings()
+                onAddSourceRequested: settingsSheet.openSources(true)
+
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: pageStack.enterDuration
+                        easing: MD.Token.easing.emphasized_decelerate
+                    }
+                }
+                Behavior on scale {
+                    NumberAnimation {
+                        duration: pageStack.enterDuration
+                        easing.type: Easing.OutBack
+                        easing.overshoot: 1.2
+                    }
+                }
+            }
+        }
+    }
+
+    Component {
+        id: detailsPageComponent
+        GameDetailsPage {
+            transformOrigin: Item.Center
+            onBackRequested: root.closeGameDetails()
+        }
+    }
+
     RowLayout {
         anchors.fill: parent
         spacing: 0
@@ -76,67 +172,80 @@ MD.ApplicationWindow {
             Layout.fillHeight: true
             model: root.navModel
             currentIndex: root.pageIndex
-            onActivated: function (index) {
-                root.closeGameDetails()
-                root.pageIndex = index
-            }
-            onSettingsRequested: settingsSheet.open()
+            onActivated: function (index) { root.goToPage(index) }
+            onSettingsRequested: settingsSheet.openSettings()
         }
 
         ColumnLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
+            Layout.topMargin: MD.Token.spacing.small
+            Layout.rightMargin: MD.Token.spacing.small
+            Layout.bottomMargin: MD.Token.spacing.small
             spacing: 0
 
             MD.Pane {
+                id: mainPane
                 Layout.fillWidth: true
-                padding: MD.Token.spacing.medium
+                Layout.fillHeight: true
+                padding: 0
+                radius: MD.Token.shape.corner.extra_large
                 backgroundColor: MD.Token.color.surface
-                visible: !root.detailsOpen
+                clip: true
 
-                RowLayout {
-                    width: parent.width
-                    spacing: MD.Token.spacing.medium
+                ColumnLayout {
+                    anchors.fill: parent
+                    spacing: 0
 
-                    MD.SearchBar {
-                        id: globalSearch
+                    MD.Pane {
                         Layout.fillWidth: true
-                        Layout.maximumWidth: 720
-                        Layout.alignment: Qt.AlignHCenter
-                        onAccepted: {
-                            root.closeGameDetails()
-                            root.pageIndex = 1
-                            root.catalogSourceId = "freetp"
-                            Core.searchCatalog(root.catalogSourceId, searchText)
+                        padding: MD.Token.spacing.medium
+                        backgroundColor: "transparent"
+                        visible: !root.detailsOpen
+                        opacity: root.detailsOpen ? 0 : 1
+
+                        Behavior on opacity {
+                            NumberAnimation {
+                                duration: pageStack.exitDuration
+                                easing: MD.Token.easing.emphasized_accelerate
+                            }
+                        }
+
+                        RowLayout {
+                            width: parent.width
+                            spacing: MD.Token.spacing.medium
+
+                            MD.SearchBar {
+                                id: globalSearch
+                                Layout.fillWidth: true
+                                Layout.maximumWidth: 720
+                                Layout.alignment: Qt.AlignHCenter
+                                onAccepted: {
+                                    root.goToPage(1)
+                                    if (!root.catalogSourceId.length)
+                                        root.catalogSourceId = Core.sources.firstEnabledId
+                                    if (root.catalogSourceId.length)
+                                        Core.searchCatalog(root.catalogSourceId, searchText)
+                                }
+                            }
+
+                            Item { Layout.fillWidth: true }
+
+                            MD.IconButton {
+                                mdState.type: MD.Enum.IBtStandard
+                                icon.name: MD.Token.icon.notifications
+                                onClicked: snackbar.show(qsTr("Уведомлений пока нет"))
+                            }
                         }
                     }
 
-                    Item { Layout.fillWidth: true }
-
-                    MD.IconButton {
-                        mdState.type: MD.Enum.IBtStandard
-                        icon.name: MD.Token.icon.notifications
-                        onClicked: snackbar.show(qsTr("Уведомлений пока нет"))
+                    PageNavigator {
+                        id: pageStack
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        clip: true
+                        initialItem: mainPagesComponent
                     }
-                }
-            }
-
-            StackLayout {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                currentIndex: root.detailsOpen ? 2 : root.pageIndex
-
-                LibraryPage {
-                    onOpenGame: function (id) { root.openGameDetails(id, false) }
-                }
-                CatalogPage {
-                    onOpenGame: function (id) { root.openGameDetails(id, true) }
-                    onSelectedSourceIdChanged: root.catalogSourceId = selectedSourceId
-                }
-                GameDetailsPage {
-                    gameId: root.detailsGameId
-                    fromCatalog: root.detailsFromCatalog
-                    onBackRequested: root.closeGameDetails()
                 }
             }
         }

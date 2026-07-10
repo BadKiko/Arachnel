@@ -38,6 +38,7 @@ struct LibraryGame {
 class LibraryModel : public QAbstractListModel
 {
     Q_OBJECT
+    Q_PROPERTY(int count READ count NOTIFY countChanged)
 
 public:
     enum Role {
@@ -67,11 +68,16 @@ public:
     QVariant data(const QModelIndex& index, int role) const override;
     QHash<int, QByteArray> roleNames() const override;
 
+    int count() const { return m_games.size(); }
+
     void setGames(QVector<LibraryGame> games);
     const LibraryGame* gameById(const QString& id) const;
     Q_INVOKABLE QVariantMap gameAt(int row) const;
     Q_INVOKABLE QVariantMap gameInfo(const QString& id) const;
     Q_INVOKABLE int updateCount() const;
+
+signals:
+    void countChanged();
 
 private:
     QVariantMap toMap(const LibraryGame& game) const;

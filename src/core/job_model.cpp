@@ -72,6 +72,7 @@ void JobModel::setJobs(QVector<JobEntry> jobs)
     beginResetModel();
     m_jobs = std::move(jobs);
     endResetModel();
+    emit countChanged();
 }
 
 void JobModel::addJob(JobEntry job)
@@ -80,6 +81,7 @@ void JobModel::addJob(JobEntry job)
     beginInsertRows({}, row, row);
     m_jobs.append(std::move(job));
     endInsertRows();
+    emit countChanged();
 }
 
 void JobModel::updateJob(const JobEntry& job)
@@ -111,6 +113,7 @@ void JobModel::removeJob(const QString& jobId)
     beginRemoveRows({}, row, row);
     m_jobs.removeAt(row);
     endRemoveRows();
+    emit countChanged();
 }
 
 int JobModel::indexOfJob(const QString& jobId) const

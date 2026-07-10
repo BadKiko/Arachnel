@@ -55,6 +55,8 @@ public:
     Q_INVOKABLE void cancelJob(const QString& jobId);
     Q_INVOKABLE void refreshCatalog(const QString& sourceId);
     Q_INVOKABLE void requestCatalogCover(const QString& entryId);
+    Q_INVOKABLE void cancelCatalogCover(const QString& entryId);
+    Q_INVOKABLE void invalidateCatalogCover(const QString& entryId);
     Q_INVOKABLE void enrichCatalogEntry(const QString& entryId);
 
 signals:
@@ -66,7 +68,8 @@ private:
     explicit CoreController(QObject* parent = nullptr);
 
     void initializeServices();
-    void loadSources();
+    void syncSourcesFromSettings();
+    void persistSourcesToSettings();
     void syncLibraryFromStore();
     void applyCatalogFilter(const QString& sourceId, const QString& query);
     void setLastAction(const QString& action);

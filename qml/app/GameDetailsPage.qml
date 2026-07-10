@@ -10,6 +10,12 @@ Item {
     property string gameId: ""
     property bool fromCatalog: false
 
+    // Opaque surface so catalog doesn't ghost through during page fade/bounce.
+    Rectangle {
+        anchors.fill: parent
+        color: MD.Token.color.surface
+    }
+
     readonly property var info: {
         if (!gameId.length)
             return ({})
