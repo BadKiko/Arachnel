@@ -84,6 +84,13 @@ void JobOrchestrator::cancelJob(const QString& jobId)
     if (row < 0)
         return;
 
+    const QString status =
+        m_jobs->data(m_jobs->index(row, 0), JobModel::StatusRole).toString();
+    if (status == QStringLiteral("completed") || status == QStringLiteral("failed")
+        || status == QStringLiteral("cancelled")) {
+        return;
+    }
+
     const int progress = m_jobs->data(m_jobs->index(row, 0), JobModel::ProgressRole).toInt();
     m_torrent->cancel(jobId);
 

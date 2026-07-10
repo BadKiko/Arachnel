@@ -12,7 +12,7 @@ if [[ ! -d "${QM_DIR}/.git" ]]; then
 fi
 
 FONT_FILE="${QM_DIR}/assets/MaterialSymbolsRounded.wght_400.opsz_24.fill_0.woff2"
-if [[ -f "${FONT_FILE}" ]] && head -c 8 "${FONT_FILE}" | grep -q "wOFF"; then
+if [[ -f "${FONT_FILE}" ]] && head -c 4 "${FONT_FILE}" | grep -q "wOF2"; then
   echo "setup-material-fonts: fonts already present"
   exit 0
 fi

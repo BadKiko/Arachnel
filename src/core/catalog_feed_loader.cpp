@@ -163,6 +163,8 @@ void CatalogFeedLoader::loadFeed(const QUrl& url, const QString& sourceId)
     const quint64 serial = ++m_requestSerial;
     QNetworkRequest request(url);
     request.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("Arachnel/0.1"));
+    // Qt 6.7+: abort hung catalog downloads so UI does not spin forever.
+    request.setTransferTimeout(30000);
     QNetworkReply* reply = m_network->get(request);
     reply->setProperty("sourceId", sourceId);
     reply->setProperty("requestSerial", QVariant::fromValue(serial));

@@ -1,6 +1,7 @@
 #include "core_controller.h"
 
 #include "catalog_feed_loader.h"
+#include "cover_image_cache.h"
 #include "game_metadata_service.h"
 #include "job_orchestrator.h"
 #include "library_store.h"
@@ -43,6 +44,7 @@ void CoreController::initializeServices()
 {
     m_catalogLoader = new CatalogFeedLoader(this);
     m_metadataService = new GameMetadataService(this);
+    m_coverCache = new CoverImageCache(this);
     m_torrentSession = new TorrentSession(this);
     m_jobOrchestrator =
         new JobOrchestrator(&m_settings, m_torrentSession, &m_jobs, this);
@@ -74,14 +76,15 @@ void CoreController::initializeServices()
 
     connect(m_metadataService, &GameMetadataService::coverReady, this,
             [this](const QString& entryId, const QString& coverUrl) {
-                for (auto& entry : m_catalogCache) {
-                    if (entry.id != entryId)
-                        continue;
-                    entry.coverUrl = coverUrl;
-                    entry.metadataPending = false;
-                    syncEntryToCatalogModel(entryId);
-                    break;
+                if (coverUrl.isEmpty()) {
+                    applyCoverToEntry(entryId, QString());
+                    return;
                 }
+                if (coverUrl.startsWith(QStringLiteral("file:"))) {
+                    applyCoverToEntry(entryId, coverUrl);
+                    return;
+                }
+                ensureDiskCover(entryId, coverUrl);
             });
 
     connect(m_metadataService, &GameMetadataService::metadataReady, this,
@@ -89,16 +92,38 @@ void CoreController::initializeServices()
                 for (auto& entry : m_catalogCache) {
                     if (entry.id != entryId)
                         continue;
-                    if (!metadata.coverUrl.isEmpty())
-                        entry.coverUrl = metadata.coverUrl;
                     if (!metadata.description.isEmpty())
                         entry.description = metadata.description;
                     if (!metadata.genres.isEmpty())
                         entry.genres = metadata.genres;
-                    entry.metadataPending = false;
                     syncEntryToCatalogModel(entryId);
                     break;
                 }
+                if (!metadata.coverUrl.isEmpty())
+                    ensureDiskCover(entryId, metadata.coverUrl);
+                else
+                    applyCoverToEntry(entryId, QString());
+            });
+
+    connect(m_coverCache, &CoverImageCache::ready, this,
+            [this](const QString& remoteUrl, const QString& localUrl) {
+                const QSet<QString> waiters = m_coverWaiters.take(remoteUrl);
+                for (const QString& entryId : waiters)
+                    applyCoverToEntry(entryId, localUrl);
+
+                for (auto& entry : m_catalogCache) {
+                    if (entry.coverUrl == remoteUrl) {
+                        entry.coverUrl = localUrl;
+                        syncEntryToCatalogModel(entry.id);
+                    }
+                }
+            });
+
+    connect(m_coverCache, &CoverImageCache::failed, this,
+            [this](const QString& remoteUrl) {
+                const QSet<QString> waiters = m_coverWaiters.take(remoteUrl);
+                for (const QString& entryId : waiters)
+                    applyCoverToEntry(entryId, QString());
             });
 
     connect(m_jobOrchestrator, &JobOrchestrator::downloadCompleted, this,
@@ -224,13 +249,52 @@ const CatalogComponent* CoreController::findCatalogAddon(const CatalogEntry& ent
 void CoreController::applyCachedMetadata(CatalogEntry& entry) const
 {
     const GameMetadata metadata = m_metadataService->metadataForTitle(entry.title);
-    if (!metadata.coverUrl.isEmpty())
-        entry.coverUrl = metadata.coverUrl;
+    // Prefer on-disk cover so Image never hits Steam CDN after a warm cache.
+    if (!metadata.coverUrl.isEmpty()) {
+        const QString local = m_coverCache->localUrlFor(metadata.coverUrl);
+        if (!local.isEmpty())
+            entry.coverUrl = local;
+    }
     if (!metadata.description.isEmpty())
         entry.description = metadata.description;
     if (!metadata.genres.isEmpty())
         entry.genres = metadata.genres;
     // Leave metadataPending alone — it tracks an in-flight/queued fetch, not "missing cover".
+}
+
+bool CoreController::isRemoteLibraryCover(const QString& url)
+{
+    return url.contains(QStringLiteral("library_capsule"))
+        || url.contains(QStringLiteral("library_600x900"));
+}
+
+void CoreController::applyCoverToEntry(const QString& entryId, const QString& coverUrl)
+{
+    for (auto& entry : m_catalogCache) {
+        if (entry.id != entryId)
+            continue;
+        entry.coverUrl = coverUrl;
+        entry.metadataPending = false;
+        syncEntryToCatalogModel(entryId);
+        return;
+    }
+}
+
+void CoreController::ensureDiskCover(const QString& entryId, const QString& remoteUrl)
+{
+    if (remoteUrl.isEmpty()) {
+        applyCoverToEntry(entryId, QString());
+        return;
+    }
+
+    const QString local = m_coverCache->localUrlFor(remoteUrl);
+    if (!local.isEmpty()) {
+        applyCoverToEntry(entryId, local);
+        return;
+    }
+
+    m_coverWaiters[remoteUrl].insert(entryId);
+    m_coverCache->ensure(remoteUrl);
 }
 
 void CoreController::syncEntryToCatalogModel(const QString& entryId)
@@ -255,9 +319,29 @@ void CoreController::requestCatalogCover(const QString& entryId)
     }
     if (!entry)
         return;
-    if (entry->coverUrl.contains(QStringLiteral("library_capsule"))
-        || entry->coverUrl.contains(QStringLiteral("library_600x900")))
+
+    if (entry->coverUrl.startsWith(QStringLiteral("file:")))
         return;
+
+    if (isRemoteLibraryCover(entry->coverUrl)) {
+        if (!entry->metadataPending) {
+            entry->metadataPending = true;
+            syncEntryToCatalogModel(entryId);
+        }
+        ensureDiskCover(entryId, entry->coverUrl);
+        return;
+    }
+
+    // Metadata may already know the Steam URL — disk-cache it without CDN in Image.
+    const GameMetadata metadata = m_metadataService->metadataForTitle(entry->title);
+    if (isRemoteLibraryCover(metadata.coverUrl)) {
+        if (!entry->metadataPending) {
+            entry->metadataPending = true;
+            syncEntryToCatalogModel(entryId);
+        }
+        ensureDiskCover(entryId, metadata.coverUrl);
+        return;
+    }
 
     if (!entry->metadataPending) {
         entry->metadataPending = true;
@@ -293,6 +377,13 @@ void CoreController::invalidateCatalogCover(const QString& entryId)
     }
     if (!entry)
         return;
+
+    if (!entry->coverUrl.isEmpty())
+        m_coverCache->remove(entry->coverUrl);
+
+    const GameMetadata metadata = m_metadataService->metadataForTitle(entry->title);
+    if (!metadata.coverUrl.isEmpty())
+        m_coverCache->remove(metadata.coverUrl);
 
     m_metadataService->clearCachedCover(entry->title);
     entry->coverUrl.clear();
@@ -477,8 +568,9 @@ void CoreController::checkUpdates()
             for (const auto& remoteAddon : remote.addons) {
                 if (remoteAddon.id != component.id)
                     continue;
-                if (!component.installed
-                    || isRemoteUploadDateNewer(remoteAddon.uploadDate, component.uploadDate)) {
+                // Uninstalled addons are available downloads, not "updates".
+                if (component.installed
+                    && isRemoteUploadDateNewer(remoteAddon.uploadDate, component.uploadDate)) {
                     hasUpdate = true;
                 }
             }

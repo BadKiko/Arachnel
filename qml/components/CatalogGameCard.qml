@@ -17,7 +17,8 @@ Item {
 
     signal openDetails(string entryId)
 
-    readonly property bool hasLibraryCover: coverUrl.indexOf("library_capsule") >= 0
+    readonly property bool hasLibraryCover: coverUrl.startsWith("file:")
+                                            || coverUrl.indexOf("library_capsule") >= 0
                                             || coverUrl.indexOf("library_600x900") >= 0
 
     property string requestedId: ""
