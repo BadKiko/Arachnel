@@ -136,21 +136,5 @@ MD.Pane {
             icon.name: MD.Token.icon.settings
             onClicked: root.settingsRequested()
         }
-
-        MD.ElevationRectangle {
-            Layout.alignment: Qt.AlignHCenter
-            Layout.preferredWidth: 40
-            Layout.preferredHeight: 40
-            radius: MD.Token.shape.corner.full
-            color: MD.Token.color.tertiary_container
-            elevation: MD.Token.elevation.level0
-
-            MD.Label {
-                anchors.centerIn: parent
-                text: "A"
-                typescale: MD.Token.typescale.title_small
-                color: MD.Token.color.on_tertiary_container
-            }
-        }
     }
 }
