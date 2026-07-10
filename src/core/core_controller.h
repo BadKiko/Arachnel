@@ -2,15 +2,26 @@
 
 #include "catalog_model.h"
 #include "job_model.h"
+#include "library_store.h"
 #include "library_model.h"
+#include "settings_store.h"
 #include "source_plugin_model.h"
 
 #include <QObject>
+#include <QHash>
+#include <QSet>
+#include <QVector>
 
 class QQmlEngine;
 class QJSEngine;
 
 namespace arachnel::core {
+
+class CatalogFeedLoader;
+class CoverImageCache;
+class GameMetadataService;
+class JobOrchestrator;
+class TorrentSession;
 
 class CoreController : public QObject
 {
@@ -20,7 +31,10 @@ class CoreController : public QObject
     Q_PROPERTY(SourcePluginModel* sources READ sources CONSTANT)
     Q_PROPERTY(CatalogModel* catalog READ catalog CONSTANT)
     Q_PROPERTY(JobModel* jobs READ jobs CONSTANT)
+    Q_PROPERTY(SettingsStore* settings READ settings CONSTANT)
     Q_PROPERTY(QString lastAction READ lastAction NOTIFY lastActionChanged)
+    Q_PROPERTY(bool catalogLoading READ catalogLoading NOTIFY catalogLoadingChanged)
+    Q_PROPERTY(QString catalogStatus READ catalogStatus NOTIFY catalogStatusChanged)
 
 public:
     static CoreController* create(QQmlEngine* engine, QJSEngine* scriptEngine);
@@ -30,28 +44,69 @@ public:
     SourcePluginModel* sources() { return &m_sources; }
     CatalogModel* catalog() { return &m_catalog; }
     JobModel* jobs() { return &m_jobs; }
+    SettingsStore* settings() { return &m_settings; }
     QString lastAction() const { return m_lastAction; }
+    bool catalogLoading() const { return m_catalogLoading; }
+    QString catalogStatus() const { return m_catalogStatus; }
 
     Q_INVOKABLE void launchGame(const QString& gameId);
     Q_INVOKABLE void searchCatalog(const QString& sourceId, const QString& query);
     Q_INVOKABLE void installCatalogEntry(const QString& entryId);
+    Q_INVOKABLE void installCatalogAddon(const QString& entryId, const QString& addonId);
+    Q_INVOKABLE void updateCatalogEntry(const QString& entryId);
     Q_INVOKABLE void checkUpdates();
+    Q_INVOKABLE void cancelJob(const QString& jobId);
+    Q_INVOKABLE void refreshCatalog(const QString& sourceId);
+    Q_INVOKABLE void requestCatalogCover(const QString& entryId);
+    Q_INVOKABLE void cancelCatalogCover(const QString& entryId);
+    Q_INVOKABLE void invalidateCatalogCover(const QString& entryId);
+    Q_INVOKABLE void enrichCatalogEntry(const QString& entryId);
 
 signals:
     void lastActionChanged();
+    void catalogLoadingChanged();
+    void catalogStatusChanged();
 
 private:
     explicit CoreController(QObject* parent = nullptr);
 
-    void loadMockData();
+    void initializeServices();
+    void syncSourcesFromSettings();
+    void persistSourcesToSettings();
+    void syncLibraryFromStore();
+    void applyCatalogFilter(const QString& sourceId, const QString& query);
     void setLastAction(const QString& action);
-    QVector<CatalogEntry> mockCatalogFor(const QString& sourceId, const QString& query) const;
+    void setCatalogLoading(bool loading);
+    void setCatalogStatus(const QString& status);
+    bool isRemoteUploadDateNewer(const QString& remote, const QString& local) const;
+    const CatalogEntry* findCatalogEntry(const QString& entryId) const;
+    const CatalogComponent* findCatalogAddon(const CatalogEntry& entry,
+                                             const QString& addonId) const;
+    void syncEntryToCatalogModel(const QString& entryId);
+    void applyCachedMetadata(CatalogEntry& entry) const;
+    void applyCoverToEntry(const QString& entryId, const QString& coverUrl);
+    void ensureDiskCover(const QString& entryId, const QString& remoteUrl);
+    static bool isRemoteLibraryCover(const QString& url);
 
     LibraryModel m_library;
     SourcePluginModel m_sources;
     CatalogModel m_catalog;
     JobModel m_jobs;
+    SettingsStore m_settings;
+    LibraryStore m_libraryStore;
+    CatalogFeedLoader* m_catalogLoader = nullptr;
+    GameMetadataService* m_metadataService = nullptr;
+    CoverImageCache* m_coverCache = nullptr;
+    TorrentSession* m_torrentSession = nullptr;
+    JobOrchestrator* m_jobOrchestrator = nullptr;
+
+    QVector<CatalogEntry> m_catalogCache;
+    QHash<QString, QSet<QString>> m_coverWaiters;
+    QString m_activeSourceId;
+    QString m_activeQuery;
     QString m_lastAction;
+    QString m_catalogStatus;
+    bool m_catalogLoading = false;
 };
 
 void registerCoreTypes();

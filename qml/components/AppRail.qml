@@ -31,11 +31,14 @@ MD.Pane {
             color: MD.Token.color.primary_container
             elevation: MD.Token.elevation.level0
 
-            MD.Icon {
+            SpiderWebMark {
                 anchors.centerIn: parent
-                name: MD.Token.icon.sports_esports
-                size: 26
-                color: MD.Token.color.on_primary_container
+                width: 28
+                height: 28
+                strokeColor: MD.Token.color.on_primary_container
+                strokeWidth: 1.6
+                rings: 3
+                spokes: 8
             }
 
             MouseArea {
@@ -132,22 +135,6 @@ MD.Pane {
             mdState.type: MD.Enum.IBtStandard
             icon.name: MD.Token.icon.settings
             onClicked: root.settingsRequested()
-        }
-
-        MD.ElevationRectangle {
-            Layout.alignment: Qt.AlignHCenter
-            Layout.preferredWidth: 40
-            Layout.preferredHeight: 40
-            radius: MD.Token.shape.corner.full
-            color: MD.Token.color.tertiary_container
-            elevation: MD.Token.elevation.level0
-
-            MD.Label {
-                anchors.centerIn: parent
-                text: "A"
-                typescale: MD.Token.typescale.title_small
-                color: MD.Token.color.on_tertiary_container
-            }
         }
     }
 }

@@ -10,6 +10,12 @@ Item {
     property string gameId: ""
     property bool fromCatalog: false
 
+    // Opaque surface so catalog doesn't ghost through during page fade/bounce.
+    Rectangle {
+        anchors.fill: parent
+        color: MD.Token.color.surface
+    }
+
     readonly property var info: {
         if (!gameId.length)
             return ({})
@@ -29,6 +35,16 @@ Item {
     }
 
     signal backRequested()
+
+    onGameIdChanged: root.maybeEnrich()
+    onFromCatalogChanged: root.maybeEnrich()
+
+    function maybeEnrich() {
+        if (gameId.length > 0 && fromCatalog)
+            Core.enrichCatalogEntry(gameId)
+    }
+
+    Component.onCompleted: root.maybeEnrich()
 
     Flickable {
         id: flick
@@ -117,6 +133,11 @@ Item {
                             icon.name: MD.Token.icon.hard_drive
                         }
                         MD.AssistChip {
+                            visible: !!(root.info.hasAddons)
+                            text: qsTr("%1 доп.").arg(root.info.addonCount ?? 0)
+                            icon.name: MD.Token.icon.extension
+                        }
+                        MD.AssistChip {
                             text: root.info.installKindLabel ?? ""
                             icon.name: MD.Token.icon.install_desktop
                         }
@@ -127,11 +148,20 @@ Item {
                         }
                     }
 
+                    MD.Label {
+                        Layout.fillWidth: true
+                        visible: root.installed && !(root.info.installPath && root.info.installPath.length)
+                        text: qsTr("Торрент загружен. Установка будет выполнена плагином источника.")
+                        wrapMode: Text.WordWrap
+                        color: MD.Token.color.on_surface_variant
+                        typescale: MD.Token.typescale.body_medium
+                    }
+
                     RowLayout {
                         spacing: MD.Token.spacing.small
 
                         MD.Button {
-                            visible: root.installed
+                            visible: root.installed && !!(root.info.installPath && root.info.installPath.length)
                             text: qsTr("Играть")
                             icon.name: MD.Token.icon.play_arrow
                             mdState.type: MD.Enum.BtFilled
@@ -139,8 +169,8 @@ Item {
                         }
 
                         MD.Button {
-                            visible: !root.installed
-                            text: qsTr("Установить")
+                            visible: root.fromCatalog || !root.installed
+                            text: qsTr("Скачать торрент")
                             icon.name: MD.Token.icon.download
                             mdState.type: MD.Enum.BtFilled
                             onClicked: Core.installCatalogEntry(root.gameId)
@@ -151,7 +181,12 @@ Item {
                             text: qsTr("Обновить")
                             icon.name: MD.Token.icon.update
                             mdState.type: MD.Enum.BtFilledTonal
-                            onClicked: Core.checkUpdates()
+                            onClicked: {
+                                if (root.fromCatalog)
+                                    Core.updateCatalogEntry(root.gameId)
+                                else
+                                    Core.updateCatalogEntry(root.gameId)
+                            }
                         }
                     }
                 }
@@ -193,6 +228,75 @@ Item {
                 Layout.fillWidth: true
                 Layout.leftMargin: MD.Token.spacing.large
                 Layout.rightMargin: MD.Token.spacing.large
+                visible: (root.info.addonCount ?? 0) > 0
+                Layout.preferredHeight: addonsCol.implicitHeight + 2 * MD.Token.spacing.large
+                radius: MD.Token.shape.corner.extra_large
+                color: MD.Token.color.surface_container
+                elevation: MD.Token.elevation.level0
+
+                ColumnLayout {
+                    id: addonsCol
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    anchors.margins: MD.Token.spacing.large
+                    spacing: MD.Token.spacing.small
+
+                    MD.Label {
+                        text: qsTr("Дополнения")
+                        typescale: MD.Token.typescale.title_medium
+                    }
+
+                    MD.Label {
+                        Layout.fillWidth: true
+                        text: qsTr("У FreeTP к игре могут идти отдельные DLC — их нужно докачать и установить отдельно.")
+                        wrapMode: Text.WordWrap
+                        color: MD.Token.color.on_surface_variant
+                        typescale: MD.Token.typescale.body_medium
+                    }
+
+                    Repeater {
+                        model: Core.catalog.addonsFor(root.gameId)
+
+                        RowLayout {
+                            required property string id
+                            required property string title
+                            required property string fileSize
+                            required property string kindLabel
+                            Layout.fillWidth: true
+                            spacing: MD.Token.spacing.small
+
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: 2
+                                MD.Label {
+                                    Layout.fillWidth: true
+                                    text: title
+                                    typescale: MD.Token.typescale.body_large
+                                    elide: Text.ElideRight
+                                }
+                                MD.Label {
+                                    text: kindLabel + " · " + fileSize
+                                    color: MD.Token.color.on_surface_variant
+                                    typescale: MD.Token.typescale.label_medium
+                                }
+                            }
+
+                            MD.Button {
+                                text: qsTr("Скачать")
+                                icon.name: MD.Token.icon.download
+                                mdState.type: MD.Enum.BtOutlined
+                                onClicked: Core.installCatalogAddon(root.gameId, id)
+                            }
+                        }
+                    }
+                }
+            }
+
+            MD.ElevationRectangle {
+                Layout.fillWidth: true
+                Layout.leftMargin: MD.Token.spacing.large
+                Layout.rightMargin: MD.Token.spacing.large
                 Layout.preferredHeight: metaCol.implicitHeight + 2 * MD.Token.spacing.large
                 radius: MD.Token.shape.corner.extra_large
                 color: MD.Token.color.surface_container
@@ -218,8 +322,12 @@ Item {
                             { label: qsTr("Размер"), value: root.info.sizeLabel || "—" },
                             { label: qsTr("Тип установки"), value: root.info.installKindLabel ?? "" },
                             {
-                                label: qsTr("Путь"),
-                                value: root.info.installPath || qsTr("Не установлена")
+                                label: qsTr("Путь установки"),
+                                value: root.info.installPath || qsTr("Ожидает установки плагином")
+                            },
+                            {
+                                label: qsTr("Загрузка"),
+                                value: root.info.downloadPath || "—"
                             }
                         ]
 
