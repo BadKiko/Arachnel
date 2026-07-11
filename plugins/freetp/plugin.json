@@ -1,0 +1,9 @@
+{
+  "id": "freetp",
+  "name": "FreeTP",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "library": "freetp_plugin",
+  "iconName": "storefront",
+  "description": "Торрент-каталог FreeTP с portable-установкой"
+}

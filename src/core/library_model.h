@@ -32,6 +32,7 @@ struct LibraryGame {
     QString uploadDate;
     QString magnetUri;
     QString downloadPath;
+    QString libraryId;
     QVector<InstalledComponent> components;
 };
 
@@ -57,6 +58,7 @@ public:
         HasUpdateRole,
         UploadDateRole,
         DownloadPathRole,
+        LibraryIdRole,
         ComponentCountRole,
         InstalledComponentCountRole,
     };
@@ -78,6 +80,7 @@ public:
 
 signals:
     void countChanged();
+    void libraryChanged();
 
 private:
     QVariantMap toMap(const LibraryGame& game) const;

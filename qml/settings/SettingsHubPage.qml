@@ -33,9 +33,14 @@ ColumnLayout {
         Repeater {
             model: [
                 {
+                    id: "plugins",
+                    title: qsTr("Плагины"),
+                    subtitle: qsTr("FreeTP и другие — установка из ZIP")
+                },
+                {
                     id: "sources",
-                    title: qsTr("Источники"),
-                    subtitle: qsTr("Каталоги JSON, включение и URL")
+                    title: qsTr("JSON-источники"),
+                    subtitle: qsTr("Каталоги по URL без плагина")
                 },
                 {
                     id: "storage",

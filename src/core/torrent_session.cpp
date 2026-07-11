@@ -161,6 +161,7 @@ bool TorrentSession::addJob(const QString& jobId, const QString& magnetUri, cons
 
     params.save_path = savePath.toStdString();
     params.flags |= lt::torrent_flags::auto_managed;
+    params.flags |= lt::torrent_flags::stop_when_ready;
 
     const lt::torrent_handle handle = m_impl->session.add_torrent(params, ec);
     if (ec) {
@@ -293,6 +294,38 @@ void TorrentSession::pollAlerts()
             m_impl->pausedJobs.contains(jobId) ? 0 : static_cast<int>(status.download_rate);
         emit torrentProgress(jobId, progress, downloaded, total, downloadRate, status.num_peers,
                              state);
+    }
+
+    QStringList completedJobs;
+    for (auto it = m_impl->handles.constBegin(); it != m_impl->handles.constEnd(); ++it) {
+        const QString jobId = it.key();
+        if (m_impl->pausedJobs.contains(jobId))
+            continue;
+
+        const lt::torrent_handle handle = it.value();
+        if (!handle.is_valid())
+            continue;
+
+        const lt::torrent_status status = handle.status();
+        const qint64 total = status.total_wanted;
+        const qint64 downloaded = status.total_wanted_done;
+        if (total <= 0 || downloaded < total)
+            continue;
+
+        if (status.state == lt::torrent_status::seeding
+            || status.state == lt::torrent_status::finished)
+            completedJobs.append(jobId);
+    }
+
+    for (const QString& jobId : completedJobs) {
+        const lt::torrent_handle handle = m_impl->handles.take(jobId);
+        const QString savePath = m_impl->savePaths.take(jobId);
+        m_impl->magnetUris.remove(jobId);
+        m_impl->pausedJobs.remove(jobId);
+        removeResumeFile(jobId);
+        if (handle.is_valid())
+            m_impl->session.remove_torrent(handle, lt::session::delete_partfile);
+        emit torrentFinished(jobId, savePath);
     }
 }
 

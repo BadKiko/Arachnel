@@ -11,6 +11,8 @@
 #include <QObject>
 #include <QHash>
 #include <QSet>
+#include <QUrl>
+#include <QVariant>
 #include <QVector>
 
 class QQmlEngine;
@@ -22,6 +24,7 @@ class CatalogFeedLoader;
 class CoverImageCache;
 class GameMetadataService;
 class JobOrchestrator;
+class PluginHost;
 class TorrentSession;
 
 class CoreController : public QObject
@@ -36,6 +39,10 @@ class CoreController : public QObject
     Q_PROPERTY(QString lastAction READ lastAction NOTIFY lastActionChanged)
     Q_PROPERTY(bool catalogLoading READ catalogLoading NOTIFY catalogLoadingChanged)
     Q_PROPERTY(QString catalogStatus READ catalogStatus NOTIFY catalogStatusChanged)
+    Q_PROPERTY(int pluginCount READ pluginCount NOTIFY pluginsChanged)
+    Q_PROPERTY(QString pluginsUserDir READ pluginsUserDir CONSTANT)
+    Q_PROPERTY(QString pluginsBundleDir READ pluginsBundleDir CONSTANT)
+    Q_PROPERTY(QString lastPluginError READ lastPluginError NOTIFY lastPluginErrorChanged)
 
 public:
     static CoreController* create(QQmlEngine* engine, QJSEngine* scriptEngine);
@@ -49,15 +56,32 @@ public:
     QString lastAction() const { return m_lastAction; }
     bool catalogLoading() const { return m_catalogLoading; }
     QString catalogStatus() const { return m_catalogStatus; }
+    int pluginCount() const;
+    QString pluginsUserDir() const;
+    QString pluginsBundleDir() const;
+    QString lastPluginError() const { return m_lastPluginError; }
+
+    Q_INVOKABLE QVariantList pluginEntries() const;
+    Q_INVOKABLE void browsePluginZip();
+    Q_INVOKABLE bool installPluginZip(const QUrl& fileUrl);
+    Q_INVOKABLE void openPluginsFolder();
+    Q_INVOKABLE void rescanPlugins();
 
     Q_INVOKABLE void launchGame(const QString& gameId);
     Q_INVOKABLE void searchCatalog(const QString& sourceId, const QString& query);
-    Q_INVOKABLE void installCatalogEntry(const QString& entryId);
+    Q_INVOKABLE void installCatalogEntry(const QString& entryId, const QString& libraryId = {});
     Q_INVOKABLE void installCatalogAddon(const QString& entryId, const QString& addonId);
     Q_INVOKABLE void updateCatalogEntry(const QString& entryId);
+    Q_INVOKABLE bool needsInstallLocationChoice() const;
+    Q_INVOKABLE QString browseStorageFolder();
+    Q_INVOKABLE void removeGame(const QString& gameId, bool deleteFiles = true);
+    Q_INVOKABLE void moveGame(const QString& gameId, const QString& targetLibraryId);
+    Q_INVOKABLE QVariantList gamesOnLibrary(const QString& libraryId) const;
     Q_INVOKABLE void checkUpdates();
     Q_INVOKABLE void cancelJob(const QString& jobId);
     Q_INVOKABLE void toggleJobPause(const QString& jobId);
+    Q_INVOKABLE void removeJob(const QString& jobId);
+    Q_INVOKABLE void retryJob(const QString& jobId);
     Q_INVOKABLE void clearFinishedJobs();
     Q_INVOKABLE void refreshCatalog(const QString& sourceId);
     Q_INVOKABLE void requestCatalogCover(const QString& entryId);
@@ -70,15 +94,21 @@ signals:
     void lastActionChanged();
     void catalogLoadingChanged();
     void catalogStatusChanged();
+    void pluginsChanged();
+    void lastPluginErrorChanged();
 
 private:
     explicit CoreController(QObject* parent = nullptr);
 
     void initializeServices();
-    void syncSourcesFromSettings();
+    void syncSourcesFromPlugins();
     void persistSourcesToSettings();
+    void applyPluginCatalog(const QString& sourceId, QVector<CatalogEntry> entries);
     void syncLibraryFromStore();
     void applyCatalogFilter(const QString& sourceId, const QString& query);
+    void startPluginInstall(const CatalogEntry& entry, const QString& sourceId,
+                            const QString& savePath, JobKind kind,
+                            const QString& libraryId = {});
     void setLastAction(const QString& action);
     void setCatalogLoading(bool loading);
     void setCatalogStatus(const QString& status);
@@ -104,6 +134,7 @@ private:
     CoverImageCache* m_coverCache = nullptr;
     TorrentSession* m_torrentSession = nullptr;
     JobOrchestrator* m_jobOrchestrator = nullptr;
+    PluginHost* m_pluginHost = nullptr;
 
     QVector<CatalogEntry> m_catalogCache;
     QHash<QString, QSet<QString>> m_coverWaiters;
@@ -111,6 +142,7 @@ private:
     QString m_activeQuery;
     QString m_lastAction;
     QString m_catalogStatus;
+    QString m_lastPluginError;
     bool m_catalogLoading = false;
 };
 

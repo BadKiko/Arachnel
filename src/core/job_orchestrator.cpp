@@ -86,10 +86,12 @@ QString JobOrchestrator::pickMagnet(const QStringList& uris) const
 
 QString JobOrchestrator::createJob(const QString& title, JobKind kind, const QString& entryId,
                                    const QString& sourceId, const QString& magnet,
-                                   const QString& saveSubdir, const QString& coverUrl)
+                                   const QString& saveSubdir, const QString& coverUrl,
+                                   const QString& libraryId)
 {
     const QString jobId = QUuid::createUuid().toString(QUuid::WithoutBraces);
-    const QString savePath = m_settings->resolvedDownloadsRoot() + QLatin1Char('/') + saveSubdir;
+    const QString downloadsRoot = m_settings->resolvedDownloadsRoot(libraryId);
+    const QString savePath = downloadsRoot + QLatin1Char('/') + saveSubdir;
 
     JobEntry job;
     job.id = jobId;
@@ -103,6 +105,7 @@ QString JobOrchestrator::createJob(const QString& title, JobKind kind, const QSt
     job.magnetUri = magnet;
     job.savePath = savePath;
     job.coverUrl = coverUrl;
+    job.libraryId = libraryId.isEmpty() ? m_settings->defaultLibraryId() : libraryId;
     job.createdAt = isoNow();
     m_jobKinds.insert(jobId, kind);
 
@@ -151,6 +154,7 @@ JobEntry JobOrchestrator::jobFromModelRow(int row) const
     job.magnetUri = m_jobs->data(idx, JobModel::MagnetUriRole).toString();
     job.savePath = m_jobs->data(idx, JobModel::SavePathRole).toString();
     job.coverUrl = m_jobs->data(idx, JobModel::CoverUrlRole).toString();
+    job.libraryId = m_jobs->data(idx, JobModel::LibraryIdRole).toString();
     job.createdAt = m_jobs->data(idx, JobModel::CreatedAtRole).toString();
     job.completedAt = m_jobs->data(idx, JobModel::CompletedAtRole).toString();
     return job;
@@ -161,7 +165,8 @@ void JobOrchestrator::updateJobInModel(const JobEntry& job)
     m_jobs->updateJob(job);
 }
 
-QString JobOrchestrator::startCatalogDownload(const CatalogEntry& entry, JobKind kind)
+QString JobOrchestrator::startCatalogDownload(const CatalogEntry& entry, JobKind kind,
+                                              const QString& libraryId)
 {
     const QString magnet = pickMagnet(entry.magnetUris);
     if (magnet.isEmpty())
@@ -181,7 +186,9 @@ QString JobOrchestrator::startCatalogDownload(const CatalogEntry& entry, JobKind
                               ? QStringLiteral("Обновление %1").arg(entry.title)
                               : QStringLiteral("Загрузка %1").arg(entry.title);
 
-    return createJob(title, kind, entry.id, entry.sourceId, magnet, saveSubdir, entry.coverUrl);
+    const QString libId = libraryId.isEmpty() ? m_settings->defaultLibraryId() : libraryId;
+    return createJob(title, kind, entry.id, entry.sourceId, magnet, saveSubdir, entry.coverUrl,
+                     libId);
 }
 
 QString JobOrchestrator::startAddonDownload(const CatalogEntry& parent,
@@ -194,7 +201,7 @@ QString JobOrchestrator::startAddonDownload(const CatalogEntry& parent,
     const QString saveSubdir = QStringLiteral("addons/%1/%2").arg(parent.id, addon.id);
     const QString title = QStringLiteral("Дополнение %1 — %2").arg(parent.title, addon.title);
     return createJob(title, JobKind::Download, addon.id, parent.sourceId, magnet, saveSubdir,
-                     parent.coverUrl);
+                     parent.coverUrl, m_settings->defaultLibraryId());
 }
 
 void JobOrchestrator::cancelJob(const QString& jobId)
@@ -244,6 +251,53 @@ void JobOrchestrator::toggleJobPause(const QString& jobId)
 
     updateJobInModel(job);
     persistJob(job);
+}
+
+void JobOrchestrator::removeJob(const QString& jobId)
+{
+    const int row = m_jobs->indexOfJob(jobId);
+    if (row < 0)
+        return;
+
+    JobEntry job = jobFromModelRow(row);
+    if (!isJobTerminal(job.status)) {
+        if (isJobRunning(job.status) || job.status == QStringLiteral("starting"))
+            m_torrent->cancel(jobId, false);
+        else
+            m_torrent->removeResumeFile(jobId);
+    } else {
+        m_torrent->removeResumeFile(jobId);
+    }
+
+    m_jobs->removeJob(jobId);
+    m_jobStore->removeJob(jobId);
+    m_jobKinds.remove(jobId);
+}
+
+void JobOrchestrator::retryJob(const QString& jobId)
+{
+    const int row = m_jobs->indexOfJob(jobId);
+    if (row < 0)
+        return;
+
+    JobEntry job = jobFromModelRow(row);
+    if (job.status != QStringLiteral("failed") && job.status != QStringLiteral("cancelled"))
+        return;
+    if (job.magnetUri.isEmpty())
+        return;
+
+    m_torrent->removeResumeFile(jobId);
+
+    job.status = QStringLiteral("starting");
+    job.progress = 0;
+    job.detail = QStringLiteral("Подключение…");
+    job.bytesDownloaded = 0;
+    job.totalBytes = 0;
+    job.completedAt.clear();
+    m_jobKinds.insert(jobId, job.kind);
+    updateJobInModel(job);
+    persistJob(job);
+    startTorrent(job);
 }
 
 void JobOrchestrator::clearFinishedJobs()
@@ -343,7 +397,7 @@ void JobOrchestrator::onTorrentFinished(const QString& jobId, const QString& sav
     updateJobInModel(job);
     persistJob(job);
 
-    emit downloadCompleted(jobId, job.entryId, job.sourceId, savePath, kind);
+    emit downloadCompleted(jobId, job.entryId, job.sourceId, savePath, kind, job.libraryId);
     m_jobKinds.remove(jobId);
 }
 

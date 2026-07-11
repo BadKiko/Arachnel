@@ -120,7 +120,7 @@ MD.ApplicationWindow {
                 onOpenCatalog: root.goToPage(1)
                 onOpenDownloads: root.goToPage(2)
                 onOpenSettings: settingsSheet.openSettings()
-                onAddSourceRequested: settingsSheet.openSources(true)
+                onAddSourceRequested: settingsSheet.openPlugins()
 
                 Behavior on opacity {
                     NumberAnimation {
@@ -146,7 +146,7 @@ MD.ApplicationWindow {
                 onOpenGame: function (id) { root.openGameDetails(id, true) }
                 onSelectedSourceIdChanged: root.catalogSourceId = selectedSourceId
                 onOpenSettings: settingsSheet.openSettings()
-                onAddSourceRequested: settingsSheet.openSources(true)
+                onAddSourceRequested: settingsSheet.openPlugins()
 
                 Behavior on opacity {
                     NumberAnimation {
@@ -192,6 +192,9 @@ MD.ApplicationWindow {
         GameDetailsPage {
             transformOrigin: Item.Center
             onBackRequested: root.closeGameDetails()
+            onOpenInstallPicker: function (entryId, title) {
+                installLocationSheet.openForEntry(entryId, title)
+            }
         }
     }
 
@@ -305,6 +308,11 @@ MD.ApplicationWindow {
 
     SettingsSheet {
         id: settingsSheet
+        anchors.fill: parent
+    }
+
+    InstallLocationSheet {
+        id: installLocationSheet
         anchors.fill: parent
     }
 

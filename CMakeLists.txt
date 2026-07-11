@@ -22,6 +22,7 @@ find_package(Qt6 REQUIRED COMPONENTS
     QuickControls2
     ShaderTools
     QuickPrivate
+    Concurrent
 )
 if(UNIX AND NOT APPLE AND NOT ANDROID)
     find_package(Qt6 REQUIRED COMPONENTS DBus)
@@ -30,6 +31,7 @@ endif()
 qt_standard_project_setup(REQUIRES 6.8)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/ArachnelLibtorrent.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/ArachnelPlugins.cmake)
 
 include(FetchContent)
 FetchContent_Declare(
@@ -92,12 +94,19 @@ qt_add_executable(arachnel_app
     src/core/job_status.cpp
     src/core/job_store.cpp
     src/core/settings_store.cpp
+    src/core/storage_library.cpp
+    src/core/storage_library_model.cpp
+    src/core/file_utils.cpp
     src/core/library_store.cpp
     src/core/catalog_feed_loader.cpp
+    src/core/catalog_parser.cpp
     src/core/game_metadata_service.cpp
     src/core/cover_image_cache.cpp
     src/core/torrent_session.cpp
     src/core/job_orchestrator.cpp
+    src/core/plugin_api.cpp
+    src/core/plugin_host.cpp
+    src/core/process_launcher.cpp
     src/core/core_controller.cpp
 )
 
@@ -135,6 +144,7 @@ target_link_libraries(arachnel_app
         Qt6::Core
         Qt6::Gui
         Qt6::Network
+        Qt6::Concurrent
         Qt6::Qml
         Qt6::Quick
         qml_material::qml_material
@@ -143,3 +153,8 @@ target_link_libraries(arachnel_app
 qt_import_qml_plugins(arachnel_app)
 
 arachnel_setup_libtorrent(arachnel_app)
+arachnel_deploy_plugins(arachnel_app)
+
+if(WIN32)
+    target_link_libraries(arachnel_app PRIVATE ole32 shell32)
+endif()
