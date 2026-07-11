@@ -5,3 +5,5 @@ compile_commands.json
 *.user
 *.autosave
 CMakeUserPresets.json
+build-debug/
+build-win/

@@ -15,6 +15,9 @@ MD.ApplicationWindow {
     minimumHeight: 720
     title: qsTr("Arachnel")
     color: MD.Token.color.surface_container
+    flags: customTitleBar ? (Qt.Window | Qt.FramelessWindowHint) : Qt.Window
+
+    readonly property bool customTitleBar: Qt.platform.os === "windows"
 
     MD.MProp.textColor: MD.MProp.color.on_surface
     MD.MProp.backgroundColor: MD.MProp.color.surface_container
@@ -192,93 +195,112 @@ MD.ApplicationWindow {
         }
     }
 
-    RowLayout {
+    ColumnLayout {
         anchors.fill: parent
         spacing: 0
 
-        AppRail {
-            id: navRail
-            Layout.fillHeight: true
-            model: root.navModel
-            currentIndex: root.pageIndex
-            downloadBadge: root.downloadBadge
-            onActivated: function (index) { root.goToPage(index) }
-            onSettingsRequested: settingsSheet.openSettings()
+        AppTitleBar {
+            visible: root.customTitleBar
+            Layout.fillWidth: true
+            window: root
         }
 
-        ColumnLayout {
+        RowLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            Layout.topMargin: MD.Token.spacing.small
-            Layout.rightMargin: MD.Token.spacing.small
-            Layout.bottomMargin: MD.Token.spacing.small
             spacing: 0
 
-            MD.Pane {
-                id: mainPane
+            AppRail {
+                id: navRail
+                Layout.fillHeight: true
+                model: root.navModel
+                currentIndex: root.pageIndex
+                downloadBadge: root.downloadBadge
+                onActivated: function (index) { root.goToPage(index) }
+                onSettingsRequested: settingsSheet.openSettings()
+            }
+
+            ColumnLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                padding: 0
-                radius: MD.Token.shape.corner.extra_large
-                backgroundColor: MD.Token.color.surface
-                clip: true
+                Layout.topMargin: MD.Token.spacing.small
+                Layout.rightMargin: MD.Token.spacing.small
+                Layout.bottomMargin: MD.Token.spacing.small
+                spacing: 0
 
-                ColumnLayout {
-                    anchors.fill: parent
-                    spacing: 0
+                MD.Pane {
+                    id: mainPane
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    padding: 0
+                    radius: MD.Token.shape.corner.extra_large
+                    backgroundColor: MD.Token.color.surface
+                    clip: true
 
-                    MD.Pane {
-                        Layout.fillWidth: true
-                        padding: MD.Token.spacing.medium
-                        backgroundColor: "transparent"
-                        visible: !root.detailsOpen
-                        opacity: root.detailsOpen ? 0 : 1
+                    ColumnLayout {
+                        anchors.fill: parent
+                        spacing: 0
 
-                        Behavior on opacity {
-                            NumberAnimation {
-                                duration: pageStack.exitDuration
-                                easing: MD.Token.easing.emphasized_accelerate
-                            }
-                        }
+                        MD.Pane {
+                            Layout.fillWidth: true
+                            padding: MD.Token.spacing.medium
+                            backgroundColor: "transparent"
+                            visible: !root.detailsOpen
+                            opacity: root.detailsOpen ? 0 : 1
 
-                        RowLayout {
-                            width: parent.width
-                            spacing: MD.Token.spacing.medium
-
-                            MD.SearchBar {
-                                id: globalSearch
-                                Layout.fillWidth: true
-                                Layout.maximumWidth: 720
-                                Layout.alignment: Qt.AlignHCenter
-                                onAccepted: {
-                                    root.goToPage(1)
-                                    if (!root.catalogSourceId.length)
-                                        root.catalogSourceId = Core.sources.firstEnabledId
-                                    if (root.catalogSourceId.length)
-                                        Core.searchCatalog(root.catalogSourceId, searchText)
+                            Behavior on opacity {
+                                NumberAnimation {
+                                    duration: pageStack.exitDuration
+                                    easing: MD.Token.easing.emphasized_accelerate
                                 }
                             }
 
-                            Item { Layout.fillWidth: true }
+                            RowLayout {
+                                width: parent.width
+                                spacing: MD.Token.spacing.medium
 
-                            MD.IconButton {
-                                mdState.type: MD.Enum.IBtStandard
-                                icon.name: MD.Token.icon.notifications
-                                onClicked: snackbar.show(qsTr("Уведомлений пока нет"))
+                                MD.SearchBar {
+                                    id: globalSearch
+                                    Layout.fillWidth: true
+                                    Layout.maximumWidth: 720
+                                    Layout.alignment: Qt.AlignHCenter
+                                    onAccepted: {
+                                        root.goToPage(1)
+                                        if (!root.catalogSourceId.length)
+                                            root.catalogSourceId = Core.sources.firstEnabledId
+                                        if (root.catalogSourceId.length)
+                                            Core.searchCatalog(root.catalogSourceId, searchText)
+                                    }
+                                }
+
+                                Item { Layout.fillWidth: true }
+
+                                MD.IconButton {
+                                    mdState.type: MD.Enum.IBtStandard
+                                    icon.name: MD.Token.icon.notifications
+                                    onClicked: snackbar.show(qsTr("Уведомлений пока нет"))
+                                }
                             }
                         }
-                    }
 
-                    PageNavigator {
-                        id: pageStack
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        clip: true
-                        initialItem: mainPagesComponent
+                        PageNavigator {
+                            id: pageStack
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            clip: true
+                            initialItem: mainPagesComponent
+                        }
                     }
                 }
             }
         }
+    }
+
+    WindowResizeEdges {
+        anchors.fill: parent
+        visible: root.customTitleBar
+        window: root
+        z: 1000
     }
 
     SettingsSheet {
