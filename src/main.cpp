@@ -2,6 +2,7 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlError>
+#include <QStyleHints>
 #include <QString>
 #include <cstdio>
 

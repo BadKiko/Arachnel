@@ -31,12 +31,15 @@ Item {
         MD.Token.themeMode = store.themeMode
         MD.Token.color.paletteType = store.paletteType
         MD.Token.color.accentColor = store.accentColor
+        Qt.styleHints.colorScheme = store.themeMode === MD.Enum.Dark ? Qt.Dark : Qt.Light
     }
 
     function setThemeMode(mode) {
         store.themeMode = mode
-        if (!applying)
+        if (!applying) {
             MD.Token.themeMode = mode
+            Qt.styleHints.colorScheme = mode === MD.Enum.Dark ? Qt.Dark : Qt.Light
+        }
     }
 
     function setPaletteType(paletteType) {
