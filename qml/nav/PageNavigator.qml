@@ -46,9 +46,12 @@ MD.StackView {
     }
 
     function navigatePush(component, properties, immediate) {
-        if (immediate)
-            return push(component, properties || {}, StackView.Immediate)
-        return push(component, properties || {})
+        const item = immediate
+            ? push(component, properties || {}, StackView.Immediate)
+            : push(component, properties || {})
+        if (immediate && !busy)
+            restoreCurrent()
+        return item
     }
 
     function navigatePop(immediate) {

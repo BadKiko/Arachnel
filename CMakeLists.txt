@@ -4,7 +4,14 @@ project(arachnel LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-option(ARACHNEL_FAST_BUILD "Faster dev builds: skip QML cachegen, unity-build libtorrent" ON)
+option(ARACHNEL_FAST_BUILD "Faster dev builds: skip QML cachegen" ON)
+if(WIN32)
+    option(ARACHNEL_LIBTORRENT_SHARED "Build libtorrent as DLL (much faster incremental links)" ON)
+else()
+    option(ARACHNEL_LIBTORRENT_SHARED "Build libtorrent as shared library" OFF)
+endif()
+
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
 
 find_package(Qt6 REQUIRED COMPONENTS
     Core

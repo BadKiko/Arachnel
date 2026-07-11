@@ -11,9 +11,12 @@ Flickable {
     property bool editing: false
     property string sourceId: ""
     property bool sourceEnabled: true
+    property bool openCreate: false
 
     signal saved()
     signal cancelled()
+
+    anchors.fill: parent
 
     contentWidth: width
     contentHeight: body.implicitHeight
@@ -41,6 +44,11 @@ Flickable {
         descriptionField.text = description
         errorLabel.text = ""
         nameField.forceActiveFocus()
+    }
+
+    Component.onCompleted: {
+        if (openCreate)
+            loadCreate()
     }
 
     function save() {

@@ -34,13 +34,13 @@ ColumnLayout {
         // otherwise sheet enter + page fade stack and feel jumpy.
         if (pendingSection === "sources") {
             pendingSection = ""
-            stack.navigatePush(sourcesComponent, {}, true)
             if (pendingCreateSource) {
                 pendingCreateSource = false
-                const page = stack.navigatePush(sourceFormComponent, {}, true)
-                if (page)
-                    page.loadCreate()
+                stack.navigatePush(sourceFormComponent, { openCreate: true }, true)
+            } else {
+                stack.navigatePush(sourcesComponent, {}, true)
             }
+            stack.restoreCurrent()
         } else if (pendingSection.length) {
             const section = pendingSection
             pendingSection = ""
