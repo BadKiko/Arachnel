@@ -92,7 +92,40 @@ https://gitlab.com/BadKiko/freetp-hydra-link/-/raw/main/games.json?ref_type=head
 ## Метаданные (обложка, описание)
 
 Ядро обогащает записи через Steam Store Search API по `title`:
+
 - обложка: Steam CDN `library_600x900`
 - описание и жанры: `appdetails`
+- локальный кэш: `CoverImageCache`
 
 Плагин источника может переопределить или дополнить метаданные.
+
+## Источники в настройках (промежуточная модель)
+
+До появления `PluginHost` пользователь добавляет источники в UI. В `settings.json`:
+
+```json
+{
+  "libraryRoot": "~/Games/Arachnel",
+  "downloadsRoot": "~/Downloads/Arachnel",
+  "maxConcurrentDownloads": 2,
+  "sources": [
+    {
+      "id": "freetp",
+      "name": "FreeTP",
+      "description": "Торрент-каталог FreeTP",
+      "catalogUrl": "https://gitlab.com/BadKiko/freetp-hydra-link/-/raw/main/games.json?ref_type=heads",
+      "iconName": "storefront",
+      "enabled": true,
+      "capabilities": ["search", "install", "update"]
+    }
+  ]
+}
+```
+
+| Поле | Назначение |
+|------|------------|
+| `id` | Уникальный slug (генерируется из имени при добавлении) |
+| `catalogUrl` | URL JSON-фида — загружается `CatalogFeedLoader` |
+| `enabled` | Показывать чип в каталоге |
+
+Миграция: старое поле `freetpCatalogUrl` автоматически превращается в один источник `freetp`.
