@@ -310,12 +310,9 @@ MD.ApplicationWindow {
 
     MD.SnakeView {
         id: snackbar
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
+        parent: root.overlay
+        anchors.fill: parent
         anchors.leftMargin: 120
-        anchors.margins: MD.Token.spacing.large
-        height: Math.min(implicitHeight, 160)
         bottomToTop: true
     }
 }
