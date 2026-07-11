@@ -140,7 +140,9 @@ void SettingsStore::load()
 {
     QFile file(settingsFilePath());
     if (!file.open(QIODevice::ReadOnly)) {
-        m_sources.clear();
+        if (m_sources.isEmpty())
+            m_sources = defaultSources();
+        save();
         emit libraryRootChanged();
         emit downloadsRootChanged();
         emit maxConcurrentDownloadsChanged();
@@ -184,8 +186,14 @@ void SettingsStore::load()
         }
     }
 
+    bool seededDefaults = false;
+    if (loaded.isEmpty()) {
+        loaded = defaultSources();
+        seededDefaults = true;
+    }
+
     m_sources = std::move(loaded);
-    if (migrated)
+    if (migrated || seededDefaults)
         save();
 
     emit libraryRootChanged();

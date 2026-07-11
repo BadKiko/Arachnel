@@ -18,6 +18,7 @@ struct SourcePluginInfo {
 };
 
 QString slugifySourceId(const QString& name);
+QString defaultFreeTpCatalogUrl();
 QVector<SourcePluginInfo> defaultSources();
 
 class SourcePluginModel : public QAbstractListModel

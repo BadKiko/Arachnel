@@ -23,9 +23,24 @@ QString slugifySourceId(const QString& name)
     return slug;
 }
 
+QString defaultFreeTpCatalogUrl()
+{
+    return QStringLiteral(
+        "https://gitlab.com/BadKiko/freetp-hydra-link/-/raw/main/games.json?ref_type=heads");
+}
+
 QVector<SourcePluginInfo> defaultSources()
 {
-    return {};
+    SourcePluginInfo freetp;
+    freetp.id = QStringLiteral("freetp");
+    freetp.name = QStringLiteral("FreeTP");
+    freetp.description =
+        QStringLiteral("Торрент-каталог FreeTP — magnet-ссылки и дополнения");
+    freetp.catalogUrl = defaultFreeTpCatalogUrl();
+    freetp.iconName = QStringLiteral("storefront");
+    freetp.enabled = true;
+    freetp.capabilities = defaultCapabilities();
+    return {freetp};
 }
 
 SourcePluginModel::SourcePluginModel(QObject* parent)

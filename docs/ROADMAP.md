@@ -10,13 +10,14 @@
 
 ---
 
-## Прогресс (обновлено 2026-07-09)
+## Прогресс (обновлено 2026-07-11)
 
 ### Сделано в этой итерации
 
 | Компонент | Статус |
 |-----------|--------|
-| **Фаза 0.1** SettingsStore | ✅ `~/.local/share/Arachnel/settings.json` |
+| **Фаза 0.1** SettingsStore | ✅ `~/.local/share/PetWork/Arachnel/settings.json` |
+| Дефолтный источник FreeTP | ✅ GitLab URL каталога при первом запуске |
 | **Фаза 0.2** LibraryStore | ✅ `library.json`, компоненты/DLC |
 | **Фаза 0.3** Убран mock | ✅ Библиотека из store, каталог из JSON-фида |
 | **Фаза 0.4** JobOrchestrator | ✅ Очередь torrent-задач, прогресс, отмена |

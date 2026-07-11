@@ -28,9 +28,9 @@ Flickable {
         editing = false
         sourceId = ""
         sourceEnabled = true
-        nameField.text = ""
-        urlField.text = ""
-        descriptionField.text = ""
+        nameField.text = qsTr("FreeTP")
+        urlField.text = "https://gitlab.com/BadKiko/freetp-hydra-link/-/raw/main/games.json?ref_type=heads"
+        descriptionField.text = qsTr("Торрент-каталог FreeTP — magnet-ссылки и дополнения")
         errorLabel.text = ""
         nameField.forceActiveFocus()
     }
