@@ -7,3 +7,5 @@ compile_commands.json
 CMakeUserPresets.json
 build-debug/
 build-win/
+libs/
+libs/config

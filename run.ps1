@@ -4,7 +4,7 @@ $ErrorActionPreference = "Stop"
 
 $ROOT = $PSScriptRoot
 $BUILD_DIR = Join-Path $ROOT "build-win"
-$BUILD_TYPE = if ($env:BUILD_TYPE) { $env:BUILD_TYPE } else { "Debug" }
+$BUILD_TYPE = if ($env:BUILD_TYPE) { $env:BUILD_TYPE } else { "RelWithDebInfo" }
 $env:QT_QML_MATERIAL_IMPORT_PATH = Join-Path $BUILD_DIR "qml_modules"
 $env:QML2_IMPORT_PATH = Join-Path $BUILD_DIR "qml_modules"
 
@@ -70,7 +70,8 @@ function Get-BuildArgs {
         "-B", $BUILD_DIR,
         "-DCMAKE_BUILD_TYPE=$BUILD_TYPE",
         "-DCMAKE_PREFIX_PATH=$($qt.Prefix)",
-        "-DARACHNEL_FAST_BUILD=$(if ($env:ARACHNEL_FAST_BUILD -eq '0') { 'OFF' } else { 'ON' })"
+        "-DARACHNEL_FAST_BUILD=$(if ($env:ARACHNEL_FAST_BUILD -eq '0') { 'OFF' } else { 'ON' })",
+        "-DARACHNEL_LIBTORRENT_SHARED=$(if ($env:ARACHNEL_LIBTORRENT_SHARED -eq '0') { 'OFF' } else { 'ON' })"
     )
 
     if ($qt.Kind -eq "mingw_64") {
@@ -108,9 +109,9 @@ function Get-AppPath {
         (Join-Path $BUILD_DIR "$BUILD_TYPE\arachnel_app.exe")
     )
     foreach ($path in $candidates) {
-        if (Test-Path -LiteralPath $path) { return $path }
+        if (Test-Path -LiteralPath $path) { return (Resolve-Path -LiteralPath $path).Path }
     }
-    return $candidates[0]
+    return (Join-Path $ROOT $candidates[0])
 }
 
 function Ensure-BuildDir {
@@ -171,6 +172,26 @@ function Initialize-QtRuntime {
     if ($runtimePaths.Count -gt 0) {
         $env:Path = ($runtimePaths -join ";") + ";" + $env:Path
     }
+
+    $qtPlugins = Join-Path $Qt.Prefix "plugins"
+    if (Test-Path -LiteralPath $qtPlugins) {
+        $env:QT_PLUGIN_PATH = $qtPlugins
+    }
+}
+
+function Test-QtRuntimeDeployed {
+    param([string]$AppDir)
+
+    $required = @(
+        (Join-Path $AppDir "Qt6Core.dll"),
+        (Join-Path $AppDir "Qt6Gui.dll"),
+        (Join-Path $AppDir "Qt6Qml.dll"),
+        (Join-Path $AppDir "platforms\qwindows.dll")
+    )
+    foreach ($path in $required) {
+        if (-not (Test-Path -LiteralPath $path)) { return $false }
+    }
+    return $true
 }
 
 function Deploy-QtRuntime {
@@ -182,8 +203,7 @@ function Deploy-QtRuntime {
     if (-not $Qt -or -not (Test-Path -LiteralPath $AppPath)) { return }
 
     $appDir = Split-Path -Parent $AppPath
-    $qtCoreDll = Join-Path $appDir "Qt6Core.dll"
-    if (Test-Path -LiteralPath $qtCoreDll) { return }
+    if (Test-QtRuntimeDeployed $appDir) { return }
 
     $windeployqt = Join-Path $Qt.Prefix "bin\windeployqt.exe"
     if (-not (Test-Path -LiteralPath $windeployqt)) {
@@ -203,6 +223,13 @@ function Deploy-QtRuntime {
 function Test-NeedsCmakeConfigure {
     $cache = Join-Path $BUILD_DIR "CMakeCache.txt"
     if (-not (Test-Path -LiteralPath $cache)) { return $true }
+
+    $cacheText = Get-Content -LiteralPath $cache -Raw
+    $wantShared = if ($env:ARACHNEL_LIBTORRENT_SHARED -eq '0') { 'OFF' } else { 'ON' }
+    if ($cacheText -notmatch "ARACHNEL_LIBTORRENT_SHARED:BOOL=$wantShared") {
+        Write-Host "Reconfigure: libtorrent shared/static setting changed" -ForegroundColor Yellow
+        return $true
+    }
 
     $cacheTime = (Get-Item -LiteralPath $cache).LastWriteTimeUtc
     $inputs = @((Join-Path $ROOT "CMakeLists.txt"))
@@ -234,11 +261,28 @@ function Ensure-DevBuild {
     Initialize-QtRuntime $plan.Qt
     Enable-CompileCache
 
+    $appPath = Get-AppPath
+    if (Test-Path -LiteralPath $appPath) {
+        Deploy-QtRuntime $plan.Qt $appPath
+    }
+
     if (Test-NeedsCmakeConfigure) {
         Write-Host "CMake configure ..."
         $configureArgs = $plan.Configure
         & $plan.Cmake @configureArgs
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+        # Static -> shared switch leaves a stale libtorrent build tree.
+        $ltBuild = Join-Path $BUILD_DIR "_deps\libtorrent-build"
+        if ((Test-Path -LiteralPath $ltBuild) -and $env:ARACHNEL_LIBTORRENT_SHARED -ne '0') {
+            $ltDll = Get-ChildItem -Path $ltBuild -Recurse -Filter "libtorrent-rasterbar*.dll" -ErrorAction SilentlyContinue | Select-Object -First 1
+            if (-not $ltDll) {
+                Write-Host "Cleaning stale libtorrent build (switching to shared DLL) ..." -ForegroundColor Yellow
+                Remove-Item -LiteralPath $ltBuild -Recurse -Force -ErrorAction SilentlyContinue
+                & $plan.Cmake @configureArgs
+                if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            }
+        }
     }
 
     Write-Host "Build ..."
@@ -279,7 +323,9 @@ Arachnel dev launcher
 
 Pass app args after options, e.g. .\run.ps1 -- --some-flag
 
-Env: BUILD_TYPE, CMAKE_PREFIX_PATH, ARACHNEL_FAST_BUILD=0 for release QML cache
+Env: BUILD_TYPE (default RelWithDebInfo), CMAKE_PREFIX_PATH, ARACHNEL_FAST_BUILD=0, ARACHNEL_LIBTORRENT_SHARED=0
+
+First time after this update: .\run.ps1 --rebuild  (rebuilds libtorrent as DLL)
 "@
             exit 0
         }
