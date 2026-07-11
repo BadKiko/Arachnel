@@ -23,6 +23,7 @@ QVariantMap jobToMap(const JobEntry& job)
         {QStringLiteral("entryId"), job.entryId},
         {QStringLiteral("sourceId"), job.sourceId},
         {QStringLiteral("coverUrl"), job.coverUrl},
+        {QStringLiteral("libraryId"), job.libraryId},
         {QStringLiteral("savePath"), job.savePath},
         {QStringLiteral("createdAt"), job.createdAt},
         {QStringLiteral("completedAt"), job.completedAt},
@@ -82,6 +83,8 @@ QVariant JobModel::data(const QModelIndex& index, int role) const
         return job.savePath;
     case CoverUrlRole:
         return job.coverUrl;
+    case LibraryIdRole:
+        return job.libraryId;
     case CreatedAtRole:
         return job.createdAt;
     case CompletedAtRole:
@@ -109,6 +112,7 @@ QHash<int, QByteArray> JobModel::roleNames() const
         {MagnetUriRole, "magnetUri"},
         {SavePathRole, "savePath"},
         {CoverUrlRole, "coverUrl"},
+        {LibraryIdRole, "libraryId"},
         {CreatedAtRole, "createdAt"},
         {CompletedAtRole, "completedAt"},
     };

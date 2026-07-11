@@ -22,6 +22,7 @@ struct JobEntry {
     QString magnetUri;
     QString savePath;
     QString coverUrl;
+    QString libraryId;
     QString createdAt;
     QString completedAt;
 };
@@ -49,6 +50,7 @@ public:
         MagnetUriRole,
         SavePathRole,
         CoverUrlRole,
+        LibraryIdRole,
         CreatedAtRole,
         CompletedAtRole,
     };

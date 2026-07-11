@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Controls
 
 import Arachnel.Core 1.0
 import Qcm.Material as MD
@@ -102,6 +103,10 @@ Item {
             spacing: MD.Token.spacing.small
             boundsBehavior: Flickable.StopAtBounds
             model: Core.jobs
+
+            ScrollBar.vertical: MD.ScrollBar {
+                policy: ScrollBar.AsNeeded
+            }
 
             delegate: DownloadJobCard {
                 width: jobsList.width

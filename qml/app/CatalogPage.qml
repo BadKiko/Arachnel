@@ -204,7 +204,7 @@ Item {
                     MD.Button {
                         text: qsTr("Обновить")
                         icon.name: MD.Token.icon.refresh
-            mdState.type: MD.Enum.BtFilledTonal
+                        mdState.type: MD.Enum.BtFilledTonal
                         onClicked: Core.refreshCatalog(root.selectedSourceId)
                     }
                 }
@@ -228,7 +228,7 @@ Item {
             boundsBehavior: Flickable.StopAtBounds
             pixelAligned: true
 
-            ScrollBar.vertical: ScrollBar {
+            ScrollBar.vertical: MD.ScrollBar {
                 policy: ScrollBar.AsNeeded
             }
 

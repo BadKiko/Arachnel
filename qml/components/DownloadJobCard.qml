@@ -20,6 +20,8 @@ MD.ElevationRectangle {
     readonly property bool inProgress: ["starting", "checking", "metadata", "downloading", "seeding", "paused"].includes(status)
     readonly property bool isPaused: status === "paused"
     readonly property bool isFailed: status === "failed" || status === "cancelled"
+    readonly property bool isTerminal: status === "completed" || status === "failed" || status === "cancelled"
+    readonly property bool canRetry: status === "failed" || status === "cancelled"
 
     radius: MD.Token.shape.corner.extra_large
     color: MD.Token.color.surface_container
@@ -80,6 +82,20 @@ MD.ElevationRectangle {
                     mdState.type: MD.Enum.IBtStandard
                     icon.name: MD.Token.icon.close
                     onClicked: Core.cancelJob(root.jobId)
+                }
+
+                MD.IconButton {
+                    visible: root.canRetry
+                    mdState.type: MD.Enum.IBtStandard
+                    icon.name: MD.Token.icon.refresh
+                    onClicked: Core.retryJob(root.jobId)
+                }
+
+                MD.IconButton {
+                    visible: root.isTerminal
+                    mdState.type: MD.Enum.IBtStandard
+                    icon.name: MD.Token.icon.delete
+                    onClicked: Core.removeJob(root.jobId)
                 }
             }
 

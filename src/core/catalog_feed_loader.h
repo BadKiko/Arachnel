@@ -34,6 +34,4 @@ private:
     quint64 m_requestSerial = 0;
 };
 
-QVector<CatalogEntry> parseCatalogFeed(const QByteArray& payload, const QString& sourceId);
-
 } // namespace arachnel::core

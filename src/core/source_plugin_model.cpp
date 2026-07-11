@@ -62,7 +62,13 @@ QVariant SourcePluginModel::data(const QModelIndex& index, int role) const
     case CapabilitiesRole:
         return plugin.capabilities;
     case HasCatalogUrlRole:
-        return !plugin.catalogUrl.trimmed().isEmpty();
+        return plugin.isPlugin || !plugin.catalogUrl.trimmed().isEmpty();
+    case IsPluginRole:
+        return plugin.isPlugin;
+    case PluginVersionRole:
+        return plugin.pluginVersion;
+    case PluginRootPathRole:
+        return plugin.pluginRootPath;
     default:
         return {};
     }
@@ -79,6 +85,9 @@ QHash<int, QByteArray> SourcePluginModel::roleNames() const
         {SourceEnabledRole, "sourceEnabled"},
         {CapabilitiesRole, "capabilities"},
         {HasCatalogUrlRole, "hasCatalogUrl"},
+        {IsPluginRole, "isPlugin"},
+        {PluginVersionRole, "pluginVersion"},
+        {PluginRootPathRole, "pluginRootPath"},
     };
 }
 
@@ -171,6 +180,7 @@ QString SourcePluginModel::addSource(const QString& name, const QString& catalog
     info.catalogUrl = trimmedUrl;
     info.iconName = iconName.trimmed().isEmpty() ? QStringLiteral("storefront") : iconName.trimmed();
     info.enabled = true;
+    info.isPlugin = false;
     info.capabilities = defaultCapabilities();
 
     const int row = m_plugins.size();
@@ -186,7 +196,7 @@ bool SourcePluginModel::updateSource(const QString& id, const QString& name,
                                      const QString& iconName, bool enabled)
 {
     SourcePluginInfo* plugin = pluginByIdMutable(id);
-    if (!plugin)
+    if (!plugin || plugin->isPlugin)
         return false;
 
     const QString trimmedName = name.trimmed();
@@ -221,6 +231,8 @@ bool SourcePluginModel::removeSource(const QString& id)
     for (int i = 0; i < m_plugins.size(); ++i) {
         if (m_plugins.at(i).id != id)
             continue;
+        if (m_plugins.at(i).isPlugin)
+            return false;
         beginRemoveRows({}, i, i);
         m_plugins.removeAt(i);
         endRemoveRows();

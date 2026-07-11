@@ -38,6 +38,7 @@ JobEntry jobFromJson(const QJsonObject& obj)
     job.magnetUri = obj.value(QStringLiteral("magnetUri")).toString();
     job.savePath = obj.value(QStringLiteral("savePath")).toString();
     job.coverUrl = obj.value(QStringLiteral("coverUrl")).toString();
+    job.libraryId = obj.value(QStringLiteral("libraryId")).toString();
     job.createdAt = obj.value(QStringLiteral("createdAt")).toString();
     job.completedAt = obj.value(QStringLiteral("completedAt")).toString();
     return job;
@@ -59,6 +60,7 @@ QJsonObject jobToJson(const JobEntry& job)
     obj.insert(QStringLiteral("magnetUri"), job.magnetUri);
     obj.insert(QStringLiteral("savePath"), job.savePath);
     obj.insert(QStringLiteral("coverUrl"), job.coverUrl);
+    obj.insert(QStringLiteral("libraryId"), job.libraryId);
     obj.insert(QStringLiteral("createdAt"), job.createdAt);
     obj.insert(QStringLiteral("completedAt"), job.completedAt);
     return obj;

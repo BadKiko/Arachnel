@@ -16,8 +16,6 @@ Flickable {
     signal saved()
     signal cancelled()
 
-    anchors.fill: parent
-
     contentWidth: width
     contentHeight: body.implicitHeight
     clip: true

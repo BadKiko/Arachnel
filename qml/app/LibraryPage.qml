@@ -108,7 +108,7 @@ Item {
                     MD.Label {
                         Layout.fillWidth: true
                         Layout.maximumWidth: 520
-                        text: qsTr("Библиотека пуста. Добавьте источник каталога, установите игру — и она появится здесь.")
+                        text: qsTr("Библиотека пуста. Установите плагин источника, выберите игру в каталоге — и она появится здесь.")
                         color: MD.Token.color.on_surface_variant
                         typescale: MD.Token.typescale.body_medium
                         wrapMode: Text.WordWrap
@@ -121,7 +121,7 @@ Item {
                         MD.Button {
                             text: Core.sources.enabledCount > 0
                                   ? qsTr("Открыть каталог")
-                                  : qsTr("Добавить источник")
+                                  : qsTr("Установить плагин")
                             icon.name: Core.sources.enabledCount > 0
                                        ? MD.Token.icon.storefront
                                        : MD.Token.icon.add
@@ -161,8 +161,8 @@ Item {
                         {
                             icon: MD.Token.icon.extension,
                             step: qsTr("Шаг 1"),
-                            title: qsTr("Источник"),
-                            body: qsTr("Укажите URL JSON-каталога (Hydra/FreeTP) в настройках.")
+                            title: qsTr("Плагин"),
+                            body: qsTr("Установите плагин источника (FreeTP и др.) в Настройки → Плагины.")
                         },
                         {
                             icon: MD.Token.icon.storefront,

@@ -89,6 +89,8 @@ Flickable {
                     required property string catalogUrl
                     required property bool sourceEnabled
                     required property bool hasCatalogUrl
+                    required property bool isPlugin
+                    required property string pluginVersion
 
                     Layout.fillWidth: true
                     radius: MD.Token.shape.corner.large
@@ -140,7 +142,15 @@ Flickable {
 
                         MD.Label {
                             Layout.fillWidth: true
-                            visible: sourceCard.catalogUrl.length > 0
+                            visible: sourceCard.isPlugin && sourceCard.pluginVersion.length > 0
+                            text: qsTr("Плагин · v%1").arg(sourceCard.pluginVersion)
+                            color: MD.Token.color.primary
+                            typescale: MD.Token.typescale.label_small
+                        }
+
+                        MD.Label {
+                            Layout.fillWidth: true
+                            visible: !sourceCard.isPlugin && sourceCard.catalogUrl.length > 0
                             text: sourceCard.catalogUrl
                             color: MD.Token.color.on_surface_variant
                             typescale: MD.Token.typescale.label_small
@@ -166,6 +176,7 @@ Flickable {
                             }
 
                             MD.Button {
+                                visible: !sourceCard.isPlugin
                                 mdState.type: MD.Enum.BtText
                                 text: qsTr("Изменить")
                                 onClicked: root.editSourceRequested(
@@ -177,6 +188,7 @@ Flickable {
                             }
 
                             MD.Button {
+                                visible: !sourceCard.isPlugin
                                 mdState.type: MD.Enum.BtText
                                 text: qsTr("Удалить")
                                 onClicked: Core.sources.removeSource(sourceCard.pluginId)
@@ -193,7 +205,7 @@ Flickable {
             Layout.rightMargin: contentMargin
             Layout.bottomMargin: MD.Token.spacing.medium
             mdState.type: MD.Enum.BtFilledTonal
-            text: qsTr("Добавить источник")
+            text: qsTr("Добавить JSON-источник")
             onClicked: root.addSourceRequested()
         }
     }

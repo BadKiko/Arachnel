@@ -8,4 +8,4 @@ CMakeUserPresets.json
 build-debug/
 build-win/
 libs/
-libs/config
+plugins/freetp/games.json

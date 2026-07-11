@@ -24,22 +24,25 @@ public:
 
     void restoreJobs();
     void flushPersistence();
-    QString startCatalogDownload(const CatalogEntry& entry, JobKind kind);
+    QString startCatalogDownload(const CatalogEntry& entry, JobKind kind,
+                                 const QString& libraryId = {});
     QString startAddonDownload(const CatalogEntry& parent, const CatalogComponent& addon);
     void cancelJob(const QString& jobId);
     void toggleJobPause(const QString& jobId);
+    void removeJob(const QString& jobId);
+    void retryJob(const QString& jobId);
     void clearFinishedJobs();
 
 signals:
     void downloadCompleted(const QString& jobId, const QString& entryId, const QString& sourceId,
-                           const QString& savePath, JobKind kind);
+                           const QString& savePath, JobKind kind, const QString& libraryId);
     void downloadFailed(const QString& jobId, const QString& error);
 
 private:
     QString pickMagnet(const QStringList& uris) const;
     QString createJob(const QString& title, JobKind kind, const QString& entryId,
                       const QString& sourceId, const QString& magnet, const QString& saveSubdir,
-                      const QString& coverUrl);
+                      const QString& coverUrl, const QString& libraryId = {});
     void startTorrent(const JobEntry& job);
     void persistJob(const JobEntry& job);
     JobEntry jobFromModelRow(int row) const;

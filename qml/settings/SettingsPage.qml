@@ -48,6 +48,8 @@ ColumnLayout {
                 stack.navigatePush(storageComponent, {}, true)
             else if (section === "appearance")
                 stack.navigatePush(appearanceComponent, {}, true)
+            else if (section === "plugins")
+                stack.navigatePush(pluginsComponent, {}, true)
             else
                 openSection(section)
         } else {
@@ -65,7 +67,9 @@ ColumnLayout {
     }
 
     function openSection(sectionId) {
-        if (sectionId === "sources")
+        if (sectionId === "plugins")
+            stack.navigatePush(pluginsComponent)
+        else if (sectionId === "sources")
             openSources()
         else if (sectionId === "storage")
             stack.navigatePush(storageComponent)
@@ -113,9 +117,17 @@ ColumnLayout {
     }
 
     Component {
+        id: pluginsComponent
+        SettingsPluginsPage {
+            property string pageTitle: qsTr("Плагины")
+            contentMargin: root.contentMargin
+        }
+    }
+
+    Component {
         id: sourcesComponent
         SettingsSourcesPage {
-            property string pageTitle: qsTr("Источники")
+            property string pageTitle: qsTr("JSON-источники")
             contentMargin: root.contentMargin
             onAddSourceRequested: root.openSourceCreate()
             onEditSourceRequested: function (pluginId, name, catalogUrl, description, sourceEnabled) {

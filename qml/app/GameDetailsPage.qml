@@ -68,6 +68,19 @@ Item {
     }
 
     signal backRequested()
+    signal openInstallPicker(string entryId, string title)
+
+    function beginInstall() {
+        if (Core.needsInstallLocationChoice())
+            root.openInstallPicker(root.gameId, root.info.title || "")
+        else
+            Core.installCatalogEntry(root.gameId)
+    }
+
+    function confirmRemove() {
+        Core.removeGame(root.gameId, true)
+        root.backRequested()
+    }
 
     Flickable {
         id: flick
@@ -198,8 +211,16 @@ Item {
                             downloading: root.downloadActive
                             paused: root.downloadPaused
                             completed: root.downloadCompleted
-                            onActivated: Core.installCatalogEntry(root.gameId)
+                            onActivated: root.beginInstall()
                             onPauseToggleRequested: Core.toggleJobPause(root.downloadJob.jobId)
+                        }
+
+                        MD.Button {
+                            visible: root.installed
+                            text: qsTr("Удалить")
+                            icon.name: MD.Token.icon.delete
+                            mdState.type: MD.Enum.BtOutlined
+                            onClicked: removeDialog.open()
                         }
 
                         MD.Button {
@@ -382,6 +403,33 @@ Item {
                             }
                         }
                     }
+                }
+            }
+        }
+    }
+
+    MD.Dialog {
+        id: removeDialog
+        title: qsTr("Удалить игру?")
+
+        MD.Label {
+            text: qsTr("Файлы игры будут удалены с диска. Это действие нельзя отменить.")
+            wrapMode: Text.WordWrap
+            typescale: MD.Token.typescale.body_medium
+        }
+
+        MD.DialogButtonBox {
+            MD.Button {
+                mdState.type: MD.Enum.BtText
+                text: qsTr("Отмена")
+                onClicked: removeDialog.close()
+            }
+            MD.Button {
+                mdState.type: MD.Enum.BtFilled
+                text: qsTr("Удалить")
+                onClicked: {
+                    removeDialog.close()
+                    root.confirmRemove()
                 }
             }
         }
