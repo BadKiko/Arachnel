@@ -730,8 +730,8 @@
         </message>
         <message>
             <location filename="../qml/settings/SettingsAppearancePage.qml" line="198" />
-            <source>Missing your language? Help translate Arachnel on Weblate or send a pull request with translations/*.ts files.</source>
-            <translation>Нет вашего языка? Помогите перевести Arachnel на Weblate или отправьте pull request с файлами translations/*.ts.</translation>
+            <source>Missing your language? Help translate Arachnel on &lt;a href=&quot;%1&quot;&gt;Weblate&lt;/a&gt; or send a pull request with translations/*.ts files.</source>
+            <translation>Нет вашего языка? Помогите перевести Arachnel на &lt;a href=&quot;%1&quot;&gt;Weblate&lt;/a&gt; или отправьте pull request с файлами translations/*.ts.</translation>
         </message>
         <message>
             <location filename="../qml/settings/SettingsAppearancePage.qml" line="205" />
