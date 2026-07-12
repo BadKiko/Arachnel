@@ -17,6 +17,17 @@ QString catalogItemKindLabel(CatalogItemKind kind)
     return QStringLiteral("Компонент");
 }
 
+QString componentDeliveryLabel(ComponentDelivery delivery)
+{
+    switch (delivery) {
+    case ComponentDelivery::Direct:
+        return QStringLiteral("Прямая");
+    case ComponentDelivery::Magnet:
+        return QStringLiteral("Торрент");
+    }
+    return QStringLiteral("Загрузка");
+}
+
 QString slugifyCatalogId(const QString& title, const QString& sourceId)
 {
     QString slug = title.toLower();

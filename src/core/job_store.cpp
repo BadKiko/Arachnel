@@ -39,6 +39,10 @@ JobEntry jobFromJson(const QJsonObject& obj)
     job.savePath = obj.value(QStringLiteral("savePath")).toString();
     job.coverUrl = obj.value(QStringLiteral("coverUrl")).toString();
     job.libraryId = obj.value(QStringLiteral("libraryId")).toString();
+    job.parentEntryId = obj.value(QStringLiteral("parentEntryId")).toString();
+    job.referer = obj.value(QStringLiteral("referer")).toString();
+    job.httpDownload = obj.value(QStringLiteral("httpDownload")).toBool(false);
+    job.artifactPath = obj.value(QStringLiteral("artifactPath")).toString();
     job.createdAt = obj.value(QStringLiteral("createdAt")).toString();
     job.completedAt = obj.value(QStringLiteral("completedAt")).toString();
     return job;
@@ -61,6 +65,10 @@ QJsonObject jobToJson(const JobEntry& job)
     obj.insert(QStringLiteral("savePath"), job.savePath);
     obj.insert(QStringLiteral("coverUrl"), job.coverUrl);
     obj.insert(QStringLiteral("libraryId"), job.libraryId);
+    obj.insert(QStringLiteral("parentEntryId"), job.parentEntryId);
+    obj.insert(QStringLiteral("referer"), job.referer);
+    obj.insert(QStringLiteral("httpDownload"), job.httpDownload);
+    obj.insert(QStringLiteral("artifactPath"), job.artifactPath);
     obj.insert(QStringLiteral("createdAt"), job.createdAt);
     obj.insert(QStringLiteral("completedAt"), job.completedAt);
     return obj;

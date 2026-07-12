@@ -14,13 +14,25 @@ enum class CatalogItemKind {
     Addon,
 };
 
+enum class ComponentDelivery {
+    Magnet = 0,
+    Direct,
+};
+
+QString componentDeliveryLabel(ComponentDelivery delivery);
+
 struct CatalogComponent {
     QString id;
     QString title;
     QStringList magnetUris;
+    QString downloadUrl;
+    QString referer;
+    QString getfileUrl;
     QString fileSize;
     QString uploadDate;
     CatalogItemKind kind = CatalogItemKind::Dlc;
+    ComponentDelivery delivery = ComponentDelivery::Magnet;
+    bool optional = false;
 };
 
 struct CatalogEntry {

@@ -1,5 +1,5 @@
 #Requires -Version 5.1
-# Pack freetp plugin for manual install (zip with plugin.json + dll + games.json)
+# Pack freetp plugin for manual install (zip with plugin.json + dll + games-arachnel.json)
 
 $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent $PSScriptRoot

@@ -1,11 +1,21 @@
 #include "archive_installer.h"
 
+#include "file_utils.h"
+
 #include <QDir>
 #include <QDirIterator>
 #include <QFileInfo>
 #include <QProcess>
 #include <QRegularExpression>
 #include <QSet>
+
+#if defined(Q_OS_WIN)
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+#include <shellapi.h>
+#endif
 
 namespace freetp {
 
@@ -100,7 +110,148 @@ bool isExcludedExecutable(const QString& fileName)
     return false;
 }
 
+#if defined(Q_OS_WIN)
+
+QString quoteWindowsArg(const QString& text)
+{
+    if (text.isEmpty())
+        return QStringLiteral("\"\"");
+
+    if (!text.contains(QLatin1Char(' ')) && !text.contains(QLatin1Char('\t'))
+        && !text.contains(QLatin1Char('"')))
+        return text;
+
+    QString escaped;
+    escaped.reserve(text.size() + 4);
+    escaped += QLatin1Char('"');
+    int backslashes = 0;
+    for (const QChar ch : text) {
+        if (ch == QLatin1Char('\\')) {
+            ++backslashes;
+            continue;
+        }
+        if (ch == QLatin1Char('"')) {
+            escaped += QString(backslashes * 2 + 1, QLatin1Char('\\'));
+            backslashes = 0;
+            escaped += QLatin1Char('"');
+            continue;
+        }
+        if (backslashes > 0) {
+            escaped += QString(backslashes, QLatin1Char('\\'));
+            backslashes = 0;
+        }
+        escaped += ch;
+    }
+    if (backslashes > 0)
+        escaped += QString(backslashes * 2, QLatin1Char('\\'));
+    escaped += QLatin1Char('"');
+    return escaped;
+}
+
+QString formatWindowsParameters(const QStringList& arguments)
+{
+    QStringList parts;
+    for (const QString& argument : arguments)
+        parts << quoteWindowsArg(argument);
+    return parts.join(QLatin1Char(' '));
+}
+
+QString describeWin32Error(DWORD error)
+{
+    if (error == ERROR_CANCELLED)
+        return QStringLiteral("запуск отменён (UAC)");
+    if (error == ERROR_ELEVATION_REQUIRED)
+        return QStringLiteral("требуются права администратора");
+    return QStringLiteral("Win32 %1").arg(error);
+}
+
+bool runWindowsProcess(const QString& program, const QStringList& arguments, int timeoutMs,
+                       QString* errorOut, const QString& workingDirectory)
+{
+    if (!QFileInfo::exists(program)) {
+        if (errorOut)
+            *errorOut = QStringLiteral("Файл не найден: %1").arg(program);
+        return false;
+    }
+
+    const QString nativeProgram = QDir::toNativeSeparators(program);
+    const QString parameters = formatWindowsParameters(arguments);
+    const QString nativeWorkDir =
+        workingDirectory.isEmpty() ? QString() : QDir::toNativeSeparators(workingDirectory);
+
+    SHELLEXECUTEINFOW executeInfo{};
+    executeInfo.cbSize = sizeof(executeInfo);
+    executeInfo.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NOZONECHECKS;
+    executeInfo.lpVerb = L"open";
+    executeInfo.lpFile = reinterpret_cast<LPCWSTR>(nativeProgram.utf16());
+    executeInfo.lpParameters = parameters.isEmpty()
+                                   ? nullptr
+                                   : reinterpret_cast<LPCWSTR>(parameters.utf16());
+    executeInfo.lpDirectory = nativeWorkDir.isEmpty()
+                                  ? nullptr
+                                  : reinterpret_cast<LPCWSTR>(nativeWorkDir.utf16());
+    executeInfo.nShow = SW_HIDE;
+
+    if (!ShellExecuteExW(&executeInfo)) {
+        if (errorOut) {
+            *errorOut = QStringLiteral("Не удалось запустить %1: %2")
+                            .arg(nativeProgram, describeWin32Error(GetLastError()));
+        }
+        return false;
+    }
+
+    if (!executeInfo.hProcess) {
+        if (errorOut)
+            *errorOut = QStringLiteral("Не удалось отследить процесс установки");
+        return false;
+    }
+
+    const DWORD waitResult =
+        WaitForSingleObject(executeInfo.hProcess, static_cast<DWORD>(timeoutMs));
+    if (waitResult == WAIT_TIMEOUT) {
+        TerminateProcess(executeInfo.hProcess, 1);
+        CloseHandle(executeInfo.hProcess);
+        if (errorOut)
+            *errorOut = QStringLiteral("Таймаут: %1").arg(nativeProgram);
+        return false;
+    }
+
+    DWORD exitCode = 1;
+    GetExitCodeProcess(executeInfo.hProcess, &exitCode);
+    CloseHandle(executeInfo.hProcess);
+
+    if (exitCode != 0) {
+        if (errorOut)
+            *errorOut = QStringLiteral("%1 завершился с кодом %2").arg(nativeProgram).arg(exitCode);
+        return false;
+    }
+
+    return true;
+}
+
+#endif
+
 } // namespace
+
+bool runInstallProcess(const QString& program, const QStringList& arguments, int timeoutMs,
+                       QString* errorOut, const QString& workingDirectory)
+{
+#if defined(Q_OS_WIN)
+    return runWindowsProcess(program, arguments, timeoutMs, errorOut, workingDirectory);
+#else
+    const QString nativeProgram = QDir::toNativeSeparators(program);
+    const QString nativeWorkDir =
+        workingDirectory.isEmpty() ? QString() : QDir::toNativeSeparators(workingDirectory);
+
+    QProcess process;
+    process.setProgram(nativeProgram);
+    process.setArguments(arguments);
+    if (!nativeWorkDir.isEmpty())
+        process.setWorkingDirectory(nativeWorkDir);
+
+    return runProcess(process, timeoutMs, errorOut);
+#endif
+}
 
 QString findDownloadContentRoot(const QString& downloadPath)
 {
@@ -181,7 +332,7 @@ bool extractArchivesInDirectory(const QString& downloadDir, const QString& destD
         return true;
 
     const QString sevenZip = find7zExecutable();
-  for (const QString& archive : archives) {
+    for (const QString& archive : archives) {
         bool ok = false;
         if (!sevenZip.isEmpty())
             ok = extractWith7z(sevenZip, archive, destDir, errorOut);
@@ -196,6 +347,62 @@ bool extractArchivesInDirectory(const QString& downloadDir, const QString& destD
 
     return true;
 }
+
+namespace {
+
+QString portableSourceRoot(const QString& downloadPath)
+{
+    if (findGameExecutable(downloadPath).isEmpty())
+        return findDownloadContentRoot(downloadPath);
+    return downloadPath;
+}
+
+bool relocatePortableContent(const QString& sourceRoot, const QString& targetPath,
+                             QString* errorOut)
+{
+    QDir source(sourceRoot);
+    QDir target(targetPath);
+    if (!source.exists()) {
+        if (errorOut)
+            *errorOut = QStringLiteral("Исходная папка не найдена: %1").arg(sourceRoot);
+        return false;
+    }
+
+    const QString canonicalSource = source.canonicalPath();
+    const QString canonicalTarget = target.canonicalPath();
+    if (canonicalSource == canonicalTarget)
+        return true;
+
+    if (canonicalTarget.startsWith(canonicalSource + QLatin1Char('/'), Qt::CaseInsensitive)) {
+        if (errorOut)
+            *errorOut = QStringLiteral("Некорректный путь установки");
+        return false;
+    }
+
+    if (!target.exists() && !QDir().mkpath(targetPath)) {
+        if (errorOut)
+            *errorOut = QStringLiteral("Не удалось создать папку установки");
+        return false;
+    }
+
+    const QStringList entries = source.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot);
+    if (entries.isEmpty()) {
+        if (errorOut)
+            *errorOut = QStringLiteral("Нет файлов для установки");
+        return false;
+    }
+
+    for (const QString& entry : entries) {
+        const QString srcPath = source.absoluteFilePath(entry);
+        const QString dstPath = target.absoluteFilePath(entry);
+        if (!arachnel::core::movePathRecursive(srcPath, dstPath, errorOut))
+            return false;
+    }
+
+    return true;
+}
+
+} // namespace
 
 QString installPortableFromDownload(const QString& downloadPath, const QString& targetPath,
                                     QString* errorOut)
@@ -221,30 +428,77 @@ QString installPortableFromDownload(const QString& downloadPath, const QString& 
         return {};
     }
 
-    QString workRoot = downloadPath;
-    if (downloadInfo.isFile()) {
-        workRoot = downloadInfo.absolutePath();
-    }
+    const QString workRoot =
+        downloadInfo.isFile() ? downloadInfo.absolutePath() : downloadPath;
+    const QString sourceRoot = portableSourceRoot(workRoot);
 
-    QString extractRoot = targetPath;
     QString extractError;
-    if (!extractArchivesInDirectory(workRoot, extractRoot, &extractError)) {
+    if (!extractArchivesInDirectory(workRoot, targetPath, &extractError)) {
         if (errorOut)
             *errorOut = extractError;
         return {};
     }
 
     QString exe = findGameExecutable(targetPath);
-    if (exe.isEmpty())
-        exe = findGameExecutable(workRoot);
+    if (!exe.isEmpty())
+        return QFileInfo(exe).absolutePath();
 
+    exe = findGameExecutable(sourceRoot);
     if (exe.isEmpty()) {
         if (errorOut)
             *errorOut = QStringLiteral("Исполняемый файл игры не найден после распаковки");
         return {};
     }
 
+    const QString gameRoot = QFileInfo(exe).absolutePath();
+    if (!relocatePortableContent(gameRoot, targetPath, errorOut))
+        return {};
+
+    exe = findGameExecutable(targetPath);
+    if (exe.isEmpty()) {
+        if (errorOut)
+            *errorOut = QStringLiteral("Игра установлена, но исполняемый файл не найден");
+        return {};
+    }
+
     return QFileInfo(exe).absolutePath();
+}
+
+bool installAddonOverlay(const QString& downloadPath, const QString& gameInstallPath,
+                         QString* errorOut)
+{
+    const QFileInfo artifact(downloadPath);
+    if (!artifact.exists()) {
+        if (errorOut)
+            *errorOut = QStringLiteral("Файлы дополнения не найдены");
+        return false;
+    }
+
+    if (!QDir().mkpath(gameInstallPath)) {
+        if (errorOut)
+            *errorOut = QStringLiteral("Не удалось открыть папку игры");
+        return false;
+    }
+
+    if (artifact.isFile()) {
+        for (const QString& suffix : archiveSuffixes()) {
+            if (!downloadPath.endsWith(suffix, Qt::CaseInsensitive))
+                continue;
+            const QString sevenZip = find7zExecutable();
+            if (!sevenZip.isEmpty())
+                return extractWith7z(sevenZip, downloadPath, gameInstallPath, errorOut);
+            if (suffix == QStringLiteral(".zip"))
+                return extractZipWithTar(downloadPath, gameInstallPath, errorOut);
+            if (errorOut)
+                *errorOut = QStringLiteral("Установите 7-Zip для распаковки %1").arg(downloadPath);
+            return false;
+        }
+        if (errorOut)
+            *errorOut = QStringLiteral("Неподдерживаемый файл дополнения");
+        return false;
+    }
+
+    return extractArchivesInDirectory(downloadPath, gameInstallPath, errorOut);
 }
 
 } // namespace freetp

@@ -24,6 +24,10 @@ QVariantMap jobToMap(const JobEntry& job)
         {QStringLiteral("sourceId"), job.sourceId},
         {QStringLiteral("coverUrl"), job.coverUrl},
         {QStringLiteral("libraryId"), job.libraryId},
+        {QStringLiteral("parentEntryId"), job.parentEntryId},
+        {QStringLiteral("referer"), job.referer},
+        {QStringLiteral("httpDownload"), job.httpDownload},
+        {QStringLiteral("artifactPath"), job.artifactPath},
         {QStringLiteral("savePath"), job.savePath},
         {QStringLiteral("createdAt"), job.createdAt},
         {QStringLiteral("completedAt"), job.completedAt},
@@ -85,6 +89,14 @@ QVariant JobModel::data(const QModelIndex& index, int role) const
         return job.coverUrl;
     case LibraryIdRole:
         return job.libraryId;
+    case ParentEntryIdRole:
+        return job.parentEntryId;
+    case RefererRole:
+        return job.referer;
+    case HttpDownloadRole:
+        return job.httpDownload;
+    case ArtifactPathRole:
+        return job.artifactPath;
     case CreatedAtRole:
         return job.createdAt;
     case CompletedAtRole:
@@ -113,6 +125,10 @@ QHash<int, QByteArray> JobModel::roleNames() const
         {SavePathRole, "savePath"},
         {CoverUrlRole, "coverUrl"},
         {LibraryIdRole, "libraryId"},
+        {ParentEntryIdRole, "parentEntryId"},
+        {RefererRole, "referer"},
+        {HttpDownloadRole, "httpDownload"},
+        {ArtifactPathRole, "artifactPath"},
         {CreatedAtRole, "createdAt"},
         {CompletedAtRole, "completedAt"},
     };
@@ -137,6 +153,30 @@ QVariantMap JobModel::jobForEntry(const QString& entryId) const
     const JobEntry* anyMatch = nullptr;
     for (const auto& job : m_jobs) {
         if (job.entryId != entryId)
+            continue;
+        anyMatch = &job;
+        if (isJobInProgress(job.status)) {
+            activeMatch = &job;
+            break;
+        }
+    }
+
+    if (activeMatch)
+        return jobToMap(*activeMatch);
+    if (anyMatch)
+        return jobToMap(*anyMatch);
+    return {};
+}
+
+QVariantMap JobModel::jobForAddon(const QString& parentEntryId, const QString& addonId) const
+{
+    if (parentEntryId.isEmpty() || addonId.isEmpty())
+        return {};
+
+    const JobEntry* activeMatch = nullptr;
+    const JobEntry* anyMatch = nullptr;
+    for (const auto& job : m_jobs) {
+        if (job.entryId != addonId || job.parentEntryId != parentEntryId)
             continue;
         anyMatch = &job;
         if (isJobInProgress(job.status)) {
@@ -226,6 +266,44 @@ int JobModel::indexOfJob(const QString& jobId) const
             return i;
     }
     return -1;
+}
+
+QVariantList JobModel::downloadGroups() const
+{
+    QHash<QString, QHash<QString, JobEntry>> addonsByParent;
+    for (const auto& job : m_jobs) {
+        if (job.parentEntryId.isEmpty())
+            continue;
+
+        QHash<QString, JobEntry>& parentAddons = addonsByParent[job.parentEntryId];
+        const auto it = parentAddons.constFind(job.entryId);
+        if (it == parentAddons.constEnd() || job.createdAt >= it->createdAt)
+            parentAddons.insert(job.entryId, job);
+    }
+
+    QVariantList groups;
+    groups.reserve(m_jobs.size());
+    for (const auto& job : m_jobs) {
+        if (!job.parentEntryId.isEmpty())
+            continue;
+
+        QVariantMap group = jobToMap(job);
+        const QHash<QString, JobEntry> parentAddons = addonsByParent.value(job.entryId);
+
+        QVariantList addonMaps;
+        addonMaps.reserve(parentAddons.size());
+        for (const auto& addon : parentAddons) {
+            if (addon.status == QStringLiteral("cancelled"))
+                continue;
+            addonMaps.append(jobToMap(addon));
+        }
+
+        group.insert(QStringLiteral("addons"), addonMaps);
+        group.insert(QStringLiteral("addonCount"), addonMaps.size());
+        group.insert(QStringLiteral("hasAddons"), !addonMaps.isEmpty());
+        groups.append(group);
+    }
+    return groups;
 }
 
 } // namespace arachnel::core

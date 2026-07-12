@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Effects
 
 import Qcm.Material as MD
 
@@ -12,15 +13,19 @@ Item {
     property bool awaiting: false
     property int cornerRadius: MD.Token.shape.corner.extra_large
     property bool hovered: mouseArea.containsMouse
+    // 0–100: color fills left-to-right over grayscale; <0 disables the effect.
+    property real fillProgress: -1
 
     readonly property int decodeWidth: 300
     readonly property int decodeHeight: 450
+    readonly property real fillRatio: Math.max(0, Math.min(1, fillProgress / 100))
 
     readonly property bool hasSource: source.toString().length > 0
-    readonly property bool coverReady: hasSource && coverImage.status === Image.Ready
+    readonly property bool coverReady: hasSource && coverProbe.status === Image.Ready
+    readonly property bool showFillProgress: fillProgress >= 0 && coverReady
     readonly property bool imageLoading: hasSource
-                                         && (coverImage.status === Image.Loading
-                                             || coverImage.status === Image.Null)
+                                         && (coverProbe.status === Image.Loading
+                                             || coverProbe.status === Image.Null)
     readonly property bool showShimmer: !coverReady && (awaiting || imageLoading)
 
     readonly property string monogram: {
@@ -38,6 +43,21 @@ Item {
 
     implicitWidth: 168
     implicitHeight: Math.round(width * 4 / 3)
+
+    Image {
+        id: coverProbe
+        visible: false
+        source: root.source
+        asynchronous: true
+        cache: true
+        sourceSize.width: root.decodeWidth
+        sourceSize.height: root.decodeHeight
+
+        onStatusChanged: {
+            if (status === Image.Error && root.hasSource)
+                root.loadFailed()
+        }
+    }
 
     Item {
         id: placeholder
@@ -64,7 +84,6 @@ Item {
             }
         }
 
-        // Shimmer band — visible during metadata fetch AND image download
         Item {
             id: shimmerClip
             anchors.fill: parent
@@ -135,7 +154,7 @@ Item {
         smooth: true
         sourceSize.width: root.decodeWidth
         sourceSize.height: root.decodeHeight
-        visible: root.coverReady
+        visible: root.coverReady && !root.showFillProgress
         opacity: root.coverReady ? 1 : 0
 
         Behavior on opacity {
@@ -144,10 +163,63 @@ Item {
                 easing.type: Easing.OutCubic
             }
         }
+    }
 
-        onStatusChanged: {
-            if (status === Image.Error && root.hasSource)
-                root.loadFailed()
+    Item {
+        id: fillHost
+        anchors.fill: parent
+        visible: root.showFillProgress
+        clip: true
+
+        layer.enabled: true
+        layer.effect: MD.RoundClip {
+            corners: MD.Util.corners(root.cornerRadius)
+            size: Qt.vector2d(fillHost.width, fillHost.height)
+        }
+
+        Image {
+            id: grayImage
+            anchors.fill: parent
+            source: root.source
+            fillMode: Image.PreserveAspectCrop
+            asynchronous: true
+            cache: true
+            smooth: true
+            sourceSize.width: root.decodeWidth
+            sourceSize.height: root.decodeHeight
+            visible: false
+        }
+
+        MultiEffect {
+            anchors.fill: parent
+            source: grayImage
+            saturation: -1.0
+        }
+
+        Item {
+            id: colorClip
+            width: parent.width * root.fillRatio
+            height: parent.height
+            clip: true
+
+            Behavior on width {
+                NumberAnimation {
+                    duration: MD.Token.duration.short4
+                    easing.type: Easing.OutCubic
+                }
+            }
+
+            Image {
+                width: fillHost.width
+                height: fillHost.height
+                source: root.source
+                fillMode: Image.PreserveAspectCrop
+                asynchronous: true
+                cache: true
+                smooth: true
+                sourceSize.width: root.decodeWidth
+                sourceSize.height: root.decodeHeight
+            }
         }
     }
 

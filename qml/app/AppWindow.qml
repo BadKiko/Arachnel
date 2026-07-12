@@ -169,6 +169,7 @@ MD.ApplicationWindow {
                 scale: mainPages.pageIndex === 2 ? 1 : 0.97
                 enabled: mainPages.pageIndex === 2 && opacity > 0.99
                 transformOrigin: Item.Center
+                onOpenGame: function (id) { root.openGameDetails(id, false) }
 
                 Behavior on opacity {
                     NumberAnimation {
@@ -192,8 +193,11 @@ MD.ApplicationWindow {
         GameDetailsPage {
             transformOrigin: Item.Center
             onBackRequested: root.closeGameDetails()
-            onOpenInstallPicker: function (entryId, title) {
-                installLocationSheet.openForEntry(entryId, title)
+            onOpenAddonPicker: function (entryId, title) {
+                installAddonSheet.openForEntry(entryId, title)
+            }
+            onOpenInstallPicker: function (entryId, title, selectedAddonIds) {
+                installLocationSheet.openForEntry(entryId, title, selectedAddonIds)
             }
         }
     }
@@ -314,6 +318,17 @@ MD.ApplicationWindow {
     InstallLocationSheet {
         id: installLocationSheet
         anchors.fill: parent
+    }
+
+    InstallAddonSelectionSheet {
+        id: installAddonSheet
+        anchors.fill: parent
+        onConfirmed: function (entryId, title, selectedAddonIds) {
+            if (Core.needsInstallLocationChoice())
+                installLocationSheet.openForEntry(entryId, title, selectedAddonIds)
+            else
+                Core.installCatalogEntry(entryId, "", selectedAddonIds)
+        }
     }
 
     MD.SnakeView {

@@ -103,6 +103,9 @@ qt_add_executable(arachnel_app
     src/core/game_metadata_service.cpp
     src/core/cover_image_cache.cpp
     src/core/torrent_session.cpp
+    src/core/http_download_session.cpp
+    src/core/torrent_metadata_fetcher.cpp
+    src/core/install_kind_probe_service.cpp
     src/core/job_orchestrator.cpp
     src/core/plugin_api.cpp
     src/core/plugin_host.cpp

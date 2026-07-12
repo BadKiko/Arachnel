@@ -11,11 +11,13 @@ MD.BottomSheet {
     sheetType: MD.Enum.BottomSheetModal
     property string entryId: ""
     property string entryTitle: ""
+    property var selectedAddonIds: []
     property string selectedLibraryId: Core.settings.storageLibraries.defaultLibraryId
 
-    function openForEntry(id, title) {
+    function openForEntry(id, title, addonIds) {
         entryId = id
         entryTitle = title || ""
+        selectedAddonIds = addonIds || []
         selectedLibraryId = Core.settings.storageLibraries.defaultLibraryId
         open()
     }
@@ -146,7 +148,8 @@ MD.BottomSheet {
                 text: qsTr("Установить")
                 enabled: root.entryId.length > 0 && root.selectedLibraryId.length > 0
                 onClicked: {
-                    Core.installCatalogEntry(root.entryId, root.selectedLibraryId)
+                    Core.installCatalogEntry(root.entryId, root.selectedLibraryId,
+                                             root.selectedAddonIds)
                     root.close()
                 }
             }

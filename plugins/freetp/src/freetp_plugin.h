@@ -25,6 +25,14 @@ public:
     arachnel::core::InstallResult installFromDownload(
         const arachnel::core::InstallContext& ctx) const override;
 
+    arachnel::core::InstallResult installAddonFromDownload(
+        const arachnel::core::AddonInstallContext& ctx) const override;
+
+    arachnel::core::InstallKind detectInstallKind(const QString& downloadPath) const override;
+
+    arachnel::core::InstallKind detectInstallKindFromFileNames(
+        const QStringList& fileNames) const override;
+
     std::optional<QString> detectUpdate(const arachnel::core::LibraryGame& local,
                                         const arachnel::core::CatalogEntry& remote) const override;
 

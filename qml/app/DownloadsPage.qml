@@ -9,11 +9,42 @@ Item {
     id: root
 
     readonly property int pageMargin: MD.Token.spacing.large
-    readonly property bool downloadsEmpty: Core.jobs.count === 0
+    property var jobGroups: []
+    property var expandedGroups: ({})
+    readonly property bool downloadsEmpty: jobGroups.length === 0
+
+    function refreshGroups() {
+        jobGroups = Core.jobs.downloadGroups()
+    }
+
+    function isGroupExpanded(entryId) {
+        return !!(entryId && expandedGroups[entryId])
+    }
+
+    function setGroupExpanded(entryId, value) {
+        if (!entryId)
+            return
+        const next = Object.assign({}, expandedGroups)
+        if (value)
+            next[entryId] = true
+        else
+            delete next[entryId]
+        expandedGroups = next
+    }
 
     function countFinished() {
         return Core.jobs.count - Core.jobs.activeCount
     }
+
+    Connections {
+        target: Core.jobs
+        function onJobsChanged() { root.refreshGroups() }
+        function onCountChanged() { root.refreshGroups() }
+    }
+
+    Component.onCompleted: refreshGroups()
+
+    signal openGame(string gameId)
 
     // ── Empty (как «Нет игр» в каталоге) ─────────────────────────────────────
     Item {
@@ -102,23 +133,20 @@ Item {
             clip: true
             spacing: MD.Token.spacing.small
             boundsBehavior: Flickable.StopAtBounds
-            model: Core.jobs
+            model: root.jobGroups
 
             ScrollBar.vertical: MD.ScrollBar {
                 policy: ScrollBar.AsNeeded
             }
 
-            delegate: DownloadJobCard {
+            delegate: DownloadJobGroupCard {
                 width: jobsList.width
-                jobId: model.jobId
-                title: model.title
-                kindLabel: model.kindLabel
-                status: model.status
-                statusLabel: model.statusLabel
-                progress: model.progress
-                detail: model.detail
-                coverUrl: model.coverUrl
-                entryId: model.entryId
+                group: modelData
+                expanded: root.isGroupExpanded(modelData.entryId)
+                onExpansionToggled: function (value) {
+                    root.setGroupExpanded(modelData.entryId, value)
+                }
+                onOpenDetails: function (entryId) { root.openGame(entryId) }
             }
         }
     }

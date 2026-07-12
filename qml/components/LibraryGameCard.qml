@@ -14,8 +14,64 @@ Item {
     required property string version
     required property string installKindLabel
     required property bool hasUpdate
+    property int componentCount: 0
+    property int installedComponentCount: 0
+
+    readonly property bool hasAddons: componentCount > 0
+    readonly property string addonLabel: {
+        if (!hasAddons)
+            return ""
+        if (installedComponentCount >= componentCount)
+            return qsTr("%1 доп.").arg(componentCount)
+        if (installedComponentCount > 0)
+            return qsTr("%1/%2 доп.").arg(installedComponentCount).arg(componentCount)
+        return qsTr("%1 доп.").arg(componentCount)
+    }
+
+    property int jobRevision: 0
+
+    readonly property var activeJob: {
+        root.jobRevision
+        return Core.jobs.jobForEntry(root.gameId)
+    }
+    readonly property bool showJobStatus: !Core.isEntryPlayable(root.gameId) && !!(activeJob.jobId)
+    readonly property real posterFillProgress: {
+        if (!showJobStatus)
+            return -1
+        if (activeJob.inProgress || activeJob.status === "installing")
+            return activeJob.progress
+        return 100
+    }
+    readonly property string statusLine: {
+        if (!showJobStatus)
+            return root.sourceName + " · v" + root.version
+        if (activeJob.status === "installing") {
+            if (activeJob.detail && activeJob.detail.length)
+                return activeJob.detail
+            return qsTr("Установка %1%").arg(activeJob.progress)
+        }
+        if (activeJob.status === "completed" && !activeJob.inProgress)
+            return qsTr("Установка…")
+        if (activeJob.status === "paused")
+            return qsTr("Пауза · %1%").arg(activeJob.progress)
+        return qsTr("Загрузка %1%").arg(activeJob.progress)
+    }
+    readonly property string statusIcon: {
+        if (!showJobStatus)
+            return ""
+        if (activeJob.status === "installing")
+            return MD.Token.icon.install_desktop
+        if (activeJob.status === "paused")
+            return MD.Token.icon.play_arrow
+        return MD.Token.icon.pause
+    }
 
     signal openDetails(string gameId)
+
+    Connections {
+        target: Core.jobs
+        function onJobsChanged() { root.jobRevision++ }
+    }
 
     ColumnLayout {
         anchors.fill: parent
@@ -32,6 +88,7 @@ Item {
                 seed: root.title
                 fallbackText: root.title.charAt(0)
                 cornerRadius: MD.Token.shape.corner.extra_large
+                fillProgress: root.posterFillProgress
                 onClicked: root.openDetails(root.gameId)
             }
 
@@ -53,6 +110,25 @@ Item {
                     color: MD.Token.color.on_tertiary_container
                 }
             }
+
+            Rectangle {
+                anchors.bottom: parent.bottom
+                anchors.left: parent.left
+                anchors.margins: MD.Token.spacing.small
+                visible: root.hasAddons
+                radius: MD.Token.shape.corner.full
+                color: MD.Token.color.secondary_container
+                width: addonChipLabel.implicitWidth + 20
+                height: addonChipLabel.implicitHeight + 12
+
+                MD.Label {
+                    id: addonChipLabel
+                    anchors.centerIn: parent
+                    text: root.addonLabel
+                    typescale: MD.Token.typescale.label_small
+                    color: MD.Token.color.on_secondary_container
+                }
+            }
         }
 
         MD.Label {
@@ -63,8 +139,29 @@ Item {
             maximumLineCount: 1
         }
 
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: MD.Token.spacing.extra_small
+            visible: root.showJobStatus
+
+            MD.Icon {
+                name: root.statusIcon
+                size: 14
+                color: MD.Token.color.on_surface_variant
+            }
+
+            MD.Label {
+                Layout.fillWidth: true
+                text: root.statusLine
+                color: MD.Token.color.on_surface_variant
+                typescale: MD.Token.typescale.label_medium
+                elide: Text.ElideRight
+            }
+        }
+
         MD.Label {
             Layout.fillWidth: true
+            visible: !root.showJobStatus
             text: root.sourceName + " · v" + root.version
             color: MD.Token.color.on_surface_variant
             typescale: MD.Token.typescale.label_medium

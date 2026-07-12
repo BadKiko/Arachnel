@@ -1,9 +1,11 @@
 #include "job_orchestrator.h"
 
+#include "http_download_session.h"
 #include "job_status.h"
 #include "torrent_session.h"
 
 #include <QDateTime>
+#include <QFileInfo>
 #include <QUuid>
 
 namespace arachnel::core {
@@ -18,16 +20,22 @@ QString isoNow()
 } // namespace
 
 JobOrchestrator::JobOrchestrator(SettingsStore* settings, JobStore* jobStore,
-                                 TorrentSession* torrent, JobModel* jobs, QObject* parent)
+                                 TorrentSession* torrent, HttpDownloadSession* http, JobModel* jobs,
+                                 QObject* parent)
     : QObject(parent)
     , m_settings(settings)
     , m_jobStore(jobStore)
     , m_torrent(torrent)
+    , m_http(http)
     , m_jobs(jobs)
 {
     connect(m_torrent, &TorrentSession::torrentProgress, this, &JobOrchestrator::onTorrentProgress);
     connect(m_torrent, &TorrentSession::torrentFinished, this, &JobOrchestrator::onTorrentFinished);
     connect(m_torrent, &TorrentSession::torrentFailed, this, &JobOrchestrator::onTorrentFailed);
+
+    connect(m_http, &HttpDownloadSession::httpProgress, this, &JobOrchestrator::onHttpProgress);
+    connect(m_http, &HttpDownloadSession::httpFinished, this, &JobOrchestrator::onHttpFinished);
+    connect(m_http, &HttpDownloadSession::httpFailed, this, &JobOrchestrator::onHttpFailed);
 
     m_persistTimer.setInterval(3000);
     m_persistTimer.setSingleShot(true);
@@ -57,8 +65,11 @@ void JobOrchestrator::restoreJobs()
         if (isJobTerminal(job.status))
             continue;
         const bool wasPaused = isJobPaused(job.status);
-        startTorrent(job);
-        if (wasPaused)
+        if (job.httpDownload)
+            startHttp(job);
+        else
+            startTorrent(job);
+        if (!job.httpDownload && wasPaused)
             m_torrent->setPaused(job.id, true);
     }
 }
@@ -84,10 +95,57 @@ QString JobOrchestrator::pickMagnet(const QStringList& uris) const
     return uris.value(0);
 }
 
+QString JobOrchestrator::findActiveJobId(const QString& entryId,
+                                         const QString& parentEntryId) const
+{
+    for (int i = 0; i < m_jobs->rowCount(); ++i) {
+        const QString jobEntryId =
+            m_jobs->data(m_jobs->index(i, 0), JobModel::EntryIdRole).toString();
+        const QString jobParentId =
+            m_jobs->data(m_jobs->index(i, 0), JobModel::ParentEntryIdRole).toString();
+        const QString status =
+            m_jobs->data(m_jobs->index(i, 0), JobModel::StatusRole).toString();
+        if (jobEntryId != entryId || jobParentId != parentEntryId)
+            continue;
+        if (isJobInProgress(status))
+            return m_jobs->data(m_jobs->index(i, 0), JobModel::JobIdRole).toString();
+    }
+    return {};
+}
+
+QString JobOrchestrator::findExistingJobId(const QString& entryId,
+                                            const QString& parentEntryId) const
+{
+    QString latestId;
+    QString latestCreated;
+    for (int i = 0; i < m_jobs->rowCount(); ++i) {
+        const QString jobEntryId =
+            m_jobs->data(m_jobs->index(i, 0), JobModel::EntryIdRole).toString();
+        const QString jobParentId =
+            m_jobs->data(m_jobs->index(i, 0), JobModel::ParentEntryIdRole).toString();
+        if (jobEntryId != entryId || jobParentId != parentEntryId)
+            continue;
+
+        const QString status =
+            m_jobs->data(m_jobs->index(i, 0), JobModel::StatusRole).toString();
+        if (isJobInProgress(status))
+            return m_jobs->data(m_jobs->index(i, 0), JobModel::JobIdRole).toString();
+
+        const QString created =
+            m_jobs->data(m_jobs->index(i, 0), JobModel::CreatedAtRole).toString();
+        if (latestId.isEmpty() || created > latestCreated) {
+            latestId = m_jobs->data(m_jobs->index(i, 0), JobModel::JobIdRole).toString();
+            latestCreated = created;
+        }
+    }
+    return latestId;
+}
+
 QString JobOrchestrator::createJob(const QString& title, JobKind kind, const QString& entryId,
-                                   const QString& sourceId, const QString& magnet,
-                                   const QString& saveSubdir, const QString& coverUrl,
-                                   const QString& libraryId)
+                                     const QString& sourceId, const QString& downloadUri,
+                                     const QString& saveSubdir, const QString& coverUrl,
+                                     const QString& libraryId, const QString& parentEntryId,
+                                     bool httpDownload, const QString& referer)
 {
     const QString jobId = QUuid::createUuid().toString(QUuid::WithoutBraces);
     const QString downloadsRoot = m_settings->resolvedDownloadsRoot(libraryId);
@@ -99,19 +157,25 @@ QString JobOrchestrator::createJob(const QString& title, JobKind kind, const QSt
     job.kind = kind;
     job.status = QStringLiteral("starting");
     job.progress = 0;
-    job.detail = QStringLiteral("Подключение…");
+    job.detail = httpDownload ? QStringLiteral("Загрузка…") : QStringLiteral("Подключение…");
     job.entryId = entryId;
     job.sourceId = sourceId;
-    job.magnetUri = magnet;
+    job.magnetUri = downloadUri;
     job.savePath = savePath;
     job.coverUrl = coverUrl;
     job.libraryId = libraryId.isEmpty() ? m_settings->defaultLibraryId() : libraryId;
+    job.parentEntryId = parentEntryId;
+    job.referer = referer;
+    job.httpDownload = httpDownload;
     job.createdAt = isoNow();
     m_jobKinds.insert(jobId, kind);
 
     m_jobs->addJob(job);
     m_jobStore->upsertJob(job);
-    startTorrent(job);
+    if (httpDownload)
+        startHttp(job);
+    else
+        startTorrent(job);
     return jobId;
 }
 
@@ -121,6 +185,20 @@ void JobOrchestrator::startTorrent(const JobEntry& job)
         JobEntry failed = job;
         failed.status = QStringLiteral("failed");
         failed.detail = QStringLiteral("Не удалось начать торрент");
+        failed.completedAt = isoNow();
+        updateJobInModel(failed);
+        persistJob(failed);
+        emit downloadFailed(job.id, failed.detail);
+        m_jobKinds.remove(job.id);
+    }
+}
+
+void JobOrchestrator::startHttp(const JobEntry& job)
+{
+    if (!m_http->addJob(job.id, job.magnetUri, job.referer, job.savePath)) {
+        JobEntry failed = job;
+        failed.status = QStringLiteral("failed");
+        failed.detail = QStringLiteral("Не удалось начать HTTP-загрузку");
         failed.completedAt = isoNow();
         updateJobInModel(failed);
         persistJob(failed);
@@ -155,6 +233,10 @@ JobEntry JobOrchestrator::jobFromModelRow(int row) const
     job.savePath = m_jobs->data(idx, JobModel::SavePathRole).toString();
     job.coverUrl = m_jobs->data(idx, JobModel::CoverUrlRole).toString();
     job.libraryId = m_jobs->data(idx, JobModel::LibraryIdRole).toString();
+    job.parentEntryId = m_jobs->data(idx, JobModel::ParentEntryIdRole).toString();
+    job.referer = m_jobs->data(idx, JobModel::RefererRole).toString();
+    job.httpDownload = m_jobs->data(idx, JobModel::HttpDownloadRole).toBool();
+    job.artifactPath = m_jobs->data(idx, JobModel::ArtifactPathRole).toString();
     job.createdAt = m_jobs->data(idx, JobModel::CreatedAtRole).toString();
     job.completedAt = m_jobs->data(idx, JobModel::CompletedAtRole).toString();
     return job;
@@ -172,12 +254,9 @@ QString JobOrchestrator::startCatalogDownload(const CatalogEntry& entry, JobKind
     if (magnet.isEmpty())
         return {};
 
-    for (int i = 0; i < m_jobs->rowCount(); ++i) {
-        const QString entryId = m_jobs->data(m_jobs->index(i, 0), JobModel::EntryIdRole).toString();
-        const QString status = m_jobs->data(m_jobs->index(i, 0), JobModel::StatusRole).toString();
-        if (entryId == entry.id && isJobInProgress(status))
-            return m_jobs->data(m_jobs->index(i, 0), JobModel::JobIdRole).toString();
-    }
+    const QString existing = findActiveJobId(entry.id, {});
+    if (!existing.isEmpty())
+        return existing;
 
     const QString prefix =
         kind == JobKind::Update ? QStringLiteral("update") : QStringLiteral("install");
@@ -194,14 +273,41 @@ QString JobOrchestrator::startCatalogDownload(const CatalogEntry& entry, JobKind
 QString JobOrchestrator::startAddonDownload(const CatalogEntry& parent,
                                             const CatalogComponent& addon)
 {
+    const QString existing = findExistingJobId(addon.id, parent.id);
+    if (!existing.isEmpty()) {
+        const int row = m_jobs->indexOfJob(existing);
+        if (row >= 0) {
+            const QString status = m_jobs->data(m_jobs->index(row, 0), JobModel::StatusRole).toString();
+            if (status != QStringLiteral("failed") && status != QStringLiteral("cancelled"))
+                return existing;
+        }
+    }
+
+    const QString saveSubdir = QStringLiteral("addons/%1/%2").arg(parent.id, addon.id);
+    const QString title = QStringLiteral("Дополнение %1 — %2").arg(parent.title, addon.title);
+    const QString libId = m_settings->defaultLibraryId();
+
+    if (addon.delivery == ComponentDelivery::Direct) {
+        QString url = addon.downloadUrl;
+        if (url.isEmpty())
+            url = addon.magnetUris.value(0);
+        if (url.isEmpty() || !url.startsWith(QStringLiteral("http"), Qt::CaseInsensitive))
+            return {};
+
+        QString referer = addon.referer;
+        if (referer.isEmpty() && !addon.getfileUrl.isEmpty())
+            referer = addon.getfileUrl;
+
+        return createJob(title, JobKind::Download, addon.id, parent.sourceId, url, saveSubdir,
+                         parent.coverUrl, libId, parent.id, true, referer);
+    }
+
     const QString magnet = pickMagnet(addon.magnetUris);
     if (magnet.isEmpty())
         return {};
 
-    const QString saveSubdir = QStringLiteral("addons/%1/%2").arg(parent.id, addon.id);
-    const QString title = QStringLiteral("Дополнение %1 — %2").arg(parent.title, addon.title);
     return createJob(title, JobKind::Download, addon.id, parent.sourceId, magnet, saveSubdir,
-                     parent.coverUrl, m_settings->defaultLibraryId());
+                     parent.coverUrl, libId, parent.id);
 }
 
 void JobOrchestrator::cancelJob(const QString& jobId)
@@ -214,10 +320,14 @@ void JobOrchestrator::cancelJob(const QString& jobId)
     if (isJobTerminal(job.status))
         return;
 
-    if (isJobRunning(job.status) || job.status == QStringLiteral("starting"))
+    if (job.httpDownload) {
+        if (isJobRunning(job.status) || job.status == QStringLiteral("starting"))
+            m_http->cancel(jobId);
+    } else if (isJobRunning(job.status) || job.status == QStringLiteral("starting")) {
         m_torrent->cancel(jobId, true);
-    else
+    } else {
         m_torrent->removeResumeFile(jobId);
+    }
 
     job.status = QStringLiteral("cancelled");
     job.detail = QStringLiteral("Отменено");
@@ -234,7 +344,7 @@ void JobOrchestrator::toggleJobPause(const QString& jobId)
         return;
 
     JobEntry job = jobFromModelRow(row);
-    if (isJobTerminal(job.status))
+    if (isJobTerminal(job.status) || job.httpDownload)
         return;
 
     if (job.status == QStringLiteral("paused")) {
@@ -261,11 +371,15 @@ void JobOrchestrator::removeJob(const QString& jobId)
 
     JobEntry job = jobFromModelRow(row);
     if (!isJobTerminal(job.status)) {
-        if (isJobRunning(job.status) || job.status == QStringLiteral("starting"))
+        if (job.httpDownload) {
+            if (isJobRunning(job.status) || job.status == QStringLiteral("starting"))
+                m_http->cancel(jobId);
+        } else if (isJobRunning(job.status) || job.status == QStringLiteral("starting")) {
             m_torrent->cancel(jobId, false);
-        else
+        } else {
             m_torrent->removeResumeFile(jobId);
-    } else {
+        }
+    } else if (!job.httpDownload) {
         m_torrent->removeResumeFile(jobId);
     }
 
@@ -286,18 +400,23 @@ void JobOrchestrator::retryJob(const QString& jobId)
     if (job.magnetUri.isEmpty())
         return;
 
-    m_torrent->removeResumeFile(jobId);
+    if (!job.httpDownload)
+        m_torrent->removeResumeFile(jobId);
 
     job.status = QStringLiteral("starting");
     job.progress = 0;
-    job.detail = QStringLiteral("Подключение…");
+    job.detail = job.httpDownload ? QStringLiteral("Загрузка…") : QStringLiteral("Подключение…");
     job.bytesDownloaded = 0;
     job.totalBytes = 0;
+    job.artifactPath.clear();
     job.completedAt.clear();
     m_jobKinds.insert(jobId, job.kind);
     updateJobInModel(job);
     persistJob(job);
-    startTorrent(job);
+    if (job.httpDownload)
+        startHttp(job);
+    else
+        startTorrent(job);
 }
 
 void JobOrchestrator::clearFinishedJobs()
@@ -313,6 +432,20 @@ void JobOrchestrator::clearFinishedJobs()
     }
     m_jobs->setJobs(remaining);
     m_jobStore->setJobs(remaining);
+}
+
+void JobOrchestrator::setJobPhase(const QString& jobId, const QString& status,
+                                  const QString& detail)
+{
+    const int row = m_jobs->indexOfJob(jobId);
+    if (row < 0)
+        return;
+
+    JobEntry job = jobFromModelRow(row);
+    job.status = status;
+    job.detail = detail;
+    updateJobInModel(job);
+    persistJob(job);
 }
 
 QString JobOrchestrator::formatBytes(qint64 bytes) const
@@ -357,6 +490,15 @@ QString JobOrchestrator::buildDetail(qint64 downloaded, qint64 total, int downlo
              formatSpeed(downloadRate), QString::number(numPeers), eta);
 }
 
+QString JobOrchestrator::buildHttpDetail(qint64 downloaded, qint64 total) const
+{
+    if (total > 0) {
+        const qint64 remaining = qMax<qint64>(0, total - downloaded);
+        return QStringLiteral("%1 / %2").arg(formatBytes(downloaded), formatBytes(total));
+    }
+    return QStringLiteral("%1").arg(formatBytes(downloaded));
+}
+
 void JobOrchestrator::onTorrentProgress(const QString& jobId, int progress, qint64 downloaded,
                                         qint64 total, int downloadRate, int numPeers,
                                         const QString& state)
@@ -393,6 +535,7 @@ void JobOrchestrator::onTorrentFinished(const QString& jobId, const QString& sav
     job.status = QStringLiteral("completed");
     job.progress = 100;
     job.detail = QStringLiteral("Загрузка завершена");
+    job.artifactPath = savePath;
     job.completedAt = isoNow();
     updateJobInModel(job);
     persistJob(job);
@@ -402,6 +545,60 @@ void JobOrchestrator::onTorrentFinished(const QString& jobId, const QString& sav
 }
 
 void JobOrchestrator::onTorrentFailed(const QString& jobId, const QString& error)
+{
+    const int row = m_jobs->indexOfJob(jobId);
+    if (row >= 0) {
+        JobEntry job = jobFromModelRow(row);
+        job.status = QStringLiteral("failed");
+        job.detail = error;
+        job.completedAt = isoNow();
+        updateJobInModel(job);
+        persistJob(job);
+    }
+
+    emit downloadFailed(jobId, error);
+    m_jobKinds.remove(jobId);
+}
+
+void JobOrchestrator::onHttpProgress(const QString& jobId, int progress, qint64 downloaded,
+                                     qint64 total)
+{
+    const int row = m_jobs->indexOfJob(jobId);
+    if (row < 0)
+        return;
+
+    JobEntry job = jobFromModelRow(row);
+    job.progress = progress;
+    job.bytesDownloaded = downloaded;
+    job.totalBytes = total;
+    job.status = QStringLiteral("downloading");
+    job.detail = buildHttpDetail(downloaded, total);
+    updateJobInModel(job);
+    persistJob(job);
+}
+
+void JobOrchestrator::onHttpFinished(const QString& jobId, const QString& filePath)
+{
+    const int row = m_jobs->indexOfJob(jobId);
+    if (row < 0)
+        return;
+
+    JobEntry job = jobFromModelRow(row);
+    const JobKind kind = m_jobKinds.value(jobId, JobKind::Download);
+
+    job.status = QStringLiteral("completed");
+    job.progress = 100;
+    job.detail = QStringLiteral("Загрузка завершена");
+    job.artifactPath = filePath;
+    job.completedAt = isoNow();
+    updateJobInModel(job);
+    persistJob(job);
+
+    emit downloadCompleted(jobId, job.entryId, job.sourceId, filePath, kind, job.libraryId);
+    m_jobKinds.remove(jobId);
+}
+
+void JobOrchestrator::onHttpFailed(const QString& jobId, const QString& error)
 {
     const int row = m_jobs->indexOfJob(jobId);
     if (row >= 0) {

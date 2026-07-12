@@ -42,6 +42,8 @@ public:
 
     using InstallCallback = std::function<void(const InstallResult&)>;
     void runInstallAsync(ISourcePlugin* plugin, const InstallContext& ctx, InstallCallback callback);
+    void runAddonInstallAsync(ISourcePlugin* plugin, const AddonInstallContext& ctx,
+                              InstallCallback callback);
 
     static QStringList pluginSearchRoots();
 

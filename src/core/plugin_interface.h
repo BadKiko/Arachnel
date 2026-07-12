@@ -36,6 +36,15 @@ struct InstallResult {
     QString error;
 };
 
+struct AddonInstallContext {
+    QString parentEntryId;
+    QString addonId;
+    QString addonTitle;
+    QString gameInstallPath;
+    QString downloadPath;
+    CatalogItemKind addonKind = CatalogItemKind::Addon;
+};
+
 class ISourcePlugin
 {
 public:
@@ -52,6 +61,27 @@ public:
     virtual std::optional<CatalogEntry> entryById(const QString& entryId) const = 0;
 
     virtual InstallResult installFromDownload(const InstallContext& ctx) const = 0;
+
+    virtual InstallResult installAddonFromDownload(const AddonInstallContext& ctx) const
+    {
+        (void)ctx;
+        InstallResult result;
+        result.success = false;
+        result.error = QStringLiteral("Дополнения не поддерживаются этим источником");
+        return result;
+    }
+
+    virtual InstallKind detectInstallKind(const QString& downloadPath) const
+    {
+        (void)downloadPath;
+        return InstallKind::PortableArchive;
+    }
+
+    virtual InstallKind detectInstallKindFromFileNames(const QStringList& fileNames) const
+    {
+        (void)fileNames;
+        return InstallKind::PortableArchive;
+    }
 
     virtual std::optional<QString> detectUpdate(const LibraryGame& local,
                                                 const CatalogEntry& remote) const = 0;

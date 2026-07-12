@@ -25,11 +25,13 @@
 | `fileSize` | Отображаемый размер |
 | `uploadDate` | ISO-дата заливки — **маркер версии** для проверки обновлений |
 
-URL по умолчанию для FreeTP в Arachnel:
+URL по умолчанию для FreeTP в Arachnel (расширенный каталог):
 
 ```
-https://gitlab.com/BadKiko/freetp-hydra-link/-/raw/main/games.json?ref_type=heads
+https://gitlab.com/BadKiko/freetp-hydra-link/-/raw/main/games-arachnel.json?ref_type=heads
 ```
+
+Для Hydra Launcher по-прежнему используется базовый `games.json` из того же репозитория.
 
 ## Расширения Arachnel
 
