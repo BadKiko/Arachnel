@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Templates as T
 
+import Arachnel.Core 1.0
 import Qcm.Material as MD
 
 Flickable {
@@ -9,6 +10,13 @@ Flickable {
 
     property int contentMargin: MD.Token.spacing.large
     property bool applying: false
+
+    readonly property var languageOptions: [
+        { code: "en", label: qsTr("English") },
+        { code: "ru", label: qsTr("Russian") }
+    ]
+
+    readonly property string weblateTranslateUrl: "https://hosted.weblate.org/projects/arachnel/application/"
 
     contentWidth: width
     contentHeight: body.implicitHeight
@@ -35,7 +43,7 @@ Flickable {
             Layout.leftMargin: contentMargin
             Layout.rightMargin: contentMargin
             Layout.topMargin: MD.Token.spacing.small
-            text: qsTr("Тема и палитра Material 3 применяются ко всему приложению.")
+            text: qsTr("Material 3 theme and palette apply across the app.")
             color: MD.Token.color.on_surface_variant
             wrapMode: Text.WordWrap
             typescale: MD.Token.typescale.body_medium
@@ -48,7 +56,7 @@ Flickable {
             spacing: MD.Token.spacing.medium
 
             MD.Label {
-                text: MD.Token.isDarkTheme ? qsTr("Тёмная тема") : qsTr("Светлая тема")
+                text: MD.Token.isDarkTheme ? qsTr("Dark theme") : qsTr("Light theme")
                 color: MD.Token.color.on_surface_variant
                 typescale: MD.Token.typescale.label_large
             }
@@ -70,7 +78,7 @@ Flickable {
             Layout.fillWidth: true
             Layout.leftMargin: contentMargin
             Layout.rightMargin: contentMargin
-            text: qsTr("Палитра")
+            text: qsTr("Palette")
             color: MD.Token.color.on_surface_variant
             typescale: MD.Token.typescale.label_large
         }
@@ -122,7 +130,6 @@ Flickable {
             Layout.alignment: Qt.AlignHCenter
             Layout.leftMargin: contentMargin
             Layout.rightMargin: contentMargin
-            Layout.bottomMargin: MD.Token.spacing.medium
             spacing: MD.Token.spacing.medium
             rows: 2
             columns: 5
@@ -141,6 +148,70 @@ Flickable {
                         Appearance.setAccentColor(modelData.color)
                     }
                 }
+            }
+        }
+
+        MD.Label {
+            Layout.fillWidth: true
+            Layout.leftMargin: contentMargin
+            Layout.rightMargin: contentMargin
+            Layout.topMargin: MD.Token.spacing.small
+            text: qsTr("Language")
+            typescale: MD.Token.typescale.label_large
+        }
+
+        Flow {
+            Layout.fillWidth: true
+            Layout.leftMargin: contentMargin
+            Layout.rightMargin: contentMargin
+            spacing: MD.Token.spacing.small
+
+            Repeater {
+                model: root.languageOptions
+
+                MD.InputChip {
+                    required property var modelData
+
+                    action: MD.Action {
+                        checkable: true
+                        checked: Core.settings.uiLanguage === modelData.code
+                        text: modelData.label
+                        onTriggered: Core.settings.uiLanguage = modelData.code
+                    }
+                }
+            }
+        }
+
+        ColumnLayout {
+            Layout.fillWidth: true
+            Layout.leftMargin: contentMargin
+            Layout.rightMargin: contentMargin
+            Layout.bottomMargin: MD.Token.spacing.medium
+            spacing: MD.Token.spacing.small
+
+            MD.Label {
+                Layout.fillWidth: true
+                text: qsTr("Community translations")
+                typescale: MD.Token.typescale.title_small
+            }
+
+            MD.Label {
+                Layout.fillWidth: true
+                textFormat: Text.StyledText
+                linkColor: MD.Token.color.primary
+                text: qsTr("Missing your language? Help translate Arachnel on <a href=\"%1\">Weblate</a> or send a pull request with translations/*.ts files.")
+                      .arg(root.weblateTranslateUrl)
+                wrapMode: Text.WordWrap
+                color: MD.Token.color.on_surface_variant
+                typescale: MD.Token.typescale.body_small
+                onLinkActivated: link => Core.openExternalUrl(link)
+            }
+
+            MD.Button {
+                text: qsTr("Help translate")
+                icon.name: MD.Token.icon.language
+                mdState.type: MD.Enum.BtText
+                onClicked: Core.openExternalUrl(root.weblateTranslateUrl)
             }
         }
     }

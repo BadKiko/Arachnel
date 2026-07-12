@@ -5,3 +5,7 @@ compile_commands.json
 *.user
 *.autosave
 CMakeUserPresets.json
+build-debug/
+build-win/
+libs/
+plugins/freetp/games-arachnel.json

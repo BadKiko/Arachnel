@@ -4,6 +4,15 @@ project(arachnel LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+option(ARACHNEL_FAST_BUILD "Faster dev builds: skip QML cachegen" ON)
+if(WIN32)
+    option(ARACHNEL_LIBTORRENT_SHARED "Build libtorrent as DLL (much faster incremental links)" ON)
+else()
+    option(ARACHNEL_LIBTORRENT_SHARED "Build libtorrent as shared library" OFF)
+endif()
+
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
+
 find_package(Qt6 REQUIRED COMPONENTS
     Core
     Gui
@@ -13,15 +22,17 @@ find_package(Qt6 REQUIRED COMPONENTS
     QuickControls2
     ShaderTools
     QuickPrivate
+    Concurrent
 )
 if(UNIX AND NOT APPLE AND NOT ANDROID)
     find_package(Qt6 REQUIRED COMPONENTS DBus)
 endif()
 
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(LIBTORRENT REQUIRED IMPORTED_TARGET libtorrent-rasterbar)
-
 qt_standard_project_setup(REQUIRES 6.8)
+
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/ArachnelLibtorrent.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/ArachnelPlugins.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/ArachnelTranslations.cmake)
 
 include(FetchContent)
 FetchContent_Declare(
@@ -30,8 +41,21 @@ FetchContent_Declare(
     GIT_TAG main
     GIT_SHALLOW TRUE
     EXCLUDE_FROM_ALL
+    PATCH_COMMAND ${CMAKE_COMMAND} -DSRC=<SOURCE_DIR> -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/patch-qml-material-win.cmake
 )
 FetchContent_MakeAvailable(qml_material)
+
+if(WIN32 AND EXISTS "${qml_material_SOURCE_DIR}/CMakeLists.txt")
+    file(READ "${qml_material_SOURCE_DIR}/CMakeLists.txt" _qm_cmake)
+    if(_qm_cmake MATCHES "SHADER_OPT BATCHABLE OPTIMIZED")
+        string(REPLACE
+            "set(SHADER_OPT BATCHABLE OPTIMIZED)"
+            "set(SHADER_OPT BATCHABLE)"
+            _qm_cmake "${_qm_cmake}")
+        file(WRITE "${qml_material_SOURCE_DIR}/CMakeLists.txt" "${_qm_cmake}")
+        message(STATUS "QmlMaterial: disabled shader OPTIMIZED (spirv-opt / Vulkan SDK not required)")
+    endif()
+endif()
 
 # QmlMaterial icon fonts are Git LFS objects — pull before qml_material compiles qrc.
 set(_QM_FONT "${qml_material_SOURCE_DIR}/assets/MaterialSymbolsRounded.wght_400.opsz_24.fill_0.woff2")
@@ -62,20 +86,54 @@ set(CMAKE_AUTOMOC ON)
 qt_add_executable(arachnel_app
     src/main.cpp
     src/core/install_kind.cpp
+    src/core/job_display.cpp
     src/core/job_kind.cpp
     src/core/catalog_types.cpp
     src/core/library_model.cpp
     src/core/source_plugin_model.cpp
     src/core/catalog_model.cpp
+    src/core/notification_model.cpp
     src/core/job_model.cpp
+    src/core/job_status.cpp
+    src/core/job_store.cpp
     src/core/settings_store.cpp
+    src/core/storage_library.cpp
+    src/core/storage_library_model.cpp
+    src/core/file_utils.cpp
     src/core/library_store.cpp
     src/core/catalog_feed_loader.cpp
+    src/core/catalog_parser.cpp
     src/core/game_metadata_service.cpp
     src/core/cover_image_cache.cpp
     src/core/torrent_session.cpp
+    src/core/http_download_session.cpp
+    src/core/torrent_metadata_fetcher.cpp
+    src/core/install_kind_probe_service.cpp
     src/core/job_orchestrator.cpp
+    src/core/plugin_api.cpp
+    src/core/plugin_host.cpp
+    src/core/process_launcher.cpp
+    src/core/process_tracker.cpp
     src/core/core_controller.cpp
+    src/core/translation_service.cpp
+)
+
+if(WIN32)
+    set_target_properties(arachnel_app PROPERTIES WIN32_EXECUTABLE TRUE)
+
+    set(_arachnel_icon_ico "${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/arachnel.ico")
+    if(EXISTS "${_arachnel_icon_ico}")
+        set(_arachnel_icon_rc "${CMAKE_CURRENT_BINARY_DIR}/arachnel_app_icon.rc")
+        file(WRITE "${_arachnel_icon_rc}" "IDI_ICON1 ICON \"${_arachnel_icon_ico}\"\n")
+        target_sources(arachnel_app PRIVATE "${_arachnel_icon_rc}")
+    endif()
+endif()
+
+qt_add_resources(arachnel_app "arachnel_app_icons"
+    PREFIX "/icons"
+    FILES
+        resources/icons/png/256.png
+        resources/icons/png/32.png
 )
 
 file(GLOB_RECURSE ARACHNEL_QML_FILES CONFIGURE_DEPENDS
@@ -87,7 +145,7 @@ set_source_files_properties(
     qml/theme/AccentColors.qml
     PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
 
-qt_add_qml_module(arachnel_app
+set(_arachnel_qml_module_args
     URI arachnel
     QML_FILES
         ${ARACHNEL_QML_FILES}
@@ -95,6 +153,13 @@ qt_add_qml_module(arachnel_app
         Qcm.Material
         QtQuick.Effects
 )
+if(ARACHNEL_FAST_BUILD)
+    list(APPEND _arachnel_qml_module_args NO_CACHEGEN)
+endif()
+
+qt_add_qml_module(arachnel_app ${_arachnel_qml_module_args})
+
+arachnel_setup_translations(arachnel_app)
 
 add_dependencies(arachnel_app qml_materialplugin)
 
@@ -107,8 +172,16 @@ target_link_libraries(arachnel_app
         Qt6::Core
         Qt6::Gui
         Qt6::Network
+        Qt6::Concurrent
         Qt6::Qml
         Qt6::Quick
-        PkgConfig::LIBTORRENT
         qml_material::qml_material
 )
+
+qt_import_qml_plugins(arachnel_app)
+
+arachnel_setup_libtorrent(arachnel_app)
+
+if(WIN32)
+    target_link_libraries(arachnel_app PRIVATE ole32 shell32)
+endif()

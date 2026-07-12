@@ -20,10 +20,10 @@ ColumnLayout {
     readonly property string pageTitle: {
         const item = stack.currentItem
         if (!item)
-            return qsTr("Настройки")
+            return qsTr("Settings")
         if (item.pageTitle)
             return item.pageTitle
-        return qsTr("Настройки")
+        return qsTr("Settings")
     }
 
     function syncFromStore() {
@@ -34,20 +34,24 @@ ColumnLayout {
         // otherwise sheet enter + page fade stack and feel jumpy.
         if (pendingSection === "sources") {
             pendingSection = ""
-            stack.navigatePush(sourcesComponent, {}, true)
             if (pendingCreateSource) {
                 pendingCreateSource = false
-                const page = stack.navigatePush(sourceFormComponent, {}, true)
-                if (page)
-                    page.loadCreate()
+                stack.navigatePush(sourceFormComponent, { openCreate: true }, true)
+            } else {
+                stack.navigatePush(sourcesComponent, {}, true)
             }
+            stack.restoreCurrent()
         } else if (pendingSection.length) {
             const section = pendingSection
             pendingSection = ""
             if (section === "storage")
                 stack.navigatePush(storageComponent, {}, true)
+            else if (section === "updates")
+                stack.navigatePush(updatesComponent, {}, true)
             else if (section === "appearance")
                 stack.navigatePush(appearanceComponent, {}, true)
+            else if (section === "plugins")
+                stack.navigatePush(pluginsComponent, {}, true)
             else
                 openSection(section)
         } else {
@@ -65,10 +69,14 @@ ColumnLayout {
     }
 
     function openSection(sectionId) {
-        if (sectionId === "sources")
+        if (sectionId === "plugins")
+            stack.navigatePush(pluginsComponent)
+        else if (sectionId === "sources")
             openSources()
         else if (sectionId === "storage")
             stack.navigatePush(storageComponent)
+        else if (sectionId === "updates")
+            stack.navigatePush(updatesComponent)
         else if (sectionId === "appearance")
             stack.navigatePush(appearanceComponent)
     }
@@ -106,16 +114,24 @@ ColumnLayout {
     Component {
         id: hubComponent
         SettingsHubPage {
-            property string pageTitle: qsTr("Настройки")
+            property string pageTitle: qsTr("Settings")
             contentMargin: root.contentMargin
             onOpenSection: function (sectionId) { root.openSection(sectionId) }
         }
     }
 
     Component {
+        id: pluginsComponent
+        SettingsPluginsPage {
+            property string pageTitle: qsTr("Plugins")
+            contentMargin: root.contentMargin
+        }
+    }
+
+    Component {
         id: sourcesComponent
         SettingsSourcesPage {
-            property string pageTitle: qsTr("Источники")
+            property string pageTitle: qsTr("Hydra catalogs")
             contentMargin: root.contentMargin
             onAddSourceRequested: root.openSourceCreate()
             onEditSourceRequested: function (pluginId, name, catalogUrl, description, sourceEnabled) {
@@ -127,7 +143,7 @@ ColumnLayout {
     Component {
         id: sourceFormComponent
         SettingsSourceFormPage {
-            property string pageTitle: editing ? qsTr("Изменить источник") : qsTr("Новый источник")
+            property string pageTitle: editing ? qsTr("Edit catalog") : qsTr("New Hydra catalog")
             contentMargin: root.contentMargin
             onSaved: stack.navigatePop()
             onCancelled: stack.navigatePop()
@@ -137,7 +153,15 @@ ColumnLayout {
     Component {
         id: storageComponent
         SettingsStoragePage {
-            property string pageTitle: qsTr("Хранилище")
+            property string pageTitle: qsTr("Storage")
+            contentMargin: root.contentMargin
+        }
+    }
+
+    Component {
+        id: updatesComponent
+        SettingsUpdatesPage {
+            property string pageTitle: qsTr("Updates")
             contentMargin: root.contentMargin
         }
     }
@@ -145,7 +169,7 @@ ColumnLayout {
     Component {
         id: appearanceComponent
         SettingsAppearancePage {
-            property string pageTitle: qsTr("Внешний вид")
+            property string pageTitle: qsTr("Appearance")
             contentMargin: root.contentMargin
         }
     }
@@ -199,7 +223,7 @@ ColumnLayout {
             opacity: stack.depth > 1 ? 1 : 0
             enabled: stack.depth > 1
             mdState.type: MD.Enum.BtText
-            text: qsTr("Назад")
+            text: qsTr("Back")
             onClicked: root.goBack()
 
             Behavior on opacity {
@@ -212,7 +236,7 @@ ColumnLayout {
 
         MD.Button {
             mdState.type: MD.Enum.BtText
-            text: qsTr("Готово")
+            text: qsTr("Done")
             onClicked: root.closeSheet()
         }
     }

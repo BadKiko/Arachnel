@@ -15,6 +15,11 @@ MD.BottomSheet {
         open()
     }
 
+    function openPlugins() {
+        settingsPage.prepareOpen("plugins", false)
+        open()
+    }
+
     function openSources(createSource) {
         settingsPage.prepareOpen("sources", !!createSource)
         open()

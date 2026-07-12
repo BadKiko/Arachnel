@@ -1,0 +1,222 @@
+import QtQuick
+import QtQuick.Layouts
+import QtQuick.Controls
+
+import Arachnel.Core 1.0
+import Qcm.Material as MD
+
+Flickable {
+    id: root
+
+    property int contentMargin: MD.Token.spacing.large
+
+    property var pluginRows: []
+
+    function reloadPlugins() {
+        pluginRows = Core.pluginEntries()
+    }
+
+    Component.onCompleted: reloadPlugins()
+
+    Connections {
+        target: Core
+        function onPluginsChanged() {
+            root.reloadPlugins()
+        }
+    }
+
+    contentWidth: width
+    contentHeight: body.implicitHeight
+    clip: true
+    boundsBehavior: Flickable.StopAtBounds
+    flickableDirection: Flickable.VerticalFlick
+
+    ColumnLayout {
+        id: body
+        width: root.width
+        spacing: MD.Token.spacing.medium
+
+        MD.Label {
+            Layout.fillWidth: true
+            Layout.leftMargin: contentMargin
+            Layout.rightMargin: contentMargin
+            Layout.topMargin: MD.Token.spacing.small
+            text: qsTr("Plugins are sources with catalog, install, and launch. Package: .arach file (ZIP with plugin.json and libraries).")
+            wrapMode: Text.WordWrap
+            color: MD.Token.color.on_surface_variant
+            typescale: MD.Token.typescale.body_medium
+        }
+
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.leftMargin: contentMargin
+            Layout.rightMargin: contentMargin
+            visible: root.pluginRows.length === 0
+            radius: MD.Token.shape.corner.large
+            color: MD.Token.color.surface_container
+            border.width: 1
+            border.color: MD.Token.color.outline_variant
+            implicitHeight: emptyCol.implicitHeight + MD.Token.spacing.medium * 2
+
+            ColumnLayout {
+                id: emptyCol
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.margins: MD.Token.spacing.medium
+                spacing: MD.Token.spacing.extra_small
+
+                MD.Label {
+                    Layout.fillWidth: true
+                    text: qsTr("No plugins found")
+                    typescale: MD.Token.typescale.title_small
+                }
+
+                MD.Label {
+                    Layout.fillWidth: true
+                    wrapMode: Text.WordWrap
+                    text: qsTr("Install the .arach package using the button below.\n\nAfter building, FreeTP is in dist:\nbuild-win/dist/freetp.arach")
+                    color: MD.Token.color.on_surface_variant
+                    typescale: MD.Token.typescale.body_small
+                }
+            }
+        }
+
+        ColumnLayout {
+            Layout.fillWidth: true
+            Layout.leftMargin: contentMargin
+            Layout.rightMargin: contentMargin
+            spacing: MD.Token.spacing.small
+            visible: root.pluginRows.length > 0
+
+            Repeater {
+                model: root.pluginRows
+
+                Rectangle {
+                    required property var modelData
+
+                    Layout.fillWidth: true
+                    radius: MD.Token.shape.corner.large
+                    color: MD.Token.color.surface_container
+                    border.width: 1
+                    border.color: MD.Token.color.outline_variant
+                    implicitHeight: cardCol.implicitHeight + MD.Token.spacing.medium * 2
+
+                    ColumnLayout {
+                        id: cardCol
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.top: parent.top
+                        anchors.margins: MD.Token.spacing.medium
+                        spacing: MD.Token.spacing.extra_small
+
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: MD.Token.spacing.small
+
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: 2
+
+                                MD.Label {
+                                    Layout.fillWidth: true
+                                    text: modelData.name
+                                    typescale: MD.Token.typescale.title_small
+                                    elide: Text.ElideRight
+                                }
+
+                                MD.Label {
+                                    Layout.fillWidth: true
+                                    text: modelData.description
+                                    color: MD.Token.color.on_surface_variant
+                                    typescale: MD.Token.typescale.body_small
+                                    wrapMode: Text.WordWrap
+                                    maximumLineCount: 2
+                                    elide: Text.ElideRight
+                                }
+                            }
+
+                            MD.Switch {
+                                checked: modelData.sourceEnabled
+                                onToggled: Core.sources.setSourceEnabled(modelData.pluginId, checked)
+                            }
+                        }
+
+                        MD.Label {
+                            Layout.fillWidth: true
+                            text: qsTr("v%1 · %2").arg(modelData.pluginVersion).arg(modelData.pluginId)
+                            color: MD.Token.color.primary
+                            typescale: MD.Token.typescale.label_small
+                        }
+
+                        MD.Label {
+                            Layout.fillWidth: true
+                            text: modelData.pluginRootPath
+                            color: MD.Token.color.on_surface_variant
+                            typescale: MD.Token.typescale.label_small
+                            elide: Text.ElideMiddle
+                            maximumLineCount: 2
+                            wrapMode: Text.WordWrap
+                        }
+                    }
+                }
+            }
+        }
+
+        MD.Label {
+            Layout.fillWidth: true
+            Layout.leftMargin: contentMargin
+            Layout.rightMargin: contentMargin
+            visible: Core.lastPluginError.length > 0
+            text: Core.lastPluginError
+            color: MD.Token.color.error
+            wrapMode: Text.WordWrap
+            typescale: MD.Token.typescale.body_small
+        }
+
+        ColumnLayout {
+            Layout.fillWidth: true
+            Layout.leftMargin: contentMargin
+            Layout.rightMargin: contentMargin
+            Layout.bottomMargin: MD.Token.spacing.medium
+            spacing: MD.Token.spacing.small
+
+            MD.Button {
+                Layout.fillWidth: true
+                mdState.type: MD.Enum.BtFilled
+                text: qsTr("Install .arach…")
+                onClicked: Core.browsePluginArach()
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: MD.Token.spacing.small
+
+                MD.Button {
+                    Layout.fillWidth: true
+                    mdState.type: MD.Enum.BtFilledTonal
+                    text: qsTr("Open folder")
+                    onClicked: Core.openPluginsFolder()
+                }
+
+                MD.Button {
+                    Layout.fillWidth: true
+                    mdState.type: MD.Enum.BtText
+                    text: qsTr("Refresh")
+                    onClicked: {
+                        Core.rescanPlugins()
+                        root.reloadPlugins()
+                    }
+                }
+            }
+
+            MD.Label {
+                Layout.fillWidth: true
+                text: qsTr("User-installed: %1").arg(Core.pluginsUserDir)
+                color: MD.Token.color.on_surface_variant
+                typescale: MD.Token.typescale.label_small
+                wrapMode: Text.WordWrap
+            }
+        }
+    }
+}

@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Controls
 
 import Arachnel.Core 1.0
 import Qcm.Material as MD
@@ -16,15 +17,51 @@ Item {
         color: MD.Token.color.surface
     }
 
-    readonly property var info: {
-        if (!gameId.length)
-            return ({})
-        if (fromCatalog)
-            return Core.catalog.entryInfo(gameId)
-        return Core.library.gameInfo(gameId)
+    readonly property var info: gameId.length ? Core.entryDetails(gameId) : ({})
+
+    readonly property bool playable: Core.isEntryPlayable(gameId)
+    readonly property bool installed: root.playable
+    readonly property bool isRunning: Core.gameRunning && Core.runningGameId === root.gameId
+    readonly property bool downloadFilesExist: Core.entryDownloadFilesExist(gameId)
+    readonly property bool installFailed: (downloadJob.detail || "").indexOf("Install failed") >= 0
+    readonly property bool isInstalling: downloadJob.status === "installing"
+    readonly property bool readyToInstall: !root.playable
+        && downloadJob.status === "completed"
+        && root.downloadFilesExist
+        && !root.installFailed
+
+    property var downloadJob: ({})
+
+    readonly property bool downloadPaused: downloadJob.status === "paused" || !!downloadJob.paused
+    readonly property bool downloadActive: !!(downloadJob.inProgress) && !downloadPaused
+    readonly property bool downloadCompleted: downloadJob.status === "completed"
+    readonly property bool showDownloadProgress: !!(downloadJob.inProgress) || downloadCompleted
+
+    function refreshDownloadJob() {
+        downloadJob = Core.jobs.jobForEntry(root.gameId)
     }
 
-    readonly property bool installed: !!(info.installed)
+    Connections {
+        target: Core.jobs
+        function onJobsChanged() { root.refreshDownloadJob() }
+    }
+
+    onGameIdChanged: {
+        refreshDownloadJob()
+        maybeEnrich()
+    }
+    onFromCatalogChanged: maybeEnrich()
+
+    function maybeEnrich() {
+        if (gameId.length > 0 && fromCatalog)
+            Core.enrichCatalogEntry(gameId)
+    }
+
+    Component.onCompleted: {
+        refreshDownloadJob()
+        maybeEnrich()
+    }
+
     readonly property string sourceLabel: {
         const sid = info.sourceId ?? ""
         if (!sid.length)
@@ -35,16 +72,29 @@ Item {
     }
 
     signal backRequested()
+    signal openAddonPicker(string entryId, string title)
+    signal openInstallPicker(string entryId, string title, var selectedAddonIds)
 
-    onGameIdChanged: root.maybeEnrich()
-    onFromCatalogChanged: root.maybeEnrich()
-
-    function maybeEnrich() {
-        if (gameId.length > 0 && fromCatalog)
-            Core.enrichCatalogEntry(gameId)
+    function proceedToInstall(selectedAddonIds) {
+        const ids = selectedAddonIds || []
+        if (Core.needsInstallLocationChoice())
+            root.openInstallPicker(root.gameId, root.info.title || "", ids)
+        else
+            Core.installCatalogEntry(root.gameId, "", ids)
     }
 
-    Component.onCompleted: root.maybeEnrich()
+    function beginInstall() {
+        const addonCount = root.info.addonCount ?? 0
+        if (addonCount > 0)
+            root.openAddonPicker(root.gameId, root.info.title || "")
+        else
+            root.proceedToInstall([])
+    }
+
+    function confirmRemove() {
+        Core.removeEntry(root.gameId, true)
+        root.backRequested()
+    }
 
     Flickable {
         id: flick
@@ -74,7 +124,7 @@ Item {
 
                 MD.Label {
                     Layout.fillWidth: true
-                    text: qsTr("Детали игры")
+                    text: qsTr("Game details")
                     typescale: MD.Token.typescale.title_large
                 }
             }
@@ -101,7 +151,7 @@ Item {
 
                     MD.Label {
                         Layout.fillWidth: true
-                        text: root.info.title ?? qsTr("Игра не найдена")
+                        text: root.info.title ?? qsTr("Game not found")
                         typescale: MD.Token.typescale.headline_medium
                         wrapMode: Text.WordWrap
                     }
@@ -134,7 +184,7 @@ Item {
                         }
                         MD.AssistChip {
                             visible: !!(root.info.hasAddons)
-                            text: qsTr("%1 доп.").arg(root.info.addonCount ?? 0)
+                            text: qsTr("%1 add-ons").arg(root.info.addonCount ?? 0)
                             icon.name: MD.Token.icon.extension
                         }
                         MD.AssistChip {
@@ -143,17 +193,26 @@ Item {
                         }
                         MD.AssistChip {
                             visible: !!(root.info.hasUpdate)
-                            text: qsTr("Есть обновление")
+                            text: qsTr("Update available")
                             icon.name: MD.Token.icon.update
                         }
                     }
 
                     MD.Label {
                         Layout.fillWidth: true
-                        visible: root.installed && !(root.info.installPath && root.info.installPath.length)
-                        text: qsTr("Торрент загружен. Установка будет выполнена плагином источника.")
+                        visible: root.readyToInstall && !root.installFailed
+                        text: qsTr("Torrent downloaded. Click Install for the source plugin to extract or install the game.")
                         wrapMode: Text.WordWrap
                         color: MD.Token.color.on_surface_variant
+                        typescale: MD.Token.typescale.body_medium
+                    }
+
+                    MD.Label {
+                        Layout.fillWidth: true
+                        visible: root.installFailed
+                        text: root.downloadJob.detail || qsTr("Install failed")
+                        wrapMode: Text.WordWrap
+                        color: MD.Token.color.error
                         typescale: MD.Token.typescale.body_medium
                     }
 
@@ -161,33 +220,75 @@ Item {
                         spacing: MD.Token.spacing.small
 
                         MD.Button {
-                            visible: root.installed && !!(root.info.installPath && root.info.installPath.length)
-                            text: qsTr("Играть")
-                            icon.name: MD.Token.icon.play_arrow
+                            visible: root.playable
+                            text: root.isRunning ? qsTr("Stop") : qsTr("Play")
+                            icon.name: root.isRunning ? "" : MD.Token.icon.play_arrow
                             mdState.type: MD.Enum.BtFilled
-                            onClicked: Core.launchGame(root.gameId)
+                            mdState.backgroundColor: root.isRunning
+                                                 ? MD.Token.color.error
+                                                 : MD.Token.color.primary
+                            mdState.textColor: root.isRunning
+                                               ? MD.Token.color.on_error
+                                               : MD.Token.color.on_primary
+                            onClicked: root.isRunning
+                                         ? Core.stopRunningGame()
+                                         : Core.launchGame(root.gameId)
+                        }
+
+                        DownloadProgressButton {
+                            visible: !root.playable
+                                     && (root.fromCatalog || root.showDownloadProgress
+                                         || root.readyToInstall || root.installFailed)
+                            progress: root.downloadJob.progress ?? 0
+                            downloading: root.downloadActive
+                            paused: root.downloadPaused
+                            completed: false
+                            readyToInstall: root.readyToInstall
+                            installFailed: root.installFailed
+                            installing: root.isInstalling
+                            onActivated: {
+                                if (root.installFailed || root.readyToInstall)
+                                    Core.retryInstall(root.downloadJob.jobId)
+                                else
+                                    root.beginInstall()
+                            }
+                            onPauseToggleRequested: Core.toggleJobPause(root.downloadJob.jobId)
                         }
 
                         MD.Button {
-                            visible: root.fromCatalog || !root.installed
-                            text: qsTr("Скачать торрент")
-                            icon.name: MD.Token.icon.download
-                            mdState.type: MD.Enum.BtFilled
-                            onClicked: Core.installCatalogEntry(root.gameId)
+                            visible: root.playable || Core.isEntryDownloadComplete(root.gameId)
+                            text: qsTr("Delete")
+                            icon.name: MD.Token.icon.delete
+                            mdState.type: MD.Enum.BtOutlined
+                            onClicked: removeDialog.open()
                         }
 
                         MD.Button {
-                            visible: root.installed && !!(root.info.hasUpdate)
-                            text: qsTr("Обновить")
+                            visible: root.installed && !!(root.info.hasUpdate) && !root.downloadJob.inProgress
+                            text: qsTr("Refresh")
                             icon.name: MD.Token.icon.update
                             mdState.type: MD.Enum.BtFilledTonal
-                            onClicked: {
-                                if (root.fromCatalog)
-                                    Core.updateCatalogEntry(root.gameId)
-                                else
-                                    Core.updateCatalogEntry(root.gameId)
-                            }
+                            onClicked: Core.updateCatalogEntry(root.gameId)
                         }
+
+                        MD.Button {
+                            visible: root.playable
+                                     && (root.info.installKind === 0)
+                            text: qsTr("Verify files")
+                            icon.name: MD.Token.icon.fact_check
+                            mdState.type: MD.Enum.BtText
+                            onClicked: Core.verifyEntryFiles(root.gameId)
+                        }
+                    }
+
+                    MD.Label {
+                        Layout.fillWidth: true
+                        visible: root.showDownloadProgress && !root.downloadCompleted && !!(root.downloadJob.detail)
+                        text: root.downloadJob.detail ?? ""
+                        color: MD.Token.color.on_surface_variant
+                        typescale: MD.Token.typescale.label_medium
+                        elide: Text.ElideRight
+                        maximumLineCount: 1
                     }
                 }
             }
@@ -210,85 +311,16 @@ Item {
                     spacing: MD.Token.spacing.medium
 
                     MD.Label {
-                        text: qsTr("Описание")
+                        text: qsTr("Description")
                         typescale: MD.Token.typescale.title_medium
                     }
 
                     MD.Label {
                         Layout.fillWidth: true
-                        text: root.info.description || qsTr("Описание пока недоступно.")
+                        text: root.info.description || qsTr("Description is not available yet.")
                         typescale: MD.Token.typescale.body_large
                         wrapMode: Text.WordWrap
                         color: MD.Token.color.on_surface_variant
-                    }
-                }
-            }
-
-            MD.ElevationRectangle {
-                Layout.fillWidth: true
-                Layout.leftMargin: MD.Token.spacing.large
-                Layout.rightMargin: MD.Token.spacing.large
-                visible: (root.info.addonCount ?? 0) > 0
-                Layout.preferredHeight: addonsCol.implicitHeight + 2 * MD.Token.spacing.large
-                radius: MD.Token.shape.corner.extra_large
-                color: MD.Token.color.surface_container
-                elevation: MD.Token.elevation.level0
-
-                ColumnLayout {
-                    id: addonsCol
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    anchors.top: parent.top
-                    anchors.margins: MD.Token.spacing.large
-                    spacing: MD.Token.spacing.small
-
-                    MD.Label {
-                        text: qsTr("Дополнения")
-                        typescale: MD.Token.typescale.title_medium
-                    }
-
-                    MD.Label {
-                        Layout.fillWidth: true
-                        text: qsTr("У FreeTP к игре могут идти отдельные DLC — их нужно докачать и установить отдельно.")
-                        wrapMode: Text.WordWrap
-                        color: MD.Token.color.on_surface_variant
-                        typescale: MD.Token.typescale.body_medium
-                    }
-
-                    Repeater {
-                        model: Core.catalog.addonsFor(root.gameId)
-
-                        RowLayout {
-                            required property string id
-                            required property string title
-                            required property string fileSize
-                            required property string kindLabel
-                            Layout.fillWidth: true
-                            spacing: MD.Token.spacing.small
-
-                            ColumnLayout {
-                                Layout.fillWidth: true
-                                spacing: 2
-                                MD.Label {
-                                    Layout.fillWidth: true
-                                    text: title
-                                    typescale: MD.Token.typescale.body_large
-                                    elide: Text.ElideRight
-                                }
-                                MD.Label {
-                                    text: kindLabel + " · " + fileSize
-                                    color: MD.Token.color.on_surface_variant
-                                    typescale: MD.Token.typescale.label_medium
-                                }
-                            }
-
-                            MD.Button {
-                                text: qsTr("Скачать")
-                                icon.name: MD.Token.icon.download
-                                mdState.type: MD.Enum.BtOutlined
-                                onClicked: Core.installCatalogAddon(root.gameId, id)
-                            }
-                        }
                     }
                 }
             }
@@ -311,22 +343,28 @@ Item {
                     spacing: MD.Token.spacing.small
 
                     MD.Label {
-                        text: qsTr("Информация")
+                        text: qsTr("Information")
                         typescale: MD.Token.typescale.title_medium
                     }
 
                     Repeater {
                         model: [
-                            { label: qsTr("Источник"), value: root.sourceLabel },
-                            { label: qsTr("Версия"), value: root.info.version ?? "" },
-                            { label: qsTr("Размер"), value: root.info.sizeLabel || "—" },
-                            { label: qsTr("Тип установки"), value: root.info.installKindLabel ?? "" },
+                            { label: qsTr("Source"), value: root.sourceLabel },
+                            { label: qsTr("Version"), value: root.info.version ?? "" },
+                            { label: qsTr("Size"), value: root.info.sizeLabel || "—" },
+                            { label: qsTr("Install type"), value: root.info.installKindLabel ?? "" },
                             {
-                                label: qsTr("Путь установки"),
-                                value: root.info.installPath || qsTr("Ожидает установки плагином")
+                                label: qsTr("Install path"),
+                                value: root.playable
+                                       ? (root.info.installPath || "—")
+                                       : (root.isInstalling
+                                              ? qsTr("Installing…")
+                                              : root.readyToInstall || root.installFailed
+                                              ? qsTr("Waiting to install")
+                                              : qsTr("—"))
                             },
                             {
-                                label: qsTr("Загрузка"),
+                                label: qsTr("Download"),
                                 value: root.info.downloadPath || "—"
                             }
                         ]
@@ -350,6 +388,47 @@ Item {
                                 elide: Text.ElideMiddle
                             }
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    MD.Dialog {
+        id: removeDialog
+        title: qsTr("Remove game?")
+        modal: true
+        width: Math.min(420, root.width > 0 ? root.width - 48 : 420)
+
+        MD.Label {
+            width: removeDialog.width - removeDialog.horizontalPadding * 2
+            text: qsTr("Game files will be deleted from disk. This cannot be undone.")
+            wrapMode: Text.WordWrap
+            typescale: MD.Token.typescale.body_medium
+        }
+
+        footer: Item {
+            implicitHeight: removeFooterRow.implicitHeight + MD.Token.spacing.medium
+
+            MD.DialogButtonBox {
+                id: removeFooterRow
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+
+                MD.Button {
+                    mdState.type: MD.Enum.BtText
+                    text: qsTr("Cancel")
+                    DialogButtonBox.buttonRole: DialogButtonBox.RejectRole
+                    onClicked: removeDialog.close()
+                }
+                MD.Button {
+                    mdState.type: MD.Enum.BtFilled
+                    text: qsTr("Delete")
+                    DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole
+                    onClicked: {
+                        removeDialog.close()
+                        root.confirmRemove()
                     }
                 }
             }
