@@ -1,5 +1,7 @@
 #include "core_controller.h"
 
+#include <QDesktopServices>
+
 #include "catalog_feed_loader.h"
 #include "catalog_parser.h"
 #include "cover_image_cache.h"
@@ -2030,6 +2032,13 @@ void CoreController::invalidateSourceCatalog(const QString& sourceId)
 
     if (m_activeSourceIds.contains(sourceId))
         rebuildMergedCatalog();
+}
+
+void CoreController::openExternalUrl(const QString& url)
+{
+    const QUrl parsed(url.trimmed());
+    if (parsed.isValid())
+        QDesktopServices::openUrl(parsed);
 }
 
 void CoreController::prefetchCatalogCounts()

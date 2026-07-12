@@ -7,6 +7,8 @@
 #include <cstdio>
 
 #include "core/core_controller.h"
+#include "core/settings_store.h"
+#include "core/translation_service.h"
 
 #ifndef QT_QML_MATERIAL_IMPORT_PATH
 #define QT_QML_MATERIAL_IMPORT_PATH ""
@@ -57,5 +59,16 @@ int main(int argc, char *argv[])
     });
 
     engine.loadFromModule(QStringLiteral("arachnel"), QStringLiteral("Main"));
+
+    auto& core = arachnel::core::CoreController::instance();
+    auto& translations = arachnel::core::TranslationService::instance();
+    translations.setEngine(&engine);
+    translations.applyLanguage(core.settings()->uiLanguage());
+
+    QObject::connect(core.settings(), &arachnel::core::SettingsStore::uiLanguageChanged, &app,
+                     [&translations, &core]() {
+                         translations.applyLanguage(core.settings()->uiLanguage());
+                     });
+
     return app.exec();
 }

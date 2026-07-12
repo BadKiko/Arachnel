@@ -76,14 +76,14 @@ Item {
             MD.Label {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
-                text: qsTr("Нет загрузок")
+                text: qsTr("No downloads")
                 typescale: MD.Token.typescale.title_large
             }
 
             MD.Label {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
-                text: qsTr("Начните установку из каталога — прогресс появится здесь.")
+                text: qsTr("Start installing from the catalog — progress will appear here.")
                 color: MD.Token.color.on_surface_variant
                 typescale: MD.Token.typescale.body_medium
                 wrapMode: Text.WordWrap
@@ -108,14 +108,14 @@ Item {
                 spacing: 2
 
                 MD.Label {
-                    text: qsTr("Загрузки")
+                    text: qsTr("Downloads")
                     typescale: MD.Token.typescale.headline_medium
                 }
 
                 MD.Label {
                     text: Core.jobs.activeCount > 0
-                          ? qsTr("%1 активных · докачка после перезапуска").arg(Core.jobs.activeCount)
-                          : qsTr("Торренты докачиваются после перезапуска")
+                          ? qsTr("%1 active · resume after restart").arg(Core.jobs.activeCount)
+                          : qsTr("Torrents resume after restart")
                     color: MD.Token.color.on_surface_variant
                     typescale: MD.Token.typescale.body_medium
                 }

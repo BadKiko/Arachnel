@@ -32,6 +32,7 @@ qt_standard_project_setup(REQUIRES 6.8)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/ArachnelLibtorrent.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/ArachnelPlugins.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/ArachnelTranslations.cmake)
 
 include(FetchContent)
 FetchContent_Declare(
@@ -113,6 +114,7 @@ qt_add_executable(arachnel_app
     src/core/process_launcher.cpp
     src/core/process_tracker.cpp
     src/core/core_controller.cpp
+    src/core/translation_service.cpp
 )
 
 if(WIN32)
@@ -141,6 +143,8 @@ if(ARACHNEL_FAST_BUILD)
 endif()
 
 qt_add_qml_module(arachnel_app ${_arachnel_qml_module_args})
+
+arachnel_setup_translations(arachnel_app)
 
 add_dependencies(arachnel_app qml_materialplugin)
 

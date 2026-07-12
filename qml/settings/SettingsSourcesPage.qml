@@ -25,8 +25,8 @@ Flickable {
         root.countsRevision
         const count = Core.catalogEntryCount(sourceId)
         if (count < 0)
-            return qsTr("Игр: …")
-        return qsTr("Игр: %1").arg(count)
+            return qsTr("Games: …")
+        return qsTr("Games: %1").arg(count)
     }
 
     Component.onCompleted: Core.prefetchCatalogCounts()
@@ -55,7 +55,7 @@ Flickable {
             Layout.leftMargin: contentMargin
             Layout.rightMargin: contentMargin
             Layout.topMargin: MD.Token.spacing.small
-            text: qsTr("Подключите каталоги в формате Hydra Launcher (games.json). Удобно при переходе с Hydra — те же ссылки на игры, загрузка через торрент. Для установки и запуска нужен плагин источника.")
+            text: qsTr("Connect catalogs in Hydra Launcher format (games.json). Handy when migrating from Hydra — same game links, torrent downloads. A source plugin is required to install and launch.")
             wrapMode: Text.WordWrap
             color: MD.Token.color.on_surface_variant
             typescale: MD.Token.typescale.body_medium
@@ -82,13 +82,13 @@ Flickable {
 
                 MD.Label {
                     Layout.fillWidth: true
-                    text: qsTr("Пока нет каталогов")
+                    text: qsTr("No catalogs yet")
                     typescale: MD.Token.typescale.title_small
                 }
 
                 MD.Label {
                     Layout.fillWidth: true
-                    text: qsTr("Нажмите «Добавить каталог» и вставьте URL вашего games.json — как в Hydra, или публичный фид сообщества.")
+                    text: qsTr("Click Add catalog and paste your games.json URL — like Hydra, or a public community feed.")
                     wrapMode: Text.WordWrap
                     color: MD.Token.color.on_surface_variant
                     typescale: MD.Token.typescale.body_medium
@@ -168,7 +168,7 @@ Flickable {
                         MD.Label {
                             Layout.fillWidth: true
                             visible: sourceCard.isPlugin && sourceCard.pluginVersion.length > 0
-                            text: qsTr("Плагин · v%1").arg(sourceCard.pluginVersion)
+                            text: qsTr("Plugin · v%1").arg(sourceCard.pluginVersion)
                             color: MD.Token.color.primary
                             typescale: MD.Token.typescale.label_small
                         }
@@ -198,10 +198,10 @@ Flickable {
                             MD.Label {
                                 Layout.fillWidth: true
                                 text: !sourceCard.hasCatalogUrl
-                                      ? qsTr("Нет URL — каталог не загрузится")
+                                      ? qsTr("No URL — catalog will not load")
                                       : (sourceCard.sourceEnabled
-                                         ? qsTr("Активен в каталоге")
-                                         : qsTr("Выключен"))
+                                         ? qsTr("Active in catalog")
+                                         : qsTr("Disabled"))
                                 color: sourceCard.hasCatalogUrl
                                        ? MD.Token.color.on_surface_variant
                                        : MD.Token.color.error
@@ -211,7 +211,7 @@ Flickable {
                             MD.Button {
                                 visible: !sourceCard.isPlugin
                                 mdState.type: MD.Enum.BtText
-                                text: qsTr("Изменить")
+                                text: qsTr("Edit")
                                 onClicked: root.editSourceRequested(
                                                sourceCard.pluginId,
                                                sourceCard.name,
@@ -223,7 +223,7 @@ Flickable {
                             MD.Button {
                                 visible: !sourceCard.isPlugin
                                 mdState.type: MD.Enum.BtText
-                                text: qsTr("Удалить")
+                                text: qsTr("Delete")
                                 onClicked: Core.sources.removeSource(sourceCard.pluginId)
                             }
                         }
@@ -238,7 +238,7 @@ Flickable {
             Layout.rightMargin: contentMargin
             Layout.bottomMargin: MD.Token.spacing.medium
             mdState.type: MD.Enum.BtFilledTonal
-            text: qsTr("Добавить каталог Hydra")
+            text: qsTr("Add Hydra catalog")
             onClicked: root.addSourceRequested()
         }
     }

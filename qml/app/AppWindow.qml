@@ -79,15 +79,15 @@ MD.ApplicationWindow {
 
     readonly property var navModel: [
         {
-            name: qsTr("Библиотека"),
+            name: qsTr("Library"),
             icon: MD.Token.icon.sports_esports
         },
         {
-            name: qsTr("Каталог"),
+            name: qsTr("Catalog"),
             icon: MD.Token.icon.storefront
         },
         {
-            name: qsTr("Загрузки"),
+            name: qsTr("Downloads"),
             icon: MD.Token.icon.downloading,
             navIndex: 2
         }

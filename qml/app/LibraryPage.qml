@@ -26,8 +26,8 @@ Item {
         && Core.runningGameId === (root.heroGame?.gameId ?? "")
     readonly property bool showRunningHero: Core.gameRunning
     readonly property string heroEyebrow: showRunningHero
-        ? qsTr("Сейчас играете")
-        : qsTr("Недавно играли")
+        ? qsTr("Playing now")
+        : qsTr("Recently played")
     readonly property string heroTitle: root.heroGame?.title ?? ""
     readonly property string heroCoverUrl: root.heroGame?.coverUrl ?? ""
     readonly property string heroGameId: root.heroGame?.gameId ?? ""
@@ -57,13 +57,13 @@ Item {
         if (featuredJob.status === "installing") {
             if (featuredJob.detail && featuredJob.detail.length)
                 return featuredJob.detail
-            return qsTr("Установка %1%").arg(featuredJob.progress)
+            return qsTr("Installing %1%").arg(featuredJob.progress)
         }
         if (featuredJob.status === "completed" && !featuredJob.inProgress)
-            return qsTr("Установка…")
+            return qsTr("Installing…")
         if (featuredJob.status === "paused")
-            return qsTr("Пауза · %1%").arg(featuredJob.progress)
-        return qsTr("Загрузка %1%").arg(featuredJob.progress)
+            return qsTr("Paused · %1%").arg(featuredJob.progress)
+        return qsTr("Downloading %1%").arg(featuredJob.progress)
     }
 
     signal openGame(string gameId)
@@ -152,7 +152,7 @@ Item {
 
                     MD.Label {
                         Layout.fillWidth: true
-                        text: qsTr("Пока тут ничего нет")
+                        text: qsTr("Nothing here yet")
                         typescale: MD.Token.typescale.headline_medium
                         wrapMode: Text.WordWrap
                     }
@@ -160,7 +160,7 @@ Item {
                     MD.Label {
                         Layout.fillWidth: true
                         Layout.maximumWidth: 520
-                        text: qsTr("Библиотека пуста. Установите плагин источника, выберите игру в каталоге — и она появится здесь.")
+                        text: qsTr("Your library is empty. Install a source plugin, pick a game in the catalog, and it will show up here.")
                         color: MD.Token.color.on_surface_variant
                         typescale: MD.Token.typescale.body_medium
                         wrapMode: Text.WordWrap
@@ -172,8 +172,8 @@ Item {
 
                         MD.Button {
                             text: Core.sources.enabledCount > 0
-                                  ? qsTr("Открыть каталог")
-                                  : qsTr("Установить плагин")
+                                  ? qsTr("Open catalog")
+                                  : qsTr("Install plugin")
                             icon.name: Core.sources.enabledCount > 0
                                        ? MD.Token.icon.storefront
                                        : MD.Token.icon.add
@@ -188,7 +188,7 @@ Item {
 
                         MD.Button {
                             visible: Core.sources.enabledCount > 0
-                            text: qsTr("Настройки")
+                            text: qsTr("Settings")
                             icon.name: MD.Token.icon.settings
                             mdState.type: MD.Enum.BtOutlined
                             onClicked: root.openSettings()
@@ -196,7 +196,7 @@ Item {
 
                         MD.Button {
                             visible: Core.sources.enabledCount === 0
-                            text: qsTr("Каталоги и плагины")
+                            text: qsTr("Catalogs and plugins")
                             mdState.type: MD.Enum.BtText
                             onClicked: sourceHelpDialog.open()
                         }
@@ -212,21 +212,21 @@ Item {
                     model: [
                         {
                             icon: MD.Token.icon.extension,
-                            step: qsTr("Шаг 1"),
-                            title: qsTr("Плагин"),
-                            body: qsTr("Установите плагин источника (FreeTP и др.) в Настройки → Плагины.")
+                            step: qsTr("Step 1"),
+                            title: qsTr("Plugin"),
+                            body: qsTr("Install a source plugin (FreeTP, etc.) under Settings → Plugins.")
                         },
                         {
                             icon: MD.Token.icon.storefront,
-                            step: qsTr("Шаг 2"),
-                            title: qsTr("Каталог"),
-                            body: qsTr("Выберите игру и запустите установку — торрент скачается сам.")
+                            step: qsTr("Step 2"),
+                            title: qsTr("Catalog"),
+                            body: qsTr("Pick a game and start installation — the torrent downloads automatically.")
                         },
                         {
                             icon: MD.Token.icon.sports_esports,
-                            step: qsTr("Шаг 3"),
-                            title: qsTr("Библиотека"),
-                            body: qsTr("Установленные игры живут здесь: запуск, обновления, детали.")
+                            step: qsTr("Step 3"),
+                            title: qsTr("Library"),
+                            body: qsTr("Installed games live here: launch, updates, and details.")
                         }
                     ]
 
@@ -419,7 +419,7 @@ Item {
 
                                 MD.Label {
                                     Layout.fillWidth: true
-                                    text: qsTr("Запущена")
+                                    text: qsTr("Running")
                                     color: MD.Token.color.primary
                                     typescale: MD.Token.typescale.body_large
                                     elide: Text.ElideRight
@@ -458,7 +458,7 @@ Item {
 
                                 MD.Button {
                                     visible: !root.showRunningHero
-                                    text: qsTr("Играть")
+                                    text: qsTr("Play")
                                     mdState.type: MD.Enum.BtFilled
                                     enabled: !!(root.heroGameId)
                                              && Core.isEntryPlayable(root.heroGameId)
@@ -466,7 +466,7 @@ Item {
                                 }
 
                                 MD.Button {
-                                    text: qsTr("Подробнее")
+                                    text: qsTr("Details")
                                     mdState.type: MD.Enum.BtOutlined
                                     enabled: !!(root.heroGameId)
                                     onClicked: root.openGame(root.heroGameId)
@@ -474,7 +474,7 @@ Item {
 
                                 MD.Button {
                                     visible: root.heroHasUpdate && !root.showRunningHero
-                                    text: qsTr("Обновить")
+                                    text: qsTr("Refresh")
                                     icon.name: MD.Token.icon.update
                                     mdState.type: MD.Enum.BtFilledTonal
                                     enabled: !!(root.heroGameId)
@@ -511,28 +511,28 @@ Item {
 
                 StatCard {
                     Layout.fillWidth: true
-                    title: qsTr("В библиотеке")
+                    title: qsTr("In library")
                     value: String(Core.library.count)
                     iconName: MD.Token.icon.sports_esports
                 }
 
                 StatCard {
                     Layout.fillWidth: true
-                    title: qsTr("Источники")
+                    title: qsTr("Sources")
                     value: String(Core.sources.enabledCount)
                     iconName: MD.Token.icon.storefront
                 }
 
                 StatCard {
                     Layout.fillWidth: true
-                    title: qsTr("Задачи")
+                    title: qsTr("Tasks")
                     value: String(Core.jobs.count)
                     iconName: MD.Token.icon.downloading
                 }
 
                 StatCard {
                     Layout.fillWidth: true
-                    title: qsTr("Обновления")
+                    title: qsTr("Updates")
                     value: String(Core.library.updateCount())
                     iconName: MD.Token.icon.update
                 }
@@ -564,21 +564,21 @@ Item {
 
                         MD.Label {
                             Layout.fillWidth: true
-                            text: qsTr("%1 активных загрузок").arg(Core.jobs.activeCount)
+                            text: qsTr("%1 active downloads").arg(Core.jobs.activeCount)
                             color: MD.Token.color.on_secondary_container
                             typescale: MD.Token.typescale.title_small
                         }
 
                         MD.Label {
                             Layout.fillWidth: true
-                            text: qsTr("Загрузки продолжаются после перезапуска")
+                            text: qsTr("Downloads continue after restart")
                             color: MD.Token.color.on_secondary_container
                             typescale: MD.Token.typescale.label_medium
                         }
                     }
 
                     MD.Button {
-                        text: qsTr("Открыть")
+                        text: qsTr("Open")
                         onClicked: root.openDownloads()
                     }
                 }
@@ -591,12 +591,12 @@ Item {
 
                 MD.Label {
                     Layout.fillWidth: true
-                    text: qsTr("Моя библиотека")
+                    text: qsTr("My library")
                     typescale: MD.Token.typescale.title_large
                 }
 
                 MD.Label {
-                    text: qsTr("%1 игр").arg(Core.library.count)
+                    text: qsTr("%1 games").arg(Core.library.count)
                     color: MD.Token.color.on_surface_variant
                     typescale: MD.Token.typescale.label_large
                 }

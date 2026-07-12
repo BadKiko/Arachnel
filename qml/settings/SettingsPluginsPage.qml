@@ -41,7 +41,7 @@ Flickable {
             Layout.leftMargin: contentMargin
             Layout.rightMargin: contentMargin
             Layout.topMargin: MD.Token.spacing.small
-            text: qsTr("Плагины — источники с каталогом, установкой и запуском. Пакет: файл .arach (ZIP с plugin.json и библиотекой).")
+            text: qsTr("Plugins are sources with catalog, install, and launch. Package: .arach file (ZIP with plugin.json and libraries).")
             wrapMode: Text.WordWrap
             color: MD.Token.color.on_surface_variant
             typescale: MD.Token.typescale.body_medium
@@ -68,14 +68,14 @@ Flickable {
 
                 MD.Label {
                     Layout.fillWidth: true
-                    text: qsTr("Плагины не найдены")
+                    text: qsTr("No plugins found")
                     typescale: MD.Token.typescale.title_small
                 }
 
                 MD.Label {
                     Layout.fillWidth: true
                     wrapMode: Text.WordWrap
-                    text: qsTr("Установите пакет .arach через кнопку ниже.\n\nПосле сборки FreeTP лежит в dist:\nbuild-win\\dist\\freetp.arach")
+                    text: qsTr("Install the .arach package using the button below.\n\nAfter building, FreeTP is in dist:\nbuild-win/dist/freetp.arach")
                     color: MD.Token.color.on_surface_variant
                     typescale: MD.Token.typescale.body_small
                 }
@@ -184,7 +184,7 @@ Flickable {
             MD.Button {
                 Layout.fillWidth: true
                 mdState.type: MD.Enum.BtFilled
-                text: qsTr("Установить .arach…")
+                text: qsTr("Install .arach…")
                 onClicked: Core.browsePluginArach()
             }
 
@@ -195,14 +195,14 @@ Flickable {
                 MD.Button {
                     Layout.fillWidth: true
                     mdState.type: MD.Enum.BtFilledTonal
-                    text: qsTr("Открыть папку")
+                    text: qsTr("Open folder")
                     onClicked: Core.openPluginsFolder()
                 }
 
                 MD.Button {
                     Layout.fillWidth: true
                     mdState.type: MD.Enum.BtText
-                    text: qsTr("Обновить")
+                    text: qsTr("Refresh")
                     onClicked: {
                         Core.rescanPlugins()
                         root.reloadPlugins()
@@ -212,7 +212,7 @@ Flickable {
 
             MD.Label {
                 Layout.fillWidth: true
-                text: qsTr("Пользовательские: %1").arg(Core.pluginsUserDir)
+                text: qsTr("User-installed: %1").arg(Core.pluginsUserDir)
                 color: MD.Token.color.on_surface_variant
                 typescale: MD.Token.typescale.label_small
                 wrapMode: Text.WordWrap

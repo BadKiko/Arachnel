@@ -22,10 +22,10 @@ Item {
         if (!hasAddons)
             return ""
         if (installedComponentCount >= componentCount)
-            return qsTr("%1 доп.").arg(componentCount)
+            return qsTr("%1 add-ons").arg(componentCount)
         if (installedComponentCount > 0)
-            return qsTr("%1/%2 доп.").arg(installedComponentCount).arg(componentCount)
-        return qsTr("%1 доп.").arg(componentCount)
+            return qsTr("%1/%2 add-ons").arg(installedComponentCount).arg(componentCount)
+        return qsTr("%1 add-ons").arg(componentCount)
     }
 
     property int jobRevision: 0
@@ -48,13 +48,13 @@ Item {
         if (activeJob.status === "installing") {
             if (activeJob.detail && activeJob.detail.length)
                 return activeJob.detail
-            return qsTr("Установка %1%").arg(activeJob.progress)
+            return qsTr("Installing %1%").arg(activeJob.progress)
         }
         if (activeJob.status === "completed" && !activeJob.inProgress)
-            return qsTr("Установка…")
+            return qsTr("Installing…")
         if (activeJob.status === "paused")
-            return qsTr("Пауза · %1%").arg(activeJob.progress)
-        return qsTr("Загрузка %1%").arg(activeJob.progress)
+            return qsTr("Paused · %1%").arg(activeJob.progress)
+        return qsTr("Downloading %1%").arg(activeJob.progress)
     }
     readonly property string statusIcon: {
         if (!showJobStatus)
@@ -112,7 +112,7 @@ Item {
                 MD.Label {
                     id: runningChipLabel
                     anchors.centerIn: parent
-                    text: qsTr("Играет")
+                    text: qsTr("Playing")
                     typescale: MD.Token.typescale.label_small
                     color: MD.Token.color.on_primary_container
                 }
@@ -131,7 +131,7 @@ Item {
                 MD.Label {
                     id: updateLabel
                     anchors.centerIn: parent
-                    text: qsTr("Обновление")
+                    text: qsTr("Updating")
                     typescale: MD.Token.typescale.label_small
                     color: MD.Token.color.on_tertiary_container
                 }
@@ -183,7 +183,7 @@ Item {
 
             MD.Label {
                 Layout.fillWidth: true
-                text: root.isRunning ? qsTr("Запущена") : root.statusLine
+                text: root.isRunning ? qsTr("Running") : root.statusLine
                 color: root.isRunning ? MD.Token.color.primary : MD.Token.color.on_surface_variant
                 typescale: MD.Token.typescale.label_medium
                 elide: Text.ElideRight
