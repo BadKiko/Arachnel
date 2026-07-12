@@ -19,19 +19,21 @@ alwaysApply: true
 - **Online-Fix**: чаще portable → скачать, распаковать.
 - **FreeTP**: installer, portable, фикс в сборке или отдельная загрузка фикса.
 
-Ядро: библиотека, очередь задач, запуск, настройки, загрузка плагинов.  
-Плагин: каталог, метаданные, download/install/update, подсказки для запуска.
+Ядро: библиотека, очередь задач, torrent-транспорт, настройки, загрузка плагинов (TODO).  
+Плагин: установка, обновление, launch hints. Каталог сейчас — JSON URL в настройках.
 
 ## Документация
 
 - `docs/VISION.md` — зачем проект
 - `docs/ARCHITECTURE.md` — слои и контракт плагина
+- `docs/ROADMAP.md` — прогресс и фазы
 - `plugins/README.md` — каталог плагинов
 
 ## Код
 
-- UI: `qml/app/`, `qml/settings/`, `qml/theme/`
-- Core (план): `src/core/`
-- Плагины: `plugins/<source-id>/`
+- UI: `qml/app/`, `qml/settings/`, `qml/theme/`, `qml/components/`, `qml/nav/`
+- Core: `src/core/` (реализовано)
+- Плагины: `plugins/<source-id>/` (целевое)
+- Сборка: `run.sh`, `run.ps1`, `cmake/`
 
 Не раздувать ядро ветвлениями по источникам — выносить в плагин.

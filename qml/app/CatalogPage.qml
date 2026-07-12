@@ -276,6 +276,25 @@ Item {
                 typescale: MD.Token.typescale.body_medium
                 wrapMode: Text.WordWrap
             }
+
+            RowLayout {
+                Layout.alignment: Qt.AlignHCenter
+                spacing: MD.Token.spacing.small
+
+                MD.Button {
+                    text: qsTr("Добавить источник")
+                    icon.name: MD.Token.icon.add
+                    mdState.type: MD.Enum.BtFilled
+                    onClicked: root.addSourceRequested()
+                }
+
+                MD.Button {
+                    text: qsTr("Настройки")
+                    icon.name: MD.Token.icon.settings
+                    mdState.type: MD.Enum.BtOutlined
+                    onClicked: root.openSettings()
+                }
+            }
         }
     }
 }
