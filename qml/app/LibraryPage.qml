@@ -184,7 +184,7 @@ Item {
                             visible: Core.sources.enabledCount === 0
                             text: qsTr("Что такое источник?")
                             mdState.type: MD.Enum.BtText
-                            onClicked: root.openSettings()
+                            onClicked: sourceHelpDialog.open()
                         }
                     }
                 }
@@ -297,6 +297,10 @@ Item {
                 }
             }
         }
+    }
+
+    SourceHelpDialog {
+        id: sourceHelpDialog
     }
 
     // ── Populated library ────────────────────────────────────────────────────
