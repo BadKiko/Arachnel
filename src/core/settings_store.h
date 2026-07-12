@@ -19,6 +19,10 @@ class SettingsStore : public QObject
     Q_PROPERTY(StorageLibraryModel* storageLibraries READ storageLibraries CONSTANT)
     Q_PROPERTY(int maxConcurrentDownloads READ maxConcurrentDownloads WRITE setMaxConcurrentDownloads
                    NOTIFY maxConcurrentDownloadsChanged)
+    Q_PROPERTY(bool autoCheckUpdates READ autoCheckUpdates WRITE setAutoCheckUpdates NOTIFY
+                   autoCheckUpdatesChanged)
+    Q_PROPERTY(bool verifyPortableFiles READ verifyPortableFiles WRITE setVerifyPortableFiles NOTIFY
+                   verifyPortableFilesChanged)
 
 public:
     explicit SettingsStore(QObject* parent = nullptr);
@@ -26,6 +30,8 @@ public:
     QString libraryRoot() const { return m_libraryRoot; }
     QString downloadsRoot() const { return m_downloadsRoot; }
     int maxConcurrentDownloads() const { return m_maxConcurrentDownloads; }
+    bool autoCheckUpdates() const { return m_autoCheckUpdates; }
+    bool verifyPortableFiles() const { return m_verifyPortableFiles; }
     StorageLibraryModel* storageLibraries() { return &m_storageLibraries; }
     const StorageLibraryModel* storageLibraries() const { return &m_storageLibraries; }
 
@@ -50,6 +56,8 @@ public:
     void setLibraryRoot(const QString& path);
     void setDownloadsRoot(const QString& path);
     void setMaxConcurrentDownloads(int count);
+    void setAutoCheckUpdates(bool enabled);
+    void setVerifyPortableFiles(bool enabled);
 
     void load();
     void save();
@@ -59,6 +67,8 @@ signals:
     void downloadsRootChanged();
     void sourcesChanged();
     void maxConcurrentDownloadsChanged();
+    void autoCheckUpdatesChanged();
+    void verifyPortableFilesChanged();
     void pluginStatesChanged();
 
 private:
@@ -67,6 +77,8 @@ private:
     QString m_libraryRoot;
     QString m_downloadsRoot;
     int m_maxConcurrentDownloads = 2;
+    bool m_autoCheckUpdates = true;
+    bool m_verifyPortableFiles = true;
     QVector<SourcePluginInfo> m_sources;
     QHash<QString, bool> m_pluginEnabledStates;
     StorageLibraryModel m_storageLibraries;

@@ -115,6 +115,10 @@ qt_add_executable(arachnel_app
     src/core/core_controller.cpp
 )
 
+if(WIN32)
+    set_target_properties(arachnel_app PROPERTIES WIN32_EXECUTABLE TRUE)
+endif()
+
 file(GLOB_RECURSE ARACHNEL_QML_FILES CONFIGURE_DEPENDS
      RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
      "${CMAKE_CURRENT_SOURCE_DIR}/qml/*.qml")
@@ -158,7 +162,6 @@ target_link_libraries(arachnel_app
 qt_import_qml_plugins(arachnel_app)
 
 arachnel_setup_libtorrent(arachnel_app)
-arachnel_deploy_plugins(arachnel_app)
 
 if(WIN32)
     target_link_libraries(arachnel_app PRIVATE ole32 shell32)

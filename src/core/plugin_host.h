@@ -38,7 +38,7 @@ public:
     static bool openWritablePluginsDir();
     QString lastError() const { return m_lastError; }
 
-    bool installFromZip(const QString& zipPath);
+    bool installFromArach(const QString& archivePath);
 
     using InstallCallback = std::function<void(const InstallResult&)>;
     void runInstallAsync(ISourcePlugin* plugin, const InstallContext& ctx, InstallCallback callback);
@@ -54,7 +54,8 @@ private:
     bool loadPluginDir(const QString& dirPath);
     void unloadAll();
     static QString resolveLibraryFile(const QString& pluginDir, const QString& libraryBase);
-    static bool extractZipArchive(const QString& zipPath, const QString& destDir, QString* errorOut);
+    static bool extractArachArchive(const QString& archivePath, const QString& destDir,
+                                    QString* errorOut);
     static bool findPluginBundleRoot(const QString& extractedDir, QString* bundleRootOut);
 
     QHash<QString, LoadedPlugin*> m_plugins;

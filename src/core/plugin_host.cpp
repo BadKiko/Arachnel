@@ -43,14 +43,10 @@ PluginHost::~PluginHost()
 QStringList PluginHost::pluginSearchRoots()
 {
     QStringList roots;
-    const QString appDir = QCoreApplication::applicationDirPath();
-    roots << appDir + QStringLiteral("/plugins");
-
-    QString dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    const QString dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     if (!dataDir.isEmpty())
         roots << dataDir + QStringLiteral("/plugins");
 
-    roots.removeDuplicates();
     return roots;
 }
 
@@ -269,20 +265,42 @@ bool PluginHost::openWritablePluginsDir()
     return QDesktopServices::openUrl(QUrl::fromLocalFile(dir));
 }
 
-bool PluginHost::extractZipArchive(const QString& zipPath, const QString& destDir,
-                                   QString* errorOut)
+bool PluginHost::extractArachArchive(const QString& archivePath, const QString& destDir,
+                                     QString* errorOut)
 {
     QDir().mkpath(destDir);
+
+    QString archiveForExtract = archivePath;
+    QTemporaryDir zipCopyDir;
+#if defined(Q_OS_WIN)
+    // Expand-Archive only accepts .zip; .arach is ZIP under another extension.
+    if (!zipCopyDir.isValid()) {
+        if (errorOut)
+            *errorOut = QStringLiteral("Не удалось создать временную папку");
+        return false;
+    }
+    archiveForExtract = zipCopyDir.path() + QStringLiteral("/package.zip");
+    if (QFile::exists(archiveForExtract) && !QFile::remove(archiveForExtract)) {
+        if (errorOut)
+            *errorOut = QStringLiteral("Не удалось подготовить архив к распаковке");
+        return false;
+    }
+    if (!QFile::copy(archivePath, archiveForExtract)) {
+        if (errorOut)
+            *errorOut = QStringLiteral("Не удалось прочитать пакет .arach");
+        return false;
+    }
+#endif
 
     QProcess process;
 #if defined(Q_OS_WIN)
     process.setProgram(QStringLiteral("powershell"));
     process.setArguments({QStringLiteral("-NoProfile"), QStringLiteral("-Command"),
                           QStringLiteral("Expand-Archive -LiteralPath '%1' -DestinationPath '%2' -Force")
-                              .arg(zipPath, destDir)});
+                              .arg(archiveForExtract, destDir)});
 #else
     process.setProgram(QStringLiteral("unzip"));
-    process.setArguments({QStringLiteral("-o"), zipPath, QStringLiteral("-d"), destDir});
+    process.setArguments({QStringLiteral("-o"), archivePath, QStringLiteral("-d"), destDir});
 #endif
 
     process.start();
@@ -336,13 +354,17 @@ bool PluginHost::findPluginBundleRoot(const QString& extractedDir, QString* bund
     return false;
 }
 
-bool PluginHost::installFromZip(const QString& zipPath)
+bool PluginHost::installFromArach(const QString& archivePath)
 {
     m_lastError.clear();
 
-    QFileInfo zipInfo(zipPath);
-    if (!zipInfo.exists() || !zipInfo.isFile()) {
-        m_lastError = QStringLiteral("Файл не найден: %1").arg(zipPath);
+    QFileInfo archiveInfo(archivePath);
+    if (!archiveInfo.exists() || !archiveInfo.isFile()) {
+        m_lastError = QStringLiteral("Файл не найден: %1").arg(archivePath);
+        return false;
+    }
+    if (archiveInfo.suffix().compare(QStringLiteral("arach"), Qt::CaseInsensitive) != 0) {
+        m_lastError = QStringLiteral("Поддерживаются только пакеты с расширением .arach");
         return false;
     }
 
@@ -353,7 +375,7 @@ bool PluginHost::installFromZip(const QString& zipPath)
     }
 
     QString extractError;
-    if (!extractZipArchive(zipInfo.absoluteFilePath(), tempDir.path(), &extractError)) {
+    if (!extractArachArchive(archiveInfo.absoluteFilePath(), tempDir.path(), &extractError)) {
         m_lastError = extractError;
         return false;
     }

@@ -14,7 +14,13 @@ Item {
     readonly property bool downloadsEmpty: jobGroups.length === 0
 
     function refreshGroups() {
-        jobGroups = Core.jobs.downloadGroups()
+        refreshDebounce.restart()
+    }
+
+    Timer {
+        id: refreshDebounce
+        interval: 120
+        onTriggered: jobGroups = Core.jobs.downloadGroups()
     }
 
     function isGroupExpanded(entryId) {

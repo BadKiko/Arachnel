@@ -9,7 +9,7 @@ MD.Dialog {
     id: root
 
     parent: Overlay.overlay
-    title: qsTr("Что такое источник?")
+    title: qsTr("Каталоги и плагины")
     standardButtons: T.DialogButtonBox.Close
     modal: true
 
@@ -17,14 +17,14 @@ MD.Dialog {
         {
             icon: MD.Token.icon.extension,
             step: qsTr("Шаг 1"),
-            title: qsTr("Источник"),
-            body: qsTr("Это JSON-каталог игр по URL — формат Hydra/FreeTP. Укажите ссылку в настройках, Arachnel загрузит список.")
+            title: qsTr("Каталог Hydra"),
+            body: qsTr("JSON-фид games.json по URL — тот же формат, что в Hydra Launcher. Подключите в Настройки → Каталоги Hydra, игры появятся в «Каталоге».")
         },
         {
             icon: MD.Token.icon.storefront,
             step: qsTr("Шаг 2"),
             title: qsTr("Каталог"),
-            body: qsTr("Игры из включённых источников появляются в «Каталоге». У каждого источника свой способ установки.")
+            body: qsTr("Игры из включённых каталогов появляются в «Каталоге». Загрузка — через торрент по magnet из JSON.")
         },
         {
             icon: MD.Token.icon.sports_esports,
@@ -40,7 +40,7 @@ MD.Dialog {
 
         MD.Label {
             Layout.fillWidth: true
-            text: qsTr("Источник — не сайт магазина, а подключаемый каталог. Сейчас это JSON-фид; позже — плагины с разными пайплайнами установки.")
+            text: qsTr("Два способа наполнить каталог: каталоги Hydra (games.json) — для перехода с Hydra; плагины (.arach) — полный цикл: каталог, установка, запуск и дополнения.")
             wrapMode: Text.WordWrap
             color: MD.Token.color.on_surface_variant
             typescale: MD.Token.typescale.body_medium

@@ -3,6 +3,8 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QRegularExpression>
+#include <QSet>
 
 #include <algorithm>
 
@@ -94,6 +96,89 @@ CatalogEntry parseDownloadObject(const QJsonObject& obj, const QString& sourceId
     return entry;
 }
 
+QString magnetBtih(const QStringList& uris)
+{
+    static const QRegularExpression pattern(
+        QStringLiteral("btih:([a-fA-F0-9]{40})"), QRegularExpression::CaseInsensitiveOption);
+    for (const QString& uri : uris) {
+        const QRegularExpressionMatch match = pattern.match(uri);
+        if (match.hasMatch())
+            return match.captured(1).toLower();
+    }
+    return {};
+}
+
+void mergeAddons(QVector<CatalogComponent>& target, const QVector<CatalogComponent>& extra)
+{
+    QSet<QString> seen;
+    for (const CatalogComponent& addon : target)
+        seen.insert(addon.id);
+
+    for (const CatalogComponent& addon : extra) {
+        if (seen.contains(addon.id))
+            continue;
+        target.append(addon);
+        seen.insert(addon.id);
+    }
+}
+
+bool uploadDateIsNewer(const QString& candidate, const QString& existing)
+{
+    if (existing.isEmpty())
+        return !candidate.isEmpty();
+    if (candidate.isEmpty())
+        return false;
+    return candidate > existing;
+}
+
+void disambiguateDuplicateIds(QVector<CatalogEntry>& entries)
+{
+    QHash<QString, int> idCounts;
+    for (const CatalogEntry& entry : entries)
+        ++idCounts[entry.id];
+
+    for (CatalogEntry& entry : entries) {
+        if (idCounts.value(entry.id) <= 1)
+            continue;
+
+        const QString btih = magnetBtih(entry.magnetUris);
+        if (!btih.isEmpty())
+            entry.id += QLatin1Char('-') + btih.left(8);
+        else if (!entry.uploadDate.isEmpty())
+            entry.id += QLatin1Char('-') + entry.uploadDate.left(10).remove(QLatin1Char('-'));
+    }
+}
+
+void deduplicateCatalogEntriesImpl(QVector<CatalogEntry>& entries)
+{
+    QHash<QString, int> keyToIndex;
+    QVector<CatalogEntry> unique;
+    unique.reserve(entries.size());
+
+    for (CatalogEntry& entry : entries) {
+        const QString btih = magnetBtih(entry.magnetUris);
+        const QString key = btih.isEmpty() ? entry.id : entry.id + QLatin1Char(':') + btih;
+
+        const auto it = keyToIndex.constFind(key);
+        if (it == keyToIndex.constEnd()) {
+            keyToIndex.insert(key, unique.size());
+            unique.append(std::move(entry));
+            continue;
+        }
+
+        CatalogEntry& existing = unique[it.value()];
+        if (uploadDateIsNewer(entry.uploadDate, existing.uploadDate)) {
+            mergeAddons(entry.addons, existing.addons);
+            existing = std::move(entry);
+        } else {
+            mergeAddons(existing.addons, entry.addons);
+        }
+    }
+
+    entries = std::move(unique);
+    disambiguateDuplicateIds(entries);
+}
+
 void attachOrphanAddons(QVector<CatalogEntry>& entries)
 {
     QHash<QString, int> titleToIndex;
@@ -127,6 +212,11 @@ void attachOrphanAddons(QVector<CatalogEntry>& entries)
 
 } // namespace
 
+void deduplicateCatalogEntries(QVector<CatalogEntry>& entries)
+{
+    deduplicateCatalogEntriesImpl(entries);
+}
+
 QVector<CatalogEntry> parseCatalogFeed(const QByteArray& payload, const QString& sourceId)
 {
     const QJsonDocument document = QJsonDocument::fromJson(payload);
@@ -152,7 +242,41 @@ QVector<CatalogEntry> parseCatalogFeed(const QByteArray& payload, const QString&
                                  }),
                   entries.end());
 
+    deduplicateCatalogEntriesImpl(entries);
+
     return entries;
+}
+
+QString catalogFeedValidationError(const QByteArray& payload)
+{
+    const QByteArray trimmed = payload.trimmed();
+    if (trimmed.isEmpty())
+        return QStringLiteral("Пустой ответ сервера");
+
+    if (trimmed.startsWith('<')) {
+        const QByteArray lower = trimmed.toLower();
+        if (lower.contains("<!doctype") || lower.contains("<html"))
+            return QStringLiteral(
+                "Сервер вернул HTML вместо JSON (часто Cloudflare). Попробуйте другое зеркало или URL.");
+    }
+
+    const QJsonDocument document = QJsonDocument::fromJson(payload);
+    if (!document.isObject())
+        return QStringLiteral("Некорректный JSON");
+
+    const QJsonObject root = document.object();
+    if (!root.contains(QStringLiteral("downloads")))
+        return QStringLiteral("Нет массива downloads — это не каталог Hydra");
+
+    const QJsonArray downloads = root.value(QStringLiteral("downloads")).toArray();
+    if (downloads.isEmpty())
+        return QStringLiteral("Массив downloads пуст");
+
+    const QVector<CatalogEntry> entries = parseCatalogFeed(payload, QStringLiteral("probe"));
+    if (entries.isEmpty())
+        return QStringLiteral("Не удалось разобрать игры из каталога");
+
+    return {};
 }
 
 } // namespace arachnel::core

@@ -46,6 +46,8 @@ ColumnLayout {
             pendingSection = ""
             if (section === "storage")
                 stack.navigatePush(storageComponent, {}, true)
+            else if (section === "updates")
+                stack.navigatePush(updatesComponent, {}, true)
             else if (section === "appearance")
                 stack.navigatePush(appearanceComponent, {}, true)
             else if (section === "plugins")
@@ -73,6 +75,8 @@ ColumnLayout {
             openSources()
         else if (sectionId === "storage")
             stack.navigatePush(storageComponent)
+        else if (sectionId === "updates")
+            stack.navigatePush(updatesComponent)
         else if (sectionId === "appearance")
             stack.navigatePush(appearanceComponent)
     }
@@ -127,7 +131,7 @@ ColumnLayout {
     Component {
         id: sourcesComponent
         SettingsSourcesPage {
-            property string pageTitle: qsTr("JSON-источники")
+            property string pageTitle: qsTr("Каталоги Hydra")
             contentMargin: root.contentMargin
             onAddSourceRequested: root.openSourceCreate()
             onEditSourceRequested: function (pluginId, name, catalogUrl, description, sourceEnabled) {
@@ -139,7 +143,7 @@ ColumnLayout {
     Component {
         id: sourceFormComponent
         SettingsSourceFormPage {
-            property string pageTitle: editing ? qsTr("Изменить источник") : qsTr("Новый источник")
+            property string pageTitle: editing ? qsTr("Изменить каталог") : qsTr("Новый каталог Hydra")
             contentMargin: root.contentMargin
             onSaved: stack.navigatePop()
             onCancelled: stack.navigatePop()
@@ -150,6 +154,14 @@ ColumnLayout {
         id: storageComponent
         SettingsStoragePage {
             property string pageTitle: qsTr("Хранилище")
+            contentMargin: root.contentMargin
+        }
+    }
+
+    Component {
+        id: updatesComponent
+        SettingsUpdatesPage {
+            property string pageTitle: qsTr("Обновления")
             contentMargin: root.contentMargin
         }
     }

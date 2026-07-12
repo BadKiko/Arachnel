@@ -33,6 +33,7 @@ struct LibraryGame {
     QString magnetUri;
     QString downloadPath;
     QString libraryId;
+    QString lastPlayedAt;
     QVector<InstalledComponent> components;
 };
 
@@ -75,6 +76,7 @@ public:
     void setGames(QVector<LibraryGame> games);
     const LibraryGame* gameById(const QString& id) const;
     Q_INVOKABLE QVariantMap gameAt(int row) const;
+    Q_INVOKABLE QVariantMap mostRecentGame() const;
     Q_INVOKABLE QVariantMap gameInfo(const QString& id) const;
     Q_INVOKABLE int updateCount() const;
 

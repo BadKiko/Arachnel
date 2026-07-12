@@ -29,4 +29,11 @@ QString jobStatusLabel(const QString& status)
     return status;
 }
 
+QString jobDisplayStatusLabel(const QString& status, const QString& detail)
+{
+    if (status == QStringLiteral("completed") && isJobInstallFailed(detail))
+        return QStringLiteral("Ошибка установки");
+    return jobStatusLabel(status);
+}
+
 } // namespace arachnel::core

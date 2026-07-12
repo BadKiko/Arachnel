@@ -15,6 +15,7 @@ namespace freetp {
 namespace {
 
 constexpr int kInnoInstallTimeoutMs = 3600000;
+constexpr int kAddonInstallTimeoutMs = 900000;
 
 QStringList desktopRoots()
 {
@@ -248,12 +249,13 @@ QString installInnoOverlay(const QString& setupPath, const QString& targetPath, 
         innoPathArg(QStringLiteral("/LOG="), logPath),
     };
 
-    if (!runInstallProcess(setupPath, args, kInnoInstallTimeoutMs, errorOut,
+    if (!runInstallProcess(setupPath, args, kAddonInstallTimeoutMs, errorOut,
                            QFileInfo(setupPath).absolutePath())) {
         if (errorOut) {
             const QString logTail = tailOfInstallLog(logPath);
             if (!logTail.isEmpty())
                 *errorOut += QStringLiteral("\n") + logTail;
+            *errorOut += QStringLiteral("\nЛог: %1").arg(logPath);
         }
         return {};
     }

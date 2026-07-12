@@ -49,9 +49,6 @@ Item {
     Component.onCompleted: requestTimer.start()
     Component.onDestruction: cancelRequest()
 
-    GridView.onPooled: cancelRequest()
-    GridView.onReused: requestTimer.restart()
-    ListView.onPooled: cancelRequest()
     ListView.onReused: requestTimer.restart()
 
     onEntryIdChanged: {

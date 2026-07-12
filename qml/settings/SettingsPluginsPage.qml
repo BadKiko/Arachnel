@@ -41,7 +41,7 @@ Flickable {
             Layout.leftMargin: contentMargin
             Layout.rightMargin: contentMargin
             Layout.topMargin: MD.Token.spacing.small
-            text: qsTr("Плагины — источники с каталогом, установкой и запуском. Пакет: папка с plugin.json и библиотекой (.dll / .so).")
+            text: qsTr("Плагины — источники с каталогом, установкой и запуском. Пакет: файл .arach (ZIP с plugin.json и библиотекой).")
             wrapMode: Text.WordWrap
             color: MD.Token.color.on_surface_variant
             typescale: MD.Token.typescale.body_medium
@@ -75,7 +75,7 @@ Flickable {
                 MD.Label {
                     Layout.fillWidth: true
                     wrapMode: Text.WordWrap
-                    text: qsTr("После сборки FreeTP лежит рядом с exe:\n%1\n\nИли установите .zip в пользовательскую папку.").arg(Core.pluginsBundleDir)
+                    text: qsTr("Установите пакет .arach через кнопку ниже.\n\nПосле сборки FreeTP лежит в dist:\nbuild-win\\dist\\freetp.arach")
                     color: MD.Token.color.on_surface_variant
                     typescale: MD.Token.typescale.body_small
                 }
@@ -184,8 +184,8 @@ Flickable {
             MD.Button {
                 Layout.fillWidth: true
                 mdState.type: MD.Enum.BtFilled
-                text: qsTr("Установить из ZIP…")
-                onClicked: Core.browsePluginZip()
+                text: qsTr("Установить .arach…")
+                onClicked: Core.browsePluginArach()
             }
 
             RowLayout {

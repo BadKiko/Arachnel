@@ -40,7 +40,6 @@ MD.ApplicationWindow {
     property bool detailsOpen: pageStack.depth > 1
     property string detailsGameId: ""
     property bool detailsFromCatalog: false
-    property string catalogSourceId: Core.sources.firstEnabledId
     readonly property int downloadBadge: Core.jobs.activeCount
 
     function goToPage(index) {
@@ -141,10 +140,9 @@ MD.ApplicationWindow {
                 anchors.fill: parent
                 opacity: mainPages.pageIndex === 1 ? 1 : 0
                 scale: mainPages.pageIndex === 1 ? 1 : 0.97
-                enabled: mainPages.pageIndex === 1 && opacity > 0.99
+                enabled: mainPages.pageIndex === 1
                 transformOrigin: Item.Center
                 onOpenGame: function (id) { root.openGameDetails(id, true) }
-                onSelectedSourceIdChanged: root.catalogSourceId = selectedSourceId
                 onOpenSettings: settingsSheet.openSettings()
                 onAddSourceRequested: settingsSheet.openPlugins()
 
@@ -248,53 +246,6 @@ MD.ApplicationWindow {
                         anchors.fill: parent
                         spacing: 0
 
-                        MD.Pane {
-                            Layout.fillWidth: true
-                            padding: MD.Token.spacing.medium
-                            backgroundColor: "transparent"
-                            visible: !root.detailsOpen
-                            opacity: root.detailsOpen ? 0 : 1
-
-                            Behavior on opacity {
-                                NumberAnimation {
-                                    duration: pageStack.exitDuration
-                                    easing: MD.Token.easing.emphasized_accelerate
-                                }
-                            }
-
-                            RowLayout {
-                                width: parent.width
-                                spacing: MD.Token.spacing.medium
-
-                                MD.SearchBar {
-                                    id: globalSearch
-                                    Layout.fillWidth: true
-                                    Layout.maximumWidth: 720
-                                    Layout.alignment: Qt.AlignHCenter
-                                    onAccepted: {
-                                        root.goToPage(1)
-                                        if (!root.catalogSourceId.length)
-                                            root.catalogSourceId = Core.sources.firstEnabledId
-                                        if (root.catalogSourceId.length)
-                                            Core.searchCatalog(root.catalogSourceId, searchText)
-                                    }
-                                }
-
-                                Item { Layout.fillWidth: true }
-
-                                MD.Badge {
-                                    count: Core.notifications.unreadCount
-
-                                    MD.IconButton {
-                                        id: notificationsButton
-                                        mdState.type: MD.Enum.IBtStandard
-                                        icon.name: MD.Token.icon.notifications
-                                        onClicked: notificationsPopup.openAt(notificationsButton)
-                                    }
-                                }
-                            }
-                        }
-
                         RunningGameBar {
                             Layout.fillWidth: true
                             Layout.leftMargin: MD.Token.spacing.medium
@@ -355,7 +306,4 @@ MD.ApplicationWindow {
         z: 2000
     }
 
-    NotificationsPopup {
-        id: notificationsPopup
-    }
 }
