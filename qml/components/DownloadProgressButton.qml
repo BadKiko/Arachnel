@@ -14,7 +14,7 @@ Item {
     property bool readyToInstall: false
     property bool installFailed: false
     property bool installing: false
-    property string idleText: qsTr("Скачать торрент")
+    property string idleText: qsTr("Download torrent")
 
     readonly property bool inProgress: root.downloading || root.paused
     readonly property real fillRatio: Math.max(0, Math.min(1, root.progress / 100))
@@ -37,17 +37,17 @@ Item {
                 : MD.Token.icon.download
 
     readonly property string actionText: root.installing
-        ? qsTr("Установка…")
+        ? qsTr("Installing…")
         : root.installFailed
-        ? qsTr("Повторить установку")
+        ? qsTr("Retry install")
         : root.readyToInstall
-          ? qsTr("Установить")
+          ? qsTr("Install")
           : root.completed
-            ? qsTr("Загружено")
+            ? qsTr("Downloaded")
             : root.paused
-              ? qsTr("Пауза · %1%").arg(root.progress)
+              ? qsTr("Paused · %1%").arg(root.progress)
               : root.inProgress
-                ? qsTr("Загрузка · %1%").arg(root.progress)
+                ? qsTr("Downloading · %1%").arg(root.progress)
                 : root.idleText
 
     readonly property color shellColor: root.installing

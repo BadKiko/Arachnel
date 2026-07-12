@@ -20,10 +20,10 @@ ColumnLayout {
     readonly property string pageTitle: {
         const item = stack.currentItem
         if (!item)
-            return qsTr("Настройки")
+            return qsTr("Settings")
         if (item.pageTitle)
             return item.pageTitle
-        return qsTr("Настройки")
+        return qsTr("Settings")
     }
 
     function syncFromStore() {
@@ -114,7 +114,7 @@ ColumnLayout {
     Component {
         id: hubComponent
         SettingsHubPage {
-            property string pageTitle: qsTr("Настройки")
+            property string pageTitle: qsTr("Settings")
             contentMargin: root.contentMargin
             onOpenSection: function (sectionId) { root.openSection(sectionId) }
         }
@@ -123,7 +123,7 @@ ColumnLayout {
     Component {
         id: pluginsComponent
         SettingsPluginsPage {
-            property string pageTitle: qsTr("Плагины")
+            property string pageTitle: qsTr("Plugins")
             contentMargin: root.contentMargin
         }
     }
@@ -131,7 +131,7 @@ ColumnLayout {
     Component {
         id: sourcesComponent
         SettingsSourcesPage {
-            property string pageTitle: qsTr("Каталоги Hydra")
+            property string pageTitle: qsTr("Hydra catalogs")
             contentMargin: root.contentMargin
             onAddSourceRequested: root.openSourceCreate()
             onEditSourceRequested: function (pluginId, name, catalogUrl, description, sourceEnabled) {
@@ -143,7 +143,7 @@ ColumnLayout {
     Component {
         id: sourceFormComponent
         SettingsSourceFormPage {
-            property string pageTitle: editing ? qsTr("Изменить каталог") : qsTr("Новый каталог Hydra")
+            property string pageTitle: editing ? qsTr("Edit catalog") : qsTr("New Hydra catalog")
             contentMargin: root.contentMargin
             onSaved: stack.navigatePop()
             onCancelled: stack.navigatePop()
@@ -153,7 +153,7 @@ ColumnLayout {
     Component {
         id: storageComponent
         SettingsStoragePage {
-            property string pageTitle: qsTr("Хранилище")
+            property string pageTitle: qsTr("Storage")
             contentMargin: root.contentMargin
         }
     }
@@ -161,7 +161,7 @@ ColumnLayout {
     Component {
         id: updatesComponent
         SettingsUpdatesPage {
-            property string pageTitle: qsTr("Обновления")
+            property string pageTitle: qsTr("Updates")
             contentMargin: root.contentMargin
         }
     }
@@ -169,7 +169,7 @@ ColumnLayout {
     Component {
         id: appearanceComponent
         SettingsAppearancePage {
-            property string pageTitle: qsTr("Внешний вид")
+            property string pageTitle: qsTr("Appearance")
             contentMargin: root.contentMargin
         }
     }
@@ -223,7 +223,7 @@ ColumnLayout {
             opacity: stack.depth > 1 ? 1 : 0
             enabled: stack.depth > 1
             mdState.type: MD.Enum.BtText
-            text: qsTr("Назад")
+            text: qsTr("Back")
             onClicked: root.goBack()
 
             Behavior on opacity {
@@ -236,7 +236,7 @@ ColumnLayout {
 
         MD.Button {
             mdState.type: MD.Enum.BtText
-            text: qsTr("Готово")
+            text: qsTr("Done")
             onClicked: root.closeSheet()
         }
     }

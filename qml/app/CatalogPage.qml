@@ -36,10 +36,10 @@ Item {
     }
 
     readonly property var sortOptions: [
-        { mode: 0, label: qsTr("Сначала новые") },
-        { mode: 1, label: qsTr("Сначала старые") },
-        { mode: 2, label: qsTr("По названию А–Я") },
-        { mode: 3, label: qsTr("По названию Я–А") }
+        { mode: 0, label: qsTr("Newest first") },
+        { mode: 1, label: qsTr("Oldest first") },
+        { mode: 2, label: qsTr("Title A–Z") },
+        { mode: 3, label: qsTr("Title Z–A") }
     ]
 
     property string searchQuery: ""
@@ -132,7 +132,7 @@ Item {
                 Layout.rightMargin: MD.Token.spacing.medium
                 Layout.topMargin: MD.Token.spacing.small
                 Layout.bottomMargin: MD.Token.spacing.extra_small
-                text: qsTr("Сортировка")
+                text: qsTr("Sort")
                 typescale: MD.Token.typescale.label_large
                 color: MD.Token.color.on_surface_variant
             }
@@ -237,13 +237,13 @@ Item {
                     spacing: 4
 
                     MD.Label {
-                        text: qsTr("Каталог")
+                        text: qsTr("Catalog")
                         typescale: MD.Token.typescale.headline_medium
                     }
 
                     MD.Label {
                         Layout.fillWidth: true
-                        text: qsTr("Источник определяет способ установки — у каждого плагина свой пайплайн.")
+                        text: qsTr("The source defines how installation works — each plugin has its own pipeline.")
                         wrapMode: Text.WordWrap
                         color: MD.Token.color.on_surface_variant
                         typescale: MD.Token.typescale.body_medium
@@ -370,7 +370,7 @@ Item {
                 spacing: MD.Token.spacing.small
 
                 MD.Label {
-                    text: qsTr("Каталог")
+                    text: qsTr("Catalog")
                     typescale: MD.Token.typescale.title_large
                     elide: Text.ElideRight
                     maximumLineCount: 1
@@ -379,8 +379,8 @@ Item {
                 MD.Label {
                     Layout.fillWidth: true
                     text: Core.catalogLoading
-                        ? qsTr("Загрузка…")
-                        : qsTr("Найдено: %1").arg(Core.catalog.count)
+                        ? qsTr("Loading…")
+                        : qsTr("Found: %1").arg(Core.catalog.count)
                     color: MD.Token.color.on_surface_variant
                     typescale: MD.Token.typescale.label_large
                     elide: Text.ElideRight
@@ -461,16 +461,16 @@ Item {
                     MD.Label {
                         Layout.fillWidth: true
                         text: root.noSourceSelected
-                              ? qsTr("Выберите источники")
-                              : qsTr("Ничего не найдено")
+                              ? qsTr("Select sources")
+                              : qsTr("Nothing found")
                         typescale: MD.Token.typescale.title_large
                     }
 
                     MD.Label {
                         Layout.fillWidth: true
                         text: root.noSourceSelected
-                              ? qsTr("Включите один или несколько чипов источников — или оставьте все выключенными.")
-                              : qsTr("Попробуйте другой запрос или обновите каталог.")
+                              ? qsTr("Enable one or more source chips — or leave them all off.")
+                              : qsTr("Try another search or refresh the catalog.")
                         color: MD.Token.color.on_surface_variant
                         typescale: MD.Token.typescale.body_medium
                         wrapMode: Text.WordWrap
@@ -478,7 +478,7 @@ Item {
 
                     MD.Button {
                         visible: !root.noSourceSelected
-                        text: qsTr("Обновить")
+                        text: qsTr("Refresh")
                         icon.name: MD.Token.icon.refresh
                         mdState.type: MD.Enum.BtFilledTonal
                         onClicked: Core.refreshCatalog(Core.activeCatalogSourceId)
@@ -511,14 +511,14 @@ Item {
             MD.Label {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
-                text: qsTr("Нет игр")
+                text: qsTr("No games")
                 typescale: MD.Token.typescale.title_large
             }
 
             MD.Label {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
-                text: qsTr("Подключите каталог Hydra в настройках — или установите плагин источника.")
+                text: qsTr("Connect a Hydra catalog in Settings — or install a source plugin.")
                 color: MD.Token.color.on_surface_variant
                 typescale: MD.Token.typescale.body_medium
                 wrapMode: Text.WordWrap
@@ -529,14 +529,14 @@ Item {
                 spacing: MD.Token.spacing.small
 
                 MD.Button {
-                    text: qsTr("Добавить каталог")
+                    text: qsTr("Add catalog")
                     icon.name: MD.Token.icon.add
                     mdState.type: MD.Enum.BtFilled
                     onClicked: root.addSourceRequested()
                 }
 
                 MD.Button {
-                    text: qsTr("Настройки")
+                    text: qsTr("Settings")
                     icon.name: MD.Token.icon.settings
                     mdState.type: MD.Enum.BtOutlined
                     onClicked: root.openSettings()

@@ -246,6 +246,17 @@ void SettingsStore::setVerifyPortableFiles(bool enabled)
     save();
 }
 
+void SettingsStore::setUiLanguage(const QString& languageCode)
+{
+    const QString normalized = languageCode.trimmed().toLower();
+    const QString effective = normalized.isEmpty() ? QStringLiteral("en") : normalized;
+    if (m_uiLanguage == effective)
+        return;
+    m_uiLanguage = effective;
+    emit uiLanguageChanged();
+    save();
+}
+
 void SettingsStore::load()
 {
     QFile file(settingsFilePath());
@@ -256,6 +267,7 @@ void SettingsStore::load()
         emit maxConcurrentDownloadsChanged();
         emit autoCheckUpdatesChanged();
         emit verifyPortableFilesChanged();
+        emit uiLanguageChanged();
         emit sourcesChanged();
         return;
     }
@@ -265,6 +277,7 @@ void SettingsStore::load()
         m_maxConcurrentDownloads = qBound(1, obj.value(QStringLiteral("maxConcurrentDownloads")).toInt(2), 8);
     m_autoCheckUpdates = obj.value(QStringLiteral("autoCheckUpdates")).toBool(true);
     m_verifyPortableFiles = obj.value(QStringLiteral("verifyPortableFiles")).toBool(true);
+    m_uiLanguage = obj.value(QStringLiteral("uiLanguage")).toString(QStringLiteral("en")).toLower();
 
     if (obj.contains(QStringLiteral("storageLibraries"))) {
         QVector<StorageLibrary> libraries;
@@ -341,6 +354,7 @@ void SettingsStore::load()
     emit maxConcurrentDownloadsChanged();
     emit autoCheckUpdatesChanged();
     emit verifyPortableFilesChanged();
+    emit uiLanguageChanged();
     emit sourcesChanged();
 }
 
@@ -352,6 +366,7 @@ void SettingsStore::save()
     obj.insert(QStringLiteral("maxConcurrentDownloads"), m_maxConcurrentDownloads);
     obj.insert(QStringLiteral("autoCheckUpdates"), m_autoCheckUpdates);
     obj.insert(QStringLiteral("verifyPortableFiles"), m_verifyPortableFiles);
+    obj.insert(QStringLiteral("uiLanguage"), m_uiLanguage);
 
     QJsonArray storageLibraries;
     for (const auto& library : m_storageLibraries.libraries()) {

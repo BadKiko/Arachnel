@@ -23,6 +23,7 @@ class SettingsStore : public QObject
                    autoCheckUpdatesChanged)
     Q_PROPERTY(bool verifyPortableFiles READ verifyPortableFiles WRITE setVerifyPortableFiles NOTIFY
                    verifyPortableFilesChanged)
+    Q_PROPERTY(QString uiLanguage READ uiLanguage WRITE setUiLanguage NOTIFY uiLanguageChanged)
 
 public:
     explicit SettingsStore(QObject* parent = nullptr);
@@ -32,6 +33,7 @@ public:
     int maxConcurrentDownloads() const { return m_maxConcurrentDownloads; }
     bool autoCheckUpdates() const { return m_autoCheckUpdates; }
     bool verifyPortableFiles() const { return m_verifyPortableFiles; }
+    QString uiLanguage() const { return m_uiLanguage; }
     StorageLibraryModel* storageLibraries() { return &m_storageLibraries; }
     const StorageLibraryModel* storageLibraries() const { return &m_storageLibraries; }
 
@@ -58,6 +60,7 @@ public:
     void setMaxConcurrentDownloads(int count);
     void setAutoCheckUpdates(bool enabled);
     void setVerifyPortableFiles(bool enabled);
+    void setUiLanguage(const QString& languageCode);
 
     void load();
     void save();
@@ -69,6 +72,7 @@ signals:
     void maxConcurrentDownloadsChanged();
     void autoCheckUpdatesChanged();
     void verifyPortableFilesChanged();
+    void uiLanguageChanged();
     void pluginStatesChanged();
 
 private:
@@ -79,6 +83,7 @@ private:
     int m_maxConcurrentDownloads = 2;
     bool m_autoCheckUpdates = true;
     bool m_verifyPortableFiles = true;
+    QString m_uiLanguage = QStringLiteral("en");
     QVector<SourcePluginInfo> m_sources;
     QHash<QString, bool> m_pluginEnabledStates;
     StorageLibraryModel m_storageLibraries;

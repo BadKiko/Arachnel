@@ -9,28 +9,28 @@ MD.Dialog {
     id: root
 
     parent: Overlay.overlay
-    title: qsTr("Каталоги и плагины")
+    title: qsTr("Catalogs and plugins")
     standardButtons: T.DialogButtonBox.Close
     modal: true
 
     readonly property var steps: [
         {
             icon: MD.Token.icon.extension,
-            step: qsTr("Шаг 1"),
-            title: qsTr("Каталог Hydra"),
-            body: qsTr("JSON-фид games.json по URL — тот же формат, что в Hydra Launcher. Подключите в Настройки → Каталоги Hydra, игры появятся в «Каталоге».")
+            step: qsTr("Step 1"),
+            title: qsTr("Hydra catalog"),
+            body: qsTr("A games.json feed by URL — the same format as Hydra Launcher. Add it under Settings → Hydra catalogs; games appear in Catalog.")
         },
         {
             icon: MD.Token.icon.storefront,
-            step: qsTr("Шаг 2"),
-            title: qsTr("Каталог"),
-            body: qsTr("Игры из включённых каталогов появляются в «Каталоге». Загрузка — через торрент по magnet из JSON.")
+            step: qsTr("Step 2"),
+            title: qsTr("Catalog"),
+            body: qsTr("Games from enabled catalogs appear in Catalog. Downloads use torrent magnets from JSON.")
         },
         {
             icon: MD.Token.icon.sports_esports,
-            step: qsTr("Шаг 3"),
-            title: qsTr("Библиотека"),
-            body: qsTr("После загрузки и установки игра окажется здесь — запуск, обновления и детали.")
+            step: qsTr("Step 3"),
+            title: qsTr("Library"),
+            body: qsTr("After download and install, the game appears here — launch, updates, and details.")
         }
     ]
 
@@ -40,7 +40,7 @@ MD.Dialog {
 
         MD.Label {
             Layout.fillWidth: true
-            text: qsTr("Два способа наполнить каталог: каталоги Hydra (games.json) — для перехода с Hydra; плагины (.arach) — полный цикл: каталог, установка, запуск и дополнения.")
+            text: qsTr("Two ways to fill the catalog: Hydra catalogs (games.json) for migrating from Hydra; plugins (.arach) for the full cycle: catalog, install, launch, and add-ons.")
             wrapMode: Text.WordWrap
             color: MD.Token.color.on_surface_variant
             typescale: MD.Token.typescale.body_medium

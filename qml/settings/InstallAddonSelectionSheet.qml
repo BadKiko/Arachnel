@@ -60,7 +60,7 @@ MD.BottomSheet {
             Layout.leftMargin: MD.Token.spacing.large
             Layout.rightMargin: MD.Token.spacing.large
             Layout.topMargin: MD.Token.spacing.medium
-            text: qsTr("Дополнения")
+            text: qsTr("Add-ons")
             typescale: MD.Token.typescale.headline_medium
         }
 
@@ -69,9 +69,9 @@ MD.BottomSheet {
             Layout.leftMargin: MD.Token.spacing.large
             Layout.rightMargin: MD.Token.spacing.large
             text: entryTitle.length
-                  ? qsTr("К игре «%1» доступны дополнения — выберите, что скачать вместе с игрой.")
+                  ? qsTr("Add-ons are available for \"%1\" — choose what to download with the game.")
                     .arg(entryTitle)
-                  : qsTr("Выберите дополнения для совместной загрузки с игрой.")
+                  : qsTr("Choose add-ons to download together with the game.")
             color: MD.Token.color.on_surface_variant
             typescale: MD.Token.typescale.body_medium
             wrapMode: Text.WordWrap
@@ -85,13 +85,13 @@ MD.BottomSheet {
 
             MD.Button {
                 mdState.type: MD.Enum.BtText
-                text: qsTr("Все")
+                text: qsTr("All")
                 onClicked: root.setAllChecked(true)
             }
 
             MD.Button {
                 mdState.type: MD.Enum.BtText
-                text: qsTr("Снять")
+                text: qsTr("Deselect")
                 onClicked: root.setAllChecked(false)
             }
 
@@ -172,7 +172,7 @@ MD.BottomSheet {
 
                                     MD.AssistChip {
                                         visible: optional
-                                        text: qsTr("Необяз.")
+                                        text: qsTr("Optional")
                                     }
                                 }
 
@@ -209,14 +209,14 @@ MD.BottomSheet {
             MD.Button {
                 Layout.fillWidth: true
                 mdState.type: MD.Enum.BtText
-                text: qsTr("Отмена")
+                text: qsTr("Cancel")
                 onClicked: root.close()
             }
 
             MD.Button {
                 Layout.fillWidth: true
                 mdState.type: MD.Enum.BtFilled
-                text: qsTr("Далее")
+                text: qsTr("Next")
                 enabled: root.entryId.length > 0
                 onClicked: {
                     const ids = root.selectedAddonIds()

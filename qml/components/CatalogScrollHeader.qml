@@ -31,8 +31,8 @@ Item {
             MD.Label {
                 Layout.fillWidth: true
                 text: Core.catalogLoading
-                    ? qsTr("Загрузка каталога…")
-                    : qsTr("Найдено: %1").arg(Core.catalog.count)
+                    ? qsTr("Loading catalog…")
+                    : qsTr("Found: %1").arg(Core.catalog.count)
                 color: MD.Token.color.on_surface_variant
                 typescale: MD.Token.typescale.label_large
                 elide: Text.ElideRight

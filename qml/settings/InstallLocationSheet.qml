@@ -31,7 +31,7 @@ MD.BottomSheet {
             Layout.leftMargin: MD.Token.spacing.large
             Layout.rightMargin: MD.Token.spacing.large
             Layout.topMargin: MD.Token.spacing.medium
-            text: qsTr("Установить")
+            text: qsTr("Install")
             typescale: MD.Token.typescale.headline_medium
         }
 
@@ -39,7 +39,7 @@ MD.BottomSheet {
             Layout.fillWidth: true
             Layout.leftMargin: MD.Token.spacing.large
             Layout.rightMargin: MD.Token.spacing.large
-            text: entryTitle.length ? entryTitle : qsTr("Выберите диск для установки")
+            text: entryTitle.length ? entryTitle : qsTr("Choose a drive for installation")
             color: MD.Token.color.on_surface_variant
             typescale: MD.Token.typescale.body_medium
             wrapMode: Text.WordWrap
@@ -49,7 +49,7 @@ MD.BottomSheet {
             Layout.fillWidth: true
             Layout.leftMargin: MD.Token.spacing.large
             Layout.rightMargin: MD.Token.spacing.large
-            text: qsTr("Установить на:")
+            text: qsTr("Install to:")
             typescale: MD.Token.typescale.label_large
             color: MD.Token.color.primary
         }
@@ -138,14 +138,14 @@ MD.BottomSheet {
             MD.Button {
                 Layout.fillWidth: true
                 mdState.type: MD.Enum.BtText
-                text: qsTr("Отмена")
+                text: qsTr("Cancel")
                 onClicked: root.close()
             }
 
             MD.Button {
                 Layout.fillWidth: true
                 mdState.type: MD.Enum.BtFilled
-                text: qsTr("Установить")
+                text: qsTr("Install")
                 enabled: root.entryId.length > 0 && root.selectedLibraryId.length > 0
                 onClicked: {
                     Core.installCatalogEntry(root.entryId, root.selectedLibraryId,

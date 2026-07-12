@@ -64,7 +64,7 @@ MD.Pane {
 
             MD.Label {
                 Layout.fillWidth: true
-                text: qsTr("Сейчас играете")
+                text: qsTr("Playing now")
                 color: MD.Token.color.on_primary_container
                 typescale: MD.Token.typescale.label_medium
                 elide: Text.ElideRight
@@ -81,7 +81,7 @@ MD.Pane {
         }
 
         MD.Button {
-            text: qsTr("Остановить")
+            text: qsTr("Stop")
             mdState.type: MD.Enum.BtFilled
             mdState.backgroundColor: MD.Token.color.error
             mdState.textColor: MD.Token.color.on_error

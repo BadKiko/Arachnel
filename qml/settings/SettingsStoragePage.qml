@@ -69,7 +69,7 @@ Flickable {
             Layout.leftMargin: contentMargin
             Layout.rightMargin: contentMargin
             Layout.topMargin: MD.Token.spacing.small
-            text: qsTr("Библиотеки на дисках — как в Steam. По умолчанию C:, можно добавить другие диски.")
+            text: qsTr("Libraries on disks — like Steam. Default is C:; you can add other drives.")
             wrapMode: Text.WordWrap
             color: MD.Token.color.on_surface_variant
             typescale: MD.Token.typescale.body_medium
@@ -173,7 +173,7 @@ Flickable {
                 MD.Button {
                     Layout.fillWidth: true
                     mdState.type: MD.Enum.BtOutlined
-                    text: qsTr("Добавить диск…")
+                    text: qsTr("Add drive…")
                     icon.name: MD.Token.icon.add
                     onClicked: {
                         const folder = Core.browseStorageFolder()
@@ -191,7 +191,7 @@ Flickable {
 
             MD.Label {
                 Layout.fillWidth: true
-                text: qsTr("Игры: %1").arg(root.storageGames.length)
+                text: qsTr("Games: %1").arg(root.storageGames.length)
                 typescale: MD.Token.typescale.title_small
             }
         }
@@ -278,7 +278,7 @@ Flickable {
 
                 MD.Label {
                     Layout.fillWidth: true
-                    text: qsTr("На этом диске пока нет игр")
+                    text: qsTr("No games on this drive yet")
                     typescale: MD.Token.typescale.body_medium
                     color: MD.Token.color.on_surface_variant
                 }
@@ -296,7 +296,7 @@ Flickable {
                 Layout.fillWidth: true
                 mdState.type: MD.Enum.BtOutlined
                 enabled: root.selectedGameIds.length > 0
-                text: qsTr("Удалить")
+                text: qsTr("Delete")
                 icon.name: MD.Token.icon.delete
                 onClicked: {
                     for (let i = 0; i < root.selectedGameIds.length; ++i)
@@ -310,7 +310,7 @@ Flickable {
                 mdState.type: MD.Enum.BtFilledTonal
                 enabled: root.selectedGameIds.length > 0
                        && Core.settings.storageLibraries.count > 1
-                text: qsTr("Переместить…")
+                text: qsTr("Move…")
                 icon.name: MD.Token.icon.folder_open
                 onClicked: moveSheet.open()
             }
@@ -329,7 +329,7 @@ Flickable {
             MD.Label {
                 Layout.fillWidth: true
                 Layout.margins: MD.Token.spacing.large
-                text: qsTr("Переместить на диск")
+                text: qsTr("Move to drive")
                 typescale: MD.Token.typescale.title_large
             }
 

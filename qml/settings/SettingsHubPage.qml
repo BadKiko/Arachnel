@@ -17,7 +17,7 @@ ColumnLayout {
         Layout.leftMargin: contentMargin
         Layout.rightMargin: contentMargin
         Layout.topMargin: MD.Token.spacing.small
-        text: qsTr("Выберите раздел — каждый экран отвечает за свою часть настроек.")
+        text: qsTr("Choose a section — each screen covers part of your setup.")
         wrapMode: Text.WordWrap
         color: MD.Token.color.on_surface_variant
         typescale: MD.Token.typescale.body_medium
@@ -34,28 +34,28 @@ ColumnLayout {
             model: [
                 {
                     id: "plugins",
-                    title: qsTr("Плагины"),
-                    subtitle: qsTr("FreeTP и др. — установка, запуск, дополнения (.arach)")
+                    title: qsTr("Plugins"),
+                    subtitle: qsTr("FreeTP and others — install, launch, add-ons (.arach)")
                 },
                 {
                     id: "sources",
-                    title: qsTr("Каталоги Hydra"),
-                    subtitle: qsTr("games.json по URL — переход с Hydra Launcher")
+                    title: qsTr("Hydra catalogs"),
+                    subtitle: qsTr("games.json by URL — migrate from Hydra Launcher")
                 },
                 {
                     id: "storage",
-                    title: qsTr("Хранилище"),
-                    subtitle: qsTr("Папки библиотеки и загрузок")
+                    title: qsTr("Storage"),
+                    subtitle: qsTr("Library and download folders")
                 },
                 {
                     id: "updates",
-                    title: qsTr("Обновления"),
-                    subtitle: qsTr("Автопроверка и целостность portable")
+                    title: qsTr("Updates"),
+                    subtitle: qsTr("Auto-check updates and portable integrity")
                 },
                 {
                     id: "appearance",
-                    title: qsTr("Внешний вид"),
-                    subtitle: qsTr("Тема, палитра и акцентный цвет")
+                    title: qsTr("Appearance"),
+                    subtitle: qsTr("Theme, palette, accent color, and language")
                 }
             ]
 

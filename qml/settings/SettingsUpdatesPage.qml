@@ -25,7 +25,7 @@ Flickable {
             Layout.leftMargin: contentMargin
             Layout.rightMargin: contentMargin
             Layout.topMargin: MD.Token.spacing.small
-            text: qsTr("Проверка обновлений и целостности portable-сборок.")
+            text: qsTr("Update checks and portable build integrity verification.")
             color: MD.Token.color.on_surface_variant
             wrapMode: Text.WordWrap
             typescale: MD.Token.typescale.body_medium
@@ -43,13 +43,13 @@ Flickable {
 
                 MD.Label {
                     Layout.fillWidth: true
-                    text: qsTr("Проверять обновления при загрузке каталога")
+                    text: qsTr("Check for updates when loading the catalog")
                     typescale: MD.Token.typescale.body_large
                 }
 
                 MD.Label {
                     Layout.fillWidth: true
-                    text: qsTr("Сравнивает даты сборок в каталоге с установленными играми.")
+                    text: qsTr("Compares build dates in the catalog with installed games.")
                     color: MD.Token.color.on_surface_variant
                     typescale: MD.Token.typescale.body_small
                     wrapMode: Text.WordWrap
@@ -74,13 +74,13 @@ Flickable {
 
                 MD.Label {
                     Layout.fillWidth: true
-                    text: qsTr("Проверять файлы portable перед запуском")
+                    text: qsTr("Verify portable files before launch")
                     typescale: MD.Token.typescale.body_large
                 }
 
                 MD.Label {
                     Layout.fillWidth: true
-                    text: qsTr("Папка установки и .exe должны существовать.")
+                    text: qsTr("The install folder and .exe must exist.")
                     color: MD.Token.color.on_surface_variant
                     typescale: MD.Token.typescale.body_small
                     wrapMode: Text.WordWrap
@@ -100,14 +100,14 @@ Flickable {
             spacing: MD.Token.spacing.small
 
             MD.Button {
-                text: qsTr("Проверить обновления")
+                text: qsTr("Check for updates")
                 icon.name: MD.Token.icon.update
                 mdState.type: MD.Enum.BtOutlined
                 onClicked: Core.checkUpdates()
             }
 
             MD.Button {
-                text: qsTr("Проверить portable")
+                text: qsTr("Verify portable")
                 icon.name: MD.Token.icon.fact_check
                 mdState.type: MD.Enum.BtOutlined
                 onClicked: Core.verifyAllPortableGames()

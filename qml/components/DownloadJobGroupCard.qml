@@ -62,10 +62,10 @@ MD.ElevationRectangle {
                 ++done
         }
         if (active > 0)
-            return qsTr("%1 доп. · %2 в загрузке").arg(addons.length).arg(active)
+            return qsTr("%1 add-ons · %2 downloading").arg(addons.length).arg(active)
         if (done === addons.length)
-            return qsTr("%1 доп. · готово").arg(addons.length)
-        return qsTr("%1 доп.").arg(addons.length)
+            return qsTr("%1 add-ons · done").arg(addons.length)
+        return qsTr("%1 add-ons").arg(addons.length)
     }
 
     function groupAllTerminal() {
@@ -179,7 +179,7 @@ MD.ElevationRectangle {
 
                     MD.Label {
                         Layout.fillWidth: true
-                        text: qsTr("Дополнения")
+                        text: qsTr("Add-ons")
                         typescale: MD.Token.typescale.label_large
                         color: MD.Token.color.on_surface_variant
                     }

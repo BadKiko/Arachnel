@@ -43,7 +43,7 @@ Popup {
 
             MD.Label {
                 Layout.fillWidth: true
-                text: qsTr("Уведомления")
+                text: qsTr("Notifications")
                 typescale: MD.Token.typescale.title_medium
             }
 
@@ -85,7 +85,7 @@ Popup {
                 MD.Label {
                     Layout.fillWidth: true
                     horizontalAlignment: Text.AlignHCenter
-                    text: qsTr("Пока пусто")
+                    text: qsTr("Empty for now")
                     typescale: MD.Token.typescale.title_small
                 }
 
@@ -94,7 +94,7 @@ Popup {
                     Layout.leftMargin: MD.Token.spacing.large
                     Layout.rightMargin: MD.Token.spacing.large
                     horizontalAlignment: Text.AlignHCenter
-                    text: qsTr("Здесь появятся установки, ошибки и другие события.")
+                    text: qsTr("Installs, errors, and other events will appear here.")
                     color: MD.Token.color.on_surface_variant
                     typescale: MD.Token.typescale.body_small
                     wrapMode: Text.WordWrap

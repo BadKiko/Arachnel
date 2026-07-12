@@ -134,6 +134,7 @@ public:
     Q_INVOKABLE void prefetchCatalogCounts();
     Q_INVOKABLE void validateHydraCatalogUrl(const QString& requestId, const QString& url);
     Q_INVOKABLE void invalidateSourceCatalog(const QString& sourceId);
+    Q_INVOKABLE void openExternalUrl(const QString& url);
     Q_INVOKABLE void requestCatalogCover(const QString& entryId);
     Q_INVOKABLE void cancelCatalogCover(const QString& entryId);
     Q_INVOKABLE void invalidateCatalogCover(const QString& entryId);
