@@ -214,6 +214,7 @@ bool TorrentSession::addJob(const QString& jobId, const QString& magnetUri, cons
     params.save_path = savePath.toStdString();
     params.flags |= lt::torrent_flags::auto_managed;
     params.flags |= lt::torrent_flags::stop_when_ready;
+    params.flags &= ~lt::torrent_flags::paused;
 
     const lt::torrent_handle handle = m_impl->session.add_torrent(params, ec);
     if (ec) {
@@ -222,8 +223,8 @@ bool TorrentSession::addJob(const QString& jobId, const QString& magnetUri, cons
     }
 
     handle.resume();
-    if (!usedResume)
-        handle.force_reannounce(0, lt::torrent_handle::ignore_min_interval);
+    handle.set_flags(lt::torrent_flags::auto_managed);
+    handle.force_reannounce(0, lt::torrent_handle::ignore_min_interval);
     m_impl->metadataStallSinceMs.remove(jobId);
     m_impl->handles.insert(jobId, handle);
     m_impl->savePaths.insert(jobId, savePath);

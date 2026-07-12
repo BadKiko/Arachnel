@@ -13,8 +13,17 @@ class CatalogModel : public QAbstractListModel
 {
     Q_OBJECT
     Q_PROPERTY(int count READ count NOTIFY countChanged)
+    Q_PROPERTY(int sortMode READ sortMode WRITE setSortMode NOTIFY sortModeChanged)
 
 public:
+    enum SortMode {
+        SortNewest = 0,
+        SortOldest,
+        SortTitleAsc,
+        SortTitleDesc,
+    };
+    Q_ENUM(SortMode)
+
     enum Role {
         EntryIdRole = Qt::UserRole + 1,
         TitleRole,
@@ -42,6 +51,8 @@ public:
     QHash<int, QByteArray> roleNames() const override;
 
     int count() const { return m_entries.size(); }
+    int sortMode() const { return static_cast<int>(m_sortMode); }
+    void setSortMode(int mode);
 
     void setEntries(QVector<CatalogEntry> entries);
     bool updateEntry(const CatalogEntry& entry);
@@ -53,11 +64,14 @@ public:
 
 signals:
     void countChanged();
+    void sortModeChanged();
 
 private:
+    void sortEntries();
     QVariantMap toMap(const CatalogEntry& entry) const;
 
     QVector<CatalogEntry> m_entries;
+    SortMode m_sortMode = SortNewest;
 };
 
 } // namespace arachnel::core

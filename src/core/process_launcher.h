@@ -9,7 +9,8 @@ namespace arachnel::core {
 class ProcessLauncher
 {
 public:
-    static bool launch(const LaunchInfo& info, QString* errorOut = nullptr);
+    static bool launch(const LaunchInfo& info, QString* errorOut = nullptr,
+                       qint64* processIdOut = nullptr);
 };
 
 } // namespace arachnel::core

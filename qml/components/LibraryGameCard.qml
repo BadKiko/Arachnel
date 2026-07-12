@@ -66,7 +66,14 @@ Item {
         return MD.Token.icon.pause
     }
 
+    readonly property bool isRunning: Core.gameRunning && Core.runningGameId === root.gameId
+
     signal openDetails(string gameId)
+
+    Connections {
+        target: Core
+        function onRunningGameChanged() { /* refresh isRunning */ }
+    }
 
     Connections {
         target: Core.jobs
@@ -90,6 +97,25 @@ Item {
                 cornerRadius: MD.Token.shape.corner.extra_large
                 fillProgress: root.posterFillProgress
                 onClicked: root.openDetails(root.gameId)
+            }
+
+            Rectangle {
+                anchors.top: parent.top
+                anchors.right: parent.right
+                anchors.margins: MD.Token.spacing.small
+                visible: root.isRunning
+                radius: MD.Token.shape.corner.full
+                color: MD.Token.color.primary_container
+                width: runningChipLabel.implicitWidth + 20
+                height: runningChipLabel.implicitHeight + 12
+
+                MD.Label {
+                    id: runningChipLabel
+                    anchors.centerIn: parent
+                    text: qsTr("Играет")
+                    typescale: MD.Token.typescale.label_small
+                    color: MD.Token.color.on_primary_container
+                }
             }
 
             Rectangle {
@@ -142,18 +168,23 @@ Item {
         RowLayout {
             Layout.fillWidth: true
             spacing: MD.Token.spacing.extra_small
-            visible: root.showJobStatus
+            visible: root.showJobStatus || root.isRunning
 
             MD.Icon {
-                name: root.statusIcon
+                visible: root.showJobStatus || root.isRunning
+                name: root.isRunning
+                      ? MD.Token.icon.sports_esports
+                      : root.statusIcon
                 size: 14
-                color: MD.Token.color.on_surface_variant
+                color: root.isRunning
+                       ? MD.Token.color.primary
+                       : MD.Token.color.on_surface_variant
             }
 
             MD.Label {
                 Layout.fillWidth: true
-                text: root.statusLine
-                color: MD.Token.color.on_surface_variant
+                text: root.isRunning ? qsTr("Запущена") : root.statusLine
+                color: root.isRunning ? MD.Token.color.primary : MD.Token.color.on_surface_variant
                 typescale: MD.Token.typescale.label_medium
                 elide: Text.ElideRight
             }
@@ -161,7 +192,7 @@ Item {
 
         MD.Label {
             Layout.fillWidth: true
-            visible: !root.showJobStatus
+            visible: !root.showJobStatus && !root.isRunning
             text: root.sourceName + " · v" + root.version
             color: MD.Token.color.on_surface_variant
             typescale: MD.Token.typescale.label_medium

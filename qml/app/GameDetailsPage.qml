@@ -21,6 +21,7 @@ Item {
 
     readonly property bool playable: Core.isEntryPlayable(gameId)
     readonly property bool installed: root.playable
+    readonly property bool isRunning: Core.gameRunning && Core.runningGameId === root.gameId
     readonly property bool downloadFilesExist: Core.entryDownloadFilesExist(gameId)
     readonly property bool installFailed: (downloadJob.detail || "").indexOf("Ошибка установки") >= 0
     readonly property bool readyToInstall: !root.playable
@@ -219,10 +220,18 @@ Item {
 
                         MD.Button {
                             visible: root.playable
-                            text: qsTr("Играть")
-                            icon.name: MD.Token.icon.play_arrow
+                            text: root.isRunning ? qsTr("Остановить") : qsTr("Играть")
+                            icon.name: root.isRunning ? "" : MD.Token.icon.play_arrow
                             mdState.type: MD.Enum.BtFilled
-                            onClicked: Core.launchGame(root.gameId)
+                            mdState.backgroundColor: root.isRunning
+                                                 ? MD.Token.color.error
+                                                 : MD.Token.color.primary
+                            mdState.textColor: root.isRunning
+                                               ? MD.Token.color.on_error
+                                               : MD.Token.color.on_primary
+                            onClicked: root.isRunning
+                                         ? Core.stopRunningGame()
+                                         : Core.launchGame(root.gameId)
                         }
 
                         DownloadProgressButton {

@@ -16,6 +16,21 @@ Item {
 
     property string selectedSourceId: Core.sources.firstEnabledId
     property var featuredGame: Core.library.gameAt(0)
+    readonly property bool featuredIsRunning: Core.gameRunning
+        && Core.runningGameId === (root.featuredGame?.gameId ?? "")
+    readonly property bool showRunningHero: Core.gameRunning
+    readonly property string heroEyebrow: showRunningHero
+        ? qsTr("Сейчас играете")
+        : qsTr("Недавно играли")
+    readonly property string heroTitle: showRunningHero
+        ? Core.runningGameTitle
+        : (root.featuredGame?.title ?? "")
+    readonly property string heroCoverUrl: showRunningHero
+        ? Core.runningGameCoverUrl
+        : (root.featuredGame?.coverUrl ?? "")
+    readonly property string heroGameId: showRunningHero
+        ? Core.runningGameId
+        : (root.featuredGame?.gameId ?? "")
 
     property int jobRevision: 0
 
@@ -368,7 +383,7 @@ Item {
 
                             MD.Label {
                                 Layout.fillWidth: true
-                                text: qsTr("Недавно играли")
+                                text: root.heroEyebrow
                                 color: MD.Token.color.primary
                                 typescale: MD.Token.typescale.label_large
                                 elide: Text.ElideRight
@@ -376,7 +391,7 @@ Item {
 
                             MD.Label {
                                 Layout.fillWidth: true
-                                text: root.featuredGame.title ?? ""
+                                text: root.heroTitle
                                 typescale: MD.Token.typescale.headline_large
                                 elide: Text.ElideRight
                                 wrapMode: Text.WordWrap
@@ -389,7 +404,27 @@ Item {
                                 color: MD.Token.color.on_surface_variant
                                 typescale: MD.Token.typescale.body_large
                                 elide: Text.ElideRight
-                                visible: !root.featuredShowJobStatus
+                                visible: !root.featuredShowJobStatus && !root.showRunningHero
+                            }
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: MD.Token.spacing.extra_small
+                                visible: root.showRunningHero
+
+                                MD.Icon {
+                                    name: MD.Token.icon.sports_esports
+                                    size: 18
+                                    color: MD.Token.color.primary
+                                }
+
+                                MD.Label {
+                                    Layout.fillWidth: true
+                                    text: qsTr("Запущена")
+                                    color: MD.Token.color.primary
+                                    typescale: MD.Token.typescale.body_large
+                                    elide: Text.ElideRight
+                                }
                             }
 
                             RowLayout {
@@ -423,18 +458,23 @@ Item {
                                 spacing: MD.Token.spacing.small
 
                                 MD.Button {
-                                    text: qsTr("Играть")
-                                    mdState.type: MD.Enum.BtFilled
-                                    enabled: !!(root.featuredGame.gameId)
-                                             && Core.isEntryPlayable(root.featuredGame.gameId)
-                                    onClicked: Core.launchGame(root.featuredGame.gameId)
+                                    text: root.featuredIsRunning || (root.showRunningHero && root.heroGameId === root.featuredGame?.gameId)
+                                          ? qsTr("Запущена")
+                                          : qsTr("Играть")
+                                    mdState.type: root.featuredIsRunning
+                                                 || (root.showRunningHero && root.heroGameId === root.featuredGame?.gameId)
+                                                 ? MD.Enum.BtFilledTonal
+                                                 : MD.Enum.BtFilled
+                                    enabled: !!(root.heroGameId)
+                                             && Core.isEntryPlayable(root.heroGameId)
+                                    onClicked: Core.launchGame(root.heroGameId)
                                 }
 
                                 MD.Button {
                                     text: qsTr("Подробнее")
                                     mdState.type: MD.Enum.BtOutlined
-                                    enabled: !!(root.featuredGame.gameId)
-                                    onClicked: root.openGame(root.featuredGame.gameId)
+                                    enabled: !!(root.heroGameId)
+                                    onClicked: root.openGame(root.heroGameId)
                                 }
 
                                 MD.Button {
@@ -449,14 +489,16 @@ Item {
                             Layout.preferredWidth: 140
                             Layout.preferredHeight: 186
                             Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
-                            source: root.featuredGame.coverUrl ?? ""
-                            seed: root.featuredGame.title ?? ""
-                            fallbackText: (root.featuredGame.title ?? "?").charAt(0)
+                            source: root.heroCoverUrl
+                            seed: root.heroTitle
+                            fallbackText: (root.heroTitle || "?").charAt(0)
                             cornerRadius: root.cardRadius
-                            fillProgress: root.featuredFillProgress
+                            fillProgress: root.featuredShowJobStatus && !root.showRunningHero
+                                          ? root.featuredFillProgress
+                                          : -1
                             onClicked: {
-                                if (root.featuredGame.gameId)
-                                    root.openGame(root.featuredGame.gameId)
+                                if (root.heroGameId)
+                                    root.openGame(root.heroGameId)
                             }
                         }
                     }

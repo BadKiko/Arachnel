@@ -72,9 +72,9 @@ MD.ApplicationWindow {
 
     Connections {
         target: Core
-        function onLastActionChanged() {
-            if (Core.lastAction.length > 0)
-                snackbar.show(Core.lastAction)
+        function onUserNoticeChanged() {
+            if (Core.userNotice.length > 0)
+                snackbar.show(Core.userNotice)
         }
     }
 
@@ -282,12 +282,29 @@ MD.ApplicationWindow {
 
                                 Item { Layout.fillWidth: true }
 
-                                MD.IconButton {
-                                    mdState.type: MD.Enum.IBtStandard
-                                    icon.name: MD.Token.icon.notifications
-                                    onClicked: snackbar.show(qsTr("Уведомлений пока нет"))
+                                MD.Badge {
+                                    count: Core.notifications.unreadCount
+
+                                    MD.IconButton {
+                                        id: notificationsButton
+                                        mdState.type: MD.Enum.IBtStandard
+                                        icon.name: MD.Token.icon.notifications
+                                        onClicked: notificationsPopup.openAt(notificationsButton)
+                                    }
                                 }
                             }
+                        }
+
+                        RunningGameBar {
+                            Layout.fillWidth: true
+                            Layout.leftMargin: MD.Token.spacing.medium
+                            Layout.rightMargin: MD.Token.spacing.medium
+                            Layout.topMargin: root.detailsOpen ? MD.Token.spacing.medium : 0
+                            Layout.bottomMargin: MD.Token.spacing.small
+                            visible: Core.gameRunning
+                            gameId: Core.runningGameId
+                            title: Core.runningGameTitle
+                            coverUrl: Core.runningGameCoverUrl
                         }
 
                         PageNavigator {
@@ -331,11 +348,14 @@ MD.ApplicationWindow {
         }
     }
 
-    MD.SnakeView {
+    AppSnackbar {
         id: snackbar
-        parent: root.overlay
         anchors.fill: parent
-        anchors.leftMargin: 120
-        bottomToTop: true
+        anchors.leftMargin: 88
+        z: 2000
+    }
+
+    NotificationsPopup {
+        id: notificationsPopup
     }
 }
