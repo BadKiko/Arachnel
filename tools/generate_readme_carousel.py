@@ -26,7 +26,6 @@ ROW_GAP = 14
 MARGIN_Y = 12
 VIEW_W = 920
 VIEW_H = MARGIN_Y * 2 + CARD_H * 2 + ROW_GAP
-FADE_W = 80
 
 EMBED_W = 640
 EMBED_H = EMBED_W * SRC_H // SRC_W
@@ -129,25 +128,14 @@ def main() -> None:
      viewBox="0 0 {VIEW_W} {VIEW_H}" role="img" aria-label="Arachnel screenshots">
   <defs>
 {defs}
-    <linearGradient id="fade-left" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="{FADE_W}" y2="0">
-      <stop offset="0" stop-color="#0d0d0f"/>
-      <stop offset="1" stop-color="#0d0d0f" stop-opacity="0"/>
-    </linearGradient>
-    <linearGradient id="fade-right" gradientUnits="userSpaceOnUse" x1="{VIEW_W - FADE_W}" y1="0" x2="{VIEW_W}" y2="0">
-      <stop offset="0" stop-color="#0d0d0f" stop-opacity="0"/>
-      <stop offset="1" stop-color="#0d0d0f"/>
-    </linearGradient>
     <clipPath id="viewport">
       <rect width="{VIEW_W}" height="{VIEW_H}"/>
     </clipPath>
   </defs>
-  <rect width="{VIEW_W}" height="{VIEW_H}" fill="#0d0d0f"/>
   <g clip-path="url(#viewport)">
     {top_row}
     {bottom_row}
   </g>
-  <rect width="{FADE_W}" height="{VIEW_H}" fill="url(#fade-left)"/>
-  <rect x="{VIEW_W - FADE_W}" width="{FADE_W}" height="{VIEW_H}" fill="url(#fade-right)"/>
 </svg>
 """
     OUT_SVG.parent.mkdir(parents=True, exist_ok=True)
