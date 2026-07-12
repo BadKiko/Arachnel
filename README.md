@@ -17,7 +17,7 @@
 
 <br>
 
-<img src="docs/readme-carousel.svg" width="100%" alt="Arachnel UI previews">
+<img src="docs/readme-carousel.svg" width="960" alt="Arachnel UI previews">
 
 </div>
 
