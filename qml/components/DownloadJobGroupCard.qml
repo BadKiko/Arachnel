@@ -16,6 +16,24 @@ MD.ElevationRectangle {
     readonly property var addons: group.addons ?? []
     readonly property bool hasAddons: !!(group.hasAddons) && addons.length > 0
     readonly property bool gameJobActive: jobIsActive(root.group)
+    property real addonsPanelHeight: 0
+
+    function updateAddonsPanelHeight() {
+        const measured = addonsPanel.implicitHeight
+        if (measured > 0)
+            addonsPanelHeight = measured
+    }
+
+    onExpandedChanged: {
+        if (expanded)
+            updateAddonsPanelHeight()
+        else
+            Qt.callLater(updateAddonsPanelHeight)
+    }
+
+    onGroupChanged: Qt.callLater(updateAddonsPanelHeight)
+
+    Component.onCompleted: Qt.callLater(updateAddonsPanelHeight)
 
     function jobIsActive(job) {
         if (!job || !job.status)
@@ -106,6 +124,7 @@ MD.ElevationRectangle {
                     id: gameCard
                     anchors.fill: parent
                     embedded: true
+                    showExternalRemove: root.groupAllTerminal()
                     jobId: root.group.jobId ?? ""
                     title: root.group.title ?? ""
                     kindLabel: root.group.kindLabel ?? ""
@@ -117,15 +136,8 @@ MD.ElevationRectangle {
                     entryId: root.group.entryId ?? ""
                     fillProgress: root.gameJobActive ? (root.group.progress ?? 0) : -1
                     onOpenDetails: function (entryId) { root.openDetails(entryId) }
+                    onRemoveRequested: root.hasAddons ? root.removeWholeGroup() : Core.removeJob(root.group.jobId)
                 }
-            }
-
-            MD.IconButton {
-                visible: !root.hasAddons
-                            && ["completed", "failed", "cancelled"].includes(root.group.status ?? "")
-                mdState.type: MD.Enum.IBtStandard
-                icon.name: MD.Token.icon.delete
-                onClicked: Core.removeJob(root.group.jobId)
             }
         }
 
@@ -144,21 +156,16 @@ MD.ElevationRectangle {
             Layout.fillWidth: true
             Layout.leftMargin: 40
             Layout.topMargin: root.expanded ? MD.Token.spacing.small : 0
-            Layout.preferredHeight: root.hasAddons && root.expanded ? addonsPanel.implicitHeight : 0
+            Layout.preferredHeight: root.hasAddons && root.expanded ? root.addonsPanelHeight : 0
             visible: root.hasAddons
             clip: true
-
-            Behavior on Layout.preferredHeight {
-                NumberAnimation {
-                    duration: MD.Token.duration.medium4
-                    easing: MD.Token.easing.standard
-                }
-            }
 
             ColumnLayout {
                 id: addonsPanel
                 width: parent.width
                 spacing: MD.Token.spacing.small
+
+                onImplicitHeightChanged: root.updateAddonsPanelHeight()
 
                 RowLayout {
                     Layout.fillWidth: true
@@ -230,18 +237,5 @@ MD.ElevationRectangle {
             }
         }
 
-        RowLayout {
-            Layout.fillWidth: true
-            Layout.topMargin: MD.Token.spacing.small
-            visible: root.hasAddons && groupAllTerminal()
-
-            Item { Layout.fillWidth: true }
-
-            MD.IconButton {
-                mdState.type: MD.Enum.IBtStandard
-                icon.name: MD.Token.icon.delete
-                onClicked: removeWholeGroup()
-            }
-        }
     }
 }

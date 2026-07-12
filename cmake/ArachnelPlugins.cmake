@@ -43,14 +43,17 @@ target_link_libraries(freetp_plugin PRIVATE Qt6::Core Qt6::Network)
 
 set_target_properties(freetp_plugin PROPERTIES
     OUTPUT_NAME "freetp_plugin"
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/plugins/freetp"
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/plugins/freetp"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/plugin-build/freetp"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/plugin-build/freetp"
 )
 if(MINGW)
     set_target_properties(freetp_plugin PROPERTIES PREFIX "")
 endif()
 
-set(_PLUGIN_DEPLOY_DIR "${CMAKE_BINARY_DIR}/plugins/freetp")
+set(_PLUGIN_DEPLOY_DIR "${CMAKE_BINARY_DIR}/plugin-build/freetp")
+set(_FREETP_ARACH "${CMAKE_BINARY_DIR}/dist/freetp.arach")
+set(_FREETP_ARACH_STAGING "${CMAKE_BINARY_DIR}/_staging_freetp_arach")
+
 add_custom_command(TARGET freetp_plugin POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory "${_PLUGIN_DEPLOY_DIR}"
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
@@ -62,17 +65,33 @@ add_custom_command(TARGET freetp_plugin POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "${FREETP_CATALOG}"
         "${_PLUGIN_DEPLOY_DIR}/games-arachnel.json"
-    COMMENT "Deploy freetp plugin bundle"
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/dist"
+    COMMAND ${CMAKE_COMMAND} -E rm -rf "${_FREETP_ARACH_STAGING}"
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${_FREETP_ARACH_STAGING}/freetp"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${_PLUGIN_DEPLOY_DIR}/$<TARGET_FILE_NAME:freetp_plugin>"
+        "${_FREETP_ARACH_STAGING}/freetp/$<TARGET_FILE_NAME:freetp_plugin>"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${_PLUGIN_DEPLOY_DIR}/plugin.json"
+        "${_FREETP_ARACH_STAGING}/freetp/plugin.json"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${_PLUGIN_DEPLOY_DIR}/games-arachnel.json"
+        "${_FREETP_ARACH_STAGING}/freetp/games-arachnel.json"
+    COMMENT "Stage freetp plugin bundle"
 )
 
-add_custom_target(arachnel_plugins ALL DEPENDS freetp_plugin)
-
-function(arachnel_deploy_plugins target)
-    add_dependencies(${target} arachnel_plugins)
-    add_custom_command(TARGET ${target} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-            "${CMAKE_BINARY_DIR}/plugins"
-            "$<TARGET_FILE_DIR:${target}>/plugins"
-        COMMENT "Copy plugins next to ${target}"
+if(WIN32)
+    add_custom_command(TARGET freetp_plugin POST_BUILD
+        COMMAND powershell -NoProfile -ExecutionPolicy Bypass -Command
+            "if (Test-Path -LiteralPath '${_FREETP_ARACH}') { Remove-Item -LiteralPath '${_FREETP_ARACH}' -Force }; Compress-Archive -Path '${_FREETP_ARACH_STAGING}/freetp' -DestinationPath '${_FREETP_ARACH}' -Force"
+        COMMENT "Package dist/freetp.arach"
     )
-endfunction()
+else()
+    add_custom_command(TARGET freetp_plugin POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E chdir "${_FREETP_ARACH_STAGING}"
+            ${CMAKE_COMMAND} -E tar cf "${_FREETP_ARACH}" --format=zip freetp
+        COMMENT "Package dist/freetp.arach"
+    )
+endif()
+
+add_custom_target(freetp_arach ALL DEPENDS freetp_plugin)

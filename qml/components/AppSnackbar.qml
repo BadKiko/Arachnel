@@ -8,13 +8,14 @@ Item {
 
     property string message: ""
     property bool open: false
+    readonly property real railInset: 88
 
     function show(text, durationMs) {
         if (!text || text.length === 0)
             return
         message = text
         open = true
-        dismissTimer.interval = durationMs ?? 4500
+        dismissTimer.interval = durationMs ?? 5000
         dismissTimer.restart()
     }
 
@@ -28,18 +29,24 @@ Item {
         onTriggered: root.dismiss()
     }
 
-    Item {
-        id: barHost
+    MD.ElevationRectangle {
+        id: bar
         z: 1
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
         anchors.bottomMargin: MD.Token.spacing.large
-        width: Math.min(bar.implicitWidth, parent.width - railInset - MD.Token.spacing.large * 2)
-        height: bar.implicitHeight
+        width: Math.min(
+                   contentRow.implicitWidth + MD.Token.spacing.large * 2,
+                   parent.width - root.railInset - MD.Token.spacing.large * 2)
+        implicitHeight: Math.max(48, contentRow.implicitHeight + MD.Token.spacing.medium * 2)
+        radius: MD.Token.shape.corner.extra_large
+        color: MD.Token.color.surface_container_high
+        elevation: MD.Token.elevation.level2
+        border.width: 1
+        border.color: MD.Token.color.outline_variant
         opacity: root.open ? 1 : 0
-        y: root.open ? 0 : 20
-
-        readonly property real railInset: 88
+        scale: root.open ? 1 : 0.94
+        visible: opacity > 0.01 || root.open
 
         Behavior on opacity {
             NumberAnimation {
@@ -48,45 +55,34 @@ Item {
             }
         }
 
-        Behavior on y {
+        Behavior on scale {
             NumberAnimation {
-                duration: MD.Token.duration.medium4
+                duration: MD.Token.duration.medium2
                 easing: MD.Token.easing.emphasized_decelerate
             }
         }
 
-        MD.ElevationRectangle {
-            id: bar
-            anchors.fill: parent
-            radius: MD.Token.shape.corner.small
-            color: MD.Token.color.inverse_surface
-            elevation: MD.Token.elevation.level3
+        RowLayout {
+            id: contentRow
+            anchors.centerIn: parent
+            width: parent.width - MD.Token.spacing.large * 2
+            spacing: MD.Token.spacing.small
 
-            RowLayout {
-                anchors.fill: parent
-                anchors.leftMargin: MD.Token.spacing.medium
-                anchors.rightMargin: MD.Token.spacing.extra_small
-                anchors.topMargin: MD.Token.spacing.small
-                anchors.bottomMargin: MD.Token.spacing.small
-                spacing: MD.Token.spacing.small
+            MD.Label {
+                Layout.fillWidth: true
+                text: root.message
+                color: MD.Token.color.on_surface
+                typescale: MD.Token.typescale.body_medium
+                wrapMode: Text.WordWrap
+                maximumLineCount: 2
+            }
 
-                MD.Label {
-                    Layout.fillWidth: true
-                    Layout.maximumWidth: 480
-                    text: root.message
-                    color: MD.Token.color.inverse_on_surface
-                    typescale: MD.Token.typescale.body_medium
-                    wrapMode: Text.Wrap
-                    maximumLineCount: 3
-                    elide: Text.ElideRight
-                }
-
-                MD.IconButton {
-                    mdState.type: MD.Enum.IBtStandard
-                    icon.name: MD.Token.icon.close
-                    icon.color: MD.Token.color.inverse_on_surface
-                    onClicked: root.dismiss()
-                }
+            MD.IconButton {
+                Layout.alignment: Qt.AlignVCenter
+                mdState.type: MD.Enum.IBtStandard
+                icon.name: MD.Token.icon.close
+                icon.color: MD.Token.color.on_surface_variant
+                onClicked: root.dismiss()
             }
         }
     }

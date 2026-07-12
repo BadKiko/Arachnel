@@ -20,7 +20,10 @@ Item {
     property bool embedded: false
     property bool compact: false
     property bool addonRow: false
+    property bool showExternalRemove: false
     property real fillProgress: -1
+
+    signal removeRequested()
 
     readonly property string detailsEntryId: root.parentEntryId.length
         ? root.parentEntryId
@@ -35,8 +38,9 @@ Item {
     readonly property bool isFailed: status === "failed" || status === "cancelled"
     readonly property bool isTerminal: status === "completed" || status === "failed" || status === "cancelled"
     readonly property bool canRetry: status === "failed" || status === "cancelled"
-    readonly property bool canRetryInstall: status === "completed"
-        && detail.indexOf("Ошибка установки") >= 0
+    readonly property bool canRetryInstall: root.jobId.length > 0 && Core.canRetryJobInstall(root.jobId)
+    readonly property bool installFailed: root.detail.indexOf("Ошибка установки") >= 0
+        || (root.status === "completed" && root.detail.indexOf("Ошибка") === 0)
 
     implicitWidth: embedded ? parent ? parent.width : implicitWidth : implicitWidth
     implicitHeight: content.implicitHeight + (embedded ? 0 : 2 * MD.Token.spacing.medium)
@@ -150,10 +154,15 @@ Item {
                     }
 
                     MD.IconButton {
-                        visible: root.isTerminal && !root.embedded
+                        visible: root.isTerminal && (!root.embedded || root.showExternalRemove)
                         mdState.type: MD.Enum.IBtStandard
                         icon.name: MD.Token.icon.delete
-                        onClicked: Core.removeJob(root.jobId)
+                        onClicked: {
+                            if (root.embedded && root.showExternalRemove)
+                                root.removeRequested()
+                            else
+                                Core.removeJob(root.jobId)
+                        }
                     }
                 }
 
@@ -218,7 +227,7 @@ Item {
                     MD.Label {
                         Layout.fillWidth: true
                         text: root.detail.length ? root.detail : root.statusLabel
-                        color: (root.isFailed || root.canRetryInstall) ? MD.Token.color.error
+                        color: (root.isFailed || root.installFailed) ? MD.Token.color.error
                                                                        : MD.Token.color.on_surface_variant
                         typescale: MD.Token.typescale.label_medium
                         elide: Text.ElideRight
@@ -228,7 +237,8 @@ Item {
                     MD.Label {
                         visible: root.statusLabel.length > 0 && root.detail.length > 0 && !root.isInstalling
                         text: root.statusLabel
-                        color: MD.Token.color.on_surface_variant
+                        color: root.installFailed ? MD.Token.color.error
+                                                    : MD.Token.color.on_surface_variant
                         typescale: MD.Token.typescale.label_small
                     }
                 }

@@ -131,7 +131,7 @@ Item {
                 MD.Label {
                     id: updateLabel
                     anchors.centerIn: parent
-                    text: qsTr("Update")
+                    text: qsTr("Обновление")
                     typescale: MD.Token.typescale.label_small
                     color: MD.Token.color.on_tertiary_container
                 }

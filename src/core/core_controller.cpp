@@ -1,6 +1,7 @@
 #include "core_controller.h"
 
 #include "catalog_feed_loader.h"
+#include "catalog_parser.h"
 #include "cover_image_cache.h"
 #include "file_utils.h"
 #include "install_kind_probe_service.h"
@@ -19,6 +20,7 @@
 #include "torrent_session.h"
 
 #include <QCoreApplication>
+#include <QDate>
 #include <QDateTime>
 #include <QDir>
 #include <QFileInfo>
@@ -71,6 +73,18 @@ CoreController::CoreController(QObject* parent)
     m_settings.load();
     m_jobStore.load();
     m_libraryStore.load();
+    {
+        QVector<LibraryGame> games = m_libraryStore.games();
+        bool cleared = false;
+        for (auto& game : games) {
+            if (!game.hasUpdate)
+                continue;
+            game.hasUpdate = false;
+            cleared = true;
+        }
+        if (cleared)
+            m_libraryStore.setGames(games);
+    }
     m_pluginHost = new PluginHost(this);
     m_pluginHost->scan();
     m_installKindProbe = new InstallKindProbeService(m_pluginHost, this);
@@ -98,6 +112,14 @@ CoreController::CoreController(QObject* parent)
     m_runningGameTimer = new QTimer(this);
     m_runningGameTimer->setInterval(1500);
     connect(m_runningGameTimer, &QTimer::timeout, this, &CoreController::pollRunningGame);
+
+    const QString firstSource = m_sources.firstEnabledId();
+    if (!firstSource.isEmpty()) {
+        m_activeSourceIds = {firstSource};
+        emit activeCatalogSourceIdsChanged();
+        emit activeCatalogSourceIdChanged();
+        requestCatalogLoad(firstSource);
+    }
 }
 
 void CoreController::initializeServices()
@@ -113,27 +135,61 @@ void CoreController::initializeServices()
 
     connect(m_catalogLoader, &CatalogFeedLoader::feedLoaded, this,
             [this](const QString& sourceId, const QVector<CatalogEntry> entries) {
-                if (sourceId != m_activeSourceId)
-                    return;
-
-                m_catalogCache = entries;
-                for (auto& entry : m_catalogCache)
-                    applyCachedMetadata(entry);
-
-                // Model first, then status/loading — otherwise QML can show
-                // "Каталог готов · N" with stale "Найдено: 0" / empty state.
-                applyCatalogFilter(sourceId, m_activeQuery);
-                setCatalogStatus(QStringLiteral("Каталог готов · %1 игр").arg(entries.size()));
-                setCatalogLoading(false);
+                m_catalogHttpLoadActive = false;
+                storeCatalogForSource(sourceId, entries);
+                processCatalogLoadQueue();
             });
 
     connect(m_catalogLoader, &CatalogFeedLoader::feedFailed, this,
             [this](const QString& sourceId, const QString& error) {
-                if (sourceId != m_activeSourceId)
+                m_catalogHttpLoadActive = false;
+                m_loadingSourceIds.remove(sourceId);
+                if (m_activeSourceIds.contains(sourceId))
+                    showNotice(QStringLiteral("Ошибка каталога: %1").arg(error));
+                rebuildMergedCatalog();
+                processCatalogLoadQueue();
+            });
+
+    m_catalogProbeLoader = new CatalogFeedLoader(this);
+    connect(m_catalogProbeLoader, &CatalogFeedLoader::feedLoaded, this,
+            [this](const QString& tag, const QVector<CatalogEntry> entries) {
+                if (!tag.startsWith(QStringLiteral("count:")))
                     return;
-                setCatalogLoading(false);
-                setCatalogStatus(error);
-                showNotice(QStringLiteral("Ошибка каталога: %1").arg(error));
+
+                const QString sourceId = tag.mid(6);
+                QVector<CatalogEntry> normalized = entries;
+                normalizeCatalogSourceIds(normalized, sourceId);
+                m_catalogCounts.insert(sourceId, normalized.size());
+                m_catalogBySource.insert(sourceId, normalized);
+                emit catalogCountsChanged();
+                if (m_activeSourceIds.contains(sourceId))
+                    rebuildMergedCatalog();
+                startNextCatalogPrefetch();
+            });
+    connect(m_catalogProbeLoader, &CatalogFeedLoader::feedFailed, this,
+            [this](const QString& tag, const QString& error) {
+                if (tag.startsWith(QStringLiteral("count:"))) {
+                    const QString sourceId = tag.mid(6);
+                    m_catalogCounts.insert(sourceId, -1);
+                    emit catalogCountsChanged();
+                    startNextCatalogPrefetch();
+                }
+            });
+
+    m_catalogValidateLoader = new CatalogFeedLoader(this);
+    connect(m_catalogValidateLoader, &CatalogFeedLoader::feedLoaded, this,
+            [this](const QString& tag, const QVector<CatalogEntry> entries) {
+                if (!tag.startsWith(QStringLiteral("validate:")))
+                    return;
+                const QString requestId = tag.mid(9);
+                emit hydraCatalogUrlValidated(requestId, true, entries.size(), {});
+            });
+    connect(m_catalogValidateLoader, &CatalogFeedLoader::feedFailed, this,
+            [this](const QString& tag, const QString& error) {
+                if (!tag.startsWith(QStringLiteral("validate:")))
+                    return;
+                const QString requestId = tag.mid(9);
+                emit hydraCatalogUrlValidated(requestId, false, 0, error);
             });
 
     connect(m_metadataService, &GameMetadataService::coverReady, this,
@@ -294,21 +350,7 @@ void CoreController::persistSourcesToSettings()
 void CoreController::applyPluginCatalog(const QString& sourceId,
                                         QVector<CatalogEntry> entries)
 {
-    if (sourceId != m_activeSourceId)
-        return;
-
-    m_catalogCache = std::move(entries);
-    for (auto& entry : m_catalogCache)
-        applyCachedMetadata(entry);
-
-    if (m_installKindProbe) {
-        m_installKindProbe->applyCachedKinds(m_catalogCache);
-        m_installKindProbe->queueCatalog(sourceId, m_catalogCache, m_activeQuery);
-    }
-
-    applyCatalogFilter(sourceId, m_activeQuery);
-    setCatalogStatus(QStringLiteral("Каталог готов · %1 игр").arg(m_catalogCache.size()));
-    setCatalogLoading(false);
+    storeCatalogForSource(sourceId, std::move(entries));
 }
 
 void CoreController::startPluginInstall(const CatalogEntry& entry, const QString& sourceId,
@@ -536,9 +578,17 @@ void CoreController::startPluginAddonInstall(const CatalogEntry& parent,
 
     m_installingAddons.insert(installKey);
 
-    if (!progressJobId.isEmpty() && !m_installSessions.contains(parent.id))
+    const QVariantMap addonJobMap = m_jobs.jobForAddon(parent.id, addon.id);
+    const QString addonJobId = addonJobMap.value(QStringLiteral("jobId")).toString();
+    if (!addonJobId.isEmpty()) {
+        m_jobOrchestrator->setJobPhase(addonJobId, QStringLiteral("installing"),
+                                       QStringLiteral("Установка дополнения…"));
+    } else if (!progressJobId.isEmpty() && !m_installSessions.contains(parent.id)) {
         m_jobOrchestrator->setJobPhase(progressJobId, QStringLiteral("installing"),
                                        QStringLiteral("Установка дополнения…"));
+    }
+    if (m_installSessions.contains(parent.id))
+        syncInstallSessionPhase(parent.id);
 
     AddonInstallContext ctx;
     ctx.parentEntryId = parent.id;
@@ -557,9 +607,20 @@ void CoreController::startPluginAddonInstall(const CatalogEntry& parent,
                                                  const QString detail =
                                                      result.error.isEmpty()
                                                          ? QStringLiteral("Ошибка установки")
-                                                         : QStringLiteral("Ошибка: %1")
+                                                         : QStringLiteral("Ошибка установки: %1")
                                                                .arg(result.error);
-                                                 if (!progressJobId.isEmpty())
+
+                                                 const QVariantMap addonJobMap =
+                                                     m_jobs.jobForAddon(parent.id, addon.id);
+                                                 const QString addonJobId =
+                                                     addonJobMap.value(QStringLiteral("jobId"))
+                                                         .toString();
+                                                 if (!addonJobId.isEmpty())
+                                                     m_jobOrchestrator->setJobPhase(
+                                                         addonJobId,
+                                                         QStringLiteral("completed"), detail);
+                                                 if (!progressJobId.isEmpty()
+                                                     && progressJobId != addonJobId)
                                                      m_jobOrchestrator->setJobPhase(
                                                          progressJobId,
                                                          QStringLiteral("completed"), detail);
@@ -575,6 +636,18 @@ void CoreController::startPluginAddonInstall(const CatalogEntry& parent,
 
                                              markCatalogAddonInstalled(parent.id, addon.id,
                                                                        addon.uploadDate);
+
+                                             const QVariantMap successAddonJobMap =
+                                                 m_jobs.jobForAddon(parent.id, addon.id);
+                                             const QString successAddonJobId =
+                                                 successAddonJobMap.value(QStringLiteral("jobId"))
+                                                     .toString();
+                                             if (!successAddonJobId.isEmpty())
+                                                 m_jobOrchestrator->setJobPhase(
+                                                     successAddonJobId,
+                                                     QStringLiteral("completed"),
+                                                     QStringLiteral("Установлено"));
+
                                              showNotice(QStringLiteral("Дополнение установлено: %1")
                                                                .arg(addon.title));
                                              if (done)
@@ -611,6 +684,8 @@ void CoreController::markCatalogAddonInstalled(const QString& parentEntryId,
 
     m_libraryStore.upsertGame(game);
     syncLibraryFromStore();
+    if (!m_catalogCache.isEmpty())
+        recalculateLibraryUpdates(false);
 }
 
 QString CoreController::resolveAddonArtifactPath(const QString& parentEntryId,
@@ -948,8 +1023,20 @@ void CoreController::pruneAddonLibraryEntries()
 void CoreController::reconcileJobInstallState()
 {
     for (const JobEntry& job : m_jobStore.jobs()) {
-        if (!job.parentEntryId.isEmpty())
+        if (!job.parentEntryId.isEmpty()) {
+            if (job.status != QStringLiteral("installing"))
+                continue;
+            if (isCatalogAddonInstalled(job.parentEntryId, job.entryId)) {
+                m_jobOrchestrator->setJobPhase(job.id, QStringLiteral("completed"),
+                                               QStringLiteral("Установлено"));
+                continue;
+            }
+            if (!resolveAddonArtifactPath(job.parentEntryId, job.entryId).isEmpty()) {
+                m_jobOrchestrator->setJobPhase(job.id, QStringLiteral("completed"),
+                                               QStringLiteral("Загрузка завершена"));
+            }
             continue;
+        }
         if (job.status != QStringLiteral("completed"))
             continue;
         if (!gameNeedsInstall(job.entryId))
@@ -1032,16 +1119,71 @@ void CoreController::retryPendingInstalls()
 
 void CoreController::syncLibraryFromStore()
 {
-    m_library.setGames(m_libraryStore.games());
+    QVector<LibraryGame> games = m_libraryStore.games();
+    for (auto& game : games)
+        enrichLibraryGameCover(game);
+    m_library.setGames(games);
 }
 
-void CoreController::showNotice(const QString& message)
+void CoreController::enrichLibraryGameCover(LibraryGame& game) const
+{
+    if (!game.coverUrl.isEmpty())
+        return;
+
+    if (const JobEntry* job = findLatestJobForEntry(game.id)) {
+        if (!job->coverUrl.isEmpty()) {
+            game.coverUrl = job->coverUrl;
+            return;
+        }
+    }
+
+    const GameMetadata metadata = m_metadataService->metadataForTitle(game.title);
+    if (metadata.coverUrl.isEmpty())
+        return;
+
+    const QString local = m_coverCache->localUrlFor(metadata.coverUrl);
+    game.coverUrl = !local.isEmpty() ? local : metadata.coverUrl;
+}
+
+void CoreController::warmCatalogCovers(const QString& sourceId, const QString& query, int limit)
+{
+    const QString needle = query.trimmed().toLower();
+    int warmed = 0;
+    for (auto& entry : m_catalogCache) {
+        if (entry.sourceId != sourceId)
+            continue;
+        if (!needle.isEmpty() && !entry.title.toLower().contains(needle))
+            continue;
+
+        applyCachedMetadata(entry);
+
+        if (entry.coverUrl.startsWith(QStringLiteral("file:"))) {
+            syncEntryToCatalogModel(entry.id);
+            ++warmed;
+            continue;
+        }
+
+        if (entry.coverUrl.isEmpty()) {
+            requestCatalogCover(entry.id);
+        } else {
+            syncEntryToCatalogModel(entry.id);
+            if (isRemoteLibraryCover(entry.coverUrl))
+                ensureDiskCover(entry.id, entry.coverUrl);
+        }
+
+        if (++warmed >= limit)
+            break;
+    }
+}
+
+void CoreController::showNotice(const QString& message, bool addToHistory)
 {
     if (message.isEmpty())
         return;
     m_userNotice = message;
     ++m_userNoticeSerial;
-    m_notifications.add(message, notificationKindForMessage(message));
+    if (addToHistory)
+        m_notifications.add(message, notificationKindForMessage(message));
     emit userNoticeChanged();
 }
 
@@ -1075,11 +1217,109 @@ bool CoreController::isRemoteUploadDateNewer(const QString& remote, const QStrin
 {
     if (remote.isEmpty() || local.isEmpty())
         return false;
+    if (remote == local)
+        return false;
+
     const QDateTime remoteDate = QDateTime::fromString(remote, Qt::ISODate);
     const QDateTime localDate = QDateTime::fromString(local, Qt::ISODate);
-    if (!remoteDate.isValid() || !localDate.isValid())
-        return remote > local;
-    return remoteDate > localDate;
+    if (remoteDate.isValid() && localDate.isValid())
+        return remoteDate > localDate;
+
+    const QDate remoteDay = QDate::fromString(remote.left(10), Qt::ISODate);
+    const QDate localDay = QDate::fromString(local.left(10), Qt::ISODate);
+    if (remoteDay.isValid() && localDay.isValid())
+        return remoteDay > localDay;
+
+    return remote > local;
+}
+
+bool CoreController::gameHasUpdate(const LibraryGame& game, const CatalogEntry& remote) const
+{
+    if (remote.id.isEmpty())
+        return false;
+
+    if (ISourcePlugin* plugin = m_pluginHost ? m_pluginHost->plugin(game.sourceId) : nullptr) {
+        if (plugin->detectUpdate(game, remote))
+            return true;
+    } else if (isRemoteUploadDateNewer(remote.uploadDate, game.uploadDate)) {
+        return true;
+    }
+
+    for (const auto& component : game.components) {
+        if (!component.installed)
+            continue;
+        for (const auto& remoteAddon : remote.addons) {
+            if (remoteAddon.id != component.id)
+                continue;
+            if (isRemoteUploadDateNewer(remoteAddon.uploadDate, component.uploadDate))
+                return true;
+        }
+    }
+
+    return false;
+}
+
+int CoreController::recalculateLibraryUpdates(bool notify)
+{
+    if (m_catalogCache.isEmpty())
+        return 0;
+
+    QHash<QString, CatalogEntry> remoteById;
+    for (const auto& entry : m_catalogCache)
+        remoteById.insert(entry.id, entry);
+
+    QVector<LibraryGame> games = m_libraryStore.games();
+    int updates = 0;
+    for (auto& game : games) {
+        const CatalogEntry remote = remoteById.value(game.id);
+        const bool hasUpdate = gameHasUpdate(game, remote);
+        game.hasUpdate = hasUpdate;
+        if (hasUpdate)
+            ++updates;
+    }
+
+    m_libraryStore.setGames(games);
+    syncLibraryFromStore();
+
+    if (notify) {
+        if (updates > 0)
+            showNotice(QStringLiteral("Доступно обновлений: %1").arg(updates));
+        else
+            showNotice(QStringLiteral("Обновлений нет"), false);
+    }
+
+    return updates;
+}
+
+void CoreController::onCatalogReady()
+{
+    if (!m_settings.autoCheckUpdates())
+        return;
+    const int updates = recalculateLibraryUpdates(false);
+    if (updates > 0)
+        showNotice(QStringLiteral("Доступно обновлений: %1").arg(updates));
+}
+
+QString CoreController::verifyEntryFilesMessage(const QString& entryId) const
+{
+    const LibraryGame* game = m_libraryStore.gameById(entryId);
+    if (!game)
+        return QStringLiteral("Игра не найдена");
+    if (game->installPath.isEmpty())
+        return QStringLiteral("Игра не установлена");
+    if (!QDir(game->installPath).exists())
+        return QStringLiteral("Папка установки не найдена");
+
+    LaunchInfo info;
+    if (ISourcePlugin* plugin = m_pluginHost ? m_pluginHost->plugin(game->sourceId) : nullptr)
+        info = plugin->launchInfo(*game);
+
+    if (info.executable.isEmpty())
+        return QStringLiteral("Исполняемый файл не найден");
+    if (!QFileInfo::exists(info.executable))
+        return QStringLiteral("Исполняемый файл отсутствует");
+
+    return {};
 }
 
 const CatalogEntry* CoreController::findCatalogEntry(const QString& entryId) const
@@ -1109,6 +1349,8 @@ void CoreController::applyCachedMetadata(CatalogEntry& entry) const
         const QString local = m_coverCache->localUrlFor(metadata.coverUrl);
         if (!local.isEmpty())
             entry.coverUrl = local;
+        else if (entry.coverUrl.isEmpty() && isRemoteLibraryCover(metadata.coverUrl))
+            entry.coverUrl = metadata.coverUrl;
     }
     if (!metadata.description.isEmpty())
         entry.description = metadata.description;
@@ -1167,7 +1409,7 @@ void CoreController::syncEntryToCatalogModel(const QString& entryId)
         if (entry.id != entryId)
             continue;
         if (!m_catalog.updateEntry(entry))
-            applyCatalogFilter(m_activeSourceId, m_activeQuery);
+            applyCatalogFilter(m_activeQuery);
         return;
     }
 }
@@ -1302,15 +1544,20 @@ void CoreController::enrichCatalogEntry(const QString& entryId)
     }
 }
 
-void CoreController::applyCatalogFilter(const QString& sourceId, const QString& query)
+void CoreController::normalizeCatalogSourceIds(QVector<CatalogEntry>& entries,
+                                               const QString& sourceId)
+{
+    for (auto& entry : entries)
+        entry.sourceId = sourceId;
+}
+
+void CoreController::applyCatalogFilter(const QString& query)
 {
     const QString needle = query.trimmed().toLower();
     QVector<CatalogEntry> filtered;
     filtered.reserve(m_catalogCache.size());
 
     for (const auto& entry : m_catalogCache) {
-        if (entry.sourceId != sourceId)
-            continue;
         if (!needle.isEmpty() && !entry.title.toLower().contains(needle))
             continue;
         filtered.append(entry);
@@ -1318,12 +1565,212 @@ void CoreController::applyCatalogFilter(const QString& sourceId, const QString& 
 
     m_catalog.setEntries(std::move(filtered));
 
-    if (m_installKindProbe && m_pluginHost && m_pluginHost->hasPlugin(sourceId))
-        m_installKindProbe->queueCatalog(sourceId, m_catalogCache, query);
+    const QString coverSourceId = m_activeSourceIds.value(0);
+    warmCatalogCovers(coverSourceId, query, 80);
+
+    if (m_installKindProbe && m_pluginHost) {
+        for (const QString& sourceId : m_activeSourceIds) {
+            if (m_pluginHost->hasPlugin(sourceId))
+                m_installKindProbe->queueCatalog(sourceId, m_catalogCache, query);
+        }
+    }
+}
+
+void CoreController::storeCatalogForSource(const QString& sourceId,
+                                           QVector<CatalogEntry> entries)
+{
+    normalizeCatalogSourceIds(entries, sourceId);
+    m_catalogBySource.insert(sourceId, entries);
+    m_catalogCounts.insert(sourceId, entries.size());
+    emit catalogCountsChanged();
+    m_loadingSourceIds.remove(sourceId);
+
+    if (m_activeSourceIds.contains(sourceId))
+        rebuildMergedCatalog();
+    else
+        updateCatalogLoadingState();
+}
+
+void CoreController::rebuildMergedCatalog()
+{
+    if (m_activeSourceIds.isEmpty()) {
+        m_catalogCache.clear();
+        m_catalog.clear();
+        setCatalogStatus({});
+        updateCatalogLoadingState();
+        return;
+    }
+
+    QVector<CatalogEntry> merged;
+    QStringList pendingLoads;
+    for (const QString& sourceId : m_activeSourceIds) {
+        const SourcePluginInfo* source = m_sources.pluginById(sourceId);
+        if (!source || !source->enabled)
+            continue;
+
+        if (m_catalogBySource.contains(sourceId)) {
+            const QVector<CatalogEntry>& sourceEntries = m_catalogBySource.value(sourceId);
+            merged.reserve(merged.size() + sourceEntries.size());
+            merged += sourceEntries;
+        } else if (!m_loadingSourceIds.contains(sourceId)) {
+            pendingLoads.append(sourceId);
+        }
+    }
+
+    for (const QString& sourceId : pendingLoads)
+        requestCatalogLoad(sourceId);
+
+    deduplicateCatalogEntries(merged);
+
+    m_catalogCache = std::move(merged);
+    for (auto& entry : m_catalogCache)
+        applyCachedMetadata(entry);
+
+    if (m_installKindProbe) {
+        m_installKindProbe->applyCachedKinds(m_catalogCache);
+        for (const QString& sourceId : m_activeSourceIds) {
+            if (m_pluginHost && m_pluginHost->hasPlugin(sourceId))
+                m_installKindProbe->queueCatalog(sourceId, m_catalogCache, m_activeQuery);
+        }
+    }
+
+    applyCatalogFilter(m_activeQuery);
+
+    if (m_activeSourceIds.size() == 1) {
+        const SourcePluginInfo* source = m_sources.pluginById(m_activeSourceIds.first());
+        const QString name = source ? source->name : m_activeSourceIds.first();
+        setCatalogStatus(QStringLiteral("%1 · %2 игр").arg(name).arg(m_catalog.count()));
+    } else {
+        setCatalogStatus(QStringLiteral("%1 источников · %2 игр")
+                             .arg(m_activeSourceIds.size())
+                             .arg(m_catalog.count()));
+    }
+
+    updateCatalogLoadingState();
+    onCatalogReady();
+}
+
+void CoreController::requestCatalogLoad(const QString& sourceId)
+{
+    if (sourceId.isEmpty() || m_catalogBySource.contains(sourceId))
+        return;
+
+    if (m_loadingSourceIds.contains(sourceId)) {
+        if (!m_catalogLoadQueue.contains(sourceId))
+            m_catalogLoadQueue.append(sourceId);
+        return;
+    }
+
+    m_loadingSourceIds.insert(sourceId);
+    updateCatalogLoadingState();
+
+    if (m_pluginHost && m_pluginHost->hasPlugin(sourceId)) {
+        loadCatalogSourceNow(sourceId);
+        return;
+    }
+
+    if (!m_catalogLoadQueue.contains(sourceId))
+        m_catalogLoadQueue.append(sourceId);
+    processCatalogLoadQueue();
+}
+
+void CoreController::processCatalogLoadQueue()
+{
+    if (m_catalogHttpLoadActive)
+        return;
+
+    while (!m_catalogLoadQueue.isEmpty()) {
+        const QString sourceId = m_catalogLoadQueue.first();
+        if (m_catalogBySource.contains(sourceId)) {
+            m_catalogLoadQueue.removeFirst();
+            continue;
+        }
+        if (m_loadingSourceIds.contains(sourceId) && m_pluginHost
+            && m_pluginHost->hasPlugin(sourceId))
+            return;
+
+        m_catalogLoadQueue.removeFirst();
+        loadCatalogSourceNow(sourceId);
+        return;
+    }
+
+    updateCatalogLoadingState();
+}
+
+void CoreController::loadCatalogSourceNow(const QString& sourceId)
+{
+    if (ISourcePlugin* plugin = m_pluginHost->plugin(sourceId)) {
+        auto* watcher = new QFutureWatcher<QVector<CatalogEntry>>(this);
+        connect(watcher, &QFutureWatcher<QVector<CatalogEntry>>::finished, this,
+                [this, watcher, sourceId]() {
+                    const QVector<CatalogEntry> entries = watcher->result();
+                    watcher->deleteLater();
+                    m_loadingSourceIds.remove(sourceId);
+                    if (entries.isEmpty()) {
+                        if (m_activeSourceIds.contains(sourceId)) {
+                            showNotice(QStringLiteral("Каталог пуст или недоступен: %1")
+                                               .arg(m_sources.nameForId(sourceId)));
+                        }
+                        rebuildMergedCatalog();
+                        return;
+                    }
+                    storeCatalogForSource(sourceId, entries);
+                });
+
+        ISourcePlugin* pluginRef = plugin;
+        plugin->resetCatalogCache();
+        watcher->setFuture(QtConcurrent::run([pluginRef]() { return pluginRef->catalog(); }));
+        return;
+    }
+
+    const QString url = m_sources.catalogUrlFor(sourceId);
+    if (url.isEmpty()) {
+        m_loadingSourceIds.remove(sourceId);
+        showNotice(QStringLiteral("Для источника %1 не задан URL каталога").arg(sourceId));
+        rebuildMergedCatalog();
+        return;
+    }
+
+    m_catalogHttpLoadActive = true;
+    updateCatalogLoadingState();
+    m_catalogLoader->loadFeed(QUrl(url), sourceId);
+}
+
+void CoreController::updateCatalogLoadingState()
+{
+    setCatalogLoading(!m_loadingSourceIds.isEmpty() || m_catalogHttpLoadActive);
+}
+
+void CoreController::syncActiveSourceSignals()
+{
+    emit activeCatalogSourceIdsChanged();
+    emit activeCatalogSourceIdChanged();
+}
+
+void CoreController::commitCatalogLoad(const QString& sourceId,
+                                         QVector<CatalogEntry> entries)
+{
+    storeCatalogForSource(sourceId, std::move(entries));
+}
+
+void CoreController::touchLastPlayed(const QString& gameId)
+{
+    if (gameId.isEmpty())
+        return;
+
+    const LibraryGame* existing = m_libraryStore.gameById(gameId);
+    if (!existing)
+        return;
+
+    LibraryGame game = *existing;
+    game.lastPlayedAt = QDateTime::currentDateTime().toString(Qt::ISODate);
+    m_libraryStore.upsertGame(game);
+    syncLibraryFromStore();
 }
 
 void CoreController::markGameRunning(const LibraryGame& game, const qint64 processId)
 {
+    touchLastPlayed(game.id);
     m_runningGameId = game.id;
     m_runningGameTitle = game.title;
     m_runningGameCoverUrl = game.coverUrl;
@@ -1374,6 +1821,15 @@ void CoreController::launchGame(const QString& gameId)
         return;
     }
 
+    if (m_settings.verifyPortableFiles()
+        && game->installKind == InstallKind::PortableArchive) {
+        const QString verifyError = verifyEntryFilesMessage(gameId);
+        if (!verifyError.isEmpty()) {
+            showNotice(QStringLiteral("%1: %2").arg(game->title, verifyError));
+            return;
+        }
+    }
+
     if (gameRunning() && m_runningGameId == gameId) {
         showNotice(QStringLiteral("%1 уже запущена").arg(game->title));
         return;
@@ -1415,69 +1871,255 @@ void CoreController::stopRunningGame()
 
 void CoreController::refreshCatalog(const QString& sourceId)
 {
-    if (ISourcePlugin* plugin = m_pluginHost->plugin(sourceId)) {
-        m_activeSourceId = sourceId;
-        setCatalogLoading(true);
-        setCatalogStatus(QStringLiteral("Загрузка каталога…"));
-        m_catalog.clear();
-        m_catalogCache.clear();
+    m_catalogBySource.remove(sourceId);
+    m_catalogCounts.remove(sourceId);
+    emit catalogCountsChanged();
+    m_loadingSourceIds.remove(sourceId);
+    m_catalogLoadQueue.removeAll(sourceId);
 
-        auto* watcher = new QFutureWatcher<QVector<CatalogEntry>>(this);
-        connect(watcher, &QFutureWatcher<QVector<CatalogEntry>>::finished, this,
-                [this, watcher, sourceId]() {
-                    const QVector<CatalogEntry> entries = watcher->result();
-                    watcher->deleteLater();
-                    if (entries.isEmpty()) {
-                        setCatalogLoading(false);
-                        setCatalogStatus(QStringLiteral("Каталог пуст или недоступен"));
-                        return;
-                    }
-                    applyPluginCatalog(sourceId, entries);
-                });
+    if (m_activeSourceIds.contains(sourceId))
+        requestCatalogLoad(sourceId);
+}
 
-        ISourcePlugin* pluginRef = plugin;
-        plugin->resetCatalogCache();
-        watcher->setFuture(QtConcurrent::run([pluginRef]() { return pluginRef->catalog(); }));
-        return;
-    }
-
-    const QString url = m_sources.catalogUrlFor(sourceId);
-    if (url.isEmpty()) {
-        setCatalogStatus(QStringLiteral("Для источника %1 не задан URL каталога").arg(sourceId));
-        return;
-    }
-
-    m_activeSourceId = sourceId;
-    setCatalogLoading(true);
-    setCatalogStatus(QStringLiteral("Загрузка каталога…"));
-    m_catalog.clear();
-    m_catalogCache.clear();
-    m_catalogLoader->loadFeed(QUrl(url), sourceId);
+void CoreController::refreshSelectedCatalogs()
+{
+    for (const QString& sourceId : m_activeSourceIds)
+        refreshCatalog(sourceId);
 }
 
 void CoreController::searchCatalog(const QString& sourceId, const QString& query)
 {
     const SourcePluginInfo* source = m_sources.pluginById(sourceId);
     if (!source) {
-        m_catalog.clear();
         showNotice(QStringLiteral("Неизвестный источник: %1").arg(sourceId));
         return;
     }
     if (!source->enabled) {
-        m_catalog.clear();
-        setCatalogStatus(QStringLiteral("Источник «%1» выключен в настройках").arg(source->name));
+        showNotice(QStringLiteral("Источник «%1» выключен в настройках").arg(source->name));
         return;
     }
 
-    m_activeSourceId = sourceId;
+    if (!m_activeSourceIds.contains(sourceId)) {
+        m_activeSourceIds = {sourceId};
+        syncActiveSourceSignals();
+    }
     m_activeQuery = query;
 
-    if (m_catalogCache.isEmpty() || m_catalogCache.first().sourceId != sourceId) {
-        refreshCatalog(sourceId);
+    if (!m_catalogBySource.contains(sourceId))
+        requestCatalogLoad(sourceId);
+
+    rebuildMergedCatalog();
+}
+
+void CoreController::setActiveCatalogSource(const QString& sourceId)
+{
+    const QString trimmed = sourceId.trimmed();
+    if (trimmed.isEmpty()) {
+        clearCatalogView();
         return;
     }
 
-    applyCatalogFilter(sourceId, query);
+    if (m_activeSourceIds.size() == 1 && m_activeSourceIds.first() == trimmed) {
+        rebuildMergedCatalog();
+        return;
+    }
+
+    m_activeSourceIds = {trimmed};
+    syncActiveSourceSignals();
+
+    if (!m_catalogBySource.contains(trimmed))
+        requestCatalogLoad(trimmed);
+    else
+        rebuildMergedCatalog();
+}
+
+bool CoreController::isCatalogSourceSelected(const QString& sourceId) const
+{
+    return m_activeSourceIds.contains(sourceId);
+}
+
+void CoreController::toggleCatalogSource(const QString& sourceId)
+{
+    if (sourceId.isEmpty())
+        return;
+
+    if (m_activeSourceIds.contains(sourceId)) {
+        m_activeSourceIds.removeAll(sourceId);
+        syncActiveSourceSignals();
+        rebuildMergedCatalog();
+        return;
+    }
+
+    const SourcePluginInfo* source = m_sources.pluginById(sourceId);
+    if (!source || !source->enabled)
+        return;
+
+    m_activeSourceIds.append(sourceId);
+    syncActiveSourceSignals();
+
+    if (!m_catalogBySource.contains(sourceId))
+        requestCatalogLoad(sourceId);
+    else
+        rebuildMergedCatalog();
+}
+
+void CoreController::applyCatalogSearch(const QString& query)
+{
+    m_activeQuery = query;
+    rebuildMergedCatalog();
+}
+
+void CoreController::pruneDisabledCatalogSources()
+{
+    QStringList valid;
+    valid.reserve(m_activeSourceIds.size());
+    for (const QString& sourceId : m_activeSourceIds) {
+        if (m_sources.isSourceEnabled(sourceId))
+            valid.append(sourceId);
+    }
+
+    if (valid == m_activeSourceIds)
+        return;
+
+    m_activeSourceIds = valid;
+    syncActiveSourceSignals();
+    rebuildMergedCatalog();
+}
+
+void CoreController::selectCatalogSource(const QString& sourceId, const QString& query)
+{
+    if (sourceId.isEmpty())
+        return;
+
+    m_activeQuery = query;
+    setActiveCatalogSource(sourceId);
+    if (!query.isEmpty())
+        applyCatalogSearch(query);
+}
+
+void CoreController::clearCatalogView()
+{
+    m_activeSourceIds.clear();
+    syncActiveSourceSignals();
+    m_activeQuery.clear();
+    m_catalogCache.clear();
+    m_catalog.clear();
+    setCatalogLoading(false);
+    setCatalogStatus({});
+}
+
+int CoreController::catalogEntryCount(const QString& sourceId) const
+{
+    if (sourceId.isEmpty())
+        return -1;
+
+    if (m_catalogBySource.contains(sourceId))
+        return m_catalogBySource.value(sourceId).size();
+
+    if (m_catalogCounts.contains(sourceId))
+        return m_catalogCounts.value(sourceId);
+
+    return -1;
+}
+
+void CoreController::invalidateSourceCatalog(const QString& sourceId)
+{
+    m_catalogBySource.remove(sourceId);
+    m_catalogCounts.remove(sourceId);
+    emit catalogCountsChanged();
+
+    if (m_activeSourceIds.contains(sourceId))
+        rebuildMergedCatalog();
+}
+
+void CoreController::prefetchCatalogCounts()
+{
+    m_catalogPrefetchQueue.clear();
+
+    for (const auto& source : m_sources.plugins()) {
+        if (!source.enabled)
+            continue;
+        if (m_catalogBySource.contains(source.id))
+            continue;
+
+        if (m_pluginHost && m_pluginHost->hasPlugin(source.id))
+            m_catalogPrefetchQueue.append(source.id);
+        else if (!source.catalogUrl.trimmed().isEmpty())
+            m_catalogPrefetchQueue.append(QStringLiteral("url:%1").arg(source.id));
+    }
+
+    startNextCatalogPrefetch();
+}
+
+void CoreController::prefetchPluginCatalogCount(const QString& sourceId)
+{
+    ISourcePlugin* plugin = m_pluginHost ? m_pluginHost->plugin(sourceId) : nullptr;
+    if (!plugin) {
+        startNextCatalogPrefetch();
+        return;
+    }
+
+    auto* watcher = new QFutureWatcher<QVector<CatalogEntry>>(this);
+    connect(watcher, &QFutureWatcher<QVector<CatalogEntry>>::finished, this,
+            [this, watcher, sourceId]() {
+                const QVector<CatalogEntry> entries = watcher->result();
+                watcher->deleteLater();
+
+                if (!entries.isEmpty()) {
+                    m_catalogBySource.insert(sourceId, entries);
+                    m_catalogCounts.insert(sourceId, entries.size());
+                    emit catalogCountsChanged();
+                }
+
+                startNextCatalogPrefetch();
+            });
+
+    ISourcePlugin* pluginRef = plugin;
+    watcher->setFuture(QtConcurrent::run([pluginRef]() { return pluginRef->catalog(); }));
+}
+
+void CoreController::startNextCatalogPrefetch()
+{
+    if (m_catalogPrefetchQueue.isEmpty())
+        return;
+
+    const QString item = m_catalogPrefetchQueue.takeFirst();
+
+    if (item.startsWith(QStringLiteral("url:"))) {
+        const QString sourceId = item.mid(4);
+        const QString url = m_sources.catalogUrlFor(sourceId);
+        if (url.isEmpty()) {
+            startNextCatalogPrefetch();
+            return;
+        }
+
+        m_catalogCounts.insert(sourceId, -1);
+        emit catalogCountsChanged();
+        m_catalogProbeLoader->loadFeed(QUrl(url), QStringLiteral("count:%1").arg(sourceId));
+        return;
+    }
+
+    prefetchPluginCatalogCount(item);
+}
+
+void CoreController::validateHydraCatalogUrl(const QString& requestId, const QString& url)
+{
+    const QString trimmed = url.trimmed();
+    if (requestId.isEmpty() || trimmed.isEmpty()) {
+        emit hydraCatalogUrlValidated(requestId, false, 0,
+                                      QStringLiteral("Укажите URL каталога"));
+        return;
+    }
+
+    const QUrl parsed(trimmed);
+    if (!parsed.isValid() || !parsed.scheme().startsWith(QStringLiteral("http"),
+                                                         Qt::CaseInsensitive)) {
+        emit hydraCatalogUrlValidated(requestId, false, 0,
+                                      QStringLiteral("Некорректный URL — нужен http или https"));
+        return;
+    }
+
+    m_catalogValidateLoader->loadFeed(parsed, QStringLiteral("validate:%1").arg(requestId));
 }
 
 void CoreController::installCatalogEntry(const QString& entryId, const QString& libraryId,
@@ -1748,42 +2390,41 @@ void CoreController::checkUpdates()
         return;
     }
 
-    QHash<QString, CatalogEntry> remoteById;
-    for (const auto& entry : m_catalogCache)
-        remoteById.insert(entry.id, entry);
+    recalculateLibraryUpdates(true);
+}
 
-    QVector<LibraryGame> games = m_libraryStore.games();
-    int updates = 0;
-    for (auto& game : games) {
-        const CatalogEntry remote = remoteById.value(game.id);
-        bool hasUpdate = false;
+void CoreController::verifyEntryFiles(const QString& entryId)
+{
+    const LibraryGame* game = m_libraryStore.gameById(entryId);
+    const QString title = game ? game->title : entryId;
+    const QString error = verifyEntryFilesMessage(entryId);
+    if (error.isEmpty())
+        showNotice(QStringLiteral("Файлы в порядке: %1").arg(title));
+    else
+        showNotice(QStringLiteral("%1: %2").arg(title, error));
+}
 
-        if (!remote.id.isEmpty()
-            && isRemoteUploadDateNewer(remote.uploadDate, game.uploadDate)) {
-            hasUpdate = true;
-        }
-
-        for (auto& component : game.components) {
-            for (const auto& remoteAddon : remote.addons) {
-                if (remoteAddon.id != component.id)
-                    continue;
-                // Uninstalled addons are available downloads, not "updates".
-                if (component.installed
-                    && isRemoteUploadDateNewer(remoteAddon.uploadDate, component.uploadDate)) {
-                    hasUpdate = true;
-                }
-            }
-        }
-
-        game.hasUpdate = hasUpdate;
-        if (hasUpdate)
-            ++updates;
+void CoreController::verifyAllPortableGames()
+{
+    int checked = 0;
+    int failed = 0;
+    for (const LibraryGame& game : m_libraryStore.games()) {
+        if (game.installPath.isEmpty() || game.installKind != InstallKind::PortableArchive)
+            continue;
+        ++checked;
+        if (!verifyEntryFilesMessage(game.id).isEmpty())
+            ++failed;
     }
 
-    m_libraryStore.setGames(games);
-    syncLibraryFromStore();
-    if (updates > 0)
-        showNotice(QStringLiteral("Доступно обновлений: %1").arg(updates));
+    if (checked == 0) {
+        showNotice(QStringLiteral("Нет установленных portable-игр для проверки"));
+        return;
+    }
+
+    if (failed == 0)
+        showNotice(QStringLiteral("Проверено portable-игр: %1 — всё в порядке").arg(checked));
+    else
+        showNotice(QStringLiteral("Проверено: %1, проблем: %2").arg(checked).arg(failed));
 }
 
 void CoreController::cancelJob(const QString& jobId)
@@ -1832,14 +2473,39 @@ void CoreController::retryInstall(const QString& jobId)
         showNotice(QStringLiteral("Установка доступна только для завершённых загрузок"));
         return;
     }
+
     if (!job->parentEntryId.isEmpty()) {
-        showNotice(QStringLiteral("Дополнения устанавливаются вместе с игрой"));
+        installDownloadedCatalogAddon(job->parentEntryId, job->entryId);
         return;
     }
+
     if (!gameNeedsInstall(job->entryId)) {
-        showNotice(QStringLiteral("Игра уже установлена"));
+        for (const JobEntry& addonJob : m_jobStore.jobs()) {
+            if (addonJob.parentEntryId != job->entryId)
+                continue;
+            if (isCatalogAddonInstalled(job->entryId, addonJob.entryId))
+                continue;
+            if (resolveAddonArtifactPath(job->entryId, addonJob.entryId).isEmpty())
+                continue;
+            installDownloadedCatalogAddon(job->entryId, addonJob.entryId);
+            return;
+        }
+
+        const CatalogEntry* parent = findCatalogEntry(job->entryId);
+        if (parent) {
+            for (const auto& addon : parent->addons) {
+                if (isCatalogAddonInstalled(job->entryId, addon.id))
+                    continue;
+                if (!resolveAddonArtifactPath(job->entryId, addon.id).isEmpty()) {
+                    installDownloadedCatalogAddon(job->entryId, addon.id);
+                    return;
+                }
+            }
+        }
+        showNotice(QStringLiteral("Файл дополнения не найден"));
         return;
     }
+
     if (job->savePath.isEmpty() || !QDir(job->savePath).exists()) {
         showNotice(QStringLiteral("Файлы загрузки не найдены"));
         return;
@@ -1856,6 +2522,52 @@ void CoreController::retryInstall(const QString& jobId)
     }
 
     startPluginInstall(*entry, job->sourceId, job->savePath, job->kind, job->libraryId, job->id);
+}
+
+bool CoreController::canRetryJobInstall(const QString& jobId) const
+{
+    const JobEntry* job = m_jobStore.jobById(jobId);
+    if (!job || job->status != QStringLiteral("completed"))
+        return false;
+
+    if (isJobInstallFailed(job->detail)) {
+        if (!job->parentEntryId.isEmpty()) {
+            if (isCatalogAddonInstalled(job->parentEntryId, job->entryId))
+                return false;
+            return !resolveAddonArtifactPath(job->parentEntryId, job->entryId).isEmpty();
+        }
+        if (gameNeedsInstall(job->entryId))
+            return !job->savePath.isEmpty() && QDir(job->savePath).exists();
+        for (const JobEntry& addonJob : m_jobStore.jobs()) {
+            if (addonJob.parentEntryId != job->entryId)
+                continue;
+            if (isCatalogAddonInstalled(job->entryId, addonJob.entryId))
+                continue;
+            if (!resolveAddonArtifactPath(job->entryId, addonJob.entryId).isEmpty())
+                return true;
+        }
+        return false;
+    }
+
+    if (!job->parentEntryId.isEmpty()) {
+        if (isCatalogAddonInstalled(job->parentEntryId, job->entryId))
+            return false;
+        return !resolveAddonArtifactPath(job->parentEntryId, job->entryId).isEmpty();
+    }
+
+    if (gameNeedsInstall(job->entryId))
+        return !job->savePath.isEmpty() && QDir(job->savePath).exists();
+
+    const CatalogEntry* parent = findCatalogEntry(job->entryId);
+    if (!parent)
+        return false;
+    for (const auto& addon : parent->addons) {
+        if (isCatalogAddonInstalled(job->entryId, addon.id))
+            continue;
+        if (!resolveAddonArtifactPath(job->entryId, addon.id).isEmpty())
+            return true;
+    }
+    return false;
 }
 
 void CoreController::clearFinishedJobs()
@@ -1904,13 +2616,13 @@ QVariantList CoreController::pluginEntries() const
     return entries;
 }
 
-bool CoreController::installPluginZip(const QUrl& fileUrl)
+bool CoreController::installPluginArach(const QUrl& fileUrl)
 {
     if (!m_pluginHost)
         return false;
 
     const QString path = fileUrl.isLocalFile() ? fileUrl.toLocalFile() : fileUrl.toString();
-    const bool ok = m_pluginHost->installFromZip(path);
+    const bool ok = m_pluginHost->installFromArach(path);
     m_lastPluginError = ok ? QString() : m_pluginHost->lastError();
     emit lastPluginErrorChanged();
     if (ok) {
@@ -1922,7 +2634,7 @@ bool CoreController::installPluginZip(const QUrl& fileUrl)
     return ok;
 }
 
-void CoreController::browsePluginZip()
+void CoreController::browsePluginArach()
 {
 #if defined(Q_OS_WIN)
     QString path;
@@ -1933,10 +2645,9 @@ void CoreController::browsePluginZip()
     if (SUCCEEDED(CoCreateInstance(CLSID_FileOpenDialog, nullptr, CLSCTX_ALL,
                                    IID_PPV_ARGS(&dialog)))) {
         const COMDLG_FILTERSPEC filters[] = {
-            {L"Пакет плагина (*.zip)", L"*.zip"},
-            {L"Все файлы", L"*.*"},
+            {L"Пакет плагина (*.arach)", L"*.arach"},
         };
-        dialog->SetFileTypes(2, filters);
+        dialog->SetFileTypes(1, filters);
         dialog->SetTitle(L"Установить плагин");
         if (SUCCEEDED(dialog->Show(nullptr))) {
             IShellItem* item = nullptr;
@@ -1956,7 +2667,7 @@ void CoreController::browsePluginZip()
         CoUninitialize();
 
     if (!path.isEmpty())
-        installPluginZip(QUrl::fromLocalFile(path));
+        installPluginArach(QUrl::fromLocalFile(path));
 #else
     showNotice(QStringLiteral("Выбор файла пока доступен только в Windows"));
 #endif

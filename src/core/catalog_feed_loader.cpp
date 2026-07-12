@@ -66,8 +66,16 @@ void CatalogFeedLoader::handleFinished(QNetworkReply* reply)
         return;
     }
 
-    const QVector<CatalogEntry> entries = parseCatalogFeed(reply->readAll(), sourceId);
+    const QByteArray payload = reply->readAll();
     reply->deleteLater();
+
+    const QString validationError = catalogFeedValidationError(payload);
+    if (!validationError.isEmpty()) {
+        emit feedFailed(sourceId, validationError);
+        return;
+    }
+
+    const QVector<CatalogEntry> entries = parseCatalogFeed(payload, sourceId);
 
     if (entries.isEmpty()) {
         emit feedFailed(sourceId, QStringLiteral("Каталог пуст или формат не распознан"));

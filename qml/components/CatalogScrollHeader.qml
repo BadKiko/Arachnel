@@ -8,10 +8,9 @@ Item {
     id: root
 
     required property int contentWidth
-    required property string selectedSourceId
+    required property bool hasSelection
     required property bool listViewMode
 
-    signal sourceSelected(string pluginId)
     signal sortRequested(var anchor)
     signal viewModeChangeRequested(int mode)
     signal refreshRequested()
@@ -24,47 +23,9 @@ Item {
         width: root.contentWidth
         spacing: MD.Token.spacing.small
 
-        ColumnLayout {
-            Layout.fillWidth: true
-            Layout.topMargin: MD.Token.spacing.medium
-            spacing: 4
-
-            MD.Label {
-                text: qsTr("Каталог")
-                typescale: MD.Token.typescale.headline_medium
-            }
-
-            MD.Label {
-                Layout.fillWidth: true
-                text: qsTr("Источник определяет способ установки — у каждого плагина свой пайплайн.")
-                wrapMode: Text.WordWrap
-                color: MD.Token.color.on_surface_variant
-                typescale: MD.Token.typescale.body_medium
-            }
-        }
-
-        Flow {
-            Layout.fillWidth: true
-            spacing: MD.Token.spacing.small
-
-            Repeater {
-                model: Core.sources
-
-                MD.FilterChip {
-                    required property string pluginId
-                    required property string name
-                    required property bool sourceEnabled
-
-                    visible: sourceEnabled
-                    text: name
-                    checked: root.selectedSourceId === pluginId
-                    onClicked: root.sourceSelected(pluginId)
-                }
-            }
-        }
-
         RowLayout {
             Layout.fillWidth: true
+            Layout.topMargin: MD.Token.spacing.small
             spacing: MD.Token.spacing.small
 
             MD.Label {
@@ -100,7 +61,7 @@ Item {
             MD.IconButton {
                 mdState.type: MD.Enum.IBtStandard
                 icon.name: MD.Token.icon.refresh
-                enabled: !Core.catalogLoading && root.selectedSourceId.length > 0
+                enabled: !Core.catalogLoading && root.hasSelection
                 onClicked: root.refreshRequested()
             }
         }

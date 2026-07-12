@@ -17,7 +17,10 @@ Item {
     readonly property int pageMargin: MD.Token.spacing.large
     readonly property int cardRadius: MD.Token.shape.corner.extra_large
     readonly property bool noSources: Core.sources.enabledCount === 0
-    readonly property bool catalogEmpty: !Core.catalogLoading && Core.catalog.count === 0
+    readonly property bool noSourceSelected: Core.activeCatalogSourceIds.length === 0
+    readonly property bool catalogEmpty: !Core.catalogLoading
+                                         && (root.noSourceSelected
+                                             || (!root.noSourceSelected && Core.catalog.count === 0))
     readonly property bool listViewMode: catalogPrefs.viewMode === 1
 
     readonly property int compactRevealStart: 72
@@ -39,7 +42,7 @@ Item {
         { mode: 3, label: qsTr("По названию Я–А") }
     ]
 
-    property string selectedSourceId: Core.sources.firstEnabledId
+    property string searchQuery: ""
 
     signal openGame(string entryId)
     signal openSettings()
@@ -60,15 +63,7 @@ Item {
     }
 
     function ensureValidSource() {
-        if (Core.sources.isSourceEnabled(root.selectedSourceId))
-            return
-        const first = Core.sources.firstEnabledId
-        if (!first.length) {
-            root.selectedSourceId = ""
-            return
-        }
-        root.selectedSourceId = first
-        Core.searchCatalog(first, "")
+        Core.pruneDisabledCatalogSources()
     }
 
     function openSortMenu(anchor) {
@@ -83,16 +78,26 @@ Item {
         list.contentY = 0
     }
 
-    function onSourceChipClicked(pluginId) {
-        root.selectedSourceId = pluginId
-        Core.searchCatalog(pluginId, "")
+    function applyCatalogSearch(query) {
+        if (!Core.activeCatalogSourceIds.length)
+            return
+        root.searchQuery = query
+        Core.applyCatalogSearch(query)
         root.resetScroll()
     }
 
     Component.onCompleted: {
         Core.catalog.sortMode = catalogPrefs.sortMode
-        if (selectedSourceId.length)
-            Core.searchCatalog(selectedSourceId, "")
+        Core.prefetchCatalogCounts()
+    }
+
+    Connections {
+        target: Core
+        function onActiveCatalogSourceIdsChanged() {
+            root.searchQuery = ""
+            catalogSearch.searchText = ""
+            root.resetScroll()
+        }
     }
 
     Connections {
@@ -161,9 +166,103 @@ Item {
         anchors.fill: parent
         visible: !root.noSources
 
+        Item {
+            id: catalogStickyTop
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.leftMargin: pageMargin
+            anchors.rightMargin: pageMargin
+            anchors.topMargin: MD.Token.spacing.medium
+            height: catalogStickyCol.implicitHeight + MD.Token.spacing.small
+            z: 4
+
+            Rectangle {
+                anchors.fill: parent
+                anchors.topMargin: -MD.Token.spacing.medium
+                anchors.leftMargin: -pageMargin
+                anchors.rightMargin: -pageMargin
+                color: MD.Token.color.surface
+            }
+
+            ColumnLayout {
+                id: catalogStickyCol
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                spacing: MD.Token.spacing.small
+
+                MD.SearchBar {
+                    id: catalogSearch
+                    Layout.fillWidth: true
+                    Layout.maximumWidth: 560
+                    Layout.alignment: Qt.AlignLeft
+                    onAccepted: root.applyCatalogSearch(searchText.trim())
+                    onSearchTextChanged: {
+                        if (!searchText.length)
+                            root.applyCatalogSearch("")
+                    }
+
+                    Connections {
+                        target: root
+                        function onSearchQueryChanged() {
+                            if (catalogSearch.searchText !== root.searchQuery)
+                                catalogSearch.searchText = root.searchQuery
+                        }
+                    }
+                }
+            }
+        }
+
+        Item {
+            id: catalogIntro
+            anchors.top: catalogStickyTop.bottom
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.leftMargin: pageMargin
+            anchors.rightMargin: pageMargin
+            anchors.topMargin: MD.Token.spacing.small
+            height: catalogIntroCol.implicitHeight
+            z: 3
+
+            ColumnLayout {
+                id: catalogIntroCol
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                spacing: MD.Token.spacing.small
+
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: 4
+
+                    MD.Label {
+                        text: qsTr("Каталог")
+                        typescale: MD.Token.typescale.headline_medium
+                    }
+
+                    MD.Label {
+                        Layout.fillWidth: true
+                        text: qsTr("Источник определяет способ установки — у каждого плагина свой пайплайн.")
+                        wrapMode: Text.WordWrap
+                        color: MD.Token.color.on_surface_variant
+                        typescale: MD.Token.typescale.body_medium
+                    }
+                }
+
+                CatalogSourceChips {
+                    Layout.fillWidth: true
+                }
+            }
+        }
+
         GridView {
             id: grid
-            anchors.fill: parent
+            anchors.top: catalogIntro.bottom
+            anchors.topMargin: MD.Token.spacing.small
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
             anchors.leftMargin: pageMargin
             anchors.rightMargin: pageMargin
             anchors.bottomMargin: MD.Token.spacing.medium
@@ -179,12 +278,11 @@ Item {
 
             header: CatalogScrollHeader {
                 contentWidth: grid.width
-                selectedSourceId: root.selectedSourceId
+                hasSelection: Core.activeCatalogSourceIds.length > 0
                 listViewMode: root.listViewMode
-                onSourceSelected: root.onSourceChipClicked
                 onSortRequested: root.openSortMenu
                 onViewModeChangeRequested: function (mode) { catalogPrefs.viewMode = mode }
-                onRefreshRequested: Core.refreshCatalog(root.selectedSourceId)
+                onRefreshRequested: Core.refreshSelectedCatalogs()
             }
 
             ScrollBar.vertical: MD.ScrollBar {
@@ -200,7 +298,11 @@ Item {
 
         ListView {
             id: list
-            anchors.fill: parent
+            anchors.top: catalogIntro.bottom
+            anchors.topMargin: MD.Token.spacing.small
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
             anchors.leftMargin: pageMargin
             anchors.rightMargin: pageMargin
             anchors.bottomMargin: MD.Token.spacing.medium
@@ -214,12 +316,11 @@ Item {
 
             header: CatalogScrollHeader {
                 contentWidth: list.width
-                selectedSourceId: root.selectedSourceId
+                hasSelection: Core.activeCatalogSourceIds.length > 0
                 listViewMode: root.listViewMode
-                onSourceSelected: root.onSourceChipClicked
                 onSortRequested: root.openSortMenu
                 onViewModeChangeRequested: function (mode) { catalogPrefs.viewMode = mode }
-                onRefreshRequested: Core.refreshCatalog(root.selectedSourceId)
+                onRefreshRequested: Core.refreshSelectedCatalogs()
             }
 
             ScrollBar.vertical: MD.ScrollBar {
@@ -236,7 +337,7 @@ Item {
 
         Rectangle {
             id: compactBar
-            anchors.top: parent.top
+            anchors.top: catalogStickyTop.bottom
             anchors.left: parent.left
             anchors.right: parent.right
             height: compactRow.implicitHeight + MD.Token.spacing.small * 2
@@ -308,8 +409,8 @@ Item {
                 MD.IconButton {
                     mdState.type: MD.Enum.IBtStandard
                     icon.name: MD.Token.icon.refresh
-                    enabled: !Core.catalogLoading && root.selectedSourceId.length > 0
-                    onClicked: Core.refreshCatalog(root.selectedSourceId)
+                    enabled: !Core.catalogLoading && Core.activeCatalogSourceIds.length > 0
+                    onClicked: Core.refreshSelectedCatalogs()
                 }
             }
         }
@@ -359,23 +460,28 @@ Item {
 
                     MD.Label {
                         Layout.fillWidth: true
-                        text: qsTr("Ничего не найдено")
+                        text: root.noSourceSelected
+                              ? qsTr("Выберите источники")
+                              : qsTr("Ничего не найдено")
                         typescale: MD.Token.typescale.title_large
                     }
 
                     MD.Label {
                         Layout.fillWidth: true
-                        text: qsTr("Попробуйте другой запрос или обновите каталог.")
+                        text: root.noSourceSelected
+                              ? qsTr("Включите один или несколько чипов источников — или оставьте все выключенными.")
+                              : qsTr("Попробуйте другой запрос или обновите каталог.")
                         color: MD.Token.color.on_surface_variant
                         typescale: MD.Token.typescale.body_medium
                         wrapMode: Text.WordWrap
                     }
 
                     MD.Button {
+                        visible: !root.noSourceSelected
                         text: qsTr("Обновить")
                         icon.name: MD.Token.icon.refresh
                         mdState.type: MD.Enum.BtFilledTonal
-                        onClicked: Core.refreshCatalog(root.selectedSourceId)
+                        onClicked: Core.refreshCatalog(Core.activeCatalogSourceId)
                     }
                 }
             }
@@ -412,7 +518,7 @@ Item {
             MD.Label {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
-                text: qsTr("Добавьте источник в настройках — и каталог заполнится.")
+                text: qsTr("Подключите каталог Hydra в настройках — или установите плагин источника.")
                 color: MD.Token.color.on_surface_variant
                 typescale: MD.Token.typescale.body_medium
                 wrapMode: Text.WordWrap
@@ -423,7 +529,7 @@ Item {
                 spacing: MD.Token.spacing.small
 
                 MD.Button {
-                    text: qsTr("Добавить источник")
+                    text: qsTr("Добавить каталог")
                     icon.name: MD.Token.icon.add
                     mdState.type: MD.Enum.BtFilled
                     onClicked: root.addSourceRequested()

@@ -13,14 +13,18 @@ Item {
     property bool completed: false
     property bool readyToInstall: false
     property bool installFailed: false
+    property bool installing: false
     property string idleText: qsTr("Скачать торрент")
 
     readonly property bool inProgress: root.downloading || root.paused
     readonly property real fillRatio: Math.max(0, Math.min(1, root.progress / 100))
     readonly property bool showProgressFill: root.inProgress && !root.completed && !root.readyToInstall
+        && !root.installing
     readonly property real pillRadius: shell.height / 2
 
-    readonly property string actionIconName: root.installFailed
+    readonly property string actionIconName: root.installing
+        ? MD.Token.icon.install_desktop
+        : root.installFailed
         ? MD.Token.icon.refresh
         : root.readyToInstall
           ? MD.Token.icon.install_desktop
@@ -32,7 +36,9 @@ Item {
                 ? MD.Token.icon.pause
                 : MD.Token.icon.download
 
-    readonly property string actionText: root.installFailed
+    readonly property string actionText: root.installing
+        ? qsTr("Установка…")
+        : root.installFailed
         ? qsTr("Повторить установку")
         : root.readyToInstall
           ? qsTr("Установить")
@@ -44,7 +50,9 @@ Item {
                 ? qsTr("Загрузка · %1%").arg(root.progress)
                 : root.idleText
 
-    readonly property color shellColor: root.completed || root.readyToInstall
+    readonly property color shellColor: root.installing
+        ? MD.Token.color.primary_container
+        : root.completed || root.readyToInstall
         ? MD.Token.color.secondary_container
         : root.installFailed
           ? MD.Util.transparent(MD.Token.color.error, 0.18)
@@ -52,7 +60,9 @@ Item {
             ? MD.Token.color.primary_container
             : MD.Token.color.primary
 
-    readonly property color labelColor: root.installFailed
+    readonly property color labelColor: root.installing
+        ? MD.Token.color.on_primary_container
+        : root.installFailed
         ? MD.Token.color.error
         : root.completed || root.readyToInstall
           ? MD.Token.color.on_secondary_container
@@ -139,8 +149,8 @@ Item {
 
         MouseArea {
             anchors.fill: parent
-            cursorShape: Qt.PointingHandCursor
-            enabled: !root.completed
+            cursorShape: root.installing ? Qt.BusyCursor : Qt.PointingHandCursor
+            enabled: !root.completed && !root.installing
             onClicked: {
                 if (root.inProgress)
                     root.pauseToggleRequested()

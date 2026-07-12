@@ -108,6 +108,8 @@ MD.Pane {
                                 anchors.topMargin: 2
                                 visible: railEntry.modelData.navIndex === 2 && root.downloadBadge > 0
                                 text: root.downloadBadge > 9 ? "9+" : String(root.downloadBadge)
+                                backgroundColor: MD.Token.color.primary
+                                textColor: MD.Token.color.on_primary
                             }
                         }
                     }

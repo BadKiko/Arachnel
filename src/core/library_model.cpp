@@ -138,6 +138,7 @@ QVariantMap LibraryModel::toMap(const LibraryGame& game) const
         {QStringLiteral("uploadDate"), game.uploadDate},
         {QStringLiteral("downloadPath"), game.downloadPath},
         {QStringLiteral("libraryId"), game.libraryId},
+        {QStringLiteral("lastPlayedAt"), game.lastPlayedAt},
         {QStringLiteral("componentCount"), game.components.size()},
         {QStringLiteral("installedComponentCount"), installedComponentCount(game.components)},
         {QStringLiteral("installed"), true},
@@ -149,6 +150,25 @@ QVariantMap LibraryModel::gameAt(int row) const
     if (row < 0 || row >= m_games.size())
         return {};
     return toMap(m_games.at(row));
+}
+
+QVariantMap LibraryModel::mostRecentGame() const
+{
+    if (m_games.isEmpty())
+        return {};
+
+    const LibraryGame* best = &m_games.front();
+    for (const auto& game : m_games) {
+        if (game.lastPlayedAt.isEmpty())
+            continue;
+        if (best->lastPlayedAt.isEmpty() || game.lastPlayedAt > best->lastPlayedAt)
+            best = &game;
+    }
+
+    if (!best->lastPlayedAt.isEmpty())
+        return toMap(*best);
+
+    return toMap(m_games.front());
 }
 
 QVariantMap LibraryModel::gameInfo(const QString& id) const

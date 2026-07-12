@@ -228,10 +228,8 @@ void GameMetadataService::prependPending(PendingRequest request)
 
     m_pending.prepend(std::move(request));
     // Evict lowest-priority (oldest / scrolled-away) work; clear their pending UI flag.
-    while (m_pending.size() > kMaxQueueSize) {
-        const PendingRequest dropped = m_pending.takeLast();
-        emit coverReady(dropped.entryId, QString());
-    }
+    while (m_pending.size() > kMaxQueueSize)
+        m_pending.takeLast();
     requestNext();
 }
 

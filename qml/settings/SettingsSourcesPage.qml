@@ -9,6 +9,7 @@ Flickable {
     id: root
 
     property int contentMargin: MD.Token.spacing.large
+    property int countsRevision: 0
 
     signal addSourceRequested()
     signal editSourceRequested(string pluginId, string name, string catalogUrl,
@@ -20,6 +21,30 @@ Flickable {
     boundsBehavior: Flickable.StopAtBounds
     flickableDirection: Flickable.VerticalFlick
 
+    function formatGameCount(sourceId) {
+        root.countsRevision
+        const count = Core.catalogEntryCount(sourceId)
+        if (count < 0)
+            return qsTr("Игр: …")
+        return qsTr("Игр: %1").arg(count)
+    }
+
+    Component.onCompleted: Core.prefetchCatalogCounts()
+
+    Connections {
+        target: Core
+        function onCatalogCountsChanged() {
+            root.countsRevision++
+        }
+    }
+
+    Connections {
+        target: Core.sources
+        function onSourcesChanged() {
+            Core.prefetchCatalogCounts()
+        }
+    }
+
     ColumnLayout {
         id: body
         width: root.width
@@ -30,7 +55,7 @@ Flickable {
             Layout.leftMargin: contentMargin
             Layout.rightMargin: contentMargin
             Layout.topMargin: MD.Token.spacing.small
-            text: qsTr("Добавьте JSON-каталоги и включайте нужные — они появятся чипами в разделе «Каталог».")
+            text: qsTr("Подключите каталоги в формате Hydra Launcher (games.json). Удобно при переходе с Hydra — те же ссылки на игры, загрузка через торрент. Для установки и запуска нужен плагин источника.")
             wrapMode: Text.WordWrap
             color: MD.Token.color.on_surface_variant
             typescale: MD.Token.typescale.body_medium
@@ -57,13 +82,13 @@ Flickable {
 
                 MD.Label {
                     Layout.fillWidth: true
-                    text: qsTr("Пока нет источников")
+                    text: qsTr("Пока нет каталогов")
                     typescale: MD.Token.typescale.title_small
                 }
 
                 MD.Label {
                     Layout.fillWidth: true
-                    text: qsTr("Нажмите «Добавить источник» и вставьте URL каталога — например FreeTP или свой JSON.")
+                    text: qsTr("Нажмите «Добавить каталог» и вставьте URL вашего games.json — как в Hydra, или публичный фид сообщества.")
                     wrapMode: Text.WordWrap
                     color: MD.Token.color.on_surface_variant
                     typescale: MD.Token.typescale.body_medium
@@ -158,6 +183,14 @@ Flickable {
                             maximumLineCount: 1
                         }
 
+                        MD.Label {
+                            Layout.fillWidth: true
+                            visible: sourceCard.hasCatalogUrl
+                            text: root.formatGameCount(sourceCard.pluginId)
+                            color: MD.Token.color.on_surface_variant
+                            typescale: MD.Token.typescale.label_medium
+                        }
+
                         RowLayout {
                             Layout.fillWidth: true
                             spacing: MD.Token.spacing.small
@@ -205,7 +238,7 @@ Flickable {
             Layout.rightMargin: contentMargin
             Layout.bottomMargin: MD.Token.spacing.medium
             mdState.type: MD.Enum.BtFilledTonal
-            text: qsTr("Добавить JSON-источник")
+            text: qsTr("Добавить каталог Hydra")
             onClicked: root.addSourceRequested()
         }
     }

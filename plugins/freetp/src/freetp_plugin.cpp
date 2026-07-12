@@ -265,15 +265,18 @@ arachnel::core::InstallResult FreetpPlugin::installAddonFromDownload(
 
     QString error;
     const QFileInfo artifact(ctx.downloadPath);
-    if (artifact.isFile() && isInnoSetupExecutable(ctx.downloadPath)) {
-        if (installInnoOverlay(ctx.downloadPath, ctx.gameInstallPath, &error).isEmpty()) {
-            result.error = error.isEmpty() ? QStringLiteral("Ошибка установки фикса") : error;
+    if (artifact.isFile()) {
+        const QString suffix = artifact.suffix().toLower();
+        if (suffix == QStringLiteral("exe")) {
+            if (installInnoOverlay(ctx.downloadPath, ctx.gameInstallPath, &error).isEmpty()) {
+                result.error = error.isEmpty() ? QStringLiteral("Ошибка установки фикса") : error;
+                return result;
+            }
+            cleanupInnoSideEffects(ctx.gameInstallPath);
+            result.success = true;
+            result.installPath = ctx.gameInstallPath;
             return result;
         }
-        cleanupInnoSideEffects(ctx.gameInstallPath);
-        result.success = true;
-        result.installPath = ctx.gameInstallPath;
-        return result;
     }
 
     const QString contentRoot = artifact.isDir() ? findDownloadContentRoot(ctx.downloadPath)

@@ -15,33 +15,34 @@ Item {
     readonly property int cardRadius: MD.Token.shape.corner.extra_large
 
     property string selectedSourceId: Core.sources.firstEnabledId
-    property var featuredGame: Core.library.gameAt(0)
+
+    readonly property var heroGame: {
+        if (Core.gameRunning && Core.runningGameId.length)
+            return Core.library.gameInfo(Core.runningGameId)
+        return Core.library.mostRecentGame()
+    }
+
     readonly property bool featuredIsRunning: Core.gameRunning
-        && Core.runningGameId === (root.featuredGame?.gameId ?? "")
+        && Core.runningGameId === (root.heroGame?.gameId ?? "")
     readonly property bool showRunningHero: Core.gameRunning
     readonly property string heroEyebrow: showRunningHero
         ? qsTr("Сейчас играете")
         : qsTr("Недавно играли")
-    readonly property string heroTitle: showRunningHero
-        ? Core.runningGameTitle
-        : (root.featuredGame?.title ?? "")
-    readonly property string heroCoverUrl: showRunningHero
-        ? Core.runningGameCoverUrl
-        : (root.featuredGame?.coverUrl ?? "")
-    readonly property string heroGameId: showRunningHero
-        ? Core.runningGameId
-        : (root.featuredGame?.gameId ?? "")
+    readonly property string heroTitle: root.heroGame?.title ?? ""
+    readonly property string heroCoverUrl: root.heroGame?.coverUrl ?? ""
+    readonly property string heroGameId: root.heroGame?.gameId ?? ""
+    readonly property bool heroHasUpdate: !!(root.heroGame?.hasUpdate)
 
     property int jobRevision: 0
 
     readonly property var featuredJob: {
         root.jobRevision
-        if (!featuredGame || !featuredGame.gameId)
+        if (!root.heroGameId.length)
             return ({})
-        return Core.jobs.jobForEntry(featuredGame.gameId)
+        return Core.jobs.jobForEntry(root.heroGameId)
     }
-    readonly property bool featuredShowJobStatus: featuredGame && featuredGame.gameId
-        && !Core.isEntryPlayable(featuredGame.gameId)
+    readonly property bool featuredShowJobStatus: root.heroGameId.length
+        && !Core.isEntryPlayable(root.heroGameId)
         && !!(featuredJob.jobId)
     readonly property real featuredFillProgress: {
         if (!featuredShowJobStatus)
@@ -72,8 +73,7 @@ Item {
     signal addSourceRequested()
 
     Component.onCompleted: {
-        if (selectedSourceId.length)
-            Core.searchCatalog(selectedSourceId, "")
+        Core.prefetchCatalogCounts()
     }
 
     Connections {
@@ -83,8 +83,7 @@ Item {
 
     Connections {
         target: Core.library
-        function onModelReset() { root.featuredGame = Core.library.gameAt(0) }
-        function onDataChanged() { root.featuredGame = Core.library.gameAt(0) }
+        function onLibraryChanged() { /* heroGame binding refreshes */ }
     }
 
     // ── Empty library ────────────────────────────────────────────────────────
@@ -197,7 +196,7 @@ Item {
 
                         MD.Button {
                             visible: Core.sources.enabledCount === 0
-                            text: qsTr("Что такое источник?")
+                            text: qsTr("Каталоги и плагины")
                             mdState.type: MD.Enum.BtText
                             onClicked: sourceHelpDialog.open()
                         }
@@ -400,7 +399,7 @@ Item {
 
                             MD.Label {
                                 Layout.fillWidth: true
-                                text: (root.featuredGame.sourceName ?? "") + " · v" + (root.featuredGame.version ?? "")
+                                text: (root.heroGame?.sourceName ?? "") + " · v" + (root.heroGame?.version ?? "")
                                 color: MD.Token.color.on_surface_variant
                                 typescale: MD.Token.typescale.body_large
                                 elide: Text.ElideRight
@@ -458,13 +457,9 @@ Item {
                                 spacing: MD.Token.spacing.small
 
                                 MD.Button {
-                                    text: root.featuredIsRunning || (root.showRunningHero && root.heroGameId === root.featuredGame?.gameId)
-                                          ? qsTr("Запущена")
-                                          : qsTr("Играть")
-                                    mdState.type: root.featuredIsRunning
-                                                 || (root.showRunningHero && root.heroGameId === root.featuredGame?.gameId)
-                                                 ? MD.Enum.BtFilledTonal
-                                                 : MD.Enum.BtFilled
+                                    visible: !root.showRunningHero
+                                    text: qsTr("Играть")
+                                    mdState.type: MD.Enum.BtFilled
                                     enabled: !!(root.heroGameId)
                                              && Core.isEntryPlayable(root.heroGameId)
                                     onClicked: Core.launchGame(root.heroGameId)
@@ -478,9 +473,12 @@ Item {
                                 }
 
                                 MD.Button {
-                                    text: qsTr("Обновления")
-                                    mdState.type: MD.Enum.BtText
-                                    onClicked: Core.checkUpdates()
+                                    visible: root.heroHasUpdate && !root.showRunningHero
+                                    text: qsTr("Обновить")
+                                    icon.name: MD.Token.icon.update
+                                    mdState.type: MD.Enum.BtFilledTonal
+                                    enabled: !!(root.heroGameId)
+                                    onClicked: Core.updateCatalogEntry(root.heroGameId)
                                 }
                             }
                         }

@@ -24,8 +24,9 @@ Item {
     readonly property bool isRunning: Core.gameRunning && Core.runningGameId === root.gameId
     readonly property bool downloadFilesExist: Core.entryDownloadFilesExist(gameId)
     readonly property bool installFailed: (downloadJob.detail || "").indexOf("Ошибка установки") >= 0
+    readonly property bool isInstalling: downloadJob.status === "installing"
     readonly property bool readyToInstall: !root.playable
-        && (downloadJob.status === "completed" || downloadJob.status === "installing")
+        && downloadJob.status === "completed"
         && root.downloadFilesExist
         && !root.installFailed
 
@@ -244,6 +245,7 @@ Item {
                             completed: false
                             readyToInstall: root.readyToInstall
                             installFailed: root.installFailed
+                            installing: root.isInstalling
                             onActivated: {
                                 if (root.installFailed || root.readyToInstall)
                                     Core.retryInstall(root.downloadJob.jobId)
@@ -267,6 +269,15 @@ Item {
                             icon.name: MD.Token.icon.update
                             mdState.type: MD.Enum.BtFilledTonal
                             onClicked: Core.updateCatalogEntry(root.gameId)
+                        }
+
+                        MD.Button {
+                            visible: root.playable
+                                     && (root.info.installKind === 0)
+                            text: qsTr("Проверить файлы")
+                            icon.name: MD.Token.icon.fact_check
+                            mdState.type: MD.Enum.BtText
+                            onClicked: Core.verifyEntryFiles(root.gameId)
                         }
                     }
 
@@ -346,7 +357,9 @@ Item {
                                 label: qsTr("Путь установки"),
                                 value: root.playable
                                        ? (root.info.installPath || "—")
-                                       : (root.readyToInstall || root.installFailed
+                                       : (root.isInstalling
+                                              ? qsTr("Установка…")
+                                              : root.readyToInstall || root.installFailed
                                               ? qsTr("Ожидает установки")
                                               : qsTr("—"))
                             },
@@ -394,20 +407,29 @@ Item {
             typescale: MD.Token.typescale.body_medium
         }
 
-        footer: MD.DialogButtonBox {
-            MD.Button {
-                mdState.type: MD.Enum.BtText
-                text: qsTr("Отмена")
-                DialogButtonBox.buttonRole: DialogButtonBox.RejectRole
-                onClicked: removeDialog.close()
-            }
-            MD.Button {
-                mdState.type: MD.Enum.BtFilled
-                text: qsTr("Удалить")
-                DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole
-                onClicked: {
-                    removeDialog.close()
-                    root.confirmRemove()
+        footer: Item {
+            implicitHeight: removeFooterRow.implicitHeight + MD.Token.spacing.medium
+
+            MD.DialogButtonBox {
+                id: removeFooterRow
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+
+                MD.Button {
+                    mdState.type: MD.Enum.BtText
+                    text: qsTr("Отмена")
+                    DialogButtonBox.buttonRole: DialogButtonBox.RejectRole
+                    onClicked: removeDialog.close()
+                }
+                MD.Button {
+                    mdState.type: MD.Enum.BtFilled
+                    text: qsTr("Удалить")
+                    DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole
+                    onClicked: {
+                        removeDialog.close()
+                        root.confirmRemove()
+                    }
                 }
             }
         }

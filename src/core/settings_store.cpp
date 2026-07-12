@@ -228,6 +228,24 @@ void SettingsStore::setMaxConcurrentDownloads(int count)
     save();
 }
 
+void SettingsStore::setAutoCheckUpdates(bool enabled)
+{
+    if (m_autoCheckUpdates == enabled)
+        return;
+    m_autoCheckUpdates = enabled;
+    emit autoCheckUpdatesChanged();
+    save();
+}
+
+void SettingsStore::setVerifyPortableFiles(bool enabled)
+{
+    if (m_verifyPortableFiles == enabled)
+        return;
+    m_verifyPortableFiles = enabled;
+    emit verifyPortableFilesChanged();
+    save();
+}
+
 void SettingsStore::load()
 {
     QFile file(settingsFilePath());
@@ -236,6 +254,8 @@ void SettingsStore::load()
         emit libraryRootChanged();
         emit downloadsRootChanged();
         emit maxConcurrentDownloadsChanged();
+        emit autoCheckUpdatesChanged();
+        emit verifyPortableFilesChanged();
         emit sourcesChanged();
         return;
     }
@@ -243,6 +263,8 @@ void SettingsStore::load()
     const QJsonObject obj = QJsonDocument::fromJson(file.readAll()).object();
     if (obj.contains(QStringLiteral("maxConcurrentDownloads")))
         m_maxConcurrentDownloads = qBound(1, obj.value(QStringLiteral("maxConcurrentDownloads")).toInt(2), 8);
+    m_autoCheckUpdates = obj.value(QStringLiteral("autoCheckUpdates")).toBool(true);
+    m_verifyPortableFiles = obj.value(QStringLiteral("verifyPortableFiles")).toBool(true);
 
     if (obj.contains(QStringLiteral("storageLibraries"))) {
         QVector<StorageLibrary> libraries;
@@ -317,6 +339,8 @@ void SettingsStore::load()
     emit libraryRootChanged();
     emit downloadsRootChanged();
     emit maxConcurrentDownloadsChanged();
+    emit autoCheckUpdatesChanged();
+    emit verifyPortableFilesChanged();
     emit sourcesChanged();
 }
 
@@ -326,6 +350,8 @@ void SettingsStore::save()
     obj.insert(QStringLiteral("libraryRoot"), m_libraryRoot);
     obj.insert(QStringLiteral("downloadsRoot"), m_downloadsRoot);
     obj.insert(QStringLiteral("maxConcurrentDownloads"), m_maxConcurrentDownloads);
+    obj.insert(QStringLiteral("autoCheckUpdates"), m_autoCheckUpdates);
+    obj.insert(QStringLiteral("verifyPortableFiles"), m_verifyPortableFiles);
 
     QJsonArray storageLibraries;
     for (const auto& library : m_storageLibraries.libraries()) {

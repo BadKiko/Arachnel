@@ -35,17 +35,22 @@ ColumnLayout {
                 {
                     id: "plugins",
                     title: qsTr("Плагины"),
-                    subtitle: qsTr("FreeTP и другие — установка из ZIP")
+                    subtitle: qsTr("FreeTP и др. — установка, запуск, дополнения (.arach)")
                 },
                 {
                     id: "sources",
-                    title: qsTr("JSON-источники"),
-                    subtitle: qsTr("Каталоги по URL без плагина")
+                    title: qsTr("Каталоги Hydra"),
+                    subtitle: qsTr("games.json по URL — переход с Hydra Launcher")
                 },
                 {
                     id: "storage",
                     title: qsTr("Хранилище"),
                     subtitle: qsTr("Папки библиотеки и загрузок")
+                },
+                {
+                    id: "updates",
+                    title: qsTr("Обновления"),
+                    subtitle: qsTr("Автопроверка и целостность portable")
                 },
                 {
                     id: "appearance",

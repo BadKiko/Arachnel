@@ -13,7 +13,7 @@ QVariantMap jobToMap(const JobEntry& job)
         {QStringLiteral("jobId"), job.id},
         {QStringLiteral("title"), job.title},
         {QStringLiteral("status"), job.status},
-        {QStringLiteral("statusLabel"), jobStatusLabel(job.status)},
+        {QStringLiteral("statusLabel"), jobDisplayStatusLabel(job.status, job.detail)},
         {QStringLiteral("progress"), job.progress},
         {QStringLiteral("kind"), static_cast<int>(job.kind)},
         {QStringLiteral("kindLabel"), jobKindLabel(job.kind)},

@@ -37,6 +37,14 @@ inline bool isJobRunning(const QString& status)
     return isJobActive(status) || isJobPaused(status);
 }
 
+inline bool isJobInstallFailed(const QString& detail)
+{
+    if (detail.contains(QStringLiteral("Ошибка установки")))
+        return true;
+    return detail.startsWith(QStringLiteral("Ошибка:"));
+}
+
 QString jobStatusLabel(const QString& status);
+QString jobDisplayStatusLabel(const QString& status, const QString& detail);
 
 } // namespace arachnel::core
