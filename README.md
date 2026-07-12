@@ -1,100 +1,58 @@
-# Arachnel
+<div align="center">
 
-Лаунчер игр с упором на **online-fix** и **плагинную систему источников**.
+<img src="resources/icons/arachnel-github.svg" width="128" alt="Arachnel logo" />
 
-По духу близок к Hydra Launcher, но вместо одной универсальной схемы загрузки/установки — **отдельный плагин на каждый тип источника** (Online-Fix, FreeTP, …), потому что у них разные форматы: portable, installer, встроенный фикс, отдельный патч.
+<h1>Arachnel</h1>
 
-**Видение:** [docs/VISION.md](docs/VISION.md)  
-**Архитектура:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)  
-**Roadmap:** [docs/ROADMAP.md](docs/ROADMAP.md)  
-**Формат каталога:** [docs/CATALOG_FORMAT.md](docs/CATALOG_FORMAT.md)
+<p>
+  <a href="README.md"><img src="https://img.shields.io/badge/README-English-8E8E93?style=for-the-badge&labelColor=161618" alt="English README"></a>
+  <a href="README.ru.md"><img src="https://img.shields.io/badge/README-Русский-8E8E93?style=for-the-badge&labelColor=161618" alt="Russian README"></a>
+</p>
 
-## Что уже работает
+<p>
+  <a href="https://hosted.weblate.org/engage/arachnel/">
+    <img src="https://hosted.weblate.org/widget/arachnel/application/svg-badge.svg" alt="Translation status">
+  </a>
+</p>
 
-- UI: библиотека, каталог (несколько JSON-источников), загрузки, детали игры, настройки
-- Torrent-загрузка по magnet из каталога (libtorrent)
-- Персистентность: настройки, библиотека, задачи
-- Обложки и описания через Steam API
-- Проверка обновлений по `uploadDate`
+<br>
 
-**Пока нет:** установка после загрузки, запуск игры, плагины в `plugins/`.
+<img src="docs/readme-carousel.svg" width="100%" alt="Arachnel UI previews">
 
-## Зависимости
+</div>
 
-- Qt 6.8+ (Core, Gui, Network, Qml, Quick, ShaderTools)
-- CMake 3.20+, Ninja
-- libtorrent-rasterbar (системный пакет или сборка из исходников — см. `cmake/ArachnelLibtorrent.cmake`)
-- git-lfs (шрифты QmlMaterial)
+<br>
 
-### Linux
+## About
 
-```bash
-sudo apt install build-essential cmake pkg-config git-lfs \
-  libtorrent-rasterbar-dev qt6-base-dev qt6-declarative-dev qt6-tools-dev
-```
+**Arachnel** is a desktop game launcher inspired by Hydra, built around **plugin-based sources** instead of one universal install pipeline.
 
-### Windows
+Each source (FreeTP, Online-Fix, …) can define its own catalog, download, install, and launch flow — portable archives, installers, bundled fixes, or separate patches.
 
-Qt 6.x с MinGW (`D:\Qt\6.11.1\mingw_64` или аналог), CMake, Ninja. libtorrent и Boost headers подтягиваются при configure.
+**Already in place**
 
-## Запуск
+- Material 3 UI: library, multi-source catalog, downloads, game details, settings
+- Torrent downloads via libtorrent (magnet links from catalog JSON)
+- Persistent settings, library, and download jobs
+- Cover art and descriptions via Steam API
+- Community translations on [Weblate](https://hosted.weblate.org/projects/arachnel/)
+
+**Docs:** [Vision](docs/VISION.md) · [Architecture](docs/ARCHITECTURE.md) · [Roadmap](docs/ROADMAP.md) · [Translating](docs/TRANSLATING.md)
+
+## Quick start
 
 ```bash
 # Linux
-./run.sh              # configure + build + run
-./run.sh --rebuild    # чистая сборка
-./run.sh --run        # только запуск
-```
+./run.sh
 
-```powershell
 # Windows
-.\run.ps1              # configure + build + run
-.\run.ps1 --rebuild    # чистая build-win/
-.\run.ps1 --run        # только запуск
+.\run.ps1
 ```
 
-Переменные окружения:
+Manual build, dependencies, and environment variables are documented in the repo scripts and `cmake/`.
 
-| Переменная | Назначение |
-|------------|------------|
-| `BUILD_TYPE` | `RelWithDebInfo` (Win по умолчанию), `Debug` |
-| `CMAKE_PREFIX_PATH` | Путь к Qt kit |
-| `ARACHNEL_FAST_BUILD=0` | Включить QML cachegen |
-| `ARACHNEL_LIBTORRENT_SHARED=0` | Статическая libtorrent (Win) |
+## Contact
 
-## Структура
+**kirill.kif234@gmail.com** — only for important matters.
 
-```
-src/core/            C++ ядро (stores, torrent, каталог, фасад Core)
-qml/
-  Main.qml           точка входа
-  app/               LibraryPage, CatalogPage, DownloadsPage, …
-  settings/          настройки (bottom sheet)
-  components/        карточки, title bar, rail
-  nav/               PageNavigator
-  theme/             Material 3
-cmake/               libtorrent, патч QmlMaterial
-plugins/             плагины источников (целевое; пока пусто)
-docs/                видение, архитектура, roadmap
-run.sh / run.ps1     dev-лаунчеры
-```
-
-### Куда добавлять новое
-
-| Задача | Куда |
-|--------|------|
-| Новая страница | `qml/app/<Name>Page.qml` → `AppWindow.qml` |
-| Настройки | `qml/settings/` |
-| Логика ядра | `src/core/` |
-| Плагин источника | `plugins/<source-id>/` |
-| C++ в QML | `main.cpp` + `core_controller` |
-
-## Сборка вручную
-
-```bash
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
-cmake --build build --target arachnel_app
-./build/arachnel_app
-```
-
-На Windows каталог сборки по умолчанию — `build-win/` (см. `run.ps1`).
+Everything else (bugs, ideas, questions): please use [GitHub Issues](https://github.com/BadKiko/Arachnel/issues).

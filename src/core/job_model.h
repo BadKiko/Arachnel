@@ -86,6 +86,8 @@ public:
     void removeJob(const QString& jobId);
     int indexOfJob(const QString& jobId) const;
 
+    Q_INVOKABLE void refreshLocalizedText();
+
 signals:
     void countChanged();
     void jobsChanged();

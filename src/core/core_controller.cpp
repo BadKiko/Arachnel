@@ -360,7 +360,7 @@ void CoreController::startPluginInstall(const CatalogEntry& entry, const QString
                                         const QString& libraryId, const QString& jobId)
 {
     if (m_installingEntries.contains(entry.id)) {
-        showNotice(QStringLiteral("Установка %1 уже выполняется").arg(entry.title));
+        showNotice(tr("Installation of %1 is already in progress").arg(entry.title));
         return;
     }
 
@@ -392,7 +392,7 @@ void CoreController::startPluginInstall(const CatalogEntry& entry, const QString
             syncInstallSessionPhase(entry.id);
         else
             m_jobOrchestrator->setJobPhase(jobId, QStringLiteral("installing"),
-                                           QStringLiteral("Установка…"));
+                                           QStringLiteral("Installing…"));
     }
 
     m_pluginHost->runInstallAsync(plugin, ctx, [this, entry, sourceId, savePath, kind, libId, jobId,
@@ -402,13 +402,13 @@ void CoreController::startPluginInstall(const CatalogEntry& entry, const QString
         if (!result.success) {
             const QString detail =
                 result.error.isEmpty()
-                    ? QStringLiteral("Ошибка установки")
-                    : QStringLiteral("Ошибка установки: %1").arg(result.error);
+                    ? QStringLiteral("Install failed")
+                    : QStringLiteral("Install failed: %1").arg(result.error);
             if (!jobId.isEmpty())
                 m_jobOrchestrator->setJobPhase(jobId, QStringLiteral("completed"), detail);
             m_installSessions.remove(entry.id);
             m_installSelectedAddons.remove(entry.id);
-            showNotice(QStringLiteral("Ошибка установки %1: %2")
+            showNotice(tr("Install failed for %1: %2")
                               .arg(entry.title, result.error));
             return;
         }
@@ -461,13 +461,13 @@ void CoreController::startPluginInstall(const CatalogEntry& entry, const QString
 
             if (!jobId.isEmpty())
                 m_jobOrchestrator->setJobPhase(jobId, QStringLiteral("completed"),
-                                               QStringLiteral("Установлено"));
+                                               QStringLiteral("Installed"));
         }
 
         if (kind == JobKind::Update)
-            showNotice(QStringLiteral("Обновление установлено: %1").arg(entry.title));
+            showNotice(tr("Update installed: %1").arg(entry.title));
         else
-            showNotice(QStringLiteral("Установлено: %1").arg(entry.title));
+            showNotice(tr("Installed: %1").arg(entry.title));
     });
 }
 
@@ -493,7 +493,7 @@ void CoreController::syncInstallSessionPhase(const QString& entryId)
     if (!session || session->gameJobId.isEmpty())
         return;
 
-    const QString detail = QStringLiteral("Установка (%1/%2)")
+    const QString detail = QStringLiteral("Installing (%1/%2)")
                                .arg(qMax(1, session->installStep))
                                .arg(qMax(1, session->installTotal));
     m_jobOrchestrator->setJobPhase(session->gameJobId, QStringLiteral("installing"), detail);
@@ -548,7 +548,7 @@ void CoreController::advanceInstallSession(const QString& entryId)
     }
 
     m_jobOrchestrator->setJobPhase(session.gameJobId, QStringLiteral("completed"),
-                                   QStringLiteral("Установлено"));
+                                   QStringLiteral("Installed"));
     m_installSessions.remove(entryId);
     m_installSelectedAddons.remove(entryId);
 }
@@ -562,7 +562,7 @@ void CoreController::startPluginAddonInstall(const CatalogEntry& parent,
 {
     const QString installKey = parent.id + QLatin1Char(':') + addon.id;
     if (m_installingAddons.contains(installKey)) {
-        showNotice(QStringLiteral("Установка дополнения уже выполняется"));
+        showNotice(tr("Add-on installation is already in progress"));
         return;
     }
 
@@ -584,10 +584,10 @@ void CoreController::startPluginAddonInstall(const CatalogEntry& parent,
     const QString addonJobId = addonJobMap.value(QStringLiteral("jobId")).toString();
     if (!addonJobId.isEmpty()) {
         m_jobOrchestrator->setJobPhase(addonJobId, QStringLiteral("installing"),
-                                       QStringLiteral("Установка дополнения…"));
+                                       QStringLiteral("Installing add-on…"));
     } else if (!progressJobId.isEmpty() && !m_installSessions.contains(parent.id)) {
         m_jobOrchestrator->setJobPhase(progressJobId, QStringLiteral("installing"),
-                                       QStringLiteral("Установка дополнения…"));
+                                       QStringLiteral("Installing add-on…"));
     }
     if (m_installSessions.contains(parent.id))
         syncInstallSessionPhase(parent.id);
@@ -608,8 +608,8 @@ void CoreController::startPluginAddonInstall(const CatalogEntry& parent,
                                              if (!result.success) {
                                                  const QString detail =
                                                      result.error.isEmpty()
-                                                         ? QStringLiteral("Ошибка установки")
-                                                         : QStringLiteral("Ошибка установки: %1")
+                                                         ? QStringLiteral("Install failed")
+                                                         : QStringLiteral("Install failed: %1")
                                                                .arg(result.error);
 
                                                  const QVariantMap addonJobMap =
@@ -628,8 +628,7 @@ void CoreController::startPluginAddonInstall(const CatalogEntry& parent,
                                                          QStringLiteral("completed"), detail);
                                                  m_installSessions.remove(parent.id);
                                                  m_installSelectedAddons.remove(parent.id);
-                                                 showNotice(QStringLiteral(
-                                                     "Ошибка установки дополнения %1: %2")
+                                                 showNotice(tr("Add-on install failed for %1: %2")
                                                                    .arg(addon.title, result.error));
                                                  if (done)
                                                      done(false);
@@ -648,7 +647,7 @@ void CoreController::startPluginAddonInstall(const CatalogEntry& parent,
                                                  m_jobOrchestrator->setJobPhase(
                                                      successAddonJobId,
                                                      QStringLiteral("completed"),
-                                                     QStringLiteral("Установлено"));
+                                                     QStringLiteral("Installed"));
 
                                              showNotice(QStringLiteral("Дополнение установлено: %1")
                                                                .arg(addon.title));
@@ -771,7 +770,11 @@ std::optional<CatalogEntry> CoreController::resolveCatalogEntry(const QString& e
     synthetic.id = entryId;
     synthetic.sourceId = sourceId;
     synthetic.title = jobHint->title;
-    if (synthetic.title.startsWith(QStringLiteral("Загрузка ")))
+    if (synthetic.title.startsWith(QStringLiteral("Downloading ")))
+        synthetic.title = synthetic.title.mid(12);
+    else if (synthetic.title.startsWith(QStringLiteral("Загрузка ")))
+        synthetic.title = synthetic.title.mid(9);
+    else if (synthetic.title.startsWith(QStringLiteral("Updating ")))
         synthetic.title = synthetic.title.mid(9);
     else if (synthetic.title.startsWith(QStringLiteral("Обновление ")))
         synthetic.title = synthetic.title.mid(11);
@@ -1030,12 +1033,12 @@ void CoreController::reconcileJobInstallState()
                 continue;
             if (isCatalogAddonInstalled(job.parentEntryId, job.entryId)) {
                 m_jobOrchestrator->setJobPhase(job.id, QStringLiteral("completed"),
-                                               QStringLiteral("Установлено"));
+                                               QStringLiteral("Installed"));
                 continue;
             }
             if (!resolveAddonArtifactPath(job.parentEntryId, job.entryId).isEmpty()) {
                 m_jobOrchestrator->setJobPhase(job.id, QStringLiteral("completed"),
-                                               QStringLiteral("Загрузка завершена"));
+                                               QStringLiteral("Download complete"));
             }
             continue;
         }
@@ -1043,9 +1046,10 @@ void CoreController::reconcileJobInstallState()
             continue;
         if (!gameNeedsInstall(job.entryId))
             continue;
-        if (job.detail == QStringLiteral("Установлено")) {
+        if (job.detail == QStringLiteral("Installed")
+            || job.detail == QStringLiteral("Установлено")) {
             m_jobOrchestrator->setJobPhase(job.id, QStringLiteral("completed"),
-                                           QStringLiteral("Требуется установка"));
+                                           QStringLiteral("Installation required"));
         }
     }
 }
@@ -2475,11 +2479,11 @@ void CoreController::retryInstall(const QString& jobId)
 
     const JobEntry* job = m_jobStore.jobById(jobId);
     if (!job) {
-        showNotice(QStringLiteral("Загрузка не найдена"));
+        showNotice(tr("Download not found"));
         return;
     }
     if (job->status != QStringLiteral("completed")) {
-        showNotice(QStringLiteral("Установка доступна только для завершённых загрузок"));
+        showNotice(tr("Installation is only available for completed downloads"));
         return;
     }
 

@@ -1,6 +1,7 @@
 #include "job_model.h"
 
 #include "job_kind.h"
+#include "job_display.h"
 #include "job_status.h"
 
 namespace arachnel::core {
@@ -11,13 +12,13 @@ QVariantMap jobToMap(const JobEntry& job)
 {
     return {
         {QStringLiteral("jobId"), job.id},
-        {QStringLiteral("title"), job.title},
+        {QStringLiteral("title"), displayJobTitle(job.title)},
         {QStringLiteral("status"), job.status},
         {QStringLiteral("statusLabel"), jobDisplayStatusLabel(job.status, job.detail)},
         {QStringLiteral("progress"), job.progress},
         {QStringLiteral("kind"), static_cast<int>(job.kind)},
         {QStringLiteral("kindLabel"), jobKindLabel(job.kind)},
-        {QStringLiteral("detail"), job.detail},
+        {QStringLiteral("detail"), displayJobDetail(job.detail)},
         {QStringLiteral("bytesDownloaded"), job.bytesDownloaded},
         {QStringLiteral("totalBytes"), job.totalBytes},
         {QStringLiteral("entryId"), job.entryId},
@@ -60,7 +61,7 @@ QVariant JobModel::data(const QModelIndex& index, int role) const
     case JobIdRole:
         return job.id;
     case TitleRole:
-        return job.title;
+        return displayJobTitle(job.title);
     case StatusRole:
         return job.status;
     case ProgressRole:
@@ -70,7 +71,7 @@ QVariant JobModel::data(const QModelIndex& index, int role) const
     case KindLabelRole:
         return jobKindLabel(job.kind);
     case DetailRole:
-        return job.detail;
+        return displayJobDetail(job.detail);
     case BytesDownloadedRole:
         return job.bytesDownloaded;
     case TotalBytesRole:
@@ -80,7 +81,7 @@ QVariant JobModel::data(const QModelIndex& index, int role) const
     case SourceIdRole:
         return job.sourceId;
     case StatusLabelRole:
-        return jobStatusLabel(job.status);
+        return jobDisplayStatusLabel(job.status, job.detail);
     case MagnetUriRole:
         return job.magnetUri;
     case SavePathRole:
@@ -266,6 +267,14 @@ int JobModel::indexOfJob(const QString& jobId) const
             return i;
     }
     return -1;
+}
+
+void JobModel::refreshLocalizedText()
+{
+    if (m_jobs.isEmpty())
+        return;
+    emit dataChanged(index(0), index(m_jobs.size() - 1));
+    emit jobsChanged();
 }
 
 QVariantList JobModel::downloadGroups() const

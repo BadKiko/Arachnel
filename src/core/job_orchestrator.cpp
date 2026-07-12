@@ -1,6 +1,7 @@
 #include "job_orchestrator.h"
 
 #include "http_download_session.h"
+#include "i18n.h"
 #include "job_status.h"
 #include "torrent_session.h"
 
@@ -157,7 +158,7 @@ QString JobOrchestrator::createJob(const QString& title, JobKind kind, const QSt
     job.kind = kind;
     job.status = QStringLiteral("starting");
     job.progress = 0;
-    job.detail = httpDownload ? QStringLiteral("Загрузка…") : QStringLiteral("Подключение…");
+    job.detail = httpDownload ? QStringLiteral("Downloading…") : QStringLiteral("Connecting…");
     job.entryId = entryId;
     job.sourceId = sourceId;
     job.magnetUri = downloadUri;
@@ -184,7 +185,7 @@ void JobOrchestrator::startTorrent(const JobEntry& job)
     if (!m_torrent->addJob(job.id, job.magnetUri, job.savePath)) {
         JobEntry failed = job;
         failed.status = QStringLiteral("failed");
-        failed.detail = QStringLiteral("Не удалось начать торрент");
+        failed.detail = QStringLiteral("Failed to start torrent");
         failed.completedAt = isoNow();
         updateJobInModel(failed);
         persistJob(failed);
@@ -198,7 +199,7 @@ void JobOrchestrator::startHttp(const JobEntry& job)
     if (!m_http->addJob(job.id, job.magnetUri, job.referer, job.savePath)) {
         JobEntry failed = job;
         failed.status = QStringLiteral("failed");
-        failed.detail = QStringLiteral("Не удалось начать HTTP-загрузку");
+        failed.detail = QStringLiteral("Failed to start HTTP download");
         failed.completedAt = isoNow();
         updateJobInModel(failed);
         persistJob(failed);
@@ -262,8 +263,8 @@ QString JobOrchestrator::startCatalogDownload(const CatalogEntry& entry, JobKind
         kind == JobKind::Update ? QStringLiteral("update") : QStringLiteral("install");
     const QString saveSubdir = QStringLiteral("%1/%2").arg(prefix, entry.id);
     const QString title = kind == JobKind::Update
-                              ? QStringLiteral("Обновление %1").arg(entry.title)
-                              : QStringLiteral("Загрузка %1").arg(entry.title);
+                              ? QStringLiteral("Updating %1").arg(entry.title)
+                              : QStringLiteral("Downloading %1").arg(entry.title);
 
     const QString libId = libraryId.isEmpty() ? m_settings->defaultLibraryId() : libraryId;
     return createJob(title, kind, entry.id, entry.sourceId, magnet, saveSubdir, entry.coverUrl,
@@ -284,7 +285,7 @@ QString JobOrchestrator::startAddonDownload(const CatalogEntry& parent,
     }
 
     const QString saveSubdir = QStringLiteral("addons/%1/%2").arg(parent.id, addon.id);
-    const QString title = QStringLiteral("Дополнение %1 — %2").arg(parent.title, addon.title);
+    const QString title = QStringLiteral("Add-on %1 — %2").arg(parent.title, addon.title);
     const QString libId = m_settings->defaultLibraryId();
 
     if (addon.delivery == ComponentDelivery::Direct) {
@@ -330,7 +331,7 @@ void JobOrchestrator::cancelJob(const QString& jobId)
     }
 
     job.status = QStringLiteral("cancelled");
-    job.detail = QStringLiteral("Отменено");
+    job.detail = QStringLiteral("Cancelled");
     job.completedAt = isoNow();
     updateJobInModel(job);
     persistJob(job);
@@ -350,11 +351,11 @@ void JobOrchestrator::toggleJobPause(const QString& jobId)
     if (job.status == QStringLiteral("paused")) {
         m_torrent->setPaused(jobId, false);
         job.status = QStringLiteral("starting");
-        job.detail = QStringLiteral("Возобновление…");
+        job.detail = QStringLiteral("Resuming…");
     } else if (isJobRunning(job.status)) {
         m_torrent->setPaused(jobId, true);
         job.status = QStringLiteral("paused");
-        job.detail = QStringLiteral("Пауза");
+        job.detail = QStringLiteral("Paused");
     } else {
         return;
     }
@@ -405,7 +406,7 @@ void JobOrchestrator::retryJob(const QString& jobId)
 
     job.status = QStringLiteral("starting");
     job.progress = 0;
-    job.detail = job.httpDownload ? QStringLiteral("Загрузка…") : QStringLiteral("Подключение…");
+    job.detail = job.httpDownload ? QStringLiteral("Downloading…") : QStringLiteral("Connecting…");
     job.bytesDownloaded = 0;
     job.totalBytes = 0;
     job.artifactPath.clear();
@@ -474,10 +475,10 @@ QString JobOrchestrator::formatEta(qint64 remainingBytes, int bytesPerSec) const
         return QStringLiteral("—");
     const qint64 seconds = remainingBytes / bytesPerSec;
     if (seconds < 60)
-        return QStringLiteral("%1 с").arg(seconds);
+        return QStringLiteral("%1 s").arg(seconds);
     if (seconds < 3600)
-        return QStringLiteral("%1 мин").arg(seconds / 60);
-    return QStringLiteral("%1 ч").arg(seconds / 3600);
+        return QStringLiteral("%1 min").arg(seconds / 60);
+    return QStringLiteral("%1 h").arg(seconds / 3600);
 }
 
 QString JobOrchestrator::buildDetail(qint64 downloaded, qint64 total, int downloadRate,
@@ -534,7 +535,7 @@ void JobOrchestrator::onTorrentFinished(const QString& jobId, const QString& sav
 
     job.status = QStringLiteral("completed");
     job.progress = 100;
-    job.detail = QStringLiteral("Загрузка завершена");
+    job.detail = QStringLiteral("Download complete");
     job.artifactPath = savePath;
     job.completedAt = isoNow();
     updateJobInModel(job);
@@ -588,7 +589,7 @@ void JobOrchestrator::onHttpFinished(const QString& jobId, const QString& filePa
 
     job.status = QStringLiteral("completed");
     job.progress = 100;
-    job.detail = QStringLiteral("Загрузка завершена");
+    job.detail = QStringLiteral("Download complete");
     job.artifactPath = filePath;
     job.completedAt = isoNow();
     updateJobInModel(job);

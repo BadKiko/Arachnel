@@ -4,6 +4,7 @@ import QtQml
 
 QtObject {
     readonly property var palette: [
+        { name: "Gray", color: "#8E8E93" },
         { name: "Unicase", color: "#984300" },
         { name: "Red", color: "#F44336" },
         { name: "Pink", color: "#E91E63" },

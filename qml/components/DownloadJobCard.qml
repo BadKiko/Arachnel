@@ -39,7 +39,9 @@ Item {
     readonly property bool isTerminal: status === "completed" || status === "failed" || status === "cancelled"
     readonly property bool canRetry: status === "failed" || status === "cancelled"
     readonly property bool canRetryInstall: root.jobId.length > 0 && Core.canRetryJobInstall(root.jobId)
-    readonly property bool installFailed: root.detail.indexOf("Ошибка установки") >= 0
+    readonly property bool installFailed: root.detail.indexOf("Install failed") >= 0
+        || root.detail.indexOf("Ошибка установки") >= 0
+        || (root.status === "completed" && root.detail.indexOf("Error") === 0)
         || (root.status === "completed" && root.detail.indexOf("Ошибка") === 0)
 
     implicitWidth: embedded ? parent ? parent.width : implicitWidth : implicitWidth
