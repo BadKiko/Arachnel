@@ -118,17 +118,6 @@ MD.ElevationRectangle {
                     fillProgress: root.gameJobActive ? (root.group.progress ?? 0) : -1
                     onOpenDetails: function (entryId) { root.openDetails(entryId) }
                 }
-
-                MouseArea {
-                    anchors.top: parent.top
-                    anchors.bottom: parent.bottom
-                    anchors.right: parent.right
-                    anchors.left: parent.left
-                    anchors.leftMargin: gameCard.coverColumnWidth + MD.Token.spacing.medium
-                    visible: root.hasAddons
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: root.toggleExpanded()
-                }
             }
 
             MD.IconButton {
@@ -151,77 +140,91 @@ MD.ElevationRectangle {
             elide: Text.ElideRight
         }
 
-        ColumnLayout {
+        Item {
             Layout.fillWidth: true
             Layout.leftMargin: 40
-            Layout.topMargin: MD.Token.spacing.small
-            visible: root.expanded && root.hasAddons
-            spacing: MD.Token.spacing.small
+            Layout.topMargin: root.expanded ? MD.Token.spacing.small : 0
+            Layout.preferredHeight: root.hasAddons && root.expanded ? addonsPanel.implicitHeight : 0
+            visible: root.hasAddons
+            clip: true
 
-            RowLayout {
-                Layout.fillWidth: true
+            Behavior on Layout.preferredHeight {
+                NumberAnimation {
+                    duration: MD.Token.duration.medium4
+                    easing: MD.Token.easing.standard
+                }
+            }
+
+            ColumnLayout {
+                id: addonsPanel
+                width: parent.width
                 spacing: MD.Token.spacing.small
 
-                MD.Icon {
-                    name: MD.Token.icon.extension
-                    size: 18
-                    color: MD.Token.color.primary
-                }
-
-                MD.Label {
+                RowLayout {
                     Layout.fillWidth: true
-                    text: qsTr("Дополнения")
-                    typescale: MD.Token.typescale.label_large
-                    color: MD.Token.color.on_surface_variant
-                }
+                    spacing: MD.Token.spacing.small
 
-                MD.Label {
-                    text: collapsedAddonSummary()
-                    color: MD.Token.color.on_surface_variant
-                    typescale: MD.Token.typescale.label_small
-                    elide: Text.ElideRight
-                }
-            }
-
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.preferredHeight: 1
-                color: MD.Token.color.outline_variant
-            }
-
-            Repeater {
-                model: root.addons
-
-                ColumnLayout {
-                    required property var modelData
-                    required property int index
-                    Layout.fillWidth: true
-                    spacing: 0
-
-                    DownloadJobCard {
-                        Layout.fillWidth: true
-                        embedded: true
-                        compact: true
-                        addonRow: true
-                        jobId: modelData.jobId ?? ""
-                        title: root.addonTitle(modelData)
-                        kindLabel: modelData.kindLabel ?? ""
-                        status: modelData.status ?? ""
-                        statusLabel: modelData.statusLabel ?? ""
-                        progress: modelData.progress ?? 0
-                        detail: modelData.detail ?? ""
-                        coverUrl: modelData.coverUrl ?? ""
-                        entryId: modelData.entryId ?? ""
-                        parentEntryId: modelData.parentEntryId ?? root.group.entryId ?? ""
-                        onOpenDetails: function (entryId) { root.openDetails(entryId) }
+                    MD.Icon {
+                        name: MD.Token.icon.extension
+                        size: 18
+                        color: MD.Token.color.primary
                     }
 
-                    Rectangle {
+                    MD.Label {
                         Layout.fillWidth: true
-                        Layout.topMargin: MD.Token.spacing.small
-                        Layout.preferredHeight: 1
-                        visible: index < root.addons.length - 1
-                        color: MD.Util.transparent(MD.Token.color.outline_variant, 0.65)
+                        text: qsTr("Дополнения")
+                        typescale: MD.Token.typescale.label_large
+                        color: MD.Token.color.on_surface_variant
+                    }
+
+                    MD.Label {
+                        text: collapsedAddonSummary()
+                        color: MD.Token.color.on_surface_variant
+                        typescale: MD.Token.typescale.label_small
+                        elide: Text.ElideRight
+                    }
+                }
+
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 1
+                    color: MD.Token.color.outline_variant
+                }
+
+                Repeater {
+                    model: root.addons
+
+                    ColumnLayout {
+                        required property var modelData
+                        required property int index
+                        Layout.fillWidth: true
+                        spacing: 0
+
+                        DownloadJobCard {
+                            Layout.fillWidth: true
+                            embedded: true
+                            compact: true
+                            addonRow: true
+                            jobId: modelData.jobId ?? ""
+                            title: root.addonTitle(modelData)
+                            kindLabel: modelData.kindLabel ?? ""
+                            status: modelData.status ?? ""
+                            statusLabel: modelData.statusLabel ?? ""
+                            progress: modelData.progress ?? 0
+                            detail: modelData.detail ?? ""
+                            coverUrl: modelData.coverUrl ?? ""
+                            entryId: modelData.entryId ?? ""
+                            parentEntryId: modelData.parentEntryId ?? root.group.entryId ?? ""
+                            onOpenDetails: function (entryId) { root.openDetails(entryId) }
+                        }
+
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.topMargin: MD.Token.spacing.small
+                            Layout.preferredHeight: 1
+                            visible: index < root.addons.length - 1
+                            color: MD.Util.transparent(MD.Token.color.outline_variant, 0.65)
+                        }
                     }
                 }
             }

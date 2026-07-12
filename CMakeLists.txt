@@ -90,6 +90,7 @@ qt_add_executable(arachnel_app
     src/core/library_model.cpp
     src/core/source_plugin_model.cpp
     src/core/catalog_model.cpp
+    src/core/notification_model.cpp
     src/core/job_model.cpp
     src/core/job_status.cpp
     src/core/job_store.cpp
@@ -110,6 +111,7 @@ qt_add_executable(arachnel_app
     src/core/plugin_api.cpp
     src/core/plugin_host.cpp
     src/core/process_launcher.cpp
+    src/core/process_tracker.cpp
     src/core/core_controller.cpp
 )
 

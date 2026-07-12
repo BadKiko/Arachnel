@@ -6,7 +6,7 @@
 
 namespace arachnel::core {
 
-bool ProcessLauncher::launch(const LaunchInfo& info, QString* errorOut)
+bool ProcessLauncher::launch(const LaunchInfo& info, QString* errorOut, qint64* processIdOut)
 {
     if (info.executable.isEmpty()) {
         if (errorOut)
@@ -25,9 +25,13 @@ bool ProcessLauncher::launch(const LaunchInfo& info, QString* errorOut)
     if (workDir.isEmpty())
         workDir = exeInfo.absolutePath();
 
-    const bool ok = QProcess::startDetached(info.executable, info.arguments, workDir);
+    qint64 processId = 0;
+    const bool ok =
+        QProcess::startDetached(info.executable, info.arguments, workDir, &processId);
     if (!ok && errorOut)
         *errorOut = QStringLiteral("Не удалось запустить процесс");
+    if (ok && processIdOut)
+        *processIdOut = processId;
     return ok;
 }
 
