@@ -16,6 +16,8 @@ Flickable {
         { code: "ru", label: qsTr("Russian") }
     ]
 
+    readonly property string weblateTranslateUrl: "https://hosted.weblate.org/projects/arachnel/application/"
+
     contentWidth: width
     contentHeight: body.implicitHeight
     clip: true
@@ -195,17 +197,21 @@ Flickable {
 
             MD.Label {
                 Layout.fillWidth: true
-                text: qsTr("Missing your language? Help translate Arachnel on Weblate or send a pull request with translations/*.ts files.")
+                textFormat: Text.StyledText
+                linkColor: MD.Token.color.primary
+                text: qsTr("Missing your language? Help translate Arachnel on <a href=\"%1\">Weblate</a> or send a pull request with translations/*.ts files.")
+                      .arg(root.weblateTranslateUrl)
                 wrapMode: Text.WordWrap
                 color: MD.Token.color.on_surface_variant
                 typescale: MD.Token.typescale.body_small
+                onLinkActivated: link => Core.openExternalUrl(link)
             }
 
             MD.Button {
                 text: qsTr("Help translate")
                 icon.name: MD.Token.icon.language
                 mdState.type: MD.Enum.BtText
-                onClicked: Core.openExternalUrl("https://hosted.weblate.org/")
+                onClicked: Core.openExternalUrl(root.weblateTranslateUrl)
             }
         }
     }
