@@ -14,6 +14,8 @@ QString jobStatusLabel(const QString& status)
         return QStringLiteral("Метаданные");
     if (status == QStringLiteral("downloading"))
         return QStringLiteral("Загрузка");
+    if (status == QStringLiteral("installing"))
+        return QStringLiteral("Установка");
     if (status == QStringLiteral("seeding"))
         return QStringLiteral("Раздача");
     if (status == QStringLiteral("paused"))

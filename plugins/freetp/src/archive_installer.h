@@ -14,4 +14,10 @@ bool extractArchivesInDirectory(const QString& downloadDir, const QString& destD
 QString installPortableFromDownload(const QString& downloadPath, const QString& targetPath,
                                     QString* errorOut);
 
+bool installAddonOverlay(const QString& downloadPath, const QString& gameInstallPath,
+                         QString* errorOut);
+
+bool runInstallProcess(const QString& program, const QStringList& arguments, int timeoutMs,
+                       QString* errorOut, const QString& workingDirectory = {});
+
 } // namespace freetp

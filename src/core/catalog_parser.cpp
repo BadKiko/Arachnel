@@ -33,9 +33,25 @@ CatalogComponent parseComponent(const QJsonObject& obj, const QString& sourceId,
     component.uploadDate = obj.value(QStringLiteral("uploadDate")).toString();
     component.kind = itemKindFromString(obj.value(QStringLiteral("kind")).toString());
 
+    const QString delivery = obj.value(QStringLiteral("delivery")).toString().trimmed().toLower();
+    if (delivery == QStringLiteral("direct"))
+        component.delivery = ComponentDelivery::Direct;
+    else
+        component.delivery = ComponentDelivery::Magnet;
+
+    component.referer = obj.value(QStringLiteral("referer")).toString();
+    component.getfileUrl = obj.value(QStringLiteral("getfileUrl")).toString();
+    component.optional = obj.value(QStringLiteral("optional")).toBool(false);
+
     const QJsonArray uris = obj.value(QStringLiteral("uris")).toArray();
-    for (const QJsonValue& uri : uris)
-        component.magnetUris.append(uri.toString());
+    for (const QJsonValue& uri : uris) {
+        const QString value = uri.toString();
+        if (value.startsWith(QStringLiteral("magnet:"), Qt::CaseInsensitive))
+            component.magnetUris.append(value);
+        else if (value.startsWith(QStringLiteral("http://"), Qt::CaseInsensitive)
+                 || value.startsWith(QStringLiteral("https://"), Qt::CaseInsensitive))
+            component.downloadUrl = value;
+    }
 
     if (component.id == parentId)
         component.id += QStringLiteral("-component");
@@ -58,6 +74,12 @@ CatalogEntry parseDownloadObject(const QJsonObject& obj, const QString& sourceId
     entry.itemKind = itemKindFromString(obj.value(QStringLiteral("kind")).toString());
     entry.parentEntryId = obj.value(QStringLiteral("parentTitle")).toString();
     entry.metadataPending = false;
+
+    const int rawInstallKind = obj.value(QStringLiteral("installKind")).toInt(-1);
+    if (rawInstallKind >= static_cast<int>(InstallKind::PortableArchive)
+        && rawInstallKind <= static_cast<int>(InstallKind::FixDownload)) {
+        entry.installKind = static_cast<InstallKind>(rawInstallKind);
+    }
 
     const QJsonArray uris = obj.value(QStringLiteral("uris")).toArray();
     for (const QJsonValue& uri : uris)

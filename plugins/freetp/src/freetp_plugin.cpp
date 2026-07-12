@@ -1,6 +1,7 @@
 #include "freetp_plugin.h"
 
 #include "archive_installer.h"
+#include "installer_runner.h"
 
 #include "catalog_parser.h"
 
@@ -12,13 +13,15 @@
 #include <QNetworkReply>
 #include <QEventLoop>
 
+#include <QFileInfo>
+
 namespace freetp {
 
 namespace {
 
 constexpr auto kSourceId = "freetp";
 constexpr auto kDefaultCatalogUrl =
-    "https://gitlab.com/BadKiko/freetp-hydra-link/-/raw/main/games.json?ref_type=heads";
+    "https://gitlab.com/BadKiko/freetp-hydra-link/-/raw/main/games-arachnel.json?ref_type=heads";
 
 bool isPlaceholderCatalog(const QByteArray& payload)
 {
@@ -50,7 +53,7 @@ QByteArray downloadCatalogBytes()
 
 QByteArray readCatalogBytes(const QString& rootPath, bool preferRemote)
 {
-    const QString localPath = rootPath + QStringLiteral("/games.json");
+    const QString localPath = rootPath + QStringLiteral("/games-arachnel.json");
 
     QByteArray local;
     QFile localFile(localPath);
@@ -74,6 +77,16 @@ QByteArray readCatalogBytes(const QString& rootPath, bool preferRemote)
     return remote;
 }
 
+bool shouldUseInnoInstaller(const QString& contentRoot,
+                            const arachnel::core::InstallContext& ctx)
+{
+    if (ctx.installKind == arachnel::core::InstallKind::Installer)
+        return true;
+
+    const QString setupExe = findSetupExecutable(contentRoot);
+    return !setupExe.isEmpty() && isInnoSetupExecutable(setupExe);
+}
+
 } // namespace
 
 FreetpPlugin::FreetpPlugin(QString rootPath)
@@ -93,7 +106,7 @@ QString FreetpPlugin::name() const
 
 QString FreetpPlugin::description() const
 {
-    return QStringLiteral("Торрент-каталог FreeTP — magnet-ссылки, portable-установка");
+    return QStringLiteral("Торрент-каталог FreeTP — portable и Inno Setup");
 }
 
 QString FreetpPlugin::version() const
@@ -126,8 +139,6 @@ void FreetpPlugin::ensureCatalogLoaded() const
         return;
 
     m_catalog = arachnel::core::parseCatalogFeed(payload, id());
-    for (auto& entry : m_catalog)
-        entry.installKind = arachnel::core::InstallKind::PortableArchive;
 }
 
 QVector<arachnel::core::CatalogEntry> FreetpPlugin::catalog() const
@@ -163,6 +174,36 @@ std::optional<arachnel::core::CatalogEntry> FreetpPlugin::entryById(
     return std::nullopt;
 }
 
+arachnel::core::InstallKind FreetpPlugin::detectInstallKindFromFileNames(
+    const QStringList& fileNames) const
+{
+    bool hasSetup = false;
+    bool hasFtpChunk = false;
+    for (const QString& path : fileNames) {
+        const QString fileName = QFileInfo(path).fileName().toLower();
+        if (fileName == QStringLiteral("setup.exe"))
+            hasSetup = true;
+        if (fileName.endsWith(QStringLiteral(".ftp")))
+            hasFtpChunk = true;
+    }
+
+    if (hasSetup || hasFtpChunk)
+        return arachnel::core::InstallKind::Installer;
+    return arachnel::core::InstallKind::PortableArchive;
+}
+
+arachnel::core::InstallKind FreetpPlugin::detectInstallKind(const QString& downloadPath) const
+{
+    const QString contentRoot = findDownloadContentRoot(downloadPath);
+    if (contentRoot.isEmpty())
+        return arachnel::core::InstallKind::PortableArchive;
+
+    arachnel::core::InstallContext ctx;
+    if (shouldUseInnoInstaller(contentRoot, ctx))
+        return arachnel::core::InstallKind::Installer;
+    return arachnel::core::InstallKind::PortableArchive;
+}
+
 arachnel::core::InstallResult FreetpPlugin::installFromDownload(
     const arachnel::core::InstallContext& ctx) const
 {
@@ -176,16 +217,86 @@ arachnel::core::InstallResult FreetpPlugin::installFromDownload(
     }
 
     QString error;
-    QString installPath = installPortableFromDownload(contentRoot, ctx.targetPath, &error);
+    QString installPath;
 
-    if (installPath.isEmpty()) {
-        // Stub: пока без полного пайплайна — берём папку загрузки как installPath
-        const QString exe = findGameExecutable(contentRoot);
-        installPath = exe.isEmpty() ? contentRoot : QFileInfo(exe).absolutePath();
+    if (shouldUseInnoInstaller(contentRoot, ctx)) {
+        const QString setupExe = findSetupExecutable(contentRoot);
+        if (setupExe.isEmpty()) {
+            result.success = false;
+            result.error = QStringLiteral("Inno Setup не найден в загрузке");
+            return result;
+        }
+
+        installPath = installInnoSetup(setupExe, ctx.targetPath, &error);
+        if (installPath.isEmpty()) {
+            result.success = false;
+            result.error = error.isEmpty() ? QStringLiteral("Ошибка тихой установки Inno Setup")
+                                           : error;
+            return result;
+        }
+
+        cleanupInnoSideEffects(installPath);
+    } else {
+        installPath = installPortableFromDownload(contentRoot, ctx.targetPath, &error);
+        if (installPath.isEmpty()) {
+            result.success = false;
+            result.error = error.isEmpty() ? QStringLiteral("Ошибка portable-установки") : error;
+            return result;
+        }
     }
 
     result.success = true;
     result.installPath = installPath;
+    return result;
+}
+
+arachnel::core::InstallResult FreetpPlugin::installAddonFromDownload(
+    const arachnel::core::AddonInstallContext& ctx) const
+{
+    arachnel::core::InstallResult result;
+    if (ctx.gameInstallPath.isEmpty() || !QDir(ctx.gameInstallPath).exists()) {
+        result.error = QStringLiteral("Сначала установите игру");
+        return result;
+    }
+    if (ctx.downloadPath.isEmpty() || !QFileInfo::exists(ctx.downloadPath)) {
+        result.error = QStringLiteral("Файлы дополнения не найдены");
+        return result;
+    }
+
+    QString error;
+    const QFileInfo artifact(ctx.downloadPath);
+    if (artifact.isFile() && isInnoSetupExecutable(ctx.downloadPath)) {
+        if (installInnoOverlay(ctx.downloadPath, ctx.gameInstallPath, &error).isEmpty()) {
+            result.error = error.isEmpty() ? QStringLiteral("Ошибка установки фикса") : error;
+            return result;
+        }
+        cleanupInnoSideEffects(ctx.gameInstallPath);
+        result.success = true;
+        result.installPath = ctx.gameInstallPath;
+        return result;
+    }
+
+    const QString contentRoot = artifact.isDir() ? findDownloadContentRoot(ctx.downloadPath)
+                                                 : artifact.absolutePath();
+    const QString setupExe = findSetupExecutable(contentRoot);
+    if (!setupExe.isEmpty() && isInnoSetupExecutable(setupExe)) {
+        if (installInnoOverlay(setupExe, ctx.gameInstallPath, &error).isEmpty()) {
+            result.error = error.isEmpty() ? QStringLiteral("Ошибка установки фикса") : error;
+            return result;
+        }
+        cleanupInnoSideEffects(ctx.gameInstallPath);
+        result.success = true;
+        result.installPath = ctx.gameInstallPath;
+        return result;
+    }
+
+    if (!installAddonOverlay(ctx.downloadPath, ctx.gameInstallPath, &error)) {
+        result.error = error.isEmpty() ? QStringLiteral("Ошибка установки дополнения") : error;
+        return result;
+    }
+
+    result.success = true;
+    result.installPath = ctx.gameInstallPath;
     return result;
 }
 

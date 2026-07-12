@@ -171,6 +171,9 @@ QVariantList CatalogModel::addonsFor(const QString& entryId) const
             {QStringLiteral("uploadDate"), addon.uploadDate},
             {QStringLiteral("kind"), static_cast<int>(addon.kind)},
             {QStringLiteral("kindLabel"), catalogItemKindLabel(addon.kind)},
+            {QStringLiteral("delivery"), static_cast<int>(addon.delivery)},
+            {QStringLiteral("deliveryLabel"), componentDeliveryLabel(addon.delivery)},
+            {QStringLiteral("optional"), addon.optional},
         });
     }
     return addons;

@@ -1,6 +1,7 @@
 #include "torrent_session.h"
 
 #include <QCoreApplication>
+#include <QDateTime>
 #include <QDir>
 #include <QEventLoop>
 #include <QFile>
@@ -14,6 +15,7 @@
 #include <libtorrent/read_resume_data.hpp>
 #include <libtorrent/session.hpp>
 #include <libtorrent/session_params.hpp>
+#include <libtorrent/settings_pack.hpp>
 #include <libtorrent/torrent_handle.hpp>
 #include <libtorrent/torrent_status.hpp>
 #include <libtorrent/torrent_flags.hpp>
@@ -50,13 +52,63 @@ struct TorrentSession::Impl
     QHash<QString, QString> savePaths;
     QHash<QString, QString> magnetUris;
     QSet<QString> pausedJobs;
+    QHash<QString, qint64> metadataStallSinceMs;
 };
+
+namespace {
+
+constexpr int kMetadataKickAfterMs = 3000;
+
+void applySessionDefaults(lt::session& session)
+{
+    lt::settings_pack pack;
+    pack.set_int(lt::settings_pack::active_downloads, 8);
+    pack.set_int(lt::settings_pack::active_seeds, 4);
+    pack.set_bool(lt::settings_pack::enable_dht, true);
+    pack.set_bool(lt::settings_pack::enable_lsd, true);
+    pack.set_bool(lt::settings_pack::enable_upnp, true);
+    pack.set_bool(lt::settings_pack::enable_natpmp, true);
+    session.apply_settings(pack);
+}
+
+void kickStalledMetadata(const QString& jobId, lt::torrent_handle handle,
+                         QHash<QString, qint64>& metadataStallSinceMs)
+{
+    if (!handle.is_valid())
+        return;
+
+    const lt::torrent_status status = handle.status();
+    if (status.state != lt::torrent_status::downloading_metadata) {
+        metadataStallSinceMs.remove(jobId);
+        return;
+    }
+
+    const qint64 now = QDateTime::currentMSecsSinceEpoch();
+    const qint64 since = metadataStallSinceMs.value(jobId, now);
+    if (!metadataStallSinceMs.contains(jobId))
+        metadataStallSinceMs.insert(jobId, now);
+
+    if (status.num_peers > 0 || status.download_rate > 0) {
+        metadataStallSinceMs.remove(jobId);
+        return;
+    }
+
+    if (now - since < kMetadataKickAfterMs)
+        return;
+
+    handle.resume();
+    handle.force_reannounce(0, lt::torrent_handle::ignore_min_interval);
+    metadataStallSinceMs.insert(jobId, now);
+}
+
+} // namespace
 
 TorrentSession::TorrentSession(QObject* parent)
     : QObject(parent)
     , m_impl(std::make_unique<Impl>())
     , m_available(true)
 {
+    applySessionDefaults(m_impl->session);
     QDir().mkpath(resumeDirectory());
 
     auto* timer = new QTimer(this);
@@ -169,6 +221,10 @@ bool TorrentSession::addJob(const QString& jobId, const QString& magnetUri, cons
         return false;
     }
 
+    handle.resume();
+    if (!usedResume)
+        handle.force_reannounce(0, lt::torrent_handle::ignore_min_interval);
+    m_impl->metadataStallSinceMs.remove(jobId);
     m_impl->handles.insert(jobId, handle);
     m_impl->savePaths.insert(jobId, savePath);
     m_impl->magnetUris.insert(jobId, magnetUri);
@@ -184,6 +240,7 @@ void TorrentSession::cancel(const QString& jobId, bool deleteFiles)
     m_impl->savePaths.remove(jobId);
     m_impl->magnetUris.remove(jobId);
     m_impl->pausedJobs.remove(jobId);
+    m_impl->metadataStallSinceMs.remove(jobId);
 
     removeResumeFile(jobId);
 
@@ -209,7 +266,9 @@ void TorrentSession::setPaused(const QString& jobId, bool paused)
     } else {
         handle.resume();
         handle.set_flags(lt::torrent_flags::auto_managed);
+        handle.force_reannounce(0, lt::torrent_handle::ignore_min_interval);
         m_impl->pausedJobs.remove(jobId);
+        m_impl->metadataStallSinceMs.remove(jobId);
     }
     requestResumeSave(jobId);
 }
@@ -258,6 +317,7 @@ void TorrentSession::pollAlerts()
                 m_impl->savePaths.remove(jobId);
                 m_impl->magnetUris.remove(jobId);
                 m_impl->pausedJobs.remove(jobId);
+                m_impl->metadataStallSinceMs.remove(jobId);
             }
             if (failed->handle.is_valid())
                 m_impl->session.remove_torrent(failed->handle);
@@ -271,6 +331,7 @@ void TorrentSession::pollAlerts()
                 m_impl->handles.remove(jobId);
                 m_impl->magnetUris.remove(jobId);
                 m_impl->pausedJobs.remove(jobId);
+                m_impl->metadataStallSinceMs.remove(jobId);
                 removeResumeFile(jobId);
                 emit torrentFinished(jobId, savePath);
             }
@@ -294,6 +355,9 @@ void TorrentSession::pollAlerts()
             m_impl->pausedJobs.contains(jobId) ? 0 : static_cast<int>(status.download_rate);
         emit torrentProgress(jobId, progress, downloaded, total, downloadRate, status.num_peers,
                              state);
+
+        if (!m_impl->pausedJobs.contains(jobId))
+            kickStalledMetadata(jobId, handle, m_impl->metadataStallSinceMs);
     }
 
     QStringList completedJobs;

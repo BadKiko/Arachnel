@@ -14,6 +14,8 @@
 #include <QUrl>
 #include <QVariant>
 #include <QVector>
+#include <functional>
+#include <optional>
 
 class QQmlEngine;
 class QJSEngine;
@@ -23,7 +25,9 @@ namespace arachnel::core {
 class CatalogFeedLoader;
 class CoverImageCache;
 class GameMetadataService;
+class HttpDownloadSession;
 class JobOrchestrator;
+class InstallKindProbeService;
 class PluginHost;
 class TorrentSession;
 
@@ -69,19 +73,28 @@ public:
 
     Q_INVOKABLE void launchGame(const QString& gameId);
     Q_INVOKABLE void searchCatalog(const QString& sourceId, const QString& query);
-    Q_INVOKABLE void installCatalogEntry(const QString& entryId, const QString& libraryId = {});
+    Q_INVOKABLE void installCatalogEntry(const QString& entryId, const QString& libraryId = {},
+                                         const QVariantList& addonIds = {});
     Q_INVOKABLE void installCatalogAddon(const QString& entryId, const QString& addonId);
+    Q_INVOKABLE void installDownloadedCatalogAddon(const QString& entryId, const QString& addonId);
+    Q_INVOKABLE bool isCatalogAddonInstalled(const QString& entryId, const QString& addonId) const;
     Q_INVOKABLE void updateCatalogEntry(const QString& entryId);
     Q_INVOKABLE bool needsInstallLocationChoice() const;
     Q_INVOKABLE QString browseStorageFolder();
     Q_INVOKABLE void removeGame(const QString& gameId, bool deleteFiles = true);
+    Q_INVOKABLE void removeEntry(const QString& entryId, bool deleteFiles = true);
     Q_INVOKABLE void moveGame(const QString& gameId, const QString& targetLibraryId);
     Q_INVOKABLE QVariantList gamesOnLibrary(const QString& libraryId) const;
+    Q_INVOKABLE bool isEntryPlayable(const QString& entryId) const;
+    Q_INVOKABLE bool isEntryDownloadComplete(const QString& entryId) const;
+    Q_INVOKABLE bool entryDownloadFilesExist(const QString& entryId) const;
+    Q_INVOKABLE QVariantMap entryDetails(const QString& entryId) const;
     Q_INVOKABLE void checkUpdates();
     Q_INVOKABLE void cancelJob(const QString& jobId);
     Q_INVOKABLE void toggleJobPause(const QString& jobId);
     Q_INVOKABLE void removeJob(const QString& jobId);
     Q_INVOKABLE void retryJob(const QString& jobId);
+    Q_INVOKABLE void retryInstall(const QString& jobId);
     Q_INVOKABLE void clearFinishedJobs();
     Q_INVOKABLE void refreshCatalog(const QString& sourceId);
     Q_INVOKABLE void requestCatalogCover(const QString& entryId);
@@ -108,7 +121,33 @@ private:
     void applyCatalogFilter(const QString& sourceId, const QString& query);
     void startPluginInstall(const CatalogEntry& entry, const QString& sourceId,
                             const QString& savePath, JobKind kind,
-                            const QString& libraryId = {});
+                            const QString& libraryId = {}, const QString& jobId = {});
+    void startPluginAddonInstall(const CatalogEntry& parent, const CatalogComponent& addon,
+                                 const QString& sourceId, const QString& artifactPath,
+                                 const QString& progressJobId = {},
+                                 std::function<void(bool success)> done = {});
+    void beginInstallSession(const QString& entryId, const QString& gameJobId,
+                             const QString& sourceId, const QStringList& addonIds);
+    void advanceInstallSession(const QString& entryId);
+    void syncInstallSessionPhase(const QString& entryId);
+    void markCatalogAddonInstalled(const QString& parentEntryId, const QString& addonId,
+                                   const QString& uploadDate);
+    QString resolveAddonArtifactPath(const QString& parentEntryId, const QString& addonId) const;
+    std::optional<CatalogEntry> resolveCatalogEntry(const QString& entryId,
+                                                    const QString& sourceId,
+                                                    const JobEntry* jobHint = nullptr) const;
+    bool gameNeedsInstall(const QString& entryId) const;
+    void retryPendingInstalls();
+    void pruneBrokenLibraryEntries();
+    void pruneAddonLibraryEntries();
+    void restoreLibraryPlaceholders();
+    void ensureLibraryPlaceholder(const CatalogEntry& entry, const QString& libraryId,
+                                  const QStringList& selectedAddonIds = {});
+    void reconcileJobInstallState();
+    void removeJobsForEntry(const QString& entryId);
+    void pruneUnselectedAddonJobs(const QString& parentEntryId, const QStringList& selectedAddonIds);
+    void pruneCancelledAddonJobs();
+    const JobEntry* findLatestJobForEntry(const QString& entryId) const;
     void setLastAction(const QString& action);
     void setCatalogLoading(bool loading);
     void setCatalogStatus(const QString& status);
@@ -117,6 +156,9 @@ private:
     const CatalogComponent* findCatalogAddon(const CatalogEntry& entry,
                                              const QString& addonId) const;
     void syncEntryToCatalogModel(const QString& entryId);
+    InstallKind detectInstallKindForEntry(const QString& sourceId,
+                                          const QString& downloadPath) const;
+    void syncCatalogInstallKind(const QString& entryId, InstallKind kind);
     void applyCachedMetadata(CatalogEntry& entry) const;
     void applyCoverToEntry(const QString& entryId, const QString& coverUrl);
     void ensureDiskCover(const QString& entryId, const QString& remoteUrl);
@@ -133,8 +175,10 @@ private:
     GameMetadataService* m_metadataService = nullptr;
     CoverImageCache* m_coverCache = nullptr;
     TorrentSession* m_torrentSession = nullptr;
+    HttpDownloadSession* m_httpSession = nullptr;
     JobOrchestrator* m_jobOrchestrator = nullptr;
     PluginHost* m_pluginHost = nullptr;
+    InstallKindProbeService* m_installKindProbe = nullptr;
 
     QVector<CatalogEntry> m_catalogCache;
     QHash<QString, QSet<QString>> m_coverWaiters;
@@ -144,6 +188,19 @@ private:
     QString m_catalogStatus;
     QString m_lastPluginError;
     bool m_catalogLoading = false;
+    QSet<QString> m_installingEntries;
+    QSet<QString> m_installingAddons;
+    QHash<QString, QStringList> m_installSelectedAddons;
+
+    struct GameInstallSession {
+        QString gameJobId;
+        QString sourceId;
+        QStringList selectedAddonIds;
+        int installStep = 0;
+        int installTotal = 1;
+        bool gameInstallDone = false;
+    };
+    QHash<QString, GameInstallSession> m_installSessions;
 };
 
 void registerCoreTypes();

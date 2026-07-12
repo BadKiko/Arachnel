@@ -228,6 +228,29 @@ void PluginHost::runInstallAsync(ISourcePlugin* plugin, const InstallContext& ct
     });
 }
 
+void PluginHost::runAddonInstallAsync(ISourcePlugin* plugin, const AddonInstallContext& ctx,
+                                      InstallCallback callback)
+{
+    if (!plugin) {
+        InstallResult result;
+        result.success = false;
+        result.error = QStringLiteral("Плагин не найден");
+        callback(result);
+        return;
+    }
+
+    (void)QtConcurrent::run([plugin, ctx, callback]() {
+        const InstallResult result = plugin->installAddonFromDownload(ctx);
+        QObject* app = QCoreApplication::instance();
+        if (!app) {
+            callback(result);
+            return;
+        }
+        QMetaObject::invokeMethod(app, [callback, result]() { callback(result); },
+                                  Qt::QueuedConnection);
+    });
+}
+
 QString PluginHost::writablePluginsDir()
 {
     const QString base = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);

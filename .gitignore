@@ -8,4 +8,4 @@ CMakeUserPresets.json
 build-debug/
 build-win/
 libs/
-plugins/freetp/games.json
+plugins/freetp/games-arachnel.json

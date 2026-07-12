@@ -3,8 +3,11 @@
 #include "catalog_feed_loader.h"
 #include "cover_image_cache.h"
 #include "file_utils.h"
+#include "install_kind_probe_service.h"
 #include "game_metadata_service.h"
+#include "http_download_session.h"
 #include "job_orchestrator.h"
+#include "job_status.h"
 #include "job_store.h"
 #include "library_store.h"
 #include "plugin_host.h"
@@ -16,6 +19,8 @@
 
 #include <QCoreApplication>
 #include <QDateTime>
+#include <QDir>
+#include <QFileInfo>
 #include <QFutureWatcher>
 #include <QJSEngine>
 #include <QQmlEngine>
@@ -28,6 +33,22 @@
 #endif
 
 namespace arachnel::core {
+
+namespace {
+
+QStringList variantListToStringList(const QVariantList& values)
+{
+    QStringList result;
+    result.reserve(values.size());
+    for (const QVariant& value : values) {
+        const QString text = value.toString().trimmed();
+        if (!text.isEmpty())
+            result.append(text);
+    }
+    return result;
+}
+
+} // namespace
 
 CoreController* CoreController::create(QQmlEngine* engine, QJSEngine* scriptEngine)
 {
@@ -48,15 +69,26 @@ CoreController::CoreController(QObject* parent)
     m_settings.load();
     m_jobStore.load();
     m_libraryStore.load();
-    initializeServices();
     m_pluginHost = new PluginHost(this);
     m_pluginHost->scan();
+    m_installKindProbe = new InstallKindProbeService(m_pluginHost, this);
+    connect(m_installKindProbe, &InstallKindProbeService::installKindResolved, this,
+            [this](const QString& entryId, InstallKind kind) {
+                syncCatalogInstallKind(entryId, kind);
+            });
+    initializeServices();
     connect(m_pluginHost, &PluginHost::pluginsChanged, this, [this]() {
         syncSourcesFromPlugins();
         emit pluginsChanged();
     });
     syncSourcesFromPlugins();
     emit pluginsChanged();
+    pruneBrokenLibraryEntries();
+    pruneAddonLibraryEntries();
+    reconcileJobInstallState();
+    restoreLibraryPlaceholders();
+    pruneCancelledAddonJobs();
+    retryPendingInstalls();
     connect(&m_sources, &SourcePluginModel::sourcesChanged, this,
             &CoreController::persistSourcesToSettings);
     syncLibraryFromStore();
@@ -68,8 +100,9 @@ void CoreController::initializeServices()
     m_metadataService = new GameMetadataService(this);
     m_coverCache = new CoverImageCache(this);
     m_torrentSession = new TorrentSession(this);
-    m_jobOrchestrator =
-        new JobOrchestrator(&m_settings, &m_jobStore, m_torrentSession, &m_jobs, this);
+    m_httpSession = new HttpDownloadSession(this);
+    m_jobOrchestrator = new JobOrchestrator(&m_settings, &m_jobStore, m_torrentSession,
+                                            m_httpSession, &m_jobs, this);
     m_jobOrchestrator->restoreJobs();
 
     connect(m_catalogLoader, &CatalogFeedLoader::feedLoaded, this,
@@ -151,23 +184,38 @@ void CoreController::initializeServices()
 
     connect(m_jobOrchestrator, &JobOrchestrator::downloadCompleted, this,
             [this](const QString& jobId, const QString& entryId, const QString& sourceId,
-                   const QString& savePath, JobKind kind, const QString& libraryId) {
-                Q_UNUSED(jobId)
-
-                const CatalogEntry* entry = findCatalogEntry(entryId);
-                if (!entry) {
-                    if (ISourcePlugin* plugin = m_pluginHost->plugin(sourceId)) {
-                        const auto remote = plugin->entryById(entryId);
-                        if (!remote)
-                            return;
-                        startPluginInstall(*remote, sourceId, savePath, kind, libraryId);
+                   const QString& artifactPath, JobKind kind, const QString& libraryId) {
+                const JobEntry* job = m_jobStore.jobById(jobId);
+                if (job && !job->parentEntryId.isEmpty()) {
+                    const CatalogEntry* parent = findCatalogEntry(job->parentEntryId);
+                    if (!parent) {
+                        setLastAction(QStringLiteral("Игра не найдена для дополнения"));
                         return;
                     }
+                    const CatalogComponent* addon = findCatalogAddon(*parent, entryId);
+                    if (!addon) {
+                        setLastAction(QStringLiteral("Дополнение не найдено в каталоге"));
+                        return;
+                    }
+
+                    setLastAction(QStringLiteral("Дополнение загружено: %1").arg(addon->title));
+                    advanceInstallSession(job->parentEntryId);
                     return;
                 }
 
-                if (m_pluginHost->hasPlugin(sourceId)) {
-                    startPluginInstall(*entry, sourceId, savePath, kind, libraryId);
+                const JobEntry* jobHint = job;
+                const auto entry = resolveCatalogEntry(entryId, sourceId, jobHint);
+                if (!entry) {
+                    setLastAction(QStringLiteral("Не удалось найти игру для установки: %1")
+                                      .arg(entryId));
+                    return;
+                }
+
+                if (m_pluginHost && m_pluginHost->hasPlugin(sourceId)) {
+                    const InstallKind detectedKind =
+                        detectInstallKindForEntry(sourceId, artifactPath);
+                    syncCatalogInstallKind(entryId, detectedKind);
+                    startPluginInstall(*entry, sourceId, artifactPath, kind, libraryId, jobId);
                     return;
                 }
 
@@ -185,7 +233,7 @@ void CoreController::initializeServices()
                 game.installKind = entry->installKind;
                 game.uploadDate = entry->uploadDate;
                 game.magnetUri = entry->magnetUris.value(0);
-                game.downloadPath = savePath;
+                game.downloadPath = artifactPath;
                 game.libraryId = libraryId.isEmpty() ? m_settings.defaultLibraryId() : libraryId;
                 game.hasUpdate = false;
 
@@ -253,6 +301,11 @@ void CoreController::applyPluginCatalog(const QString& sourceId,
     for (auto& entry : m_catalogCache)
         applyCachedMetadata(entry);
 
+    if (m_installKindProbe) {
+        m_installKindProbe->applyCachedKinds(m_catalogCache);
+        m_installKindProbe->queueCatalog(sourceId, m_catalogCache, m_activeQuery);
+    }
+
     applyCatalogFilter(sourceId, m_activeQuery);
     setCatalogStatus(QStringLiteral("Каталог готов · %1 игр").arg(m_catalogCache.size()));
     setCatalogLoading(false);
@@ -260,15 +313,24 @@ void CoreController::applyPluginCatalog(const QString& sourceId,
 
 void CoreController::startPluginInstall(const CatalogEntry& entry, const QString& sourceId,
                                         const QString& savePath, JobKind kind,
-                                        const QString& libraryId)
+                                        const QString& libraryId, const QString& jobId)
 {
-    ISourcePlugin* plugin = m_pluginHost->plugin(sourceId);
+    if (m_installingEntries.contains(entry.id)) {
+        setLastAction(QStringLiteral("Установка %1 уже выполняется").arg(entry.title));
+        return;
+    }
+
+    ISourcePlugin* plugin = m_pluginHost ? m_pluginHost->plugin(sourceId) : nullptr;
     if (!plugin) {
         setLastAction(QStringLiteral("Плагин источника не найден: %1").arg(sourceId));
         return;
     }
 
+    m_installingEntries.insert(entry.id);
+
     const QString libId = libraryId.isEmpty() ? m_settings.defaultLibraryId() : libraryId;
+    const InstallKind detectedKind = detectInstallKindForEntry(sourceId, savePath);
+    syncCatalogInstallKind(entry.id, detectedKind);
 
     InstallContext ctx;
     ctx.entryId = entry.id;
@@ -279,13 +341,30 @@ void CoreController::startPluginInstall(const CatalogEntry& entry, const QString
     ctx.downloadPath = savePath;
     ctx.magnetUri = entry.magnetUris.value(0);
     ctx.uploadDate = entry.uploadDate;
-    ctx.installKind = entry.installKind;
+    ctx.installKind = detectedKind;
 
+    if (!jobId.isEmpty()) {
+        if (m_installSessions.contains(entry.id))
+            syncInstallSessionPhase(entry.id);
+        else
+            m_jobOrchestrator->setJobPhase(jobId, QStringLiteral("installing"),
+                                           QStringLiteral("Установка…"));
+    }
     setLastAction(QStringLiteral("Установка: %1…").arg(entry.title));
 
-    m_pluginHost->runInstallAsync(plugin, ctx, [this, entry, sourceId, savePath, kind, libId](
-                                       const InstallResult& result) {
+    m_pluginHost->runInstallAsync(plugin, ctx, [this, entry, sourceId, savePath, kind, libId, jobId,
+                                                detectedKind](const InstallResult& result) {
+        m_installingEntries.remove(entry.id);
+
         if (!result.success) {
+            const QString detail =
+                result.error.isEmpty()
+                    ? QStringLiteral("Ошибка установки")
+                    : QStringLiteral("Ошибка установки: %1").arg(result.error);
+            if (!jobId.isEmpty())
+                m_jobOrchestrator->setJobPhase(jobId, QStringLiteral("completed"), detail);
+            m_installSessions.remove(entry.id);
+            m_installSelectedAddons.remove(entry.id);
             setLastAction(QStringLiteral("Ошибка установки %1: %2")
                               .arg(entry.title, result.error));
             return;
@@ -302,7 +381,7 @@ void CoreController::startPluginInstall(const CatalogEntry& entry, const QString
         game.description = entry.description;
         game.genres = entry.genres;
         game.sizeLabel = entry.sizeLabel;
-        game.installKind = entry.installKind;
+        game.installKind = detectedKind;
         game.uploadDate = entry.uploadDate;
         game.magnetUri = entry.magnetUris.value(0);
         game.downloadPath = savePath;
@@ -321,11 +400,636 @@ void CoreController::startPluginInstall(const CatalogEntry& entry, const QString
         m_libraryStore.upsertGame(game);
         syncLibraryFromStore();
 
+        if (GameInstallSession* session = m_installSessions.contains(entry.id)
+                                              ? &m_installSessions[entry.id]
+                                              : nullptr) {
+            session->gameInstallDone = true;
+            session->installStep = 1;
+            syncInstallSessionPhase(entry.id);
+            advanceInstallSession(entry.id);
+        } else {
+            for (const auto& addon : entry.addons) {
+                if (isCatalogAddonInstalled(entry.id, addon.id))
+                    continue;
+                const QString artifactPath = resolveAddonArtifactPath(entry.id, addon.id);
+                if (!artifactPath.isEmpty())
+                    startPluginAddonInstall(entry, addon, sourceId, artifactPath, jobId);
+            }
+
+            if (!jobId.isEmpty())
+                m_jobOrchestrator->setJobPhase(jobId, QStringLiteral("completed"),
+                                               QStringLiteral("Установлено"));
+        }
+
         if (kind == JobKind::Update)
             setLastAction(QStringLiteral("Обновление установлено: %1").arg(entry.title));
         else
             setLastAction(QStringLiteral("Установлено: %1").arg(entry.title));
     });
+}
+
+void CoreController::beginInstallSession(const QString& entryId, const QString& gameJobId,
+                                         const QString& sourceId, const QStringList& addonIds)
+{
+    GameInstallSession session;
+    session.gameJobId = gameJobId;
+    session.sourceId = sourceId;
+    session.selectedAddonIds = addonIds;
+    session.installTotal = 1 + addonIds.size();
+    session.installStep = 1;
+    session.gameInstallDone = false;
+    m_installSessions.insert(entryId, session);
+    m_installSelectedAddons.insert(entryId, addonIds);
+}
+
+void CoreController::syncInstallSessionPhase(const QString& entryId)
+{
+    const GameInstallSession* session = m_installSessions.contains(entryId)
+                                            ? &m_installSessions[entryId]
+                                            : nullptr;
+    if (!session || session->gameJobId.isEmpty())
+        return;
+
+    const QString detail = QStringLiteral("Установка (%1/%2)")
+                               .arg(qMax(1, session->installStep))
+                               .arg(qMax(1, session->installTotal));
+    m_jobOrchestrator->setJobPhase(session->gameJobId, QStringLiteral("installing"), detail);
+}
+
+void CoreController::advanceInstallSession(const QString& entryId)
+{
+    auto it = m_installSessions.find(entryId);
+    if (it == m_installSessions.end())
+        return;
+
+    GameInstallSession& session = *it;
+    if (!session.gameInstallDone)
+        return;
+
+    const CatalogEntry* parent = findCatalogEntry(entryId);
+    if (!parent || !isEntryPlayable(entryId))
+        return;
+
+    int installedCount = 1;
+    for (const QString& addonId : session.selectedAddonIds) {
+        if (isCatalogAddonInstalled(entryId, addonId))
+            ++installedCount;
+    }
+
+    for (const QString& addonId : session.selectedAddonIds) {
+        if (isCatalogAddonInstalled(entryId, addonId))
+            continue;
+
+        const QString artifactPath = resolveAddonArtifactPath(entryId, addonId);
+        if (artifactPath.isEmpty())
+            return;
+
+        const CatalogComponent* addon = findCatalogAddon(*parent, addonId);
+        if (!addon)
+            continue;
+
+        session.installStep = installedCount + 1;
+        syncInstallSessionPhase(entryId);
+
+        startPluginAddonInstall(
+            *parent, *addon, session.sourceId, artifactPath, session.gameJobId,
+            [this, entryId](bool success) {
+                if (!success) {
+                    m_installSessions.remove(entryId);
+                    m_installSelectedAddons.remove(entryId);
+                    return;
+                }
+                advanceInstallSession(entryId);
+            });
+        return;
+    }
+
+    m_jobOrchestrator->setJobPhase(session.gameJobId, QStringLiteral("completed"),
+                                   QStringLiteral("Установлено"));
+    m_installSessions.remove(entryId);
+    m_installSelectedAddons.remove(entryId);
+}
+
+void CoreController::startPluginAddonInstall(const CatalogEntry& parent,
+                                             const CatalogComponent& addon,
+                                             const QString& sourceId,
+                                             const QString& artifactPath,
+                                             const QString& progressJobId,
+                                             std::function<void(bool success)> done)
+{
+    const QString installKey = parent.id + QLatin1Char(':') + addon.id;
+    if (m_installingAddons.contains(installKey)) {
+        setLastAction(QStringLiteral("Установка дополнения уже выполняется"));
+        return;
+    }
+
+    const LibraryGame* game = m_libraryStore.gameById(parent.id);
+    if (!game || game->installPath.isEmpty()) {
+        setLastAction(QStringLiteral("Сначала установите игру"));
+        return;
+    }
+
+    ISourcePlugin* plugin = m_pluginHost ? m_pluginHost->plugin(sourceId) : nullptr;
+    if (!plugin) {
+        setLastAction(QStringLiteral("Плагин источника не найден: %1").arg(sourceId));
+        return;
+    }
+
+    m_installingAddons.insert(installKey);
+
+    if (!progressJobId.isEmpty() && !m_installSessions.contains(parent.id))
+        m_jobOrchestrator->setJobPhase(progressJobId, QStringLiteral("installing"),
+                                       QStringLiteral("Установка дополнения…"));
+    setLastAction(QStringLiteral("Установка дополнения: %1…").arg(addon.title));
+
+    AddonInstallContext ctx;
+    ctx.parentEntryId = parent.id;
+    ctx.addonId = addon.id;
+    ctx.addonTitle = addon.title;
+    ctx.gameInstallPath = game->installPath;
+    ctx.downloadPath = artifactPath;
+    ctx.addonKind = addon.kind;
+
+    m_pluginHost->runAddonInstallAsync(plugin, ctx,
+                                         [this, parent, addon, progressJobId, installKey, done](
+                                             const InstallResult& result) {
+                                             m_installingAddons.remove(installKey);
+
+                                             if (!result.success) {
+                                                 const QString detail =
+                                                     result.error.isEmpty()
+                                                         ? QStringLiteral("Ошибка установки")
+                                                         : QStringLiteral("Ошибка: %1")
+                                                               .arg(result.error);
+                                                 if (!progressJobId.isEmpty())
+                                                     m_jobOrchestrator->setJobPhase(
+                                                         progressJobId,
+                                                         QStringLiteral("completed"), detail);
+                                                 m_installSessions.remove(parent.id);
+                                                 m_installSelectedAddons.remove(parent.id);
+                                                 setLastAction(QStringLiteral(
+                                                     "Ошибка установки дополнения %1: %2")
+                                                                   .arg(addon.title, result.error));
+                                                 if (done)
+                                                     done(false);
+                                                 return;
+                                             }
+
+                                             markCatalogAddonInstalled(parent.id, addon.id,
+                                                                       addon.uploadDate);
+                                             setLastAction(QStringLiteral("Дополнение установлено: %1")
+                                                               .arg(addon.title));
+                                             if (done)
+                                                 done(true);
+                                         });
+}
+
+void CoreController::markCatalogAddonInstalled(const QString& parentEntryId,
+                                               const QString& addonId, const QString& uploadDate)
+{
+    const LibraryGame* existing = m_libraryStore.gameById(parentEntryId);
+    if (!existing)
+        return;
+
+    LibraryGame game = *existing;
+    bool found = false;
+    for (auto& component : game.components) {
+        if (component.id != addonId)
+            continue;
+        component.installed = true;
+        if (!uploadDate.isEmpty())
+            component.uploadDate = uploadDate;
+        found = true;
+        break;
+    }
+
+    if (!found) {
+        InstalledComponent component;
+        component.id = addonId;
+        component.installed = true;
+        component.uploadDate = uploadDate;
+        game.components.append(component);
+    }
+
+    m_libraryStore.upsertGame(game);
+    syncLibraryFromStore();
+}
+
+QString CoreController::resolveAddonArtifactPath(const QString& parentEntryId,
+                                                 const QString& addonId) const
+{
+    const JobEntry* latest = nullptr;
+    for (const JobEntry& job : m_jobStore.jobs()) {
+        if (job.entryId != addonId || job.parentEntryId != parentEntryId)
+            continue;
+        if (job.status != QStringLiteral("completed"))
+            continue;
+        if (!latest || job.completedAt > latest->completedAt)
+            latest = &job;
+    }
+    if (!latest)
+        return {};
+
+    if (!latest->artifactPath.isEmpty() && QFileInfo::exists(latest->artifactPath))
+        return latest->artifactPath;
+
+    if (!latest->savePath.isEmpty() && QFileInfo::exists(latest->savePath))
+        return latest->savePath;
+
+    return {};
+}
+
+bool CoreController::isCatalogAddonInstalled(const QString& entryId,
+                                             const QString& addonId) const
+{
+    const LibraryGame* game = m_libraryStore.gameById(entryId);
+    if (!game)
+        return false;
+    for (const auto& component : game->components) {
+        if (component.id == addonId)
+            return component.installed;
+    }
+    return false;
+}
+
+void CoreController::installDownloadedCatalogAddon(const QString& entryId, const QString& addonId)
+{
+    const CatalogEntry* parent = findCatalogEntry(entryId);
+    if (!parent) {
+        setLastAction(QStringLiteral("Игра не найдена"));
+        return;
+    }
+
+    const CatalogComponent* addon = findCatalogAddon(*parent, addonId);
+    if (!addon) {
+        setLastAction(QStringLiteral("Дополнение не найдено"));
+        return;
+    }
+
+    const QString artifactPath = resolveAddonArtifactPath(entryId, addonId);
+    if (artifactPath.isEmpty()) {
+        setLastAction(QStringLiteral("Сначала скачайте дополнение"));
+        return;
+    }
+
+    const QVariantMap jobMap = m_jobs.jobForAddon(entryId, addonId);
+    const QString jobId = jobMap.value(QStringLiteral("jobId")).toString();
+    startPluginAddonInstall(*parent, *addon, parent->sourceId, artifactPath, jobId);
+}
+
+std::optional<CatalogEntry> CoreController::resolveCatalogEntry(const QString& entryId,
+                                                                const QString& sourceId,
+                                                                const JobEntry* jobHint) const
+{
+    if (const CatalogEntry* cached = findCatalogEntry(entryId))
+        return *cached;
+
+    if (ISourcePlugin* plugin = m_pluginHost->plugin(sourceId)) {
+        if (const auto remote = plugin->entryById(entryId))
+            return *remote;
+    }
+
+    if (!jobHint)
+        return std::nullopt;
+
+    CatalogEntry synthetic;
+    synthetic.id = entryId;
+    synthetic.sourceId = sourceId;
+    synthetic.title = jobHint->title;
+    if (synthetic.title.startsWith(QStringLiteral("Загрузка ")))
+        synthetic.title = synthetic.title.mid(9);
+    else if (synthetic.title.startsWith(QStringLiteral("Обновление ")))
+        synthetic.title = synthetic.title.mid(11);
+    if (!jobHint->magnetUri.isEmpty())
+        synthetic.magnetUris.append(jobHint->magnetUri);
+    synthetic.coverUrl = jobHint->coverUrl;
+    return synthetic;
+}
+
+bool CoreController::gameNeedsInstall(const QString& entryId) const
+{
+    return !isEntryPlayable(entryId);
+}
+
+const JobEntry* CoreController::findLatestJobForEntry(const QString& entryId) const
+{
+    const JobEntry* latest = nullptr;
+    for (const JobEntry& job : m_jobStore.jobs()) {
+        if (job.entryId != entryId)
+            continue;
+        if (!latest || job.completedAt > latest->completedAt || job.createdAt > latest->createdAt)
+            latest = &job;
+    }
+    return latest;
+}
+
+bool CoreController::isEntryPlayable(const QString& entryId) const
+{
+    const LibraryGame* game = m_libraryStore.gameById(entryId);
+    if (!game || game->installPath.isEmpty())
+        return false;
+    if (!QFileInfo::exists(game->installPath))
+        return false;
+
+    if (m_pluginHost) {
+        if (ISourcePlugin* plugin = m_pluginHost->plugin(game->sourceId)) {
+            const LaunchInfo info = plugin->launchInfo(*game);
+            if (!info.executable.isEmpty())
+                return QFileInfo::exists(info.executable);
+        }
+    }
+
+    return true;
+}
+
+bool CoreController::isEntryDownloadComplete(const QString& entryId) const
+{
+    for (const JobEntry& job : m_jobStore.jobs()) {
+        if (job.entryId == entryId && job.status == QStringLiteral("completed"))
+            return true;
+    }
+    return false;
+}
+
+bool CoreController::entryDownloadFilesExist(const QString& entryId) const
+{
+    for (const JobEntry& job : m_jobStore.jobs()) {
+        if (job.entryId != entryId || job.savePath.isEmpty())
+            continue;
+        if (QDir(job.savePath).exists())
+            return true;
+    }
+
+    if (const LibraryGame* game = m_libraryStore.gameById(entryId)) {
+        if (!game->downloadPath.isEmpty() && QDir(game->downloadPath).exists())
+            return true;
+    }
+
+    return false;
+}
+
+QVariantMap CoreController::entryDetails(const QString& entryId) const
+{
+    QVariantMap info = m_library.gameInfo(entryId);
+    const QVariantMap catalogInfo = m_catalog.entryInfo(entryId);
+
+    if (info.isEmpty() && catalogInfo.isEmpty())
+        return {};
+
+    if (info.isEmpty())
+        info = catalogInfo;
+    else if (!catalogInfo.isEmpty()) {
+        const auto fillIfEmpty = [&info, &catalogInfo](const QString& key) {
+            if (!info.value(key).toString().isEmpty())
+                return;
+            const QVariant value = catalogInfo.value(key);
+            if (value.isValid() && !value.toString().isEmpty())
+                info.insert(key, value);
+        };
+
+        fillIfEmpty(QStringLiteral("description"));
+        fillIfEmpty(QStringLiteral("genres"));
+        fillIfEmpty(QStringLiteral("sizeLabel"));
+        fillIfEmpty(QStringLiteral("coverUrl"));
+        fillIfEmpty(QStringLiteral("version"));
+        fillIfEmpty(QStringLiteral("uploadDate"));
+        fillIfEmpty(QStringLiteral("installKind"));
+        fillIfEmpty(QStringLiteral("installKindLabel"));
+    }
+
+    if (const CatalogEntry* catalogEntry = findCatalogEntry(entryId)) {
+        info.insert(QStringLiteral("addonCount"), catalogEntry->addons.size());
+        info.insert(QStringLiteral("hasAddons"), !catalogEntry->addons.isEmpty());
+    } else {
+        const int componentCount = info.value(QStringLiteral("componentCount")).toInt();
+        info.insert(QStringLiteral("addonCount"), componentCount);
+        info.insert(QStringLiteral("hasAddons"), componentCount > 0);
+    }
+
+    if (info.value(QStringLiteral("downloadPath")).toString().isEmpty()) {
+        if (const JobEntry* job = findLatestJobForEntry(entryId))
+            info.insert(QStringLiteral("downloadPath"), job->savePath);
+    }
+
+    const QString downloadPath = info.value(QStringLiteral("downloadPath")).toString();
+    const QString sourceId = info.value(QStringLiteral("sourceId")).toString();
+    if (!downloadPath.isEmpty() && !sourceId.isEmpty()) {
+        const InstallKind detected = detectInstallKindForEntry(sourceId, downloadPath);
+        info.insert(QStringLiteral("installKind"), static_cast<int>(detected));
+        info.insert(QStringLiteral("installKindLabel"), installKindLabel(detected));
+    }
+
+    info.insert(QStringLiteral("installed"), isEntryPlayable(entryId));
+    return info;
+}
+
+void CoreController::pruneBrokenLibraryEntries()
+{
+    QVector<QString> brokenIds;
+    for (const LibraryGame& game : m_libraryStore.games()) {
+        if (game.installPath.isEmpty())
+            continue;
+        if (!QFileInfo::exists(game.installPath))
+            brokenIds.append(game.id);
+    }
+
+    if (brokenIds.isEmpty())
+        return;
+
+    for (const QString& id : brokenIds)
+        m_libraryStore.removeGame(id);
+    m_libraryStore.save();
+    syncLibraryFromStore();
+}
+
+void CoreController::ensureLibraryPlaceholder(const CatalogEntry& entry, const QString& libraryId,
+                                              const QStringList& selectedAddonIds)
+{
+    const LibraryGame* existing = m_libraryStore.gameById(entry.id);
+    if (existing && !existing->installPath.isEmpty()
+        && QFileInfo::exists(existing->installPath))
+        return;
+
+    const QString libId = libraryId.isEmpty() ? m_settings.defaultLibraryId() : libraryId;
+
+    LibraryGame game;
+    if (existing)
+        game = *existing;
+
+    game.id = entry.id;
+    game.title = entry.title;
+    game.coverUrl = entry.coverUrl;
+    game.sourceId = entry.sourceId;
+    game.sourceName = m_sources.nameForId(entry.sourceId);
+    game.version = entry.version;
+    game.description = entry.description;
+    game.genres = entry.genres;
+    game.sizeLabel = entry.sizeLabel;
+    game.installKind = entry.installKind;
+    game.uploadDate = entry.uploadDate;
+    game.magnetUri = entry.magnetUris.value(0);
+    game.libraryId = libId;
+    game.hasUpdate = false;
+    game.installPath = QString();
+
+    QSet<QString> selectedAddons(selectedAddonIds.cbegin(), selectedAddonIds.cend());
+    QVector<InstalledComponent> components;
+    components.reserve(entry.addons.size());
+    for (const auto& addon : entry.addons) {
+        if (!selectedAddons.isEmpty() && !selectedAddons.contains(addon.id))
+            continue;
+
+        bool installed = false;
+        if (existing) {
+            for (const auto& component : existing->components) {
+                if (component.id == addon.id) {
+                    installed = component.installed;
+                    break;
+                }
+            }
+        }
+
+        InstalledComponent component;
+        component.id = addon.id;
+        component.title = addon.title;
+        component.uploadDate = addon.uploadDate;
+        component.installed = installed;
+        components.append(component);
+    }
+    game.components = components;
+
+    m_libraryStore.upsertGame(game);
+    syncLibraryFromStore();
+
+    if (!entry.coverUrl.isEmpty())
+        ensureDiskCover(entry.id, entry.coverUrl);
+}
+
+void CoreController::restoreLibraryPlaceholders()
+{
+    for (const JobEntry& job : m_jobStore.jobs()) {
+        if (!job.parentEntryId.isEmpty())
+            continue;
+        if (!isJobInProgress(job.status))
+            continue;
+
+        const auto entry = resolveCatalogEntry(job.entryId, job.sourceId, &job);
+        if (!entry)
+            continue;
+
+        ensureLibraryPlaceholder(*entry, job.libraryId);
+    }
+}
+
+void CoreController::pruneAddonLibraryEntries()
+{
+    QSet<QString> addonIds;
+    for (const JobEntry& job : m_jobStore.jobs()) {
+        if (!job.parentEntryId.isEmpty())
+            addonIds.insert(job.entryId);
+    }
+    for (const auto& entry : m_catalogCache) {
+        for (const auto& addon : entry.addons)
+            addonIds.insert(addon.id);
+    }
+
+    bool changed = false;
+    for (const QString& id : addonIds) {
+        if (!m_libraryStore.gameById(id))
+            continue;
+        m_libraryStore.removeGame(id);
+        changed = true;
+    }
+
+    if (changed) {
+        m_libraryStore.save();
+        syncLibraryFromStore();
+    }
+}
+
+void CoreController::reconcileJobInstallState()
+{
+    for (const JobEntry& job : m_jobStore.jobs()) {
+        if (!job.parentEntryId.isEmpty())
+            continue;
+        if (job.status != QStringLiteral("completed"))
+            continue;
+        if (!gameNeedsInstall(job.entryId))
+            continue;
+        if (job.detail == QStringLiteral("Установлено")) {
+            m_jobOrchestrator->setJobPhase(job.id, QStringLiteral("completed"),
+                                           QStringLiteral("Требуется установка"));
+        }
+    }
+}
+
+void CoreController::pruneUnselectedAddonJobs(const QString& parentEntryId,
+                                              const QStringList& selectedAddonIds)
+{
+    if (parentEntryId.isEmpty())
+        return;
+
+    const QSet<QString> keep(selectedAddonIds.cbegin(), selectedAddonIds.cend());
+    QVector<QString> removeIds;
+    for (const JobEntry& job : m_jobStore.jobs()) {
+        if (job.parentEntryId != parentEntryId)
+            continue;
+        if (keep.contains(job.entryId))
+            continue;
+        removeIds.append(job.id);
+    }
+
+    for (const QString& jobId : removeIds)
+        m_jobOrchestrator->removeJob(jobId);
+}
+
+void CoreController::pruneCancelledAddonJobs()
+{
+    QVector<QString> removeIds;
+    for (const JobEntry& job : m_jobStore.jobs()) {
+        if (job.parentEntryId.isEmpty())
+            continue;
+        if (job.status == QStringLiteral("cancelled"))
+            removeIds.append(job.id);
+    }
+
+    for (const QString& jobId : removeIds)
+        m_jobOrchestrator->removeJob(jobId);
+}
+
+void CoreController::removeJobsForEntry(const QString& entryId)
+{
+    QVector<QString> jobIds;
+    for (const JobEntry& job : m_jobStore.jobs()) {
+        if (job.entryId == entryId)
+            jobIds.append(job.id);
+    }
+    for (const QString& jobId : jobIds)
+        m_jobOrchestrator->removeJob(jobId);
+}
+
+void CoreController::retryPendingInstalls()
+{
+    for (const JobEntry& job : m_jobStore.jobs()) {
+        if (!job.parentEntryId.isEmpty())
+            continue;
+        if (job.status != QStringLiteral("completed"))
+            continue;
+        if (job.kind != JobKind::Download && job.kind != JobKind::Update)
+            continue;
+        if (!gameNeedsInstall(job.entryId))
+            continue;
+        if (job.savePath.isEmpty() || !QDir(job.savePath).exists())
+            continue;
+        if (!m_pluginHost->hasPlugin(job.sourceId))
+            continue;
+
+        const auto entry = resolveCatalogEntry(job.entryId, job.sourceId, &job);
+        if (!entry)
+            continue;
+
+        startPluginInstall(*entry, job.sourceId, job.savePath, job.kind, job.libraryId, job.id);
+    }
 }
 
 void CoreController::syncLibraryFromStore()
@@ -417,8 +1121,17 @@ void CoreController::applyCoverToEntry(const QString& entryId, const QString& co
         entry.coverUrl = coverUrl;
         entry.metadataPending = false;
         syncEntryToCatalogModel(entryId);
-        return;
+        break;
     }
+
+    const LibraryGame* existing = m_libraryStore.gameById(entryId);
+    if (!existing || existing->coverUrl == coverUrl)
+        return;
+
+    LibraryGame game = *existing;
+    game.coverUrl = coverUrl;
+    m_libraryStore.upsertGame(game);
+    syncLibraryFromStore();
 }
 
 void CoreController::ensureDiskCover(const QString& entryId, const QString& remoteUrl)
@@ -445,6 +1158,30 @@ void CoreController::syncEntryToCatalogModel(const QString& entryId)
             continue;
         if (!m_catalog.updateEntry(entry))
             applyCatalogFilter(m_activeSourceId, m_activeQuery);
+        return;
+    }
+}
+
+InstallKind CoreController::detectInstallKindForEntry(const QString& sourceId,
+                                                      const QString& downloadPath) const
+{
+    if (downloadPath.isEmpty() || !m_pluginHost)
+        return InstallKind::PortableArchive;
+
+    if (ISourcePlugin* plugin = m_pluginHost->plugin(sourceId))
+        return plugin->detectInstallKind(downloadPath);
+    return InstallKind::PortableArchive;
+}
+
+void CoreController::syncCatalogInstallKind(const QString& entryId, InstallKind kind)
+{
+    for (auto& entry : m_catalogCache) {
+        if (entry.id != entryId)
+            continue;
+        if (entry.installKind == kind)
+            return;
+        entry.installKind = kind;
+        syncEntryToCatalogModel(entryId);
         return;
     }
 }
@@ -538,7 +1275,21 @@ void CoreController::enrichCatalogEntry(const QString& entryId)
     const CatalogEntry* entry = findCatalogEntry(entryId);
     if (!entry)
         return;
+
     m_metadataService->queueFetch(entryId, entry->title, MetadataFetchMode::Full);
+
+    if (m_installKindProbe && m_pluginHost && m_pluginHost->hasPlugin(entry->sourceId)) {
+        QString magnet;
+        for (const QString& uri : entry->magnetUris) {
+            if (uri.startsWith(QStringLiteral("magnet:"), Qt::CaseInsensitive)) {
+                magnet = uri;
+                break;
+            }
+        }
+        if (magnet.isEmpty())
+            magnet = entry->magnetUris.value(0);
+        m_installKindProbe->prioritizeEntry(entry->sourceId, entryId, magnet);
+    }
 }
 
 void CoreController::applyCatalogFilter(const QString& sourceId, const QString& query)
@@ -557,6 +1308,9 @@ void CoreController::applyCatalogFilter(const QString& sourceId, const QString& 
 
     m_catalog.setEntries(std::move(filtered));
     setLastAction(QStringLiteral("Каталог %1: найдено %2").arg(sourceId).arg(m_catalog.rowCount()));
+
+    if (m_installKindProbe && m_pluginHost && m_pluginHost->hasPlugin(sourceId))
+        m_installKindProbe->queueCatalog(sourceId, m_catalogCache, query);
 }
 
 void CoreController::launchGame(const QString& gameId)
@@ -655,7 +1409,8 @@ void CoreController::searchCatalog(const QString& sourceId, const QString& query
     applyCatalogFilter(sourceId, query);
 }
 
-void CoreController::installCatalogEntry(const QString& entryId, const QString& libraryId)
+void CoreController::installCatalogEntry(const QString& entryId, const QString& libraryId,
+                                         const QVariantList& addonIdsVariant)
 {
     const CatalogEntry* entry = findCatalogEntry(entryId);
     if (!entry) {
@@ -668,14 +1423,35 @@ void CoreController::installCatalogEntry(const QString& entryId, const QString& 
         return;
     }
 
+    const QStringList addonIds = variantListToStringList(addonIdsVariant);
     const QString libId = libraryId.isEmpty() ? m_settings.defaultLibraryId() : libraryId;
+
     const QString jobId = m_jobOrchestrator->startCatalogDownload(*entry, JobKind::Download, libId);
     if (jobId.isEmpty()) {
         setLastAction(QStringLiteral("Не удалось начать загрузку %1").arg(entry->title));
         return;
     }
 
-    setLastAction(QStringLiteral("Торрент-загрузка: %1").arg(entry->title));
+    ensureLibraryPlaceholder(*entry, libId, addonIds);
+
+    pruneUnselectedAddonJobs(entryId, addonIds);
+
+    if (!addonIds.isEmpty())
+        beginInstallSession(entryId, jobId, entry->sourceId, addonIds);
+
+    for (const QString& addonId : addonIds) {
+        const CatalogComponent* addon = findCatalogAddon(*entry, addonId);
+        if (!addon)
+            continue;
+        m_jobOrchestrator->startAddonDownload(*entry, *addon);
+    }
+
+    if (addonIds.isEmpty())
+        setLastAction(QStringLiteral("Торрент-загрузка: %1").arg(entry->title));
+    else
+        setLastAction(QStringLiteral("Загрузка: %1 и %2 доп.")
+                          .arg(entry->title)
+                          .arg(addonIds.size()));
 }
 
 bool CoreController::needsInstallLocationChoice() const
@@ -747,8 +1523,36 @@ void CoreController::removeGame(const QString& gameId, bool deleteFiles)
     }
 
     m_libraryStore.removeGame(gameId);
+    m_libraryStore.save();
     syncLibraryFromStore();
+    removeJobsForEntry(gameId);
     setLastAction(QStringLiteral("Игра удалена: %1").arg(game->title));
+}
+
+void CoreController::removeEntry(const QString& entryId, bool deleteFiles)
+{
+    if (m_libraryStore.gameById(entryId)) {
+        removeGame(entryId, deleteFiles);
+        return;
+    }
+
+    if (deleteFiles) {
+        QString error;
+        for (const JobEntry& job : m_jobStore.jobs()) {
+            if (job.entryId != entryId || job.savePath.isEmpty())
+                continue;
+            removePathRecursive(job.savePath, &error);
+
+            const QString libId =
+                job.libraryId.isEmpty() ? m_settings.defaultLibraryId() : job.libraryId;
+            const QString gameDir = m_settings.gameDirFor(libId, entryId);
+            if (!gameDir.isEmpty())
+                removePathRecursive(gameDir, &error);
+        }
+    }
+
+    removeJobsForEntry(entryId);
+    setLastAction(QStringLiteral("Загрузка удалена"));
 }
 
 void CoreController::moveGame(const QString& gameId, const QString& targetLibraryId)
@@ -925,6 +1729,13 @@ void CoreController::checkUpdates()
 
 void CoreController::cancelJob(const QString& jobId)
 {
+    const JobEntry* job = m_jobStore.jobById(jobId);
+    if (job && !job->parentEntryId.isEmpty()) {
+        m_jobOrchestrator->removeJob(jobId);
+        setLastAction(QStringLiteral("Дополнение убрано из загрузок"));
+        return;
+    }
+
     m_jobOrchestrator->cancelJob(jobId);
     setLastAction(QStringLiteral("Задача отменена"));
 }
@@ -951,6 +1762,47 @@ void CoreController::retryJob(const QString& jobId)
         return;
     m_jobOrchestrator->retryJob(jobId);
     setLastAction(QStringLiteral("Повтор загрузки"));
+}
+
+void CoreController::retryInstall(const QString& jobId)
+{
+    if (jobId.isEmpty())
+        return;
+
+    const JobEntry* job = m_jobStore.jobById(jobId);
+    if (!job) {
+        setLastAction(QStringLiteral("Загрузка не найдена"));
+        return;
+    }
+    if (job->status != QStringLiteral("completed")) {
+        setLastAction(QStringLiteral("Установка доступна только для завершённых загрузок"));
+        return;
+    }
+    if (!job->parentEntryId.isEmpty()) {
+        setLastAction(QStringLiteral("Дополнения устанавливаются вместе с игрой"));
+        return;
+    }
+    if (!gameNeedsInstall(job->entryId)) {
+        setLastAction(QStringLiteral("Игра уже установлена"));
+        return;
+    }
+    if (job->savePath.isEmpty() || !QDir(job->savePath).exists()) {
+        setLastAction(QStringLiteral("Файлы загрузки не найдены"));
+        return;
+    }
+    if (!m_pluginHost || !m_pluginHost->hasPlugin(job->sourceId)) {
+        setLastAction(QStringLiteral("Плагин источника не найден"));
+        return;
+    }
+
+    const auto entry = resolveCatalogEntry(job->entryId, job->sourceId, job);
+    if (!entry) {
+        setLastAction(QStringLiteral("Не удалось найти игру для установки"));
+        return;
+    }
+
+    startPluginInstall(*entry, job->sourceId, job->savePath, job->kind, job->libraryId, job->id);
+    setLastAction(QStringLiteral("Повтор установки: %1…").arg(entry->title));
 }
 
 void CoreController::clearFinishedJobs()

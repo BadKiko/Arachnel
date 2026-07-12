@@ -23,6 +23,10 @@ struct JobEntry {
     QString savePath;
     QString coverUrl;
     QString libraryId;
+    QString parentEntryId;
+    QString referer;
+    bool httpDownload = false;
+    QString artifactPath;
     QString createdAt;
     QString completedAt;
 };
@@ -51,6 +55,10 @@ public:
         SavePathRole,
         CoverUrlRole,
         LibraryIdRole,
+        ParentEntryIdRole,
+        RefererRole,
+        HttpDownloadRole,
+        ArtifactPathRole,
         CreatedAtRole,
         CompletedAtRole,
     };
@@ -66,7 +74,10 @@ public:
     int activeCount() const;
 
     Q_INVOKABLE QVariantMap jobForEntry(const QString& entryId) const;
+    Q_INVOKABLE QVariantMap jobForAddon(const QString& parentEntryId,
+                                        const QString& addonId) const;
     Q_INVOKABLE QVariantMap primaryActiveJob() const;
+    Q_INVOKABLE QVariantList downloadGroups() const;
 
     void setJobs(QVector<JobEntry> jobs);
     void addJob(JobEntry job);

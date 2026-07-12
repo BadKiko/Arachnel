@@ -17,6 +17,39 @@ Item {
     property string selectedSourceId: Core.sources.firstEnabledId
     property var featuredGame: Core.library.gameAt(0)
 
+    property int jobRevision: 0
+
+    readonly property var featuredJob: {
+        root.jobRevision
+        if (!featuredGame || !featuredGame.gameId)
+            return ({})
+        return Core.jobs.jobForEntry(featuredGame.gameId)
+    }
+    readonly property bool featuredShowJobStatus: featuredGame && featuredGame.gameId
+        && !Core.isEntryPlayable(featuredGame.gameId)
+        && !!(featuredJob.jobId)
+    readonly property real featuredFillProgress: {
+        if (!featuredShowJobStatus)
+            return -1
+        if (featuredJob.inProgress || featuredJob.status === "installing")
+            return featuredJob.progress
+        return 100
+    }
+    readonly property string featuredStatusLine: {
+        if (!featuredShowJobStatus)
+            return ""
+        if (featuredJob.status === "installing") {
+            if (featuredJob.detail && featuredJob.detail.length)
+                return featuredJob.detail
+            return qsTr("Установка %1%").arg(featuredJob.progress)
+        }
+        if (featuredJob.status === "completed" && !featuredJob.inProgress)
+            return qsTr("Установка…")
+        if (featuredJob.status === "paused")
+            return qsTr("Пауза · %1%").arg(featuredJob.progress)
+        return qsTr("Загрузка %1%").arg(featuredJob.progress)
+    }
+
     signal openGame(string gameId)
     signal openCatalog()
     signal openDownloads()
@@ -26,6 +59,11 @@ Item {
     Component.onCompleted: {
         if (selectedSourceId.length)
             Core.searchCatalog(selectedSourceId, "")
+    }
+
+    Connections {
+        target: Core.jobs
+        function onJobsChanged() { root.jobRevision++ }
     }
 
     Connections {
@@ -347,6 +385,31 @@ Item {
                                 color: MD.Token.color.on_surface_variant
                                 typescale: MD.Token.typescale.body_large
                                 elide: Text.ElideRight
+                                visible: !root.featuredShowJobStatus
+                            }
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: MD.Token.spacing.extra_small
+                                visible: root.featuredShowJobStatus
+
+                                MD.Icon {
+                                    name: root.featuredJob.status === "installing"
+                                          ? MD.Token.icon.install_desktop
+                                          : root.featuredJob.status === "paused"
+                                            ? MD.Token.icon.play_arrow
+                                            : MD.Token.icon.pause
+                                    size: 18
+                                    color: MD.Token.color.on_surface_variant
+                                }
+
+                                MD.Label {
+                                    Layout.fillWidth: true
+                                    text: root.featuredStatusLine
+                                    color: MD.Token.color.on_surface_variant
+                                    typescale: MD.Token.typescale.body_large
+                                    elide: Text.ElideRight
+                                }
                             }
 
                             Item { Layout.fillHeight: true }
@@ -359,6 +422,7 @@ Item {
                                     text: qsTr("Играть")
                                     mdState.type: MD.Enum.BtFilled
                                     enabled: !!(root.featuredGame.gameId)
+                                             && Core.isEntryPlayable(root.featuredGame.gameId)
                                     onClicked: Core.launchGame(root.featuredGame.gameId)
                                 }
 
@@ -385,6 +449,7 @@ Item {
                             seed: root.featuredGame.title ?? ""
                             fallbackText: (root.featuredGame.title ?? "?").charAt(0)
                             cornerRadius: root.cardRadius
+                            fillProgress: root.featuredFillProgress
                             onClicked: {
                                 if (root.featuredGame.gameId)
                                     root.openGame(root.featuredGame.gameId)

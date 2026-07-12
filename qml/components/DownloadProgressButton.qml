@@ -10,6 +10,8 @@ Item {
     property bool paused: false
     property bool downloading: false
     property bool completed: false
+    property bool readyToInstall: false
+    property bool installFailed: false
     property string idleText: qsTr("Скачать торрент")
 
     readonly property bool inProgress: root.downloading || root.paused
@@ -28,9 +30,11 @@ Item {
         clip: true
         elevation: MD.Token.elevation.level0
 
-        color: root.completed
+        color: root.completed || root.readyToInstall
                ? MD.Token.color.secondary_container
-               : MD.Token.color.primary
+               : root.installFailed
+                 ? MD.Util.transparent(MD.Token.color.error, 0.18)
+                 : MD.Token.color.primary
 
         RowLayout {
             id: labelRow
@@ -38,31 +42,43 @@ Item {
             spacing: MD.Token.spacing.small
 
             MD.Icon {
-                name: root.completed
-                      ? MD.Token.icon.check_circle
-                      : root.paused
-                        ? MD.Token.icon.play_arrow
-                        : root.inProgress
-                          ? MD.Token.icon.pause
-                          : MD.Token.icon.download
+                name: root.installFailed
+                      ? MD.Token.icon.refresh
+                      : root.readyToInstall
+                        ? MD.Token.icon.install_desktop
+                        : root.completed
+                          ? MD.Token.icon.check_circle
+                          : root.paused
+                            ? MD.Token.icon.play_arrow
+                            : root.inProgress
+                              ? MD.Token.icon.pause
+                              : MD.Token.icon.download
                 size: 18
-                color: root.completed
-                       ? MD.Token.color.on_secondary_container
-                       : MD.Token.color.on_primary
+                color: root.installFailed
+                       ? MD.Token.color.error
+                       : root.completed || root.readyToInstall
+                         ? MD.Token.color.on_secondary_container
+                         : MD.Token.color.on_primary
             }
 
             MD.Label {
-                text: root.completed
-                      ? qsTr("Загружено")
-                      : root.paused
-                        ? qsTr("Пауза · %1%").arg(root.progress)
-                        : root.inProgress
-                          ? qsTr("Загрузка · %1%").arg(root.progress)
-                          : root.idleText
+                text: root.installFailed
+                      ? qsTr("Повторить установку")
+                      : root.readyToInstall
+                        ? qsTr("Установить")
+                        : root.completed
+                          ? qsTr("Загружено")
+                          : root.paused
+                            ? qsTr("Пауза · %1%").arg(root.progress)
+                            : root.inProgress
+                              ? qsTr("Загрузка · %1%").arg(root.progress)
+                              : root.idleText
                 typescale: MD.Token.typescale.label_large
-                color: root.completed
-                       ? MD.Token.color.on_secondary_container
-                       : MD.Token.color.on_primary
+                color: root.installFailed
+                       ? MD.Token.color.error
+                       : root.completed || root.readyToInstall
+                         ? MD.Token.color.on_secondary_container
+                         : MD.Token.color.on_primary
             }
         }
 
@@ -71,7 +87,7 @@ Item {
             anchors.right: parent.right
             anchors.bottom: parent.bottom
             height: 4
-            visible: root.inProgress && !root.completed
+            visible: root.inProgress && !root.completed && !root.readyToInstall
 
             Rectangle {
                 anchors.fill: parent
