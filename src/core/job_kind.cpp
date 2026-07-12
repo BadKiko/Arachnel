@@ -1,18 +1,20 @@
 #include "job_kind.h"
 
+#include "i18n.h"
+
 namespace arachnel::core {
 
 QString jobKindLabel(JobKind kind)
 {
     switch (kind) {
     case JobKind::Download:
-        return QStringLiteral("Загрузка");
+        return trCore("Download");
     case JobKind::Install:
-        return QStringLiteral("Установка");
+        return trCore("Install");
     case JobKind::Update:
-        return QStringLiteral("Обновление");
+        return trCore("Update");
     }
-    return QStringLiteral("Задача");
+    return trCore("Task");
 }
 
 } // namespace arachnel::core

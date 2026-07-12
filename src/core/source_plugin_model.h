@@ -14,6 +14,9 @@ struct SourcePluginInfo {
     QString catalogUrl;
     QString iconName;
     bool enabled = true;
+    bool isPlugin = false;
+    QString pluginVersion;
+    QString pluginRootPath;
     QStringList capabilities;
 };
 
@@ -37,6 +40,9 @@ public:
         SourceEnabledRole,
         CapabilitiesRole,
         HasCatalogUrlRole,
+        IsPluginRole,
+        PluginVersionRole,
+        PluginRootPathRole,
     };
     Q_ENUM(Role)
 

@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 270" role="img" aria-label="Arachnel screenshots">
+  <defs>
+    <linearGradient id="fade-left" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#0d0d0f" stop-opacity="1"/>
+      <stop offset="1" stop-color="#0d0d0f" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="fade-right" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#0d0d0f" stop-opacity="0"/>
+      <stop offset="1" stop-color="#0d0d0f" stop-opacity="1"/>
+    </linearGradient>
+  </defs>
+  <rect width="920" height="270" fill="#0d0d0f"/>
+  <clipPath id="viewport">
+    <rect x="0" y="0" width="920" height="270"/>
+  </clipPath>
+  <g clip-path="url(#viewport)">
+    
+  <g id="row-top">
+    <animateTransform attributeName="transform" attributeType="XML" type="translate"
+      from="0.0 0" to="-2646.0 0" dur="48s" repeatCount="indefinite"/>
+    <g>
+      
+    <g transform="translate(0.0 12.0)">
+      <rect width="360" height="123" rx="18" fill="#161618" stroke="#303036" stroke-width="1"/>
+      <clipPath id="row-top-clip-0">
+        <rect x="8" y="8" width="344" height="107.5" rx="10"/>
+      </clipPath>
+      <image href="https://raw.githubusercontent.com/BadKiko/Arachnel/develop/images/1.png" x="8" y="8.0" width="344" height="215.0"
+             clip-path="url(#row-top-clip-0)" preserveAspectRatio="xMidYMid slice"/>
+    </g>
+    <g transform="translate(378.0 12.0)">
+      <rect width="360" height="123" rx="18" fill="#161618" stroke="#303036" stroke-width="1"/>
+      <clipPath id="row-top-clip-1">
+        <rect x="8" y="8" width="344" height="107.5" rx="10"/>
+      </clipPath>
+      <image href="https://raw.githubusercontent.com/BadKiko/Arachnel/develop/images/2.png" x="8" y="8.0" width="344" height="215.0"
+             clip-path="url(#row-top-clip-1)" preserveAspectRatio="xMidYMid slice"/>
+    </g>
+    <g transform="translate(756.0 12.0)">
+      <rect width="360" height="123" rx="18" fill="#161618" stroke="#303036" stroke-width="1"/>
+      <clipPath id="row-top-clip-2">
+        <rect x="8" y="8" width="344" height="107.5" rx="10"/>
+      </clipPath>
+      <image href="https://raw.githubusercontent.com/BadKiko/Arachnel/develop/images/3.png" x="8" y="8.0" width="344" height="215.0"
+             clip-path="url(#row-top-clip-2)" preserveAspectRatio="xMidYMid slice"/>
+    </g>
+    <g transform="translate(1134.0 12.0)">
+      <rect width="360" height="123" rx="18" fill="#161618" stroke="#303036" stroke-width="1"/>
+      <clipPath id="row-top-clip-3">
+        <rect x="8" y="8" width="344" height="107.5" rx="10"/>
+      </clipPath>
+      <image href="https://raw.githubusercontent.com/BadKiko/Arachnel/develop/images/4.png" x="8" y="8.0" width="344" height="215.0"
+             clip-path="url(#row-top-clip-3)" preserveAspectRatio="xMidYMid slice"/>
+    </g>
+    <g transform="translate(1512.0 12.0)">
+      <rect width="360" height="123" rx="18" fill="#161618" stroke="#303036" stroke-width="1"/>
+      <clipPath id="row-top-clip-4">
+        <rect x="8" y="8" width="344" height="107.5" rx="10"/>
+      </clipPath>
+      <image href="https://raw.githubusercontent.com/BadKiko/Arachnel/develop/images/5.png" x="8" y="8.0" width="344" height="215.0"
+             clip-path="url(#row-top-clip-4)" preserveAspectRatio="xMidYMid slice"/>
+    </g>
+    <g transform="translate(1890.0 12.0)">
+      <rect width="360" height="123" rx="18" fill="#161618" stroke="#303036" stroke-width="1"/>
+      <clipPath id="row-top-clip-5">
+        <rect x="8" y="8" width="344" height="107.5" rx="10"/>
+      </clipPath>
+      <image href="https://raw.githubusercontent.com/BadKiko/Arachnel/develop/images/6.png" x="8" y="8.0" width="344" height="215.0"
+             clip-path="url(#row-top-clip-5)" preserveAspectRatio="xMidYMid slice"/>
+    </g>
+    <g transform="translate(2268.0 12.0)">
+      <rect width="360" height="123" rx="18" fill="#161618" stroke="#303036" stroke-width="1"/>
+      <clipPath id="row-top-clip-6">
+        <rect x="8" y="8" width="344" height="107.5" rx="10"/>
+      </clipPath>
+      <image href="https://raw.githubusercontent.com/BadKiko/Arachnel/develop/images/7.png" x="8" y="8.0" width="344" height="215.0"
+             clip-path="url(#row-top-clip-6)" preserveAspectRatio="xMidYMid slice"/>
+    </g>
+    </g>
+    <g transform="translate(2646.0 0)">
+      
+    <g transform="translate(0.0 12.0)">
+      <rect width="360" height="123" rx="18" fill="#161618" stroke="#303036" stroke-width="1"/>
+      <clipPath id="row-top-clip-0">
+        <rect x="8" y="8" width="344" height="107.5" rx="10"/>
+      </clipPath>
+      <image href="https://raw.githubusercontent.com/BadKiko/Arachnel/develop/images/1.png" x="8" y="8.0" width="344" height="215.0"
+             clip-path="url(#row-top-clip-0)" preserveAspectRatio="xMidYMid slice"/>
+    </g>
+    <g transform="translate(378.0 12.0)">
+      <rect width="360" height="123" rx="18" fill="#161618" stroke="#303036" stroke-width="1"/>
+      <clipPath id="row-top-clip-1">
+        <rect x="8" y="8" width="344" height="107.5" rx="10"/>
+      </clipPath>
+      <image href="https://raw.githubusercontent.com/BadKiko/Arachnel/develop/images/2.png" x="8" y="8.0" width="344" height="215.0"
+             clip-path="url(#row-top-clip-1)" preserveAspectRatio="xMidYMid slice"/>
+    </g>
+    <g transform="translate(756.0 12.0)">
+      <rect width="360" height="123" rx="18" fill="#161618" stroke="#303036" stroke-width="1"/>
+      <clipPath id="row-top-clip-2">
+        <rect x="8" y="8" width="344" height="107.5" rx="10"/>
+      </clipPath>
+      <image href="https://raw.githubusercontent.com/BadKiko/Arachnel/develop/images/3.png" x="8" y="8.0" width="344" height="215.0"
+             clip-path="url(#row-top-clip-2)" preserveAspectRatio="xMidYMid slice"/>
+    </g>
+    <g transform="translate(1134.0 12.0)">
+      <rect width="360" height="123" rx="18" fill="#161618" stroke="#303036" stroke-width="1"/>
+      <clipPath id="row-top-clip-3">
+        <rect x="8" y="8" width="344" height="107.5" rx="10"/>
+      </clipPath>
+      <image href="https://raw.githubusercontent.com/BadKiko/Arachnel/develop/images/4.png" x="8" y="8.0" width="344" height="215.0"
+             clip-path="url(#row-top-clip-3)" preserveAspectRatio="xMidYMid slice"/>
+    </g>
+    <g transform="translate(1512.0 12.0)">
+      <rect width="360" height="123" rx="18" fill="#161618" stroke="#303036" stroke-width="1"/>
+      <clipPath id="row-top-clip-4">
+        <rect x="8" y="8" width="344" height="107.5" rx="10"/>
+      </clipPath>
+      <image href="https://raw.githubusercontent.com/BadKiko/Arachnel/develop/images/5.png" x="8" y="8.0" width="344" height="215.0"
+             clip-path="url(#row-top-clip-4)" preserveAspectRatio="xMidYMid slice"/>
+    </g>
+    <g transform="translate(1890.0 12.0)">
+      <rect width="360" height="123" rx="18" fill="#161618" stroke="#303036" stroke-width="1"/>
+      <clipPath id="row-top-clip-5">
+        <rect x="8" y="8" width="344" height="107.5" rx="10"/>
+      </clipPath>
+      <image href="https://raw.githubusercontent.com/BadKiko/Arachnel/develop/images/6.png" x="8" y="8.0" width="344" height="215.0"
+             clip-path="url(#row-top-clip-5)" preserveAspectRatio="xMidYMid slice"/>
+    </g>
+    <g transform="translate(2268.0 12.0)">
+      <rect width="360" height="123" rx="18" fill="#161618" stroke="#303036" stroke-width="1"/>
+      <clipPath id="row-top-clip-6">
+        <rect x="8" y="8" width="344" height="107.5" rx="10"/>
+      </clipPath>
+      <image href="https://raw.githubusercontent.com/BadKiko/Arachnel/develop/images/7.png" x="8" y="8.0" width="344" height="215.0"
+             clip-path="url(#row-top-clip-6)" preserveAspectRatio="xMidYMid slice"/>
+    </g>
+    </g>
+  </g>
+    
+  <g id="row-bottom">
+    <animateTransform attributeName="transform" attributeType="XML" type="translate"
+      from="-420.0 0" to="-3066.0 0" dur="62s" repeatCount="indefinite"/>
+    <g>
+      
+    <g transform="translate(0.0 143.0)">
+      <rect width="360" height="123" rx="18" fill="#161618" stroke="#303036" stroke-width="1"/>
+      <clipPath id="row-bottom-clip-0">
+        <rect x="8" y="8" width="344" height="107.5" rx="10"/>
+      </clipPath>
+      <image href="https://raw.githubusercontent.com/BadKiko/Arachnel/develop/images/7.png" x="8" y="-99.5" width="344" height="215.0"
+             clip-path="url(#row-bottom-clip-0)" preserveAspectRatio="xMidYMid slice"/>
+    </g>
+    <g transform="translate(378.0 143.0)">
+      <rect width="360" height="123" rx="18" fill="#161618" stroke="#303036" stroke-width="1"/>
+      <clipPath id="row-bottom-clip-1">
+        <rect x="8" y="8" width="344" height="107.5" rx="10"/>
+      </clipPath>
+      <image href="https://raw.githubusercontent.com/BadKiko/Arachnel/develop/images/6.png" x="8" y="-99.5" width="344" height="215.0"
+             clip-path="url(#row-bottom-clip-1)" preserveAspectRatio="xMidYMid slice"/>
+    </g>
+    <g transform="translate(756.0 143.0)">
+      <rect width="360" height="123" rx="18" fill="#161618" stroke="#303036" stroke-width="1"/>
+      <clipPath id="row-bottom-clip-2">
+        <rect x="8" y="8" width="344" height="107.5" rx="10"/>
+      </clipPath>
+      <image href="https://raw.githubusercontent.com/BadKiko/Arachnel/develop/images/5.png" x="8" y="-99.5" width="344" height="215.0"
+             clip-path="url(#row-bottom-clip-2)" preserveAspectRatio="xMidYMid slice"/>
+    </g>
+    <g transform="translate(1134.0 143.0)">
+      <rect width="360" height="123" rx="18" fill="#161618" stroke="#303036" stroke-width="1"/>
+      <clipPath id="row-bottom-clip-3">
+        <rect x="8" y="8" width="344" height="107.5" rx="10"/>
+      </clipPath>
+      <image href="https://raw.githubusercontent.com/BadKiko/Arachnel/develop/images/4.png" x="8" y="-99.5" width="344" height="215.0"
+             clip-path="url(#row-bottom-clip-3)" preserveAspectRatio="xMidYMid slice"/>
+    </g>
+    <g transform="translate(1512.0 143.0)">
+      <rect width="360" height="123" rx="18" fill="#161618" stroke="#303036" stroke-width="1"/>
+      <clipPath id="row-bottom-clip-4">
+        <rect x="8" y="8" width="344" height="107.5" rx="10"/>
+      </clipPath>
+      <image href="https://raw.githubusercontent.com/BadKiko/Arachnel/develop/images/3.png" x="8" y="-99.5" width="344" height="215.0"
+             clip-path="url(#row-bottom-clip-4)" preserveAspectRatio="xMidYMid slice"/>
+    </g>
+    <g transform="translate(1890.0 143.0)">
+      <rect width="360" height="123" rx="18" fill="#161618" stroke="#303036" stroke-width="1"/>
+      <clipPath id="row-bottom-clip-5">
+        <rect x="8" y="8" width="344" height="107.5" rx="10"/>
+      </clipPath>
+      <image href="https://raw.githubusercontent.com/BadKiko/Arachnel/develop/images/2.png" x="8" y="-99.5" width="344" height="215.0"
+             clip-path="url(#row-bottom-clip-5)" preserveAspectRatio="xMidYMid slice"/>
+    </g>
+    <g transform="translate(2268.0 143.0)">
+      <rect width="360" height="123" rx="18" fill="#161618" stroke="#303036" stroke-width="1"/>
+      <clipPath id="row-bottom-clip-6">
+        <rect x="8" y="8" width="344" height="107.5" rx="10"/>
+      </clipPath>
+      <image href="https://raw.githubusercontent.com/BadKiko/Arachnel/develop/images/1.png" x="8" y="-99.5" width="344" height="215.0"
+             clip-path="url(#row-bottom-clip-6)" preserveAspectRatio="xMidYMid slice"/>
+    </g>
+    </g>
+    <g transform="translate(2646.0 0)">
+      
+    <g transform="translate(0.0 143.0)">
+      <rect width="360" height="123" rx="18" fill="#161618" stroke="#303036" stroke-width="1"/>
+      <clipPath id="row-bottom-clip-0">
+        <rect x="8" y="8" width="344" height="107.5" rx="10"/>
+      </clipPath>
+      <image href="https://raw.githubusercontent.com/BadKiko/Arachnel/develop/images/7.png" x="8" y="-99.5" width="344" height="215.0"
+             clip-path="url(#row-bottom-clip-0)" preserveAspectRatio="xMidYMid slice"/>
+    </g>
+    <g transform="translate(378.0 143.0)">
+      <rect width="360" height="123" rx="18" fill="#161618" stroke="#303036" stroke-width="1"/>
+      <clipPath id="row-bottom-clip-1">
+        <rect x="8" y="8" width="344" height="107.5" rx="10"/>
+      </clipPath>
+      <image href="https://raw.githubusercontent.com/BadKiko/Arachnel/develop/images/6.png" x="8" y="-99.5" width="344" height="215.0"
+             clip-path="url(#row-bottom-clip-1)" preserveAspectRatio="xMidYMid slice"/>
+    </g>
+    <g transform="translate(756.0 143.0)">
+      <rect width="360" height="123" rx="18" fill="#161618" stroke="#303036" stroke-width="1"/>
+      <clipPath id="row-bottom-clip-2">
+        <rect x="8" y="8" width="344" height="107.5" rx="10"/>
+      </clipPath>
+      <image href="https://raw.githubusercontent.com/BadKiko/Arachnel/develop/images/5.png" x="8" y="-99.5" width="344" height="215.0"
+             clip-path="url(#row-bottom-clip-2)" preserveAspectRatio="xMidYMid slice"/>
+    </g>
+    <g transform="translate(1134.0 143.0)">
+      <rect width="360" height="123" rx="18" fill="#161618" stroke="#303036" stroke-width="1"/>
+      <clipPath id="row-bottom-clip-3">
+        <rect x="8" y="8" width="344" height="107.5" rx="10"/>
+      </clipPath>
+      <image href="https://raw.githubusercontent.com/BadKiko/Arachnel/develop/images/4.png" x="8" y="-99.5" width="344" height="215.0"
+             clip-path="url(#row-bottom-clip-3)" preserveAspectRatio="xMidYMid slice"/>
+    </g>
+    <g transform="translate(1512.0 143.0)">
+      <rect width="360" height="123" rx="18" fill="#161618" stroke="#303036" stroke-width="1"/>
+      <clipPath id="row-bottom-clip-4">
+        <rect x="8" y="8" width="344" height="107.5" rx="10"/>
+      </clipPath>
+      <image href="https://raw.githubusercontent.com/BadKiko/Arachnel/develop/images/3.png" x="8" y="-99.5" width="344" height="215.0"
+             clip-path="url(#row-bottom-clip-4)" preserveAspectRatio="xMidYMid slice"/>
+    </g>
+    <g transform="translate(1890.0 143.0)">
+      <rect width="360" height="123" rx="18" fill="#161618" stroke="#303036" stroke-width="1"/>
+      <clipPath id="row-bottom-clip-5">
+        <rect x="8" y="8" width="344" height="107.5" rx="10"/>
+      </clipPath>
+      <image href="https://raw.githubusercontent.com/BadKiko/Arachnel/develop/images/2.png" x="8" y="-99.5" width="344" height="215.0"
+             clip-path="url(#row-bottom-clip-5)" preserveAspectRatio="xMidYMid slice"/>
+    </g>
+    <g transform="translate(2268.0 143.0)">
+      <rect width="360" height="123" rx="18" fill="#161618" stroke="#303036" stroke-width="1"/>
+      <clipPath id="row-bottom-clip-6">
+        <rect x="8" y="8" width="344" height="107.5" rx="10"/>
+      </clipPath>
+      <image href="https://raw.githubusercontent.com/BadKiko/Arachnel/develop/images/1.png" x="8" y="-99.5" width="344" height="215.0"
+             clip-path="url(#row-bottom-clip-6)" preserveAspectRatio="xMidYMid slice"/>
+    </g>
+    </g>
+  </g>
+  </g>
+  <rect x="0" y="0" width="72" height="270" fill="url(#fade-left)"/>
+  <rect x="848" y="0" width="72" height="270" fill="url(#fade-right)"/>
+</svg>

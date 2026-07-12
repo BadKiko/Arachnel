@@ -1,11 +1,15 @@
 #include <QCoreApplication>
 #include <QGuiApplication>
+#include <QIcon>
 #include <QQmlApplicationEngine>
 #include <QQmlError>
+#include <QStyleHints>
 #include <QString>
 #include <cstdio>
 
 #include "core/core_controller.h"
+#include "core/settings_store.h"
+#include "core/translation_service.h"
 
 #ifndef QT_QML_MATERIAL_IMPORT_PATH
 #define QT_QML_MATERIAL_IMPORT_PATH ""
@@ -14,6 +18,10 @@
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
+    const QIcon windowIcon(QStringLiteral(":/icons/256.png"));
+    if (!windowIcon.isNull())
+        app.setWindowIcon(windowIcon);
+
     QCoreApplication::setOrganizationName(QStringLiteral("PetWork"));
     QCoreApplication::setOrganizationDomain(QStringLiteral("petwork.local"));
     QCoreApplication::setApplicationName(QStringLiteral("Arachnel"));
@@ -51,6 +59,22 @@ int main(int argc, char *argv[])
         },
         Qt::QueuedConnection);
 
+    QObject::connect(&app, &QCoreApplication::aboutToQuit, &app, []() {
+        arachnel::core::CoreController::instance().prepareShutdown();
+    });
+
     engine.loadFromModule(QStringLiteral("arachnel"), QStringLiteral("Main"));
+
+    auto& core = arachnel::core::CoreController::instance();
+    auto& translations = arachnel::core::TranslationService::instance();
+    translations.setEngine(&engine);
+    translations.applyLanguage(core.settings()->uiLanguage());
+
+    QObject::connect(core.settings(), &arachnel::core::SettingsStore::uiLanguageChanged, &app,
+                     [&translations, &core]() {
+                         translations.applyLanguage(core.settings()->uiLanguage());
+                         core.jobs()->refreshLocalizedText();
+                     });
+
     return app.exec();
 }

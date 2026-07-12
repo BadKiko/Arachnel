@@ -65,6 +65,8 @@ QVariant LibraryModel::data(const QModelIndex& index, int role) const
         return game.uploadDate;
     case DownloadPathRole:
         return game.downloadPath;
+    case LibraryIdRole:
+        return game.libraryId;
     case ComponentCountRole:
         return game.components.size();
     case InstalledComponentCountRole:
@@ -92,6 +94,7 @@ QHash<int, QByteArray> LibraryModel::roleNames() const
         {HasUpdateRole, "hasUpdate"},
         {UploadDateRole, "uploadDate"},
         {DownloadPathRole, "downloadPath"},
+        {LibraryIdRole, "libraryId"},
         {ComponentCountRole, "componentCount"},
         {InstalledComponentCountRole, "installedComponentCount"},
     };
@@ -103,6 +106,7 @@ void LibraryModel::setGames(QVector<LibraryGame> games)
     m_games = std::move(games);
     endResetModel();
     emit countChanged();
+    emit libraryChanged();
 }
 
 const LibraryGame* LibraryModel::gameById(const QString& id) const
@@ -133,6 +137,8 @@ QVariantMap LibraryModel::toMap(const LibraryGame& game) const
         {QStringLiteral("hasUpdate"), game.hasUpdate},
         {QStringLiteral("uploadDate"), game.uploadDate},
         {QStringLiteral("downloadPath"), game.downloadPath},
+        {QStringLiteral("libraryId"), game.libraryId},
+        {QStringLiteral("lastPlayedAt"), game.lastPlayedAt},
         {QStringLiteral("componentCount"), game.components.size()},
         {QStringLiteral("installedComponentCount"), installedComponentCount(game.components)},
         {QStringLiteral("installed"), true},
@@ -144,6 +150,25 @@ QVariantMap LibraryModel::gameAt(int row) const
     if (row < 0 || row >= m_games.size())
         return {};
     return toMap(m_games.at(row));
+}
+
+QVariantMap LibraryModel::mostRecentGame() const
+{
+    if (m_games.isEmpty())
+        return {};
+
+    const LibraryGame* best = &m_games.front();
+    for (const auto& game : m_games) {
+        if (game.lastPlayedAt.isEmpty())
+            continue;
+        if (best->lastPlayedAt.isEmpty() || game.lastPlayedAt > best->lastPlayedAt)
+            best = &game;
+    }
+
+    if (!best->lastPlayedAt.isEmpty())
+        return toMap(*best);
+
+    return toMap(m_games.front());
 }
 
 QVariantMap LibraryModel::gameInfo(const QString& id) const

@@ -3,7 +3,38 @@
 #include "catalog_types.h"
 #include "install_kind.h"
 
+#include <algorithm>
+
 namespace arachnel::core {
+
+namespace {
+
+QString normalizedTitle(const CatalogEntry& entry)
+{
+    return entry.title.trimmed();
+}
+
+bool catalogEntryLess(const CatalogEntry& a, const CatalogEntry& b, CatalogModel::SortMode mode)
+{
+    switch (mode) {
+    case CatalogModel::SortOldest:
+        if (a.uploadDate != b.uploadDate)
+            return a.uploadDate < b.uploadDate;
+        break;
+    case CatalogModel::SortTitleAsc:
+        return normalizedTitle(a).compare(normalizedTitle(b), Qt::CaseInsensitive) < 0;
+    case CatalogModel::SortTitleDesc:
+        return normalizedTitle(a).compare(normalizedTitle(b), Qt::CaseInsensitive) > 0;
+    case CatalogModel::SortNewest:
+    default:
+        if (a.uploadDate != b.uploadDate)
+            return a.uploadDate > b.uploadDate;
+        break;
+    }
+    return normalizedTitle(a).compare(normalizedTitle(b), Qt::CaseInsensitive) < 0;
+}
+
+} // namespace
 
 CatalogModel::CatalogModel(QObject* parent)
     : QAbstractListModel(parent)
@@ -83,10 +114,35 @@ QHash<int, QByteArray> CatalogModel::roleNames() const
     };
 }
 
+void CatalogModel::setSortMode(int mode)
+{
+    const auto next = static_cast<SortMode>(
+        qBound(static_cast<int>(SortNewest), mode, static_cast<int>(SortTitleDesc)));
+    if (m_sortMode == next)
+        return;
+
+    m_sortMode = next;
+    if (!m_entries.isEmpty()) {
+        beginResetModel();
+        sortEntries();
+        endResetModel();
+    }
+    emit sortModeChanged();
+}
+
+void CatalogModel::sortEntries()
+{
+    std::stable_sort(m_entries.begin(), m_entries.end(),
+                     [this](const CatalogEntry& a, const CatalogEntry& b) {
+                         return catalogEntryLess(a, b, m_sortMode);
+                     });
+}
+
 void CatalogModel::setEntries(QVector<CatalogEntry> entries)
 {
     beginResetModel();
     m_entries = std::move(entries);
+    sortEntries();
     endResetModel();
     emit countChanged();
 }
@@ -171,6 +227,9 @@ QVariantList CatalogModel::addonsFor(const QString& entryId) const
             {QStringLiteral("uploadDate"), addon.uploadDate},
             {QStringLiteral("kind"), static_cast<int>(addon.kind)},
             {QStringLiteral("kindLabel"), catalogItemKindLabel(addon.kind)},
+            {QStringLiteral("delivery"), static_cast<int>(addon.delivery)},
+            {QStringLiteral("deliveryLabel"), componentDeliveryLabel(addon.delivery)},
+            {QStringLiteral("optional"), addon.optional},
         });
     }
     return addons;

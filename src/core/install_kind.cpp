@@ -6,9 +6,9 @@ QString installKindLabel(InstallKind kind)
 {
     switch (kind) {
     case InstallKind::PortableArchive:
-        return QStringLiteral("Portable");
+        return QStringLiteral("Портабл");
     case InstallKind::Installer:
-        return QStringLiteral("Installer");
+        return QStringLiteral("Установщик");
     case InstallKind::BundledFix:
         return QStringLiteral("Bundled fix");
     case InstallKind::FixDownload:

@@ -15,6 +15,8 @@ Item {
     required property string installKindLabel
     required property bool metadataPending
 
+    property bool compactRow: false
+
     signal openDetails(string entryId)
 
     readonly property bool hasLibraryCover: coverUrl.startsWith("file:")
@@ -38,7 +40,6 @@ Item {
         requestedId = ""
     }
 
-    // Debounce so a fast flick does not enqueue every recycled cell.
     Timer {
         id: requestTimer
         interval: 60
@@ -48,9 +49,7 @@ Item {
     Component.onCompleted: requestTimer.start()
     Component.onDestruction: cancelRequest()
 
-    // reuseItems: cancel when pooled; re-request when shown again with new model data.
-    GridView.onPooled: cancelRequest()
-    GridView.onReused: requestTimer.restart()
+    ListView.onReused: requestTimer.restart()
 
     onEntryIdChanged: {
         cancelRequest()
@@ -64,9 +63,65 @@ Item {
         }
     }
 
+    RowLayout {
+        anchors.fill: parent
+        visible: root.compactRow
+        spacing: MD.Token.spacing.medium
+
+        GamePoster {
+            Layout.preferredWidth: 52
+            Layout.preferredHeight: 70
+            source: root.coverUrl
+            seed: root.title
+            fallbackText: root.title.length > 0 ? root.title.charAt(0) : "?"
+            awaiting: root.metadataPending
+            cornerRadius: MD.Token.shape.corner.medium
+            onClicked: root.openDetails(root.entryId)
+            onLoadFailed: Core.invalidateCatalogCover(root.entryId)
+        }
+
+        ColumnLayout {
+            Layout.fillWidth: true
+            spacing: 2
+
+            MD.Label {
+                Layout.fillWidth: true
+                text: root.title
+                typescale: MD.Token.typescale.title_small
+                elide: Text.ElideRight
+                maximumLineCount: 1
+            }
+
+            MD.Label {
+                Layout.fillWidth: true
+                text: "v" + root.version + " · " + root.sizeLabel
+                color: MD.Token.color.on_surface_variant
+                typescale: MD.Token.typescale.label_medium
+                elide: Text.ElideRight
+                maximumLineCount: 1
+            }
+        }
+
+        MD.Label {
+            text: root.installKindLabel
+            color: MD.Token.color.on_surface_variant
+            typescale: MD.Token.typescale.label_small
+            elide: Text.ElideRight
+            maximumLineCount: 1
+            Layout.maximumWidth: 120
+        }
+
+        MD.Icon {
+            name: MD.Token.icon.chevron_right
+            size: 20
+            color: MD.Token.color.on_surface_variant
+        }
+    }
+
     ColumnLayout {
         anchors.fill: parent
         anchors.rightMargin: MD.Token.spacing.small
+        visible: !root.compactRow
         spacing: MD.Token.spacing.extra_small
 
         GamePoster {
@@ -97,5 +152,13 @@ Item {
             elide: Text.ElideRight
             maximumLineCount: 1
         }
+    }
+
+    MouseArea {
+        anchors.fill: parent
+        visible: root.compactRow
+        cursorShape: Qt.PointingHandCursor
+        onClicked: root.openDetails(root.entryId)
+        z: -1
     }
 }

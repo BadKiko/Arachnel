@@ -128,6 +128,8 @@ void LibraryStore::load()
         game.uploadDate = obj.value(QStringLiteral("uploadDate")).toString();
         game.magnetUri = obj.value(QStringLiteral("magnetUri")).toString();
         game.downloadPath = obj.value(QStringLiteral("downloadPath")).toString();
+        game.libraryId = obj.value(QStringLiteral("libraryId")).toString();
+        game.lastPlayedAt = obj.value(QStringLiteral("lastPlayedAt")).toString();
         game.components = componentsFromJson(obj.value(QStringLiteral("components")).toArray());
         games.append(game);
     }
@@ -155,6 +157,8 @@ void LibraryStore::save()
         obj.insert(QStringLiteral("uploadDate"), game.uploadDate);
         obj.insert(QStringLiteral("magnetUri"), game.magnetUri);
         obj.insert(QStringLiteral("downloadPath"), game.downloadPath);
+        obj.insert(QStringLiteral("libraryId"), game.libraryId);
+        obj.insert(QStringLiteral("lastPlayedAt"), game.lastPlayedAt);
         obj.insert(QStringLiteral("components"), componentsToJson(game.components));
         array.append(obj);
     }

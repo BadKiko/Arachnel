@@ -11,6 +11,10 @@ Flickable {
     property bool editing: false
     property string sourceId: ""
     property bool sourceEnabled: true
+    property bool openCreate: false
+    property bool validating: false
+    property string validateRequestId: ""
+    property string pendingUrl: ""
 
     signal saved()
     signal cancelled()
@@ -43,34 +47,76 @@ Flickable {
         nameField.forceActiveFocus()
     }
 
+    Component.onCompleted: {
+        if (openCreate)
+            loadCreate()
+    }
+
     function save() {
         const name = nameField.text.trim()
         const url = urlField.text.trim()
         const description = descriptionField.text.trim()
 
         if (!name.length || !url.length) {
-            errorLabel.text = qsTr("Укажите название и URL каталога (JSON).")
+            errorLabel.text = qsTr("Enter a name and catalog URL.")
             return false
         }
 
-        if (editing) {
-            const ok = Core.sources.updateSource(sourceId, name, url, description, "",
+        if (root.validating)
+            return false
+
+        root.validating = true
+        root.pendingUrl = url
+        root.validateRequestId = Date.now().toString()
+        errorLabel.text = qsTr("Validating catalog…")
+        Core.validateHydraCatalogUrl(root.validateRequestId, url)
+        return false
+    }
+
+    function commitSave(validatedCount) {
+        const name = nameField.text.trim()
+        const url = root.pendingUrl.length ? root.pendingUrl : urlField.text.trim()
+        const description = descriptionField.text.trim()
+
+        if (root.editing) {
+            Core.invalidateSourceCatalog(root.sourceId)
+            const ok = Core.sources.updateSource(root.sourceId, name, url, description, "",
                                                  root.sourceEnabled)
             if (!ok) {
-                errorLabel.text = qsTr("Не удалось сохранить изменения.")
+                errorLabel.text = qsTr("Could not save changes.")
                 return false
             }
         } else {
             const id = Core.sources.addSource(name, url, description, "")
             if (!id.length) {
-                errorLabel.text = qsTr("Не удалось добавить источник.")
+                errorLabel.text = qsTr("Could not add catalog.")
                 return false
             }
         }
 
         errorLabel.text = ""
+        Core.prefetchCatalogCounts()
         root.saved()
         return true
+    }
+
+    Connections {
+        target: Core
+        function onHydraCatalogUrlValidated(requestId, ok, count, error) {
+            if (requestId !== root.validateRequestId)
+                return
+
+            root.validating = false
+            if (!ok) {
+                errorLabel.text = error.length
+                              ? error
+                              : qsTr("Could not load catalog from this URL.")
+                return
+            }
+
+            errorLabel.text = qsTr("Games found: %1").arg(count)
+            root.commitSave(count)
+        }
     }
 
     ColumnLayout {
@@ -83,7 +129,7 @@ Flickable {
             Layout.leftMargin: contentMargin
             Layout.rightMargin: contentMargin
             Layout.topMargin: MD.Token.spacing.small
-            text: qsTr("Источник — JSON-каталог в формате Hydra/FreeTP. Arachnel загрузит список игр по URL.")
+            text: qsTr("Hydra catalog — a games.json JSON feed by URL. Arachnel pulls the game list and magnet links like Hydra Launcher. Install and launch via a source plugin (e.g. FreeTP).")
             wrapMode: Text.WordWrap
             color: MD.Token.color.on_surface_variant
             typescale: MD.Token.typescale.body_medium
@@ -94,7 +140,7 @@ Flickable {
             Layout.fillWidth: true
             Layout.leftMargin: contentMargin
             Layout.rightMargin: contentMargin
-            placeholderText: qsTr("Название")
+            placeholderText: qsTr("Name")
             onTextChanged: errorLabel.text = ""
         }
 
@@ -103,7 +149,7 @@ Flickable {
             Layout.fillWidth: true
             Layout.leftMargin: contentMargin
             Layout.rightMargin: contentMargin
-            placeholderText: qsTr("URL каталога (JSON)")
+            placeholderText: qsTr("URL games.json")
             onTextChanged: errorLabel.text = ""
         }
 
@@ -112,7 +158,7 @@ Flickable {
             Layout.fillWidth: true
             Layout.leftMargin: contentMargin
             Layout.rightMargin: contentMargin
-            placeholderText: qsTr("Краткое описание (необязательно)")
+            placeholderText: qsTr("Short description (optional)")
         }
 
         MD.Label {
@@ -137,13 +183,16 @@ Flickable {
 
             MD.Button {
                 mdState.type: MD.Enum.BtText
-                text: qsTr("Отмена")
+                text: qsTr("Cancel")
                 onClicked: root.cancelled()
             }
 
             MD.Button {
                 mdState.type: MD.Enum.BtFilled
-                text: root.editing ? qsTr("Сохранить") : qsTr("Добавить")
+                text: root.validating
+                      ? qsTr("Validating…")
+                      : (root.editing ? qsTr("Save") : qsTr("Add"))
+                enabled: !root.validating
                 onClicked: root.save()
             }
         }

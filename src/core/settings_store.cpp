@@ -1,7 +1,10 @@
 #include "settings_store.h"
 
+#include "storage_library.h"
+
 #include <QDir>
 #include <QFile>
+#include <QHash>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -16,16 +19,6 @@ QString settingsFilePath()
     const QString dir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     QDir().mkpath(dir);
     return dir + QStringLiteral("/settings.json");
-}
-
-QString defaultLibraryRoot()
-{
-    return QDir::homePath() + QStringLiteral("/Games/Arachnel");
-}
-
-QString defaultDownloadsRoot()
-{
-    return QDir::homePath() + QStringLiteral("/Downloads/Arachnel");
 }
 
 SourcePluginInfo sourceFromJson(const QJsonObject& obj)
@@ -69,10 +62,13 @@ QJsonObject sourceToJson(const SourcePluginInfo& info)
 
 SettingsStore::SettingsStore(QObject* parent)
     : QObject(parent)
-    , m_libraryRoot(defaultLibraryRoot())
-    , m_downloadsRoot(defaultDownloadsRoot())
+    , m_libraryRoot(defaultStorageLibraryPath())
+    , m_downloadsRoot(defaultStorageLibraryPath() + QStringLiteral("/downloads"))
+    , m_maxConcurrentDownloads(2)
     , m_sources(defaultSources())
+    , m_storageLibraries(this, this)
 {
+    ensureDefaultStorageLibraries();
 }
 
 void SettingsStore::setSources(QVector<SourcePluginInfo> sources)
@@ -97,31 +93,167 @@ QString SettingsStore::catalogUrlForSource(const QString& sourceId) const
     return {};
 }
 
+void SettingsStore::setPluginEnabledStates(QHash<QString, bool> states)
+{
+    m_pluginEnabledStates = std::move(states);
+    emit pluginStatesChanged();
+    save();
+}
+
+bool SettingsStore::pluginEnabled(const QString& id, bool defaultValue) const
+{
+    return m_pluginEnabledStates.value(id, defaultValue);
+}
+
+QString defaultLibraryRoot()
+{
+    return defaultStorageLibraryPath();
+}
+
+QString defaultDownloadsRoot()
+{
+    return defaultStorageLibraryPath() + QStringLiteral("/downloads");
+}
+
+void SettingsStore::ensureDefaultStorageLibraries()
+{
+    if (!m_storageLibraries.libraries().isEmpty())
+        return;
+
+    StorageLibrary library;
+    library.id = QStringLiteral("default");
+    library.path = normalizedStoragePath(m_libraryRoot.isEmpty() ? defaultStorageLibraryPath()
+                                                                 : m_libraryRoot);
+    library.label = autoStorageLibraryLabel(library.path);
+    library.isDefault = true;
+    m_storageLibraries.setLibraries({library});
+}
+
 QString SettingsStore::resolvedLibraryRoot() const
 {
-    return m_libraryRoot.isEmpty() ? defaultLibraryRoot() : m_libraryRoot;
+    const QString path = m_storageLibraries.libraryPath(defaultLibraryId());
+    if (!path.isEmpty())
+        return path;
+    return m_libraryRoot.isEmpty() ? defaultStorageLibraryPath() : m_libraryRoot;
 }
 
 QString SettingsStore::resolvedDownloadsRoot() const
 {
+    const QString path = m_storageLibraries.downloadsPath(defaultLibraryId());
+    if (!path.isEmpty())
+        return path;
     return m_downloadsRoot.isEmpty() ? defaultDownloadsRoot() : m_downloadsRoot;
+}
+
+QString SettingsStore::resolvedLibraryRoot(const QString& libraryId) const
+{
+    const QString id = libraryId.isEmpty() ? defaultLibraryId() : libraryId;
+    const QString path = m_storageLibraries.libraryPath(id);
+    if (!path.isEmpty())
+        return path;
+    return resolvedLibraryRoot();
+}
+
+QString SettingsStore::resolvedDownloadsRoot(const QString& libraryId) const
+{
+    const QString id = libraryId.isEmpty() ? defaultLibraryId() : libraryId;
+    const QString path = m_storageLibraries.downloadsPath(id);
+    if (!path.isEmpty())
+        return path;
+    return resolvedDownloadsRoot();
+}
+
+QString SettingsStore::defaultLibraryId() const
+{
+    return m_storageLibraries.defaultLibraryId();
+}
+
+QString SettingsStore::gameDirFor(const QString& libraryId, const QString& gameId) const
+{
+    const QString id = libraryId.isEmpty() ? defaultLibraryId() : libraryId;
+    return m_storageLibraries.gameDir(id, gameId);
+}
+
+void SettingsStore::syncLegacyRootsFromLibrary(const StorageLibrary& library)
+{
+    const QString gamesRoot = normalizedStoragePath(library.path);
+    const QString downloadsRoot = downloadsDirForLibrary(library);
+    bool changed = false;
+    if (m_libraryRoot != gamesRoot) {
+        m_libraryRoot = gamesRoot;
+        changed = true;
+        emit libraryRootChanged();
+    }
+    if (m_downloadsRoot != downloadsRoot) {
+        m_downloadsRoot = downloadsRoot;
+        changed = true;
+        emit downloadsRootChanged();
+    }
+    Q_UNUSED(changed);
 }
 
 void SettingsStore::setLibraryRoot(const QString& path)
 {
-    if (m_libraryRoot == path)
+    const QString normalized = normalizedStoragePath(path);
+    if (normalized.isEmpty())
         return;
-    m_libraryRoot = path;
-    emit libraryRootChanged();
-    save();
+
+    const QString id = defaultLibraryId();
+    if (!id.isEmpty())
+        m_storageLibraries.updateLibraryPath(id, normalized);
+    else if (m_libraryRoot != normalized) {
+        m_libraryRoot = normalized;
+        emit libraryRootChanged();
+        save();
+    }
 }
 
 void SettingsStore::setDownloadsRoot(const QString& path)
 {
-    if (m_downloadsRoot == path)
+    const QString normalized = normalizedStoragePath(path);
+    if (normalized.isEmpty() || m_downloadsRoot == normalized)
         return;
-    m_downloadsRoot = path;
+    m_downloadsRoot = normalized;
     emit downloadsRootChanged();
+    save();
+}
+
+void SettingsStore::setMaxConcurrentDownloads(int count)
+{
+    const int clamped = qBound(1, count, 8);
+    if (m_maxConcurrentDownloads == clamped)
+        return;
+    m_maxConcurrentDownloads = clamped;
+    emit maxConcurrentDownloadsChanged();
+    save();
+}
+
+void SettingsStore::setAutoCheckUpdates(bool enabled)
+{
+    if (m_autoCheckUpdates == enabled)
+        return;
+    m_autoCheckUpdates = enabled;
+    emit autoCheckUpdatesChanged();
+    save();
+}
+
+void SettingsStore::setVerifyPortableFiles(bool enabled)
+{
+    if (m_verifyPortableFiles == enabled)
+        return;
+    m_verifyPortableFiles = enabled;
+    emit verifyPortableFilesChanged();
+    save();
+}
+
+void SettingsStore::setUiLanguage(const QString& languageCode)
+{
+    const QString normalized = languageCode.trimmed().toLower();
+    const QString effective = normalized.isEmpty() ? QStringLiteral("en") : normalized;
+    if (m_uiLanguage == effective)
+        return;
+    m_uiLanguage = effective;
+    emit uiLanguageChanged();
     save();
 }
 
@@ -132,15 +264,48 @@ void SettingsStore::load()
         m_sources.clear();
         emit libraryRootChanged();
         emit downloadsRootChanged();
+        emit maxConcurrentDownloadsChanged();
+        emit autoCheckUpdatesChanged();
+        emit verifyPortableFilesChanged();
+        emit uiLanguageChanged();
         emit sourcesChanged();
         return;
     }
 
     const QJsonObject obj = QJsonDocument::fromJson(file.readAll()).object();
-    if (obj.contains(QStringLiteral("libraryRoot")))
-        m_libraryRoot = obj.value(QStringLiteral("libraryRoot")).toString(m_libraryRoot);
-    if (obj.contains(QStringLiteral("downloadsRoot")))
-        m_downloadsRoot = obj.value(QStringLiteral("downloadsRoot")).toString(m_downloadsRoot);
+    if (obj.contains(QStringLiteral("maxConcurrentDownloads")))
+        m_maxConcurrentDownloads = qBound(1, obj.value(QStringLiteral("maxConcurrentDownloads")).toInt(2), 8);
+    m_autoCheckUpdates = obj.value(QStringLiteral("autoCheckUpdates")).toBool(true);
+    m_verifyPortableFiles = obj.value(QStringLiteral("verifyPortableFiles")).toBool(true);
+    m_uiLanguage = obj.value(QStringLiteral("uiLanguage")).toString(QStringLiteral("en")).toLower();
+
+    if (obj.contains(QStringLiteral("storageLibraries"))) {
+        QVector<StorageLibrary> libraries;
+        const QJsonArray storage = obj.value(QStringLiteral("storageLibraries")).toArray();
+        libraries.reserve(storage.size());
+        for (const QJsonValue& value : storage) {
+            const QJsonObject libObj = value.toObject();
+            StorageLibrary library;
+            library.id = libObj.value(QStringLiteral("id")).toString();
+            library.label = libObj.value(QStringLiteral("label")).toString();
+            library.path = normalizedStoragePath(libObj.value(QStringLiteral("path")).toString());
+            library.isDefault = libObj.value(QStringLiteral("isDefault")).toBool(false);
+            if (!library.id.isEmpty() && !library.path.isEmpty())
+                libraries.append(std::move(library));
+        }
+        if (!libraries.isEmpty())
+            m_storageLibraries.setLibraries(libraries);
+        else
+            ensureDefaultStorageLibraries();
+    } else {
+        if (obj.contains(QStringLiteral("libraryRoot")))
+            m_libraryRoot = normalizedStoragePath(
+                obj.value(QStringLiteral("libraryRoot")).toString(m_libraryRoot));
+        if (obj.contains(QStringLiteral("downloadsRoot")))
+            m_downloadsRoot = normalizedStoragePath(
+                obj.value(QStringLiteral("downloadsRoot")).toString(m_downloadsRoot));
+        ensureDefaultStorageLibraries();
+    }
 
     QVector<SourcePluginInfo> loaded;
     const QJsonArray sources = obj.value(QStringLiteral("sources")).toArray();
@@ -171,11 +336,25 @@ void SettingsStore::load()
     }
 
     m_sources = std::move(loaded);
+
+    m_pluginEnabledStates.clear();
+    const QJsonObject pluginStates = obj.value(QStringLiteral("pluginStates")).toObject();
+    for (auto it = pluginStates.constBegin(); it != pluginStates.constEnd(); ++it) {
+        if (it.value().isObject())
+            m_pluginEnabledStates.insert(it.key(), it.value().toObject().value(QStringLiteral("enabled")).toBool(true));
+        else
+            m_pluginEnabledStates.insert(it.key(), it.value().toBool(true));
+    }
+
     if (migrated)
         save();
 
     emit libraryRootChanged();
     emit downloadsRootChanged();
+    emit maxConcurrentDownloadsChanged();
+    emit autoCheckUpdatesChanged();
+    emit verifyPortableFilesChanged();
+    emit uiLanguageChanged();
     emit sourcesChanged();
 }
 
@@ -184,11 +363,34 @@ void SettingsStore::save()
     QJsonObject obj;
     obj.insert(QStringLiteral("libraryRoot"), m_libraryRoot);
     obj.insert(QStringLiteral("downloadsRoot"), m_downloadsRoot);
+    obj.insert(QStringLiteral("maxConcurrentDownloads"), m_maxConcurrentDownloads);
+    obj.insert(QStringLiteral("autoCheckUpdates"), m_autoCheckUpdates);
+    obj.insert(QStringLiteral("verifyPortableFiles"), m_verifyPortableFiles);
+    obj.insert(QStringLiteral("uiLanguage"), m_uiLanguage);
+
+    QJsonArray storageLibraries;
+    for (const auto& library : m_storageLibraries.libraries()) {
+        QJsonObject libObj;
+        libObj.insert(QStringLiteral("id"), library.id);
+        libObj.insert(QStringLiteral("label"), library.label);
+        libObj.insert(QStringLiteral("path"), library.path);
+        libObj.insert(QStringLiteral("isDefault"), library.isDefault);
+        storageLibraries.append(libObj);
+    }
+    obj.insert(QStringLiteral("storageLibraries"), storageLibraries);
 
     QJsonArray sources;
     for (const auto& source : m_sources)
         sources.append(sourceToJson(source));
     obj.insert(QStringLiteral("sources"), sources);
+
+    QJsonObject pluginStates;
+    for (auto it = m_pluginEnabledStates.constBegin(); it != m_pluginEnabledStates.constEnd(); ++it) {
+        QJsonObject state;
+        state.insert(QStringLiteral("enabled"), it.value());
+        pluginStates.insert(it.key(), state);
+    }
+    obj.insert(QStringLiteral("pluginStates"), pluginStates);
 
     QFile file(settingsFilePath());
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate))

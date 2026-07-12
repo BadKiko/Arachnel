@@ -15,6 +15,9 @@ MD.ApplicationWindow {
     minimumHeight: 720
     title: qsTr("Arachnel")
     color: MD.Token.color.surface_container
+    flags: customTitleBar ? (Qt.Window | Qt.FramelessWindowHint) : Qt.Window
+
+    readonly property bool customTitleBar: Qt.platform.os === "windows"
 
     MD.MProp.textColor: MD.MProp.color.on_surface
     MD.MProp.backgroundColor: MD.MProp.color.surface_container
@@ -37,7 +40,7 @@ MD.ApplicationWindow {
     property bool detailsOpen: pageStack.depth > 1
     property string detailsGameId: ""
     property bool detailsFromCatalog: false
-    property string catalogSourceId: Core.sources.firstEnabledId
+    readonly property int downloadBadge: Core.jobs.activeCount
 
     function goToPage(index) {
         if (pageStack.depth > 1)
@@ -68,20 +71,25 @@ MD.ApplicationWindow {
 
     Connections {
         target: Core
-        function onLastActionChanged() {
-            if (Core.lastAction.length > 0)
-                snackbar.show(Core.lastAction)
+        function onUserNoticeChanged() {
+            if (Core.userNotice.length > 0)
+                snackbar.show(Core.userNotice)
         }
     }
 
     readonly property var navModel: [
         {
-            name: qsTr("Библиотека"),
+            name: qsTr("Library"),
             icon: MD.Token.icon.sports_esports
         },
         {
-            name: qsTr("Каталог"),
+            name: qsTr("Catalog"),
             icon: MD.Token.icon.storefront
+        },
+        {
+            name: qsTr("Downloads"),
+            icon: MD.Token.icon.downloading,
+            navIndex: 2
         }
     ]
 
@@ -109,8 +117,9 @@ MD.ApplicationWindow {
                 transformOrigin: Item.Center
                 onOpenGame: function (id) { root.openGameDetails(id, false) }
                 onOpenCatalog: root.goToPage(1)
+                onOpenDownloads: root.goToPage(2)
                 onOpenSettings: settingsSheet.openSettings()
-                onAddSourceRequested: settingsSheet.openSources(true)
+                onAddSourceRequested: settingsSheet.openPlugins()
 
                 Behavior on opacity {
                     NumberAnimation {
@@ -131,12 +140,34 @@ MD.ApplicationWindow {
                 anchors.fill: parent
                 opacity: mainPages.pageIndex === 1 ? 1 : 0
                 scale: mainPages.pageIndex === 1 ? 1 : 0.97
-                enabled: mainPages.pageIndex === 1 && opacity > 0.99
+                enabled: mainPages.pageIndex === 1
                 transformOrigin: Item.Center
                 onOpenGame: function (id) { root.openGameDetails(id, true) }
-                onSelectedSourceIdChanged: root.catalogSourceId = selectedSourceId
                 onOpenSettings: settingsSheet.openSettings()
-                onAddSourceRequested: settingsSheet.openSources(true)
+                onAddSourceRequested: settingsSheet.openPlugins()
+
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: pageStack.enterDuration
+                        easing: MD.Token.easing.emphasized_decelerate
+                    }
+                }
+                Behavior on scale {
+                    NumberAnimation {
+                        duration: pageStack.enterDuration
+                        easing.type: Easing.OutBack
+                        easing.overshoot: 1.2
+                    }
+                }
+            }
+
+            DownloadsPage {
+                anchors.fill: parent
+                opacity: mainPages.pageIndex === 2 ? 1 : 0
+                scale: mainPages.pageIndex === 2 ? 1 : 0.97
+                enabled: mainPages.pageIndex === 2 && opacity > 0.99
+                transformOrigin: Item.Center
+                onOpenGame: function (id) { root.openGameDetails(id, false) }
 
                 Behavior on opacity {
                     NumberAnimation {
@@ -160,95 +191,91 @@ MD.ApplicationWindow {
         GameDetailsPage {
             transformOrigin: Item.Center
             onBackRequested: root.closeGameDetails()
+            onOpenAddonPicker: function (entryId, title) {
+                installAddonSheet.openForEntry(entryId, title)
+            }
+            onOpenInstallPicker: function (entryId, title, selectedAddonIds) {
+                installLocationSheet.openForEntry(entryId, title, selectedAddonIds)
+            }
         }
     }
 
-    RowLayout {
+    ColumnLayout {
         anchors.fill: parent
         spacing: 0
 
-        AppRail {
-            id: navRail
-            Layout.fillHeight: true
-            model: root.navModel
-            currentIndex: root.pageIndex
-            onActivated: function (index) { root.goToPage(index) }
-            onSettingsRequested: settingsSheet.openSettings()
+        AppTitleBar {
+            visible: root.customTitleBar
+            Layout.fillWidth: true
+            window: root
         }
 
-        ColumnLayout {
+        RowLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            Layout.topMargin: MD.Token.spacing.small
-            Layout.rightMargin: MD.Token.spacing.small
-            Layout.bottomMargin: MD.Token.spacing.small
             spacing: 0
 
-            MD.Pane {
-                id: mainPane
+            AppRail {
+                id: navRail
+                Layout.fillHeight: true
+                model: root.navModel
+                currentIndex: root.pageIndex
+                downloadBadge: root.downloadBadge
+                onActivated: function (index) { root.goToPage(index) }
+                onSettingsRequested: settingsSheet.openSettings()
+            }
+
+            ColumnLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                padding: 0
-                radius: MD.Token.shape.corner.extra_large
-                backgroundColor: MD.Token.color.surface
-                clip: true
+                Layout.topMargin: MD.Token.spacing.small
+                Layout.rightMargin: MD.Token.spacing.small
+                Layout.bottomMargin: MD.Token.spacing.small
+                spacing: 0
 
-                ColumnLayout {
-                    anchors.fill: parent
-                    spacing: 0
+                MD.Pane {
+                    id: mainPane
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    padding: 0
+                    radius: MD.Token.shape.corner.extra_large
+                    backgroundColor: MD.Token.color.surface
+                    clip: true
 
-                    MD.Pane {
-                        Layout.fillWidth: true
-                        padding: MD.Token.spacing.medium
-                        backgroundColor: "transparent"
-                        visible: !root.detailsOpen
-                        opacity: root.detailsOpen ? 0 : 1
+                    ColumnLayout {
+                        anchors.fill: parent
+                        spacing: 0
 
-                        Behavior on opacity {
-                            NumberAnimation {
-                                duration: pageStack.exitDuration
-                                easing: MD.Token.easing.emphasized_accelerate
-                            }
+                        RunningGameBar {
+                            Layout.fillWidth: true
+                            Layout.leftMargin: MD.Token.spacing.medium
+                            Layout.rightMargin: MD.Token.spacing.medium
+                            Layout.topMargin: root.detailsOpen ? MD.Token.spacing.medium : 0
+                            Layout.bottomMargin: MD.Token.spacing.small
+                            visible: Core.gameRunning
+                            gameId: Core.runningGameId
+                            title: Core.runningGameTitle
+                            coverUrl: Core.runningGameCoverUrl
                         }
 
-                        RowLayout {
-                            width: parent.width
-                            spacing: MD.Token.spacing.medium
-
-                            MD.SearchBar {
-                                id: globalSearch
-                                Layout.fillWidth: true
-                                Layout.maximumWidth: 720
-                                Layout.alignment: Qt.AlignHCenter
-                                onAccepted: {
-                                    root.goToPage(1)
-                                    if (!root.catalogSourceId.length)
-                                        root.catalogSourceId = Core.sources.firstEnabledId
-                                    if (root.catalogSourceId.length)
-                                        Core.searchCatalog(root.catalogSourceId, searchText)
-                                }
-                            }
-
-                            Item { Layout.fillWidth: true }
-
-                            MD.IconButton {
-                                mdState.type: MD.Enum.IBtStandard
-                                icon.name: MD.Token.icon.notifications
-                                onClicked: snackbar.show(qsTr("Уведомлений пока нет"))
-                            }
+                        PageNavigator {
+                            id: pageStack
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            clip: true
+                            initialItem: mainPagesComponent
                         }
-                    }
-
-                    PageNavigator {
-                        id: pageStack
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        clip: true
-                        initialItem: mainPagesComponent
                     }
                 }
             }
         }
+    }
+
+    WindowResizeEdges {
+        anchors.fill: parent
+        visible: root.customTitleBar
+        window: root
+        z: 1000
     }
 
     SettingsSheet {
@@ -256,14 +283,27 @@ MD.ApplicationWindow {
         anchors.fill: parent
     }
 
-    MD.SnakeView {
-        id: snackbar
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        anchors.leftMargin: 120
-        anchors.margins: MD.Token.spacing.large
-        height: Math.min(implicitHeight, 160)
-        bottomToTop: true
+    InstallLocationSheet {
+        id: installLocationSheet
+        anchors.fill: parent
     }
+
+    InstallAddonSelectionSheet {
+        id: installAddonSheet
+        anchors.fill: parent
+        onConfirmed: function (entryId, title, selectedAddonIds) {
+            if (Core.needsInstallLocationChoice())
+                installLocationSheet.openForEntry(entryId, title, selectedAddonIds)
+            else
+                Core.installCatalogEntry(entryId, "", selectedAddonIds)
+        }
+    }
+
+    AppSnackbar {
+        id: snackbar
+        anchors.fill: parent
+        anchors.leftMargin: 88
+        z: 2000
+    }
+
 }
