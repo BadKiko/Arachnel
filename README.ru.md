@@ -1,22 +1,26 @@
+<div align="center">
 
+<img src="resources/icons/arachnel-github.svg" width="128" alt="Логотип Arachnel" />
 
+<h1>Arachnel</h1>
 
+<p>
+  <a href="README.md"><img src="https://img.shields.io/badge/README-English-8E8E93?style=for-the-badge&labelColor=161618" alt="English README"></a>
+  <a href="README.ru.md"><img src="https://img.shields.io/badge/README-Русский-8E8E93?style=for-the-badge&labelColor=161618" alt="Русский README"></a>
+</p>
 
-# Arachnel
+<p>
+  <a href="https://hosted.weblate.org/engage/arachnel/">
+    <img src="https://hosted.weblate.org/widget/arachnel/application/ru/svg-badge.svg" alt="Состояние перевода">
+  </a>
+</p>
 
+<br>
 
+<img src="docs/readme-carousel.svg" width="960" alt="Скриншоты Arachnel">
+</div>
 
-
-
-  
-
-
-
-
-
-
-  
-
+<br>
 
 ## О проекте
 
@@ -48,6 +52,6 @@
 
 ## Связь
 
-**[kirill.kif234@gmail.com](mailto:kirill.kif234@gmail.com)** — только по важным вопросам.
+**kirill.kif234@gmail.com** — только по важным вопросам.
 
 Всё остальное (баги, идеи, вопросы): [GitHub Issues](https://github.com/BadKiko/Arachnel/issues).
