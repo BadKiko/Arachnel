@@ -1,38 +1,40 @@
 #include "job_status.h"
 
+#include "i18n.h"
+
 namespace arachnel::core {
 
 QString jobStatusLabel(const QString& status)
 {
     if (status == QStringLiteral("queued"))
-        return QStringLiteral("В очереди");
+        return trCore("Queued");
     if (status == QStringLiteral("starting"))
-        return QStringLiteral("Запуск");
+        return trCore("Starting");
     if (status == QStringLiteral("checking"))
-        return QStringLiteral("Проверка");
+        return trCore("Checking");
     if (status == QStringLiteral("metadata"))
-        return QStringLiteral("Метаданные");
+        return trCore("Metadata");
     if (status == QStringLiteral("downloading"))
-        return QStringLiteral("Загрузка");
+        return trCore("Downloading");
     if (status == QStringLiteral("installing"))
-        return QStringLiteral("Установка");
+        return trCore("Installing");
     if (status == QStringLiteral("seeding"))
-        return QStringLiteral("Раздача");
+        return trCore("Seeding");
     if (status == QStringLiteral("paused"))
-        return QStringLiteral("Пауза");
+        return trCore("Paused");
     if (status == QStringLiteral("completed"))
-        return QStringLiteral("Завершено");
+        return trCore("Completed");
     if (status == QStringLiteral("failed"))
-        return QStringLiteral("Ошибка");
+        return trCore("Failed");
     if (status == QStringLiteral("cancelled"))
-        return QStringLiteral("Отменено");
+        return trCore("Cancelled");
     return status;
 }
 
 QString jobDisplayStatusLabel(const QString& status, const QString& detail)
 {
     if (status == QStringLiteral("completed") && isJobInstallFailed(detail))
-        return QStringLiteral("Ошибка установки");
+        return trCore("Install failed");
     return jobStatusLabel(status);
 }
 

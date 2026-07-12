@@ -1,5 +1,6 @@
 #include <QCoreApplication>
 #include <QGuiApplication>
+#include <QIcon>
 #include <QQmlApplicationEngine>
 #include <QQmlError>
 #include <QStyleHints>
@@ -17,6 +18,10 @@
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
+    const QIcon windowIcon(QStringLiteral(":/icons/256.png"));
+    if (!windowIcon.isNull())
+        app.setWindowIcon(windowIcon);
+
     QCoreApplication::setOrganizationName(QStringLiteral("PetWork"));
     QCoreApplication::setOrganizationDomain(QStringLiteral("petwork.local"));
     QCoreApplication::setApplicationName(QStringLiteral("Arachnel"));
@@ -68,6 +73,7 @@ int main(int argc, char *argv[])
     QObject::connect(core.settings(), &arachnel::core::SettingsStore::uiLanguageChanged, &app,
                      [&translations, &core]() {
                          translations.applyLanguage(core.settings()->uiLanguage());
+                         core.jobs()->refreshLocalizedText();
                      });
 
     return app.exec();

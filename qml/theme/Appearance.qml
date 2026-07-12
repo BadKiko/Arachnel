@@ -10,8 +10,8 @@ Item {
     property bool applying: false
 
     readonly property int defaultThemeMode: MD.Enum.Dark
-    readonly property int defaultPaletteType: 2
-    readonly property string defaultAccentColor: "#984300"
+    readonly property int defaultPaletteType: MD.Enum.PaletteMonochrome
+    readonly property string defaultAccentColor: "#8E8E93"
 
     Settings {
         id: store
@@ -26,6 +26,9 @@ Item {
     readonly property string accentColor: store.accentColor
 
     function apply() {
+        if (store.accentColor === "#D4D4D4")
+            store.accentColor = root.defaultAccentColor
+
         MD.Token.color.useSysColorSM = false
         MD.Token.color.useSysAccentColor = false
         MD.Token.themeMode = store.themeMode

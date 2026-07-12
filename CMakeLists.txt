@@ -86,6 +86,7 @@ set(CMAKE_AUTOMOC ON)
 qt_add_executable(arachnel_app
     src/main.cpp
     src/core/install_kind.cpp
+    src/core/job_display.cpp
     src/core/job_kind.cpp
     src/core/catalog_types.cpp
     src/core/library_model.cpp
@@ -119,7 +120,21 @@ qt_add_executable(arachnel_app
 
 if(WIN32)
     set_target_properties(arachnel_app PROPERTIES WIN32_EXECUTABLE TRUE)
+
+    set(_arachnel_icon_ico "${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/arachnel.ico")
+    if(EXISTS "${_arachnel_icon_ico}")
+        set(_arachnel_icon_rc "${CMAKE_CURRENT_BINARY_DIR}/arachnel_app_icon.rc")
+        file(WRITE "${_arachnel_icon_rc}" "IDI_ICON1 ICON \"${_arachnel_icon_ico}\"\n")
+        target_sources(arachnel_app PRIVATE "${_arachnel_icon_rc}")
+    endif()
 endif()
+
+qt_add_resources(arachnel_app "arachnel_app_icons"
+    PREFIX "/icons"
+    FILES
+        resources/icons/png/256.png
+        resources/icons/png/32.png
+)
 
 file(GLOB_RECURSE ARACHNEL_QML_FILES CONFIGURE_DEPENDS
      RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"

@@ -39,9 +39,11 @@ inline bool isJobRunning(const QString& status)
 
 inline bool isJobInstallFailed(const QString& detail)
 {
-    if (detail.contains(QStringLiteral("Ошибка установки")))
+    if (detail.contains(QStringLiteral("Install failed"))
+        || detail.contains(QStringLiteral("Ошибка установки")))
         return true;
-    return detail.startsWith(QStringLiteral("Ошибка:"));
+    return detail.startsWith(QStringLiteral("Error:"))
+           || detail.startsWith(QStringLiteral("Ошибка:"));
 }
 
 QString jobStatusLabel(const QString& status);
