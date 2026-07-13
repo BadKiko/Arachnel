@@ -29,9 +29,26 @@ Item {
         function onLibraryChanged() { root.detailsRevision++ }
     }
 
-    readonly property bool playable: Core.isEntryPlayable(gameId)
-    readonly property bool installed: root.playable
+    Connections {
+        target: Core
+        function onPluginsChanged() { root.detailsRevision++ }
+    }
+
+    readonly property bool playable: {
+        const _rev = root.detailsRevision
+        return Core.isEntryPlayable(gameId)
+    }
+    readonly property bool installed: {
+        const _rev = root.detailsRevision
+        if (root.playable)
+            return true
+        if (!gameId.length)
+            return false
+        const lib = Core.library.gameInfo(gameId)
+        return ((lib.installPath ?? "")).length > 0
+    }
     readonly property bool inLibrary: {
+        const _rev = root.detailsRevision
         if (!gameId.length)
             return false
         const lib = Core.library.gameInfo(gameId)
@@ -39,7 +56,14 @@ Item {
     }
     readonly property bool isRunning: Core.gameRunning && Core.runningGameId === root.gameId
     readonly property bool onLinux: Qt.platform.os === "linux"
-    readonly property bool downloadFilesExist: Core.entryDownloadFilesExist(gameId)
+    readonly property bool downloadFilesExist: {
+        const _rev = root.detailsRevision
+        return Core.entryDownloadFilesExist(gameId)
+    }
+    readonly property bool downloadComplete: {
+        const _rev = root.detailsRevision
+        return Core.isEntryDownloadComplete(gameId)
+    }
     readonly property bool installFailed: (downloadJob.detail || "").indexOf("Install failed") >= 0
     readonly property bool isInstalling: downloadJob.status === "installing"
     readonly property bool readyToInstall: !root.playable
@@ -67,7 +91,10 @@ Item {
 
     Connections {
         target: Core.jobs
-        function onJobsChanged() { root.refreshDownloadJob() }
+        function onJobsChanged() {
+            root.refreshDownloadJob()
+            root.detailsRevision++
+        }
     }
 
     onGameIdChanged: {
@@ -294,12 +321,21 @@ Item {
 
                         MD.Button {
                             visible: root.playable
-                                     || Core.isEntryDownloadComplete(root.gameId)
+                                     || root.downloadComplete
                                      || root.inLibrary
                             text: qsTr("Delete")
                             icon.name: MD.Token.icon.delete
                             mdState.type: MD.Enum.BtOutlined
                             onClicked: removeDialog.open()
+                        }
+
+                        MD.IconButton {
+                            visible: root.playable
+                                     || root.downloadComplete
+                                     || root.inLibrary
+                            mdState.type: MD.Enum.IBtOutlined
+                            icon.name: MD.Token.icon.settings
+                            onClicked: gameSettingsSheet.openForGame(root.gameId)
                         }
 
                         MD.Button {
@@ -308,146 +344,6 @@ Item {
                             icon.name: MD.Token.icon.update
                             mdState.type: MD.Enum.BtFilledTonal
                             onClicked: Core.updateCatalogEntry(root.gameId)
-                        }
-                    }
-
-                    RowLayout {
-                        visible: root.installed
-                        Layout.fillWidth: true
-                        spacing: MD.Token.spacing.medium
-
-                        ColumnLayout {
-                            Layout.fillWidth: true
-                            spacing: 2
-
-                            MD.Label {
-                                Layout.fillWidth: true
-                                text: qsTr("Auto-update this game")
-                                typescale: MD.Token.typescale.body_large
-                            }
-
-                            MD.Label {
-                                Layout.fillWidth: true
-                                text: qsTr("When enabled, updates start automatically after the catalog loads.")
-                                color: MD.Token.color.on_surface_variant
-                                typescale: MD.Token.typescale.body_small
-                                wrapMode: Text.WordWrap
-                            }
-                        }
-
-                        MD.Switch {
-                            checked: root.info.autoUpdate !== false
-                            onToggled: Core.setGameAutoUpdate(root.gameId, checked)
-                        }
-                    }
-
-                    MD.ElevationRectangle {
-                        Layout.fillWidth: true
-                        visible: root.onLinux && root.gameId.length > 0
-                        Layout.preferredHeight: protonPickCol.implicitHeight + 2 * MD.Token.spacing.medium
-                        radius: MD.Token.shape.corner.large
-                        color: MD.Token.color.surface_container_low
-                        elevation: MD.Token.elevation.level0
-
-                        ColumnLayout {
-                            id: protonPickCol
-                            anchors.left: parent.left
-                            anchors.right: parent.right
-                            anchors.top: parent.top
-                            anchors.margins: MD.Token.spacing.medium
-                            spacing: MD.Token.spacing.small
-
-                            MD.Label {
-                                text: qsTr("Proton")
-                                typescale: MD.Token.typescale.title_small
-                            }
-
-                            MD.Label {
-                                Layout.fillWidth: true
-                                text: qsTr("Override Proton for this game. Default uses Settings → Launch.")
-                                color: MD.Token.color.on_surface_variant
-                                typescale: MD.Token.typescale.body_small
-                                wrapMode: Text.WordWrap
-                            }
-
-                            Flow {
-                                Layout.fillWidth: true
-                                spacing: MD.Token.spacing.small
-
-                                MD.FilterChip {
-                                    text: qsTr("Default")
-                                    checked: !(root.info.protonId ?? "").length
-                                    onClicked: Core.setGameProtonId(root.gameId, "")
-                                }
-
-                                Repeater {
-                                    model: Core.availableProtons
-
-                                    MD.FilterChip {
-                                        required property var modelData
-
-                                        text: modelData.name
-                                        checked: (root.info.protonId ?? "") === modelData.id
-                                        onClicked: Core.setGameProtonId(root.gameId, modelData.id)
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    MD.ElevationRectangle {
-                        Layout.fillWidth: true
-                        visible: root.playable
-                        Layout.preferredHeight: launchCol.implicitHeight + 2 * MD.Token.spacing.medium
-                        radius: MD.Token.shape.corner.large
-                        color: MD.Token.color.surface_container_low
-                        elevation: MD.Token.elevation.level0
-
-                        ColumnLayout {
-                            id: launchCol
-                            anchors.left: parent.left
-                            anchors.right: parent.right
-                            anchors.top: parent.top
-                            anchors.margins: MD.Token.spacing.medium
-                            spacing: MD.Token.spacing.small
-
-                            MD.Label {
-                                text: qsTr("Launch options")
-                                typescale: MD.Token.typescale.title_small
-                            }
-
-                            MD.TextField {
-                                id: launchArgsField
-                                Layout.fillWidth: true
-                                placeholderText: qsTr("Extra launch arguments for this game")
-                                text: root.info.launchArgs ?? ""
-                                onEditingFinished: Core.setGameLaunchArgs(root.gameId, text)
-                            }
-
-                            RowLayout {
-                                Layout.fillWidth: true
-                                spacing: MD.Token.spacing.small
-
-                                MD.TextField {
-                                    id: exeField
-                                    Layout.fillWidth: true
-                                    placeholderText: qsTr("Custom executable (optional)")
-                                    text: root.info.executableOverride ?? ""
-                                    onEditingFinished: Core.setGameExecutableOverride(root.gameId, text)
-                                }
-
-                                MD.IconButton {
-                                    mdState.type: MD.Enum.IBtStandard
-                                    icon.name: MD.Token.icon.folder_open
-                                    onClicked: {
-                                        const path = Core.browseGameExecutable(exeField.text)
-                                        if (path.length) {
-                                            exeField.text = path
-                                            Core.setGameExecutableOverride(root.gameId, path)
-                                        }
-                                    }
-                                }
-                            }
                         }
                     }
 
@@ -494,74 +390,12 @@ Item {
                     }
                 }
             }
-
-            MD.ElevationRectangle {
-                Layout.fillWidth: true
-                Layout.leftMargin: MD.Token.spacing.large
-                Layout.rightMargin: MD.Token.spacing.large
-                Layout.preferredHeight: metaCol.implicitHeight + 2 * MD.Token.spacing.large
-                radius: MD.Token.shape.corner.extra_large
-                color: MD.Token.color.surface_container
-                elevation: MD.Token.elevation.level0
-
-                ColumnLayout {
-                    id: metaCol
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    anchors.top: parent.top
-                    anchors.margins: MD.Token.spacing.large
-                    spacing: MD.Token.spacing.small
-
-                    MD.Label {
-                        text: qsTr("Information")
-                        typescale: MD.Token.typescale.title_medium
-                    }
-
-                    Repeater {
-                        model: [
-                            { label: qsTr("Source"), value: root.sourceLabel },
-                            { label: qsTr("Version"), value: root.info.version ?? "" },
-                            { label: qsTr("Size"), value: root.info.sizeLabel || "—" },
-                            { label: qsTr("Install type"), value: root.info.installKindLabel ?? "" },
-                            {
-                                label: qsTr("Install path"),
-                                value: root.playable
-                                       ? (root.info.installPath || "—")
-                                       : (root.isInstalling
-                                              ? qsTr("Installing…")
-                                              : root.readyToInstall || root.installFailed
-                                              ? qsTr("Waiting to install")
-                                              : qsTr("—"))
-                            },
-                            {
-                                label: qsTr("Download"),
-                                value: root.info.downloadPath || "—"
-                            }
-                        ]
-
-                        RowLayout {
-                            required property var modelData
-                            Layout.fillWidth: true
-                            spacing: MD.Token.spacing.medium
-
-                            MD.Label {
-                                Layout.preferredWidth: 140
-                                text: modelData.label
-                                color: MD.Token.color.on_surface_variant
-                                typescale: MD.Token.typescale.body_medium
-                            }
-
-                            MD.Label {
-                                Layout.fillWidth: true
-                                text: modelData.value
-                                typescale: MD.Token.typescale.body_medium
-                                elide: Text.ElideMiddle
-                            }
-                        }
-                    }
-                }
-            }
         }
+    }
+
+    GameSettingsSheet {
+        id: gameSettingsSheet
+        anchors.fill: parent
     }
 
     MD.Dialog {

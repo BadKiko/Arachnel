@@ -1,12 +1,25 @@
 build/
 build-test/
+build-debug/
+build-win/
+build-msys/
 .cache/
 compile_commands.json
 *.user
 *.autosave
 CMakeUserPresets.json
-build-debug/
-build-win/
 libs/
+
+# run.ps1 --package (deploy staging + release zip)
+dist-win/
+Arachnel-win64-*.zip
+Arachnel-win64-*/
+
+# Local archives and debug listings
+*.7z
+build_dlls.txt
+dist_dlls.txt
+qml-test-err.txt
+
 translations/generated/*.qm
 plugins/freetp/games-arachnel.json

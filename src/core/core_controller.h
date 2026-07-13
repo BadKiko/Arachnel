@@ -70,6 +70,7 @@ class CoreController : public QObject
 public:
     static CoreController* create(QQmlEngine* engine, QJSEngine* scriptEngine);
     static CoreController& instance();
+    static void setCrashReporterMode(bool enabled);
 
     LibraryModel* library() { return &m_library; }
     SourcePluginModel* sources() { return &m_sources; }
@@ -160,6 +161,14 @@ public:
     Q_INVOKABLE void validateHydraCatalogUrl(const QString& requestId, const QString& url);
     Q_INVOKABLE void invalidateSourceCatalog(const QString& sourceId);
     Q_INVOKABLE void openExternalUrl(const QString& url);
+    Q_INVOKABLE bool hasPendingCrashReport() const;
+    Q_INVOKABLE QString pendingCrashSummary() const;
+    Q_INVOKABLE QString pendingCrashDetails() const;
+    Q_INVOKABLE QString pendingCrashReportPath() const;
+    Q_INVOKABLE void dismissPendingCrashReport();
+    Q_INVOKABLE void openPendingCrashIssue();
+    Q_INVOKABLE void revealPendingCrashReport();
+    Q_INVOKABLE void copyPendingCrashReport();
     Q_INVOKABLE void requestCatalogCover(const QString& entryId);
     Q_INVOKABLE void cancelCatalogCover(const QString& entryId);
     Q_INVOKABLE void invalidateCatalogCover(const QString& entryId);

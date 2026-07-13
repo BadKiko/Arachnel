@@ -55,6 +55,10 @@ Item {
     readonly property bool featuredShowJobStatus: root.heroGameId.length
         && !Core.isEntryPlayable(root.heroGameId)
         && !!(featuredJob.jobId)
+        && !((root.heroGame?.installPath ?? "").length)
+        && (featuredJob.inProgress
+            || featuredJob.status === "installing"
+            || featuredJob.status === "completed")
     readonly property real featuredFillProgress: {
         if (!featuredShowJobStatus)
             return -1
