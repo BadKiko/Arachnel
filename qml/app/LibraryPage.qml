@@ -474,7 +474,7 @@ Item {
 
                                 MD.Button {
                                     visible: root.heroHasUpdate && !root.showRunningHero
-                                    text: qsTr("Refresh")
+                                    text: qsTr("Update")
                                     icon.name: MD.Token.icon.update
                                     mdState.type: MD.Enum.BtFilledTonal
                                     enabled: !!(root.heroGameId)

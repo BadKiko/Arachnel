@@ -20,15 +20,11 @@ function(arachnel_setup_translations target)
     set(_ids_qm "${_ids_dir}/arachnel_ids.qm")
     file(MAKE_DIRECTORY "${_ids_dir}")
 
-    add_custom_command(
-        OUTPUT "${_ids_ts}"
-        COMMAND python3 "${CMAKE_CURRENT_SOURCE_DIR}/tools/prepare_id_translations.py"
-                "${_ids_ts}"
-        DEPENDS
-            "${CMAKE_CURRENT_SOURCE_DIR}/translations/arachnel_en.ts"
-            "${CMAKE_CURRENT_SOURCE_DIR}/tools/prepare_id_translations.py"
-        COMMENT "Generate arachnel_ids.ts for qsTrId"
-    )
+    if(NOT EXISTS "${_ids_ts}")
+        message(FATAL_ERROR
+            "Missing ${_ids_ts}. Regenerate after editing id-based strings in arachnel_en.ts:\n"
+            "  python tools/prepare_id_translations.py translations/generated/arachnel_ids.ts")
+    endif()
 
     add_custom_command(
         OUTPUT "${_ids_qm}"

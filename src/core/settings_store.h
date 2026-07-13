@@ -21,8 +21,8 @@ class SettingsStore : public QObject
                    NOTIFY maxConcurrentDownloadsChanged)
     Q_PROPERTY(bool autoCheckUpdates READ autoCheckUpdates WRITE setAutoCheckUpdates NOTIFY
                    autoCheckUpdatesChanged)
-    Q_PROPERTY(bool verifyPortableFiles READ verifyPortableFiles WRITE setVerifyPortableFiles NOTIFY
-                   verifyPortableFilesChanged)
+    Q_PROPERTY(bool autoInstallUpdates READ autoInstallUpdates WRITE setAutoInstallUpdates NOTIFY
+                   autoInstallUpdatesChanged)
     Q_PROPERTY(QString uiLanguage READ uiLanguage WRITE setUiLanguage NOTIFY uiLanguageChanged)
 
 public:
@@ -32,7 +32,7 @@ public:
     QString downloadsRoot() const { return m_downloadsRoot; }
     int maxConcurrentDownloads() const { return m_maxConcurrentDownloads; }
     bool autoCheckUpdates() const { return m_autoCheckUpdates; }
-    bool verifyPortableFiles() const { return m_verifyPortableFiles; }
+    bool autoInstallUpdates() const { return m_autoInstallUpdates; }
     QString uiLanguage() const { return m_uiLanguage; }
     StorageLibraryModel* storageLibraries() { return &m_storageLibraries; }
     const StorageLibraryModel* storageLibraries() const { return &m_storageLibraries; }
@@ -59,7 +59,7 @@ public:
     void setDownloadsRoot(const QString& path);
     void setMaxConcurrentDownloads(int count);
     void setAutoCheckUpdates(bool enabled);
-    void setVerifyPortableFiles(bool enabled);
+    void setAutoInstallUpdates(bool enabled);
     void setUiLanguage(const QString& languageCode);
 
     void load();
@@ -71,7 +71,7 @@ signals:
     void sourcesChanged();
     void maxConcurrentDownloadsChanged();
     void autoCheckUpdatesChanged();
-    void verifyPortableFilesChanged();
+    void autoInstallUpdatesChanged();
     void uiLanguageChanged();
     void pluginStatesChanged();
 
@@ -82,7 +82,7 @@ private:
     QString m_downloadsRoot;
     int m_maxConcurrentDownloads = 2;
     bool m_autoCheckUpdates = true;
-    bool m_verifyPortableFiles = true;
+    bool m_autoInstallUpdates = false;
     QString m_uiLanguage = QStringLiteral("en");
     QVector<SourcePluginInfo> m_sources;
     QHash<QString, bool> m_pluginEnabledStates;

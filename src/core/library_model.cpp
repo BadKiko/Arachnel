@@ -135,6 +135,7 @@ QVariantMap LibraryModel::toMap(const LibraryGame& game) const
         {QStringLiteral("installKind"), static_cast<int>(game.installKind)},
         {QStringLiteral("installKindLabel"), installKindLabel(game.installKind)},
         {QStringLiteral("hasUpdate"), game.hasUpdate},
+        {QStringLiteral("autoUpdate"), game.autoUpdate},
         {QStringLiteral("uploadDate"), game.uploadDate},
         {QStringLiteral("downloadPath"), game.downloadPath},
         {QStringLiteral("libraryId"), game.libraryId},
