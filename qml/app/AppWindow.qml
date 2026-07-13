@@ -67,7 +67,19 @@ MD.ApplicationWindow {
         root.detailsGameId = ""
     }
 
-    Component.onCompleted: Appearance.apply()
+    function beginCatalogInstall(entryId, libraryId, addonIds) {
+        if (Core.needsProtonOnPlatform() && !Core.protonReady) {
+            protonRequiredDialog.open()
+            return
+        }
+        Core.installCatalogEntry(entryId, libraryId || "", addonIds || [])
+    }
+
+    Component.onCompleted: {
+        Appearance.apply()
+        if (Qt.platform.os === "linux")
+            Core.refreshProtonLatestRelease()
+    }
 
     Connections {
         target: Core
@@ -197,6 +209,7 @@ MD.ApplicationWindow {
             onOpenInstallPicker: function (entryId, title, selectedAddonIds) {
                 installLocationSheet.openForEntry(entryId, title, selectedAddonIds)
             }
+            onProtonRequired: protonRequiredDialog.open()
         }
     }
 
@@ -286,6 +299,7 @@ MD.ApplicationWindow {
     InstallLocationSheet {
         id: installLocationSheet
         anchors.fill: parent
+        installEntry: root.beginCatalogInstall
     }
 
     InstallAddonSelectionSheet {
@@ -295,8 +309,13 @@ MD.ApplicationWindow {
             if (Core.needsInstallLocationChoice())
                 installLocationSheet.openForEntry(entryId, title, selectedAddonIds)
             else
-                Core.installCatalogEntry(entryId, "", selectedAddonIds)
+                root.beginCatalogInstall(entryId, "", selectedAddonIds)
         }
+    }
+
+    ProtonRequiredDialog {
+        id: protonRequiredDialog
+        onOpenLaunchSettings: settingsSheet.openLaunch()
     }
 
     AppSnackbar {

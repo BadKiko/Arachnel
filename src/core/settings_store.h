@@ -10,6 +10,8 @@
 
 namespace arachnel::core {
 
+class ProtonManager;
+
 class SettingsStore : public QObject
 {
     Q_OBJECT
@@ -24,6 +26,12 @@ class SettingsStore : public QObject
     Q_PROPERTY(bool autoInstallUpdates READ autoInstallUpdates WRITE setAutoInstallUpdates NOTIFY
                    autoInstallUpdatesChanged)
     Q_PROPERTY(QString uiLanguage READ uiLanguage WRITE setUiLanguage NOTIFY uiLanguageChanged)
+    Q_PROPERTY(QString globalLaunchArgs READ globalLaunchArgs WRITE setGlobalLaunchArgs NOTIFY
+                   globalLaunchArgsChanged)
+    Q_PROPERTY(QString defaultProtonId READ defaultProtonId WRITE setDefaultProtonId NOTIFY
+                   defaultProtonIdChanged)
+    Q_PROPERTY(QStringList protonPriority READ protonPriority WRITE setProtonPriority NOTIFY
+                   protonPriorityChanged)
 
 public:
     explicit SettingsStore(QObject* parent = nullptr);
@@ -34,6 +42,10 @@ public:
     bool autoCheckUpdates() const { return m_autoCheckUpdates; }
     bool autoInstallUpdates() const { return m_autoInstallUpdates; }
     QString uiLanguage() const { return m_uiLanguage; }
+    QString globalLaunchArgs() const { return m_globalLaunchArgs; }
+    QString defaultProtonId() const { return m_defaultProtonId; }
+    QStringList protonPriority() const { return m_protonPriority; }
+    QString legacyProtonPath() const { return m_legacyProtonPath; }
     StorageLibraryModel* storageLibraries() { return &m_storageLibraries; }
     const StorageLibraryModel* storageLibraries() const { return &m_storageLibraries; }
 
@@ -61,6 +73,13 @@ public:
     void setAutoCheckUpdates(bool enabled);
     void setAutoInstallUpdates(bool enabled);
     void setUiLanguage(const QString& languageCode);
+    void setGlobalLaunchArgs(const QString& args);
+    void setDefaultProtonId(const QString& id);
+    void setProtonPriority(const QStringList& ids);
+    void promoteProtonInPriority(const QString& id);
+    void clearLegacyProtonPath();
+
+    QString resolvedProtonId(const QString& gameProtonId, class ProtonManager& manager) const;
 
     void load();
     void save();
@@ -73,6 +92,9 @@ signals:
     void autoCheckUpdatesChanged();
     void autoInstallUpdatesChanged();
     void uiLanguageChanged();
+    void globalLaunchArgsChanged();
+    void defaultProtonIdChanged();
+    void protonPriorityChanged();
     void pluginStatesChanged();
 
 private:
@@ -84,6 +106,10 @@ private:
     bool m_autoCheckUpdates = true;
     bool m_autoInstallUpdates = false;
     QString m_uiLanguage = QStringLiteral("en");
+    QString m_globalLaunchArgs;
+    QString m_defaultProtonId;
+    QStringList m_protonPriority;
+    QString m_legacyProtonPath;
     QVector<SourcePluginInfo> m_sources;
     QHash<QString, bool> m_pluginEnabledStates;
     StorageLibraryModel m_storageLibraries;

@@ -9,14 +9,6 @@
 #include <QRegularExpression>
 #include <QSet>
 
-#if defined(Q_OS_WIN)
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-#include <windows.h>
-#include <shellapi.h>
-#endif
-
 namespace freetp {
 
 namespace {
@@ -110,147 +102,14 @@ bool isExcludedExecutable(const QString& fileName)
     return false;
 }
 
-#if defined(Q_OS_WIN)
-
-QString quoteWindowsArg(const QString& text)
-{
-    if (text.isEmpty())
-        return QStringLiteral("\"\"");
-
-    if (!text.contains(QLatin1Char(' ')) && !text.contains(QLatin1Char('\t'))
-        && !text.contains(QLatin1Char('"')))
-        return text;
-
-    QString escaped;
-    escaped.reserve(text.size() + 4);
-    escaped += QLatin1Char('"');
-    int backslashes = 0;
-    for (const QChar ch : text) {
-        if (ch == QLatin1Char('\\')) {
-            ++backslashes;
-            continue;
-        }
-        if (ch == QLatin1Char('"')) {
-            escaped += QString(backslashes * 2 + 1, QLatin1Char('\\'));
-            backslashes = 0;
-            escaped += QLatin1Char('"');
-            continue;
-        }
-        if (backslashes > 0) {
-            escaped += QString(backslashes, QLatin1Char('\\'));
-            backslashes = 0;
-        }
-        escaped += ch;
-    }
-    if (backslashes > 0)
-        escaped += QString(backslashes * 2, QLatin1Char('\\'));
-    escaped += QLatin1Char('"');
-    return escaped;
-}
-
-QString formatWindowsParameters(const QStringList& arguments)
-{
-    QStringList parts;
-    for (const QString& argument : arguments)
-        parts << quoteWindowsArg(argument);
-    return parts.join(QLatin1Char(' '));
-}
-
-QString describeWin32Error(DWORD error)
-{
-    if (error == ERROR_CANCELLED)
-        return QStringLiteral("запуск отменён (UAC)");
-    if (error == ERROR_ELEVATION_REQUIRED)
-        return QStringLiteral("требуются права администратора");
-    return QStringLiteral("Win32 %1").arg(error);
-}
-
-bool runWindowsProcess(const QString& program, const QStringList& arguments, int timeoutMs,
-                       QString* errorOut, const QString& workingDirectory)
-{
-    if (!QFileInfo::exists(program)) {
-        if (errorOut)
-            *errorOut = QStringLiteral("Файл не найден: %1").arg(program);
-        return false;
-    }
-
-    const QString nativeProgram = QDir::toNativeSeparators(program);
-    const QString parameters = formatWindowsParameters(arguments);
-    const QString nativeWorkDir =
-        workingDirectory.isEmpty() ? QString() : QDir::toNativeSeparators(workingDirectory);
-
-    SHELLEXECUTEINFOW executeInfo{};
-    executeInfo.cbSize = sizeof(executeInfo);
-    executeInfo.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NOZONECHECKS;
-    executeInfo.lpVerb = L"open";
-    executeInfo.lpFile = reinterpret_cast<LPCWSTR>(nativeProgram.utf16());
-    executeInfo.lpParameters = parameters.isEmpty()
-                                   ? nullptr
-                                   : reinterpret_cast<LPCWSTR>(parameters.utf16());
-    executeInfo.lpDirectory = nativeWorkDir.isEmpty()
-                                  ? nullptr
-                                  : reinterpret_cast<LPCWSTR>(nativeWorkDir.utf16());
-    executeInfo.nShow = SW_HIDE;
-
-    if (!ShellExecuteExW(&executeInfo)) {
-        if (errorOut) {
-            *errorOut = QStringLiteral("Не удалось запустить %1: %2")
-                            .arg(nativeProgram, describeWin32Error(GetLastError()));
-        }
-        return false;
-    }
-
-    if (!executeInfo.hProcess) {
-        if (errorOut)
-            *errorOut = QStringLiteral("Не удалось отследить процесс установки");
-        return false;
-    }
-
-    const DWORD waitResult =
-        WaitForSingleObject(executeInfo.hProcess, static_cast<DWORD>(timeoutMs));
-    if (waitResult == WAIT_TIMEOUT) {
-        TerminateProcess(executeInfo.hProcess, 1);
-        CloseHandle(executeInfo.hProcess);
-        if (errorOut)
-            *errorOut = QStringLiteral("Таймаут: %1").arg(nativeProgram);
-        return false;
-    }
-
-    DWORD exitCode = 1;
-    GetExitCodeProcess(executeInfo.hProcess, &exitCode);
-    CloseHandle(executeInfo.hProcess);
-
-    if (exitCode != 0) {
-        if (errorOut)
-            *errorOut = QStringLiteral("%1 завершился с кодом %2").arg(nativeProgram).arg(exitCode);
-        return false;
-    }
-
-    return true;
-}
-
-#endif
-
 } // namespace
 
 bool runInstallProcess(const QString& program, const QStringList& arguments, int timeoutMs,
-                       QString* errorOut, const QString& workingDirectory)
+                       QString* errorOut, const QString& workingDirectory,
+                       const arachnel::core::WindowsRunEnv& env)
 {
-#if defined(Q_OS_WIN)
-    return runWindowsProcess(program, arguments, timeoutMs, errorOut, workingDirectory);
-#else
-    const QString nativeProgram = QDir::toNativeSeparators(program);
-    const QString nativeWorkDir =
-        workingDirectory.isEmpty() ? QString() : QDir::toNativeSeparators(workingDirectory);
-
-    QProcess process;
-    process.setProgram(nativeProgram);
-    process.setArguments(arguments);
-    if (!nativeWorkDir.isEmpty())
-        process.setWorkingDirectory(nativeWorkDir);
-
-    return runProcess(process, timeoutMs, errorOut);
-#endif
+    return arachnel::core::runWindowsProgramAndWait(program, arguments, timeoutMs, errorOut,
+                                                    workingDirectory, env);
 }
 
 QString findDownloadContentRoot(const QString& downloadPath)

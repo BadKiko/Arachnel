@@ -1,5 +1,6 @@
 #include "settings_store.h"
 
+#include "proton_manager.h"
 #include "storage_library.h"
 
 #include <QDir>
@@ -257,6 +258,69 @@ void SettingsStore::setUiLanguage(const QString& languageCode)
     save();
 }
 
+void SettingsStore::setGlobalLaunchArgs(const QString& args)
+{
+    if (m_globalLaunchArgs == args)
+        return;
+    m_globalLaunchArgs = args;
+    emit globalLaunchArgsChanged();
+    save();
+}
+
+void SettingsStore::setDefaultProtonId(const QString& id)
+{
+    const QString normalized = id.trimmed();
+    if (m_defaultProtonId == normalized)
+        return;
+    m_defaultProtonId = normalized;
+    if (!normalized.isEmpty())
+        promoteProtonInPriority(normalized);
+    emit defaultProtonIdChanged();
+    save();
+}
+
+void SettingsStore::setProtonPriority(const QStringList& ids)
+{
+    QStringList normalized;
+    normalized.reserve(ids.size());
+    for (const QString& id : ids) {
+        const QString trimmed = id.trimmed();
+        if (!trimmed.isEmpty() && !normalized.contains(trimmed))
+            normalized.append(trimmed);
+    }
+    if (m_protonPriority == normalized)
+        return;
+    m_protonPriority = normalized;
+    emit protonPriorityChanged();
+    save();
+}
+
+void SettingsStore::promoteProtonInPriority(const QString& id)
+{
+    const QString normalized = id.trimmed();
+    if (normalized.isEmpty())
+        return;
+
+    QStringList next = m_protonPriority;
+    next.removeAll(normalized);
+    next.prepend(normalized);
+    setProtonPriority(next);
+}
+
+void SettingsStore::clearLegacyProtonPath()
+{
+    if (m_legacyProtonPath.isEmpty())
+        return;
+    m_legacyProtonPath.clear();
+    save();
+}
+
+QString SettingsStore::resolvedProtonId(const QString& gameProtonId,
+                                        ProtonManager& manager) const
+{
+    return manager.resolveProtonId(gameProtonId, m_defaultProtonId, m_protonPriority);
+}
+
 void SettingsStore::load()
 {
     QFile file(settingsFilePath());
@@ -268,6 +332,9 @@ void SettingsStore::load()
         emit autoCheckUpdatesChanged();
         emit autoInstallUpdatesChanged();
         emit uiLanguageChanged();
+        emit globalLaunchArgsChanged();
+        emit defaultProtonIdChanged();
+        emit protonPriorityChanged();
         emit sourcesChanged();
         return;
     }
@@ -278,6 +345,16 @@ void SettingsStore::load()
     m_autoCheckUpdates = obj.value(QStringLiteral("autoCheckUpdates")).toBool(true);
     m_autoInstallUpdates = obj.value(QStringLiteral("autoInstallUpdates")).toBool(false);
     m_uiLanguage = obj.value(QStringLiteral("uiLanguage")).toString(QStringLiteral("en")).toLower();
+    m_globalLaunchArgs = obj.value(QStringLiteral("globalLaunchArgs")).toString();
+    m_defaultProtonId = obj.value(QStringLiteral("defaultProtonId")).toString();
+    m_legacyProtonPath = obj.value(QStringLiteral("protonPath")).toString();
+    m_protonPriority.clear();
+    const QJsonArray priority = obj.value(QStringLiteral("protonPriority")).toArray();
+    for (const QJsonValue& value : priority) {
+        const QString id = value.toString().trimmed();
+        if (!id.isEmpty() && !m_protonPriority.contains(id))
+            m_protonPriority.append(id);
+    }
 
     if (obj.contains(QStringLiteral("storageLibraries"))) {
         QVector<StorageLibrary> libraries;
@@ -355,6 +432,9 @@ void SettingsStore::load()
     emit autoCheckUpdatesChanged();
     emit autoInstallUpdatesChanged();
     emit uiLanguageChanged();
+    emit globalLaunchArgsChanged();
+    emit defaultProtonIdChanged();
+    emit protonPriorityChanged();
     emit sourcesChanged();
 }
 
@@ -367,6 +447,12 @@ void SettingsStore::save()
     obj.insert(QStringLiteral("autoCheckUpdates"), m_autoCheckUpdates);
     obj.insert(QStringLiteral("autoInstallUpdates"), m_autoInstallUpdates);
     obj.insert(QStringLiteral("uiLanguage"), m_uiLanguage);
+    obj.insert(QStringLiteral("globalLaunchArgs"), m_globalLaunchArgs);
+    obj.insert(QStringLiteral("defaultProtonId"), m_defaultProtonId);
+    QJsonArray priority;
+    for (const QString& id : m_protonPriority)
+        priority.append(id);
+    obj.insert(QStringLiteral("protonPriority"), priority);
 
     QJsonArray storageLibraries;
     for (const auto& library : m_storageLibraries.libraries()) {

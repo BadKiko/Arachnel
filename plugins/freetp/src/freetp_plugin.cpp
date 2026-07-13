@@ -2,6 +2,7 @@
 
 #include "archive_installer.h"
 #include "installer_runner.h"
+#include "linux_fix_launch.h"
 
 #include "catalog_parser.h"
 
@@ -88,6 +89,26 @@ bool shouldUseInnoInstaller(const QString& contentRoot,
 }
 
 } // namespace
+
+arachnel::core::WindowsRunEnv windowsRunEnvFromInstallContext(
+    const arachnel::core::InstallContext& ctx)
+{
+    arachnel::core::WindowsRunEnv env;
+    env.protonExecutable = ctx.protonExecutable;
+    env.compatDataPath = ctx.compatDataPath;
+    env.steamCompatClientPath = ctx.steamCompatClientPath;
+    return env;
+}
+
+arachnel::core::WindowsRunEnv windowsRunEnvFromAddonContext(
+    const arachnel::core::AddonInstallContext& ctx)
+{
+    arachnel::core::WindowsRunEnv env;
+    env.protonExecutable = ctx.protonExecutable;
+    env.compatDataPath = ctx.compatDataPath;
+    env.steamCompatClientPath = ctx.steamCompatClientPath;
+    return env;
+}
 
 FreetpPlugin::FreetpPlugin(QString rootPath)
     : m_rootPath(std::move(rootPath))
@@ -218,6 +239,7 @@ arachnel::core::InstallResult FreetpPlugin::installFromDownload(
 
     QString error;
     QString installPath;
+    const arachnel::core::WindowsRunEnv runEnv = windowsRunEnvFromInstallContext(ctx);
 
     if (shouldUseInnoInstaller(contentRoot, ctx)) {
         const QString setupExe = findSetupExecutable(contentRoot);
@@ -227,7 +249,7 @@ arachnel::core::InstallResult FreetpPlugin::installFromDownload(
             return result;
         }
 
-        installPath = installInnoSetup(setupExe, ctx.targetPath, &error);
+        installPath = installInnoSetup(setupExe, ctx.targetPath, &error, runEnv);
         if (installPath.isEmpty()) {
             result.success = false;
             result.error = error.isEmpty() ? QStringLiteral("Ошибка тихой установки Inno Setup")
@@ -247,6 +269,9 @@ arachnel::core::InstallResult FreetpPlugin::installFromDownload(
 
     result.success = true;
     result.installPath = installPath;
+#if defined(Q_OS_LINUX)
+    prepareLinuxFixInstall(installPath, m_rootPath);
+#endif
     return result;
 }
 
@@ -264,17 +289,21 @@ arachnel::core::InstallResult FreetpPlugin::installAddonFromDownload(
     }
 
     QString error;
+    const arachnel::core::WindowsRunEnv runEnv = windowsRunEnvFromAddonContext(ctx);
     const QFileInfo artifact(ctx.downloadPath);
     if (artifact.isFile()) {
         const QString suffix = artifact.suffix().toLower();
         if (suffix == QStringLiteral("exe")) {
-            if (installInnoOverlay(ctx.downloadPath, ctx.gameInstallPath, &error).isEmpty()) {
+            if (installInnoOverlay(ctx.downloadPath, ctx.gameInstallPath, &error, runEnv).isEmpty()) {
                 result.error = error.isEmpty() ? QStringLiteral("Ошибка установки фикса") : error;
                 return result;
             }
             cleanupInnoSideEffects(ctx.gameInstallPath);
             result.success = true;
             result.installPath = ctx.gameInstallPath;
+#if defined(Q_OS_LINUX)
+            prepareLinuxFixInstall(ctx.gameInstallPath, m_rootPath);
+#endif
             return result;
         }
     }
@@ -283,13 +312,16 @@ arachnel::core::InstallResult FreetpPlugin::installAddonFromDownload(
                                                  : artifact.absolutePath();
     const QString setupExe = findSetupExecutable(contentRoot);
     if (!setupExe.isEmpty() && isInnoSetupExecutable(setupExe)) {
-        if (installInnoOverlay(setupExe, ctx.gameInstallPath, &error).isEmpty()) {
+        if (installInnoOverlay(setupExe, ctx.gameInstallPath, &error, runEnv).isEmpty()) {
             result.error = error.isEmpty() ? QStringLiteral("Ошибка установки фикса") : error;
             return result;
         }
         cleanupInnoSideEffects(ctx.gameInstallPath);
         result.success = true;
         result.installPath = ctx.gameInstallPath;
+#if defined(Q_OS_LINUX)
+        prepareLinuxFixInstall(ctx.gameInstallPath, m_rootPath);
+#endif
         return result;
     }
 
@@ -300,6 +332,9 @@ arachnel::core::InstallResult FreetpPlugin::installAddonFromDownload(
 
     result.success = true;
     result.installPath = ctx.gameInstallPath;
+#if defined(Q_OS_LINUX)
+    prepareLinuxFixInstall(ctx.gameInstallPath, m_rootPath);
+#endif
     return result;
 }
 
@@ -328,12 +363,19 @@ arachnel::core::LaunchInfo FreetpPlugin::launchInfo(const arachnel::core::Librar
     if (local.installPath.isEmpty())
         return info;
 
-    const QString exe = findGameExecutable(local.installPath);
+    const QString exe = linuxFixLaunchEnabled() ? findBestGameExecutable(local.installPath)
+                                                : findGameExecutable(local.installPath);
     if (exe.isEmpty())
         return info;
 
     info.executable = exe;
     info.workingDirectory = QFileInfo(exe).absolutePath();
+
+#if defined(Q_OS_LINUX)
+    LinuxFixLaunchOptions options;
+    applyLinuxFixLaunchInfo(local.installPath, m_rootPath, options, &info);
+#endif
+
     return info;
 }
 

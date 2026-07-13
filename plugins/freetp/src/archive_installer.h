@@ -1,5 +1,7 @@
 #pragma once
 
+#include "windows_runner.h"
+
 #include <QString>
 
 namespace freetp {
@@ -18,6 +20,7 @@ bool installAddonOverlay(const QString& downloadPath, const QString& gameInstall
                          QString* errorOut);
 
 bool runInstallProcess(const QString& program, const QStringList& arguments, int timeoutMs,
-                       QString* errorOut, const QString& workingDirectory = {});
+                       QString* errorOut, const QString& workingDirectory = {},
+                       const arachnel::core::WindowsRunEnv& env = {});
 
 } // namespace freetp

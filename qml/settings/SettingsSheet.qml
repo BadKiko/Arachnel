@@ -6,6 +6,8 @@ MD.BottomSheet {
     id: root
 
     sheetType: MD.Enum.BottomSheetModal
+    // Wheel over the sheet must scroll content, not pull the modal down (Flickable2 dismiss).
+    dismissOnDragDown: false
 
     onAboutToShow: settingsPage.syncFromStore()
     onClosed: settingsPage.resetOnClose()
@@ -22,6 +24,11 @@ MD.BottomSheet {
 
     function openSources(createSource) {
         settingsPage.prepareOpen("sources", !!createSource)
+        open()
+    }
+
+    function openLaunch() {
+        settingsPage.prepareOpen("launch", false)
         open()
     }
 

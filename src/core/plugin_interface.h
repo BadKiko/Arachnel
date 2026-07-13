@@ -6,6 +6,7 @@
 
 #include <QString>
 #include <QStringList>
+#include <QHash>
 #include <QVector>
 #include <optional>
 
@@ -15,6 +16,9 @@ struct LaunchInfo {
     QString executable;
     QString workingDirectory;
     QStringList arguments;
+    QStringList argumentsPrefix;
+    QString wineDllOverrides;
+    QHash<QString, QString> environmentExtras;
 };
 
 struct InstallContext {
@@ -28,6 +32,9 @@ struct InstallContext {
     QString magnetUri;
     QString uploadDate;
     InstallKind installKind = InstallKind::PortableArchive;
+    QString protonExecutable;
+    QString compatDataPath;
+    QString steamCompatClientPath;
 };
 
 struct InstallResult {
@@ -43,6 +50,9 @@ struct AddonInstallContext {
     QString gameInstallPath;
     QString downloadPath;
     CatalogItemKind addonKind = CatalogItemKind::Addon;
+    QString protonExecutable;
+    QString compatDataPath;
+    QString steamCompatClientPath;
 };
 
 class ISourcePlugin
