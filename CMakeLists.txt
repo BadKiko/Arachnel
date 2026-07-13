@@ -37,12 +37,15 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/ArachnelLibtorrent.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/ArachnelPlugins.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/ArachnelTranslations.cmake)
 
-# After lupdate: English template (monolingual) + filled ru.ts for Weblate.
-add_custom_target(arachnel_normalize_translations
-    COMMAND python3 ${CMAKE_SOURCE_DIR}/tools/normalize_translations.py
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    COMMENT "Normalize translations/*.ts for Weblate"
-)
+# Optional Weblate helper — not part of the app build (needs Python).
+find_package(Python3 COMPONENTS Interpreter QUIET)
+if(Python3_FOUND)
+    add_custom_target(arachnel_normalize_translations
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/normalize_translations.py
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        COMMENT "Normalize translations/*.ts for Weblate"
+    )
+endif()
 
 include(FetchContent)
 FetchContent_Declare(
@@ -95,6 +98,7 @@ set(CMAKE_AUTOMOC ON)
 
 qt_add_executable(arachnel_app
     src/main.cpp
+    src/crash_log.cpp
     src/core/install_kind.cpp
     src/core/job_display.cpp
     src/core/job_kind.cpp

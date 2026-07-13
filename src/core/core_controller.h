@@ -99,6 +99,7 @@ public:
     Q_INVOKABLE void installDownloadedCatalogAddon(const QString& entryId, const QString& addonId);
     Q_INVOKABLE bool isCatalogAddonInstalled(const QString& entryId, const QString& addonId) const;
     Q_INVOKABLE void updateCatalogEntry(const QString& entryId);
+    Q_INVOKABLE void setGameAutoUpdate(const QString& entryId, bool enabled);
     Q_INVOKABLE bool needsInstallLocationChoice() const;
     Q_INVOKABLE QString browseStorageFolder();
     Q_INVOKABLE void removeGame(const QString& gameId, bool deleteFiles = true);
@@ -110,8 +111,6 @@ public:
     Q_INVOKABLE bool entryDownloadFilesExist(const QString& entryId) const;
     Q_INVOKABLE QVariantMap entryDetails(const QString& entryId) const;
     Q_INVOKABLE void checkUpdates();
-    Q_INVOKABLE void verifyEntryFiles(const QString& entryId);
-    Q_INVOKABLE void verifyAllPortableGames();
     Q_INVOKABLE void cancelJob(const QString& jobId);
     Q_INVOKABLE void toggleJobPause(const QString& jobId);
     Q_INVOKABLE void removeJob(const QString& jobId);
@@ -162,6 +161,7 @@ private:
     void persistSourcesToSettings();
     void applyPluginCatalog(const QString& sourceId, QVector<CatalogEntry> entries);
     void onCatalogReady();
+    void runAutoInstallUpdates();
     void syncLibraryFromStore();
     void applyCatalogFilter(const QString& query);
     void commitCatalogLoad(const QString& sourceId, QVector<CatalogEntry> entries);
@@ -208,13 +208,13 @@ private:
     void clearRunningGame();
     void pollRunningGame();
     const JobEntry* findLatestJobForEntry(const QString& entryId) const;
+    bool entryHasActiveJob(const QString& entryId) const;
     void showNotice(const QString& message, bool addToHistory = true);
     void setCatalogLoading(bool loading);
     void setCatalogStatus(const QString& status);
     bool isRemoteUploadDateNewer(const QString& remote, const QString& local) const;
     bool gameHasUpdate(const LibraryGame& game, const CatalogEntry& remote) const;
     int recalculateLibraryUpdates(bool notify);
-    QString verifyEntryFilesMessage(const QString& entryId) const;
     const CatalogEntry* findCatalogEntry(const QString& entryId) const;
     const CatalogComponent* findCatalogAddon(const CatalogEntry& entry,
                                              const QString& addonId) const;

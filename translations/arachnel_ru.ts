@@ -714,6 +714,13 @@ build-win/dist/freetp.arach</translation>
     <message>
         
         
+        <location filename="../src/core/core_controller.cpp" line="1340" />
+        <source>Started %1 update(s)</source>
+        <translation>Запущено обновлений: %1</translation>
+    </message>
+    <message>
+        
+        
         <location filename="../src/core/core_controller.cpp" line="1295" />
         <source>No updates</source>
         <translation>Обновлений нет</translation>
@@ -947,34 +954,6 @@ build-win/dist/freetp.arach</translation>
         <location filename="../src/core/core_controller.cpp" line="2400" />
         <source>No catalog sources enabled</source>
         <translation>Нет включённых источников каталога</translation>
-    </message>
-    <message>
-        
-        
-        <location filename="../src/core/core_controller.cpp" line="2416" />
-        <source>Files OK: %1</source>
-        <translation>Файлы в порядке: %1</translation>
-    </message>
-    <message>
-        
-        
-        <location filename="../src/core/core_controller.cpp" line="2434" />
-        <source>No installed portable games to verify</source>
-        <translation>Нет установленных portable-игр для проверки</translation>
-    </message>
-    <message>
-        
-        
-        <location filename="../src/core/core_controller.cpp" line="2439" />
-        <source>Verified %1 portable game(s) — all OK</source>
-        <translation>Проверено portable-игр: %1 — всё в порядке</translation>
-    </message>
-    <message>
-        
-        
-        <location filename="../src/core/core_controller.cpp" line="2441" />
-        <source>Verified: %1, issues: %2</source>
-        <translation>Проверено: %1, проблем: %2</translation>
     </message>
     <message>
         
@@ -1234,15 +1213,22 @@ build-win/dist/freetp.arach</translation>
         
         
         <location filename="../qml/app/GameDetailsPage.qml" line="281" />
-        <source>Refresh</source>
+        <source>Update</source>
         <translation>Обновить</translation>
     </message>
     <message>
         
         
-        <location filename="../qml/app/GameDetailsPage.qml" line="290" />
-        <source>Verify files</source>
-        <translation>Проверить файлы</translation>
+        <location filename="../qml/app/GameDetailsPage.qml" line="308" />
+        <source>Auto-update this game</source>
+        <translation>Автообновление этой игры</translation>
+    </message>
+    <message>
+        
+        
+        <location filename="../qml/app/GameDetailsPage.qml" line="314" />
+        <source>When enabled, updates start automatically after the catalog loads.</source>
+        <translation>Если включено, обновление запускается автоматически после загрузки каталога.</translation>
     </message>
     <message>
         
@@ -1652,7 +1638,7 @@ build-win/dist/freetp.arach</translation>
         
         
         <location filename="../qml/app/LibraryPage.qml" line="477" />
-        <source>Refresh</source>
+        <source>Update</source>
         <translation>Обновить</translation>
     </message>
     <message>
@@ -2275,8 +2261,8 @@ build-win/dist/freetp.arach</translation>
         
         
         <location filename="../qml/settings/SettingsUpdatesPage.qml" line="28" />
-        <source>Update checks and portable build integrity verification.</source>
-        <translation>Проверка обновлений и целостности portable-сборок.</translation>
+        <source>Update checks and automatic installs.</source>
+        <translation>Проверка обновлений и автоустановка.</translation>
     </message>
     <message>
         
@@ -2296,15 +2282,15 @@ build-win/dist/freetp.arach</translation>
         
         
         <location filename="../qml/settings/SettingsUpdatesPage.qml" line="77" />
-        <source>Verify portable files before launch</source>
-        <translation>Проверять файлы portable перед запуском</translation>
+        <source>Install updates automatically on launch</source>
+        <translation>Устанавливать обновления при запуске</translation>
     </message>
     <message>
         
         
         <location filename="../qml/settings/SettingsUpdatesPage.qml" line="83" />
-        <source>The install folder and .exe must exist.</source>
-        <translation>Папка установки и .exe должны существовать.</translation>
+        <source>Starts downloads for games with updates when the catalog finishes loading. Per-game opt-out is available in game details.</source>
+        <translation>Запускает загрузку обновлений после загрузки каталога. Для отдельной игры можно отключить в её карточке.</translation>
     </message>
     <message>
         
@@ -2312,13 +2298,6 @@ build-win/dist/freetp.arach</translation>
         <location filename="../qml/settings/SettingsUpdatesPage.qml" line="103" />
         <source>Check for updates</source>
         <translation>Проверить обновления</translation>
-    </message>
-    <message>
-        
-        
-        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="110" />
-        <source>Verify portable</source>
-        <translation>Проверить portable</translation>
     </message>
 
 

@@ -237,12 +237,12 @@ void SettingsStore::setAutoCheckUpdates(bool enabled)
     save();
 }
 
-void SettingsStore::setVerifyPortableFiles(bool enabled)
+void SettingsStore::setAutoInstallUpdates(bool enabled)
 {
-    if (m_verifyPortableFiles == enabled)
+    if (m_autoInstallUpdates == enabled)
         return;
-    m_verifyPortableFiles = enabled;
-    emit verifyPortableFilesChanged();
+    m_autoInstallUpdates = enabled;
+    emit autoInstallUpdatesChanged();
     save();
 }
 
@@ -266,7 +266,7 @@ void SettingsStore::load()
         emit downloadsRootChanged();
         emit maxConcurrentDownloadsChanged();
         emit autoCheckUpdatesChanged();
-        emit verifyPortableFilesChanged();
+        emit autoInstallUpdatesChanged();
         emit uiLanguageChanged();
         emit sourcesChanged();
         return;
@@ -276,7 +276,7 @@ void SettingsStore::load()
     if (obj.contains(QStringLiteral("maxConcurrentDownloads")))
         m_maxConcurrentDownloads = qBound(1, obj.value(QStringLiteral("maxConcurrentDownloads")).toInt(2), 8);
     m_autoCheckUpdates = obj.value(QStringLiteral("autoCheckUpdates")).toBool(true);
-    m_verifyPortableFiles = obj.value(QStringLiteral("verifyPortableFiles")).toBool(true);
+    m_autoInstallUpdates = obj.value(QStringLiteral("autoInstallUpdates")).toBool(false);
     m_uiLanguage = obj.value(QStringLiteral("uiLanguage")).toString(QStringLiteral("en")).toLower();
 
     if (obj.contains(QStringLiteral("storageLibraries"))) {
@@ -353,7 +353,7 @@ void SettingsStore::load()
     emit downloadsRootChanged();
     emit maxConcurrentDownloadsChanged();
     emit autoCheckUpdatesChanged();
-    emit verifyPortableFilesChanged();
+    emit autoInstallUpdatesChanged();
     emit uiLanguageChanged();
     emit sourcesChanged();
 }
@@ -365,7 +365,7 @@ void SettingsStore::save()
     obj.insert(QStringLiteral("downloadsRoot"), m_downloadsRoot);
     obj.insert(QStringLiteral("maxConcurrentDownloads"), m_maxConcurrentDownloads);
     obj.insert(QStringLiteral("autoCheckUpdates"), m_autoCheckUpdates);
-    obj.insert(QStringLiteral("verifyPortableFiles"), m_verifyPortableFiles);
+    obj.insert(QStringLiteral("autoInstallUpdates"), m_autoInstallUpdates);
     obj.insert(QStringLiteral("uiLanguage"), m_uiLanguage);
 
     QJsonArray storageLibraries;

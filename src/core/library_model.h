@@ -29,6 +29,7 @@ struct LibraryGame {
     QString sizeLabel;
     InstallKind installKind = InstallKind::PortableArchive;
     bool hasUpdate = false;
+    bool autoUpdate = true;
     QString uploadDate;
     QString magnetUri;
     QString downloadPath;

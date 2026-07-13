@@ -320,6 +320,91 @@ function Ensure-DevBuild {
     }
 }
 
+function Get-ArachnelDataDir {
+    Join-Path $env:LOCALAPPDATA "PetWork\Arachnel"
+}
+
+function Format-ExitCode {
+    param([int]$Code)
+    if ($Code -eq 0) { return "0" }
+    if ($Code -lt 0) {
+        $unsigned = [uint32]$Code
+        return "0x{0:X8} ({1})" -f $unsigned, $Code
+    }
+    return "$Code"
+}
+
+function Get-LogTail {
+    param(
+        [string]$Path,
+        [int]$Lines = 40
+    )
+    if (-not (Test-Path -LiteralPath $Path)) { return @() }
+    return @(Get-Content -LiteralPath $Path -Tail $Lines -ErrorAction SilentlyContinue)
+}
+
+function Show-CrashReport {
+    param(
+        [int]$ExitCode,
+        [string]$AppPath
+    )
+
+    $dataDir = Get-ArachnelDataDir
+    $crashLog = Join-Path $dataDir "crash.log"
+    $runLog = Join-Path $dataDir "run.log"
+    $issueUrl = "https://github.com/BadKiko/Arachnel/issues/new"
+    $exitLabel = Format-ExitCode $ExitCode
+
+    Write-Host ""
+    Write-Host "========================================" -ForegroundColor Red
+    Write-Host " Arachnel stopped unexpectedly" -ForegroundColor Red
+    Write-Host "========================================" -ForegroundColor Red
+    Write-Host "Exit code: $exitLabel"
+    Write-Host "Exe:       $AppPath"
+    Write-Host "Logs:      $dataDir"
+    Write-Host ""
+
+    $crashTail = Get-LogTail $crashLog 20
+    if ($crashTail.Count -gt 0) {
+        Write-Host "--- crash.log (last lines) ---" -ForegroundColor Yellow
+        $crashTail | ForEach-Object { Write-Host $_ }
+        Write-Host ""
+    }
+
+    $runTail = Get-LogTail $runLog 30
+    if ($runTail.Count -gt 0) {
+        Write-Host "--- run.log (last lines) ---" -ForegroundColor Yellow
+        $runTail | ForEach-Object { Write-Host $_ }
+        Write-Host ""
+    }
+
+    Write-Host "Please report this on GitHub (attach the log tail above):" -ForegroundColor Cyan
+    Write-Host $issueUrl -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "Press Enter to close this window ..."
+    [void][System.Console]::ReadLine()
+}
+
+function Invoke-ArachnelApp {
+    param(
+        [string]$AppPath,
+        [string[]]$AppArgs
+    )
+
+    $env:ARACHNEL_DEV_RUN = "1"
+    Write-Host "Run $AppPath"
+    Write-Host ""
+
+    & $AppPath @AppArgs
+    $exitCode = $LASTEXITCODE
+
+    if ($exitCode -ne 0) {
+        Show-CrashReport -ExitCode $exitCode -AppPath $AppPath
+    }
+
+    exit $exitCode
+}
+
 $remainingArgs = [System.Collections.Generic.List[string]]::new()
 $runOnly = $false
 $argsList = @($args)
@@ -371,5 +456,4 @@ $plan = Get-BuildArgs
 Initialize-QtRuntime $plan.Qt
 Deploy-QtRuntime $plan.Qt $APP
 
-& $APP @remainingArgs
-exit $LASTEXITCODE
+Invoke-ArachnelApp -AppPath $APP -AppArgs $remainingArgs

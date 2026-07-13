@@ -1304,33 +1304,66 @@ int CoreController::recalculateLibraryUpdates(bool notify)
 
 void CoreController::onCatalogReady()
 {
-    if (!m_settings.autoCheckUpdates())
-        return;
     const int updates = recalculateLibraryUpdates(false);
-    if (updates > 0)
+
+    if (m_settings.autoCheckUpdates() && updates > 0)
         showNotice(QCoreApplication::translate("Core", "%1 update(s) available").arg(updates));
+
+    runAutoInstallUpdates();
 }
 
-QString CoreController::verifyEntryFilesMessage(const QString& entryId) const
+void CoreController::runAutoInstallUpdates()
 {
-    const LibraryGame* game = m_libraryStore.gameById(entryId);
-    if (!game)
-        return QCoreApplication::translate("Core", "Game not found");
-    if (game->installPath.isEmpty())
-        return QCoreApplication::translate("Core", "Game not installed");
-    if (!QDir(game->installPath).exists())
-        return QCoreApplication::translate("Core", "Install folder not found");
+    if (!m_settings.autoInstallUpdates())
+        return;
 
-    LaunchInfo info;
-    if (ISourcePlugin* plugin = m_pluginHost ? m_pluginHost->plugin(game->sourceId) : nullptr)
-        info = plugin->launchInfo(*game);
+    int started = 0;
+    for (const LibraryGame& game : m_libraryStore.games()) {
+        if (!game.hasUpdate || !game.autoUpdate)
+            continue;
+        if (!isEntryPlayable(game.id))
+            continue;
+        if (entryHasActiveJob(game.id))
+            continue;
 
-    if (info.executable.isEmpty())
-        return QCoreApplication::translate("Core", "Executable not found");
-    if (!QFileInfo::exists(info.executable))
-        return QCoreApplication::translate("Core", "Executable is missing");
+        const CatalogEntry* entry = findCatalogEntry(game.id);
+        if (!entry)
+            continue;
 
-    return {};
+        const QString jobId = m_jobOrchestrator->startCatalogDownload(*entry, JobKind::Update);
+        if (!jobId.isEmpty())
+            ++started;
+    }
+
+    if (started > 0) {
+        showNotice(QCoreApplication::translate("Core", "Started %1 update(s)").arg(started));
+    }
+}
+
+bool CoreController::entryHasActiveJob(const QString& entryId) const
+{
+    for (const JobEntry& job : m_jobStore.jobs()) {
+        if (job.entryId != entryId && job.parentEntryId != entryId)
+            continue;
+        if (isJobInProgress(job.status))
+            return true;
+    }
+    return false;
+}
+
+void CoreController::setGameAutoUpdate(const QString& entryId, bool enabled)
+{
+    const LibraryGame* existing = m_libraryStore.gameById(entryId);
+    if (!existing)
+        return;
+
+    LibraryGame game = *existing;
+    if (game.autoUpdate == enabled)
+        return;
+
+    game.autoUpdate = enabled;
+    m_libraryStore.upsertGame(game);
+    syncLibraryFromStore();
 }
 
 const CatalogEntry* CoreController::findCatalogEntry(const QString& entryId) const
@@ -1830,15 +1863,6 @@ void CoreController::launchGame(const QString& gameId)
     if (game->installPath.isEmpty()) {
         showNotice(QCoreApplication::translate("Core", "%1 is not installed yet").arg(game->title));
         return;
-    }
-
-    if (m_settings.verifyPortableFiles()
-        && game->installKind == InstallKind::PortableArchive) {
-        const QString verifyError = verifyEntryFilesMessage(gameId);
-        if (!verifyError.isEmpty()) {
-            showNotice(QStringLiteral("%1: %2").arg(game->title, verifyError));
-            return;
-        }
     }
 
     if (gameRunning() && m_runningGameId == gameId) {
@@ -2411,40 +2435,6 @@ void CoreController::checkUpdates()
     }
 
     recalculateLibraryUpdates(true);
-}
-
-void CoreController::verifyEntryFiles(const QString& entryId)
-{
-    const LibraryGame* game = m_libraryStore.gameById(entryId);
-    const QString title = game ? game->title : entryId;
-    const QString error = verifyEntryFilesMessage(entryId);
-    if (error.isEmpty())
-        showNotice(QCoreApplication::translate("Core", "Files OK: %1").arg(title));
-    else
-        showNotice(QStringLiteral("%1: %2").arg(title, error));
-}
-
-void CoreController::verifyAllPortableGames()
-{
-    int checked = 0;
-    int failed = 0;
-    for (const LibraryGame& game : m_libraryStore.games()) {
-        if (game.installPath.isEmpty() || game.installKind != InstallKind::PortableArchive)
-            continue;
-        ++checked;
-        if (!verifyEntryFilesMessage(game.id).isEmpty())
-            ++failed;
-    }
-
-    if (checked == 0) {
-        showNotice(QCoreApplication::translate("Core", "No installed portable games to verify"));
-        return;
-    }
-
-    if (failed == 0)
-        showNotice(QCoreApplication::translate("Core", "Verified %1 portable game(s) — all OK").arg(checked));
-    else
-        showNotice(QCoreApplication::translate("Core", "Verified: %1, issues: %2").arg(checked).arg(failed));
 }
 
 void CoreController::cancelJob(const QString& jobId)

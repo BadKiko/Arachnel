@@ -17,7 +17,17 @@ Item {
         color: MD.Token.color.surface
     }
 
-    readonly property var info: gameId.length ? Core.entryDetails(gameId) : ({})
+    property int detailsRevision: 0
+
+    readonly property var info: {
+        const _rev = root.detailsRevision
+        return gameId.length ? Core.entryDetails(gameId) : ({})
+    }
+
+    Connections {
+        target: Core.library
+        function onLibraryChanged() { root.detailsRevision++ }
+    }
 
     readonly property bool playable: Core.isEntryPlayable(gameId)
     readonly property bool installed: root.playable
@@ -278,19 +288,40 @@ Item {
 
                         MD.Button {
                             visible: root.installed && !!(root.info.hasUpdate) && !root.downloadJob.inProgress
-                            text: qsTr("Refresh")
+                            text: qsTr("Update")
                             icon.name: MD.Token.icon.update
                             mdState.type: MD.Enum.BtFilledTonal
                             onClicked: Core.updateCatalogEntry(root.gameId)
                         }
+                    }
 
-                        MD.Button {
-                            visible: root.playable
-                                     && (root.info.installKind === 0)
-                            text: qsTr("Verify files")
-                            icon.name: MD.Token.icon.fact_check
-                            mdState.type: MD.Enum.BtText
-                            onClicked: Core.verifyEntryFiles(root.gameId)
+                    RowLayout {
+                        visible: root.installed
+                        Layout.fillWidth: true
+                        spacing: MD.Token.spacing.medium
+
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: 2
+
+                            MD.Label {
+                                Layout.fillWidth: true
+                                text: qsTr("Auto-update this game")
+                                typescale: MD.Token.typescale.body_large
+                            }
+
+                            MD.Label {
+                                Layout.fillWidth: true
+                                text: qsTr("When enabled, updates start automatically after the catalog loads.")
+                                color: MD.Token.color.on_surface_variant
+                                typescale: MD.Token.typescale.body_small
+                                wrapMode: Text.WordWrap
+                            }
+                        }
+
+                        MD.Switch {
+                            checked: root.info.autoUpdate !== false
+                            onToggled: Core.setGameAutoUpdate(root.gameId, checked)
                         }
                     }
 

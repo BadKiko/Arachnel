@@ -8,6 +8,7 @@ Arachnel uses **Qt Linguist** (`.ts` files) with **English** as the source langu
 |------|---------|
 | `translations/arachnel_en.ts` | **Source template** (English strings only, monolingual) |
 | `translations/arachnel_ru.ts` | Russian translations (bilingual: source + translation) |
+| `translations/generated/arachnel_ids.ts` | **Committed** id-based catalog for `qsTrId()` (see below) |
 | `qml/i18n/Messages.qml` | Long UI copy with **short `qsTrId` keys** for Weblate |
 | `qml/**/*.qml` | Short UI strings via `qsTr("...")` |
 | `src/core/*.cpp` | C++ strings via `QCoreApplication::translate("Core", ...)` |
@@ -30,6 +31,12 @@ Long help texts use `qsTrId("help.catalog_intro")` in `qml/i18n/Messages.qml`.
 Weblate shows the **ID** (`help.catalog_intro`) instead of a giant `ContextName+Full English sentence` key.
 
 Short labels still use `qsTr()` with context = QML file name (normal for Qt).
+
+`arachnel_ids.ts` is generated from `arachnel_en.ts` (messages with `id="..."`) and **committed to git** so the app build does not need Python. After changing id-based strings, regenerate:
+
+```bash
+python tools/prepare_id_translations.py translations/generated/arachnel_ids.ts
+```
 
 ## Update strings after code changes
 
