@@ -1,33 +1,37 @@
 #include "process_launcher.h"
 
-#include <QDir>
 #include <QFileInfo>
 #include <QProcess>
 
 namespace arachnel::core {
 
-bool ProcessLauncher::launch(const LaunchInfo& info, QString* errorOut, qint64* processIdOut)
+bool ProcessLauncher::launch(const ResolvedLaunch& launch, QString* errorOut, qint64* processIdOut)
 {
-    if (info.executable.isEmpty()) {
+    if (launch.program.isEmpty()) {
         if (errorOut)
             *errorOut = QStringLiteral("Исполняемый файл не задан");
         return false;
     }
 
-    QFileInfo exeInfo(info.executable);
-    if (!exeInfo.exists()) {
+    QFileInfo programInfo(launch.program);
+    if (!programInfo.exists()) {
         if (errorOut)
-            *errorOut = QStringLiteral("Файл не найден: %1").arg(info.executable);
+            *errorOut = QStringLiteral("Файл не найден: %1").arg(launch.program);
         return false;
     }
 
-    QString workDir = info.workingDirectory;
+    QString workDir = launch.workingDirectory;
     if (workDir.isEmpty())
-        workDir = exeInfo.absolutePath();
+        workDir = programInfo.absolutePath();
+
+    QProcess process;
+    process.setProgram(launch.program);
+    process.setArguments(launch.arguments);
+    process.setWorkingDirectory(workDir);
+    process.setProcessEnvironment(launch.environment);
 
     qint64 processId = 0;
-    const bool ok =
-        QProcess::startDetached(info.executable, info.arguments, workDir, &processId);
+    const bool ok = process.startDetached(&processId);
     if (!ok && errorOut)
         *errorOut = QStringLiteral("Не удалось запустить процесс");
     if (ok && processIdOut)

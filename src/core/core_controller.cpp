@@ -13,11 +13,14 @@
 #include "job_orchestrator.h"
 #include "job_status.h"
 #include "job_store.h"
+#include "launch_resolver.h"
 #include "library_store.h"
 #include "plugin_host.h"
 #include "plugin_interface.h"
 #include "process_launcher.h"
 #include "process_tracker.h"
+#include "proton_manager.h"
+#include "windows_runner.h"
 #include "settings_store.h"
 #include "storage_library_model.h"
 #include "torrent_session.h"
@@ -30,6 +33,7 @@
 #include <QFutureWatcher>
 #include <QJSEngine>
 #include <QQmlEngine>
+#include <QSet>
 #include <QTimer>
 #include <QtConcurrent>
 #include <QtQml/qqml.h>
@@ -139,6 +143,52 @@ void CoreController::initializeServices()
     m_jobOrchestrator = new JobOrchestrator(&m_settings, &m_jobStore, m_torrentSession,
                                             m_httpSession, &m_jobs, this);
     m_jobOrchestrator->restoreJobs();
+    m_protonManager = new ProtonManager(this);
+    connect(m_protonManager, &ProtonManager::downloadStateChanged, this,
+            &CoreController::protonDownloadChanged);
+    connect(m_protonManager, &ProtonManager::downloadFinished, this,
+            [this](bool success, const QString& error) {
+                emit protonDownloadChanged();
+                emit availableProtonsChanged();
+                emit protonStateChanged();
+                if (success) {
+                    syncProtonCatalog();
+                    if (m_settings.defaultProtonId().isEmpty()) {
+                        const QString latest = m_protonManager->latestGeReleaseName();
+                        for (const ProtonEntry& entry :
+                             m_protonManager->availableEntries(true)) {
+                            if (entry.name == latest) {
+                                m_settings.setDefaultProtonId(entry.id);
+                                break;
+                            }
+                        }
+                    }
+                    showNotice(QCoreApplication::translate("Core", "Proton-GE installed"));
+                } else if (!error.isEmpty()) {
+                    showNotice(QCoreApplication::translate("Core", "Proton-GE download failed: %1")
+                                   .arg(error));
+                }
+            });
+    connect(m_protonManager, &ProtonManager::versionsChanged, this, [this]() {
+        syncProtonCatalog();
+        emit availableProtonsChanged();
+        emit protonStateChanged();
+    });
+    connect(m_protonManager, &ProtonManager::availableEntriesChanged, this,
+            &CoreController::availableProtonsChanged);
+    connect(m_protonManager, &ProtonManager::latestGeReleaseChanged, this,
+            &CoreController::protonLatestReleaseChanged);
+    connect(&m_settings, &SettingsStore::defaultProtonIdChanged, this,
+            &CoreController::protonStateChanged);
+    connect(&m_settings, &SettingsStore::protonPriorityChanged, this,
+            &CoreController::protonStateChanged);
+
+#if defined(Q_OS_LINUX)
+    if (m_protonManager) {
+        m_protonManager->refreshLatestGeRelease();
+        syncProtonCatalog();
+    }
+#endif
 
     connect(m_catalogLoader, &CatalogFeedLoader::feedLoaded, this,
             [this](const QString& sourceId, const QVector<CatalogEntry> entries) {
@@ -391,6 +441,9 @@ void CoreController::startPluginInstall(const CatalogEntry& entry, const QString
     ctx.magnetUri = entry.magnetUris.value(0);
     ctx.uploadDate = entry.uploadDate;
     ctx.installKind = detectedKind;
+    fillProtonInstallFields(ctx.entryId,
+                            m_settings.resolvedProtonId(QString(), *m_protonManager),
+                            &ctx.protonExecutable, &ctx.compatDataPath, &ctx.steamCompatClientPath);
 
     if (!jobId.isEmpty()) {
         if (m_installSessions.contains(entry.id))
@@ -604,6 +657,9 @@ void CoreController::startPluginAddonInstall(const CatalogEntry& parent,
     ctx.gameInstallPath = game->installPath;
     ctx.downloadPath = artifactPath;
     ctx.addonKind = addon.kind;
+    fillProtonInstallFields(parent.id,
+                            m_settings.resolvedProtonId(QString(), *m_protonManager),
+                            &ctx.protonExecutable, &ctx.compatDataPath, &ctx.steamCompatClientPath);
 
     m_pluginHost->runAddonInstallAsync(plugin, ctx,
                                          [this, parent, addon, progressJobId, installKey, done](
@@ -817,12 +873,13 @@ bool CoreController::isEntryPlayable(const QString& entryId) const
     if (m_pluginHost) {
         if (ISourcePlugin* plugin = m_pluginHost->plugin(game->sourceId)) {
             const LaunchInfo info = plugin->launchInfo(*game);
-            if (!info.executable.isEmpty())
-                return QFileInfo::exists(info.executable);
+            const ResolvedLaunch resolved = resolveLaunch(info, *game, m_settings);
+            if (!resolved.program.isEmpty())
+                return QFileInfo::exists(resolved.program);
         }
     }
 
-    return true;
+    return false;
 }
 
 bool CoreController::isEntryDownloadComplete(const QString& entryId) const
@@ -1366,6 +1423,308 @@ void CoreController::setGameAutoUpdate(const QString& entryId, bool enabled)
     syncLibraryFromStore();
 }
 
+void CoreController::setGameLaunchArgs(const QString& entryId, const QString& args)
+{
+    const LibraryGame* existing = m_libraryStore.gameById(entryId);
+    if (!existing)
+        return;
+
+    LibraryGame game = *existing;
+    if (game.launchArgs == args)
+        return;
+
+    game.launchArgs = args;
+    m_libraryStore.upsertGame(game);
+    syncLibraryFromStore();
+}
+
+void CoreController::setGameExecutableOverride(const QString& entryId, const QString& path)
+{
+    const LibraryGame* existing = m_libraryStore.gameById(entryId);
+    if (!existing)
+        return;
+
+    LibraryGame game = *existing;
+    if (game.executableOverride == path)
+        return;
+
+    game.executableOverride = path;
+    m_libraryStore.upsertGame(game);
+    syncLibraryFromStore();
+}
+
+void CoreController::setGameProtonId(const QString& entryId, const QString& protonId)
+{
+    const QString normalized = protonId.trimmed();
+
+    const LibraryGame* existing = m_libraryStore.gameById(entryId);
+    if (existing) {
+        LibraryGame game = *existing;
+        if (game.protonId == normalized)
+            return;
+        game.protonId = normalized;
+        m_libraryStore.upsertGame(game);
+        syncLibraryFromStore();
+        return;
+    }
+
+    const CatalogEntry* catalogEntry = findCatalogEntry(entryId);
+    if (!catalogEntry)
+        return;
+
+    LibraryGame game;
+    game.id = catalogEntry->id;
+    game.title = catalogEntry->title;
+    game.coverUrl = catalogEntry->coverUrl;
+    game.sourceId = catalogEntry->sourceId;
+    game.sourceName = m_sources.nameForId(catalogEntry->sourceId);
+    game.version = catalogEntry->version;
+    game.description = catalogEntry->description;
+    game.genres = catalogEntry->genres;
+    game.sizeLabel = catalogEntry->sizeLabel;
+    game.installKind = catalogEntry->installKind;
+    game.uploadDate = catalogEntry->uploadDate;
+    game.magnetUri = catalogEntry->magnetUris.value(0);
+    game.libraryId = m_settings.defaultLibraryId();
+    game.protonId = normalized;
+    m_libraryStore.upsertGame(game);
+    syncLibraryFromStore();
+}
+
+QString CoreController::browseGameExecutable(const QString& currentPath)
+{
+#if defined(Q_OS_WIN)
+    QString path;
+    HRESULT hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+    const bool comOwned = SUCCEEDED(hr);
+
+    IFileOpenDialog* dialog = nullptr;
+    if (SUCCEEDED(CoCreateInstance(CLSID_FileOpenDialog, nullptr, CLSCTX_ALL,
+                                   IID_PPV_ARGS(&dialog)))) {
+        const COMDLG_FILTERSPEC filters[] = {
+            {L"Executables (*.exe)", L"*.exe"},
+            {L"All files (*.*)", L"*.*"},
+        };
+        dialog->SetFileTypes(2, filters);
+        dialog->SetTitle(L"Choose game executable");
+
+        if (!currentPath.isEmpty()) {
+            IShellItem* folder = nullptr;
+            const QString folderPath = QFileInfo(currentPath).absolutePath();
+            if (SUCCEEDED(
+                    SHCreateItemFromParsingName(reinterpret_cast<LPCWSTR>(folderPath.utf16()),
+                                                nullptr, IID_PPV_ARGS(&folder)))) {
+                dialog->SetFolder(folder);
+                folder->Release();
+            }
+        }
+
+        if (SUCCEEDED(dialog->Show(nullptr))) {
+            IShellItem* item = nullptr;
+            if (SUCCEEDED(dialog->GetResult(&item))) {
+                PWSTR widePath = nullptr;
+                if (SUCCEEDED(item->GetDisplayName(SIGDN_FILESYSPATH, &widePath))) {
+                    path = QString::fromWCharArray(widePath);
+                    CoTaskMemFree(widePath);
+                }
+                item->Release();
+            }
+        }
+        dialog->Release();
+    }
+
+    if (comOwned)
+        CoUninitialize();
+    return path;
+#else
+    return QFileDialog::getOpenFileName(
+        nullptr, QCoreApplication::translate("Core", "Choose game executable"),
+        currentPath.isEmpty() ? QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
+                              : QFileInfo(currentPath).absolutePath(),
+        QCoreApplication::translate("Core", "Executables (*.exe *.sh *.x86_64);;All files (*)"));
+#endif
+}
+
+void CoreController::refreshAvailableProtons()
+{
+    if (!m_protonManager)
+        return;
+    m_protonManager->availableEntries(true);
+    syncProtonCatalog();
+    emit availableProtonsChanged();
+}
+
+void CoreController::moveProtonInPriority(const QString& protonId, int delta)
+{
+    const QString id = protonId.trimmed();
+    if (id.isEmpty() || delta == 0)
+        return;
+
+    QStringList priority = m_settings.protonPriority();
+    const int index = priority.indexOf(id);
+    if (index < 0)
+        return;
+
+    const int target = index + delta;
+    if (target < 0 || target >= priority.size())
+        return;
+
+    priority.move(index, target);
+    m_settings.setProtonPriority(priority);
+}
+
+QString CoreController::protonNameForId(const QString& protonId) const
+{
+    return m_protonManager ? m_protonManager->nameForId(protonId) : QString();
+}
+
+QVariantList CoreController::availableProtons() const
+{
+    QVariantList result;
+    if (!m_protonManager)
+        return result;
+
+    const QString defaultId = m_settings.defaultProtonId();
+    const QStringList priority = m_settings.protonPriority();
+    QSet<QString> emitted;
+
+    const auto appendEntry = [&](const ProtonEntry& entry) {
+        if (emitted.contains(entry.id))
+            return;
+        emitted.insert(entry.id);
+        result.append(QVariantMap{
+            {QStringLiteral("id"), entry.id},
+            {QStringLiteral("name"), entry.name},
+            {QStringLiteral("source"), entry.source},
+            {QStringLiteral("sourceLabel"), entry.sourceLabel},
+            {QStringLiteral("installDir"), entry.installDir},
+            {QStringLiteral("isDefault"), entry.id == defaultId},
+            {QStringLiteral("priorityIndex"), priority.indexOf(entry.id)},
+        });
+    };
+
+    for (const QString& id : priority) {
+        for (const ProtonEntry& entry : m_protonManager->availableEntries()) {
+            if (entry.id == id)
+                appendEntry(entry);
+        }
+    }
+
+    for (const ProtonEntry& entry : m_protonManager->availableEntries())
+        appendEntry(entry);
+
+    return result;
+}
+
+void CoreController::syncProtonCatalog()
+{
+    if (!m_protonManager)
+        return;
+
+    const QVector<ProtonEntry> entries = m_protonManager->availableEntries(true);
+    QStringList priority = m_settings.protonPriority();
+    bool priorityChanged = false;
+
+    for (const ProtonEntry& entry : entries) {
+        if (!priority.contains(entry.id)) {
+            priority.append(entry.id);
+            priorityChanged = true;
+        }
+    }
+
+    if (priorityChanged)
+        m_settings.setProtonPriority(priority);
+
+    if (!m_settings.legacyProtonPath().isEmpty()) {
+        const QString legacyId = m_protonManager->idForInstallDir(m_settings.legacyProtonPath());
+        if (!legacyId.isEmpty() && m_settings.defaultProtonId().isEmpty())
+            m_settings.setDefaultProtonId(legacyId);
+        m_settings.clearLegacyProtonPath();
+    }
+
+    if (m_settings.defaultProtonId().isEmpty() && !entries.isEmpty())
+        m_settings.setDefaultProtonId(entries.first().id);
+}
+
+void CoreController::downloadProtonGe()
+{
+    if (!m_protonManager)
+        return;
+    m_protonManager->downloadLatestGe();
+}
+
+void CoreController::refreshProtonLatestRelease()
+{
+    if (m_protonManager)
+        m_protonManager->refreshLatestGeRelease();
+}
+
+bool CoreController::needsProtonOnPlatform() const
+{
+#if defined(Q_OS_LINUX)
+    return true;
+#else
+    return false;
+#endif
+}
+
+bool CoreController::protonReady() const
+{
+    if (!needsProtonOnPlatform())
+        return true;
+    if (!m_protonManager)
+        return false;
+    const QString protonId = m_settings.resolvedProtonId(QString(), *m_protonManager);
+    return !m_protonManager->executableForId(protonId).isEmpty();
+}
+
+QString CoreController::protonVersion() const
+{
+    if (!m_protonManager)
+        return {};
+    const QString protonId = m_settings.resolvedProtonId(QString(), *m_protonManager);
+    return m_protonManager->nameForId(protonId);
+}
+
+QString CoreController::protonLatestRelease() const
+{
+    return m_protonManager ? m_protonManager->latestGeReleaseName() : QString();
+}
+
+bool CoreController::ensureProtonReady()
+{
+    if (protonReady())
+        return true;
+
+    refreshProtonLatestRelease();
+
+    const QString latest = protonLatestRelease();
+    if (latest.isEmpty()) {
+        showNotice(QCoreApplication::translate(
+            "Core", "Install Proton-GE in Settings → Launch before downloading games"));
+    } else {
+        showNotice(QCoreApplication::translate(
+            "Core", "Install %1 (Proton-GE) in Settings → Launch before downloading games")
+                       .arg(latest));
+    }
+    return false;
+}
+
+bool CoreController::protonDownloadInProgress() const
+{
+    return m_protonManager && m_protonManager->isDownloading();
+}
+
+int CoreController::protonDownloadProgress() const
+{
+    return m_protonManager ? m_protonManager->downloadProgress() : 0;
+}
+
+QString CoreController::protonDownloadStatus() const
+{
+    return m_protonManager ? m_protonManager->downloadStatus() : QString();
+}
+
 const CatalogEntry* CoreController::findCatalogEntry(const QString& entryId) const
 {
     for (const auto& entry : m_catalogCache) {
@@ -1874,14 +2233,29 @@ void CoreController::launchGame(const QString& gameId)
     if (ISourcePlugin* plugin = m_pluginHost->plugin(game->sourceId))
         info = plugin->launchInfo(*game);
 
-    if (info.executable.isEmpty()) {
-        showNotice(QCoreApplication::translate("Core", "Executable not found for %1").arg(game->title));
+    const ResolvedLaunch resolved = resolveLaunch(info, *game, m_settings);
+    if (resolved.program.isEmpty()) {
+#if defined(Q_OS_LINUX)
+        if (!info.executable.isEmpty()
+            && info.executable.endsWith(QStringLiteral(".exe"), Qt::CaseInsensitive)
+            && m_protonManager) {
+            const QString protonId =
+                m_settings.resolvedProtonId(game->protonId, *m_protonManager);
+            if (m_protonManager->executableForId(protonId).isEmpty()) {
+                showNotice(QCoreApplication::translate(
+                    "Core", "Proton not found. Install Proton-GE in Settings → Launch."));
+                return;
+            }
+        }
+#endif
+        showNotice(
+            QCoreApplication::translate("Core", "Executable not found for %1").arg(game->title));
         return;
     }
 
     QString error;
     qint64 processId = 0;
-    if (ProcessLauncher::launch(info, &error, &processId)) {
+    if (ProcessLauncher::launch(resolved, &error, &processId)) {
         markGameRunning(*game, processId);
         return;
     }
@@ -2167,6 +2541,9 @@ void CoreController::validateHydraCatalogUrl(const QString& requestId, const QSt
 void CoreController::installCatalogEntry(const QString& entryId, const QString& libraryId,
                                          const QVariantList& addonIdsVariant)
 {
+    if (!ensureProtonReady())
+        return;
+
     const CatalogEntry* entry = findCatalogEntry(entryId);
     if (!entry) {
         showNotice(QCoreApplication::translate("Core", "Catalog entry not found: %1").arg(entryId));

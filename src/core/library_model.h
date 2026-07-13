@@ -35,6 +35,9 @@ struct LibraryGame {
     QString downloadPath;
     QString libraryId;
     QString lastPlayedAt;
+    QString launchArgs;
+    QString executableOverride;
+    QString protonId;
     QVector<InstalledComponent> components;
 };
 

@@ -38,6 +38,7 @@ Item {
         return (lib.gameId ?? "").length > 0
     }
     readonly property bool isRunning: Core.gameRunning && Core.runningGameId === root.gameId
+    readonly property bool onLinux: Qt.platform.os === "linux"
     readonly property bool downloadFilesExist: Core.entryDownloadFilesExist(gameId)
     readonly property bool installFailed: (downloadJob.detail || "").indexOf("Install failed") >= 0
     readonly property bool isInstalling: downloadJob.status === "installing"
@@ -72,6 +73,8 @@ Item {
     onGameIdChanged: {
         refreshDownloadJob()
         maybeEnrich()
+        if (root.onLinux)
+            Core.refreshAvailableProtons()
     }
     onFromCatalogChanged: maybeEnrich()
 
@@ -97,8 +100,17 @@ Item {
     signal backRequested()
     signal openAddonPicker(string entryId, string title)
     signal openInstallPicker(string entryId, string title, var selectedAddonIds)
+    signal protonRequired()
+
+    function needsProtonCheck() {
+        return root.onLinux && Core.needsProtonOnPlatform() && !Core.protonReady
+    }
 
     function proceedToInstall(selectedAddonIds) {
+        if (root.needsProtonCheck()) {
+            root.protonRequired()
+            return
+        }
         const ids = selectedAddonIds || []
         if (Core.needsInstallLocationChoice())
             root.openInstallPicker(root.gameId, root.info.title || "", ids)
@@ -107,6 +119,10 @@ Item {
     }
 
     function beginInstall() {
+        if (root.needsProtonCheck()) {
+            root.protonRequired()
+            return
+        }
         const addonCount = root.info.addonCount ?? 0
         if (addonCount > 0)
             root.openAddonPicker(root.gameId, root.info.title || "")
@@ -322,6 +338,116 @@ Item {
                         MD.Switch {
                             checked: root.info.autoUpdate !== false
                             onToggled: Core.setGameAutoUpdate(root.gameId, checked)
+                        }
+                    }
+
+                    MD.ElevationRectangle {
+                        Layout.fillWidth: true
+                        visible: root.onLinux && root.gameId.length > 0
+                        Layout.preferredHeight: protonPickCol.implicitHeight + 2 * MD.Token.spacing.medium
+                        radius: MD.Token.shape.corner.large
+                        color: MD.Token.color.surface_container_low
+                        elevation: MD.Token.elevation.level0
+
+                        ColumnLayout {
+                            id: protonPickCol
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.top: parent.top
+                            anchors.margins: MD.Token.spacing.medium
+                            spacing: MD.Token.spacing.small
+
+                            MD.Label {
+                                text: qsTr("Proton")
+                                typescale: MD.Token.typescale.title_small
+                            }
+
+                            MD.Label {
+                                Layout.fillWidth: true
+                                text: qsTr("Override Proton for this game. Default uses Settings → Launch.")
+                                color: MD.Token.color.on_surface_variant
+                                typescale: MD.Token.typescale.body_small
+                                wrapMode: Text.WordWrap
+                            }
+
+                            Flow {
+                                Layout.fillWidth: true
+                                spacing: MD.Token.spacing.small
+
+                                MD.FilterChip {
+                                    text: qsTr("Default")
+                                    checked: !(root.info.protonId ?? "").length
+                                    onClicked: Core.setGameProtonId(root.gameId, "")
+                                }
+
+                                Repeater {
+                                    model: Core.availableProtons
+
+                                    MD.FilterChip {
+                                        required property var modelData
+
+                                        text: modelData.name
+                                        checked: (root.info.protonId ?? "") === modelData.id
+                                        onClicked: Core.setGameProtonId(root.gameId, modelData.id)
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    MD.ElevationRectangle {
+                        Layout.fillWidth: true
+                        visible: root.playable
+                        Layout.preferredHeight: launchCol.implicitHeight + 2 * MD.Token.spacing.medium
+                        radius: MD.Token.shape.corner.large
+                        color: MD.Token.color.surface_container_low
+                        elevation: MD.Token.elevation.level0
+
+                        ColumnLayout {
+                            id: launchCol
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.top: parent.top
+                            anchors.margins: MD.Token.spacing.medium
+                            spacing: MD.Token.spacing.small
+
+                            MD.Label {
+                                text: qsTr("Launch options")
+                                typescale: MD.Token.typescale.title_small
+                            }
+
+                            MD.TextField {
+                                id: launchArgsField
+                                Layout.fillWidth: true
+                                placeholderText: qsTr("Extra launch arguments for this game")
+                                text: root.info.launchArgs ?? ""
+                                onEditingFinished: Core.setGameLaunchArgs(root.gameId, text)
+                            }
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: MD.Token.spacing.small
+
+                                MD.TextField {
+                                    id: exeField
+                                    Layout.fillWidth: true
+                                    placeholderText: qsTr("Custom executable (optional)")
+                                    text: root.info.executableOverride ?? ""
+                                    onEditingFinished: Core.setGameExecutableOverride(root.gameId, text)
+                                }
+
+                                MD.IconButton {
+                                    mdState.type: MD.Enum.IBtStandard
+                                    icon.name: MD.Token.icon.folder_open
+                                    onClicked: {
+                                        const path = Core.browseGameExecutable(exeField.text)
+                                        if (path.length) {
+                                            exeField.text = path
+                                            Core.setGameExecutableOverride(root.gameId, path)
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
 

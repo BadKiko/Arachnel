@@ -171,7 +171,8 @@ bool isInnoSetupExecutable(const QString& setupPath)
     return header.contains("Inno Setup");
 }
 
-QString installInnoSetup(const QString& setupPath, const QString& targetPath, QString* errorOut)
+QString installInnoSetup(const QString& setupPath, const QString& targetPath, QString* errorOut,
+                         const arachnel::core::WindowsRunEnv& env)
 {
     if (!QFileInfo::exists(setupPath)) {
         if (errorOut)
@@ -201,7 +202,7 @@ QString installInnoSetup(const QString& setupPath, const QString& targetPath, QS
     };
 
     if (!runInstallProcess(setupPath, args, kInnoInstallTimeoutMs, errorOut,
-                           QFileInfo(setupPath).absolutePath())) {
+                           QFileInfo(setupPath).absolutePath(), env)) {
         if (errorOut) {
             const QString logTail = tailOfInstallLog(logPath);
             if (!logTail.isEmpty())
@@ -224,7 +225,8 @@ QString installInnoSetup(const QString& setupPath, const QString& targetPath, QS
     return QFileInfo(exe).absolutePath();
 }
 
-QString installInnoOverlay(const QString& setupPath, const QString& targetPath, QString* errorOut)
+QString installInnoOverlay(const QString& setupPath, const QString& targetPath, QString* errorOut,
+                           const arachnel::core::WindowsRunEnv& env)
 {
     if (!QFileInfo::exists(setupPath)) {
         if (errorOut)
@@ -250,7 +252,7 @@ QString installInnoOverlay(const QString& setupPath, const QString& targetPath, 
     };
 
     if (!runInstallProcess(setupPath, args, kAddonInstallTimeoutMs, errorOut,
-                           QFileInfo(setupPath).absolutePath())) {
+                           QFileInfo(setupPath).absolutePath(), env)) {
         if (errorOut) {
             const QString logTail = tailOfInstallLog(logPath);
             if (!logTail.isEmpty())

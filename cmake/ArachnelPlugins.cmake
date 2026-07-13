@@ -26,11 +26,14 @@ add_library(freetp_plugin SHARED
     ${FREETP_PLUGIN_DIR}/src/freetp_plugin.cpp
     ${FREETP_PLUGIN_DIR}/src/archive_installer.cpp
     ${FREETP_PLUGIN_DIR}/src/installer_runner.cpp
+    ${FREETP_PLUGIN_DIR}/src/linux_fix_launch.cpp
     ${FREETP_PLUGIN_DIR}/src/plugin_entry.cpp
     ${CMAKE_SOURCE_DIR}/src/core/catalog_parser.cpp
     ${CMAKE_SOURCE_DIR}/src/core/catalog_types.cpp
     ${CMAKE_SOURCE_DIR}/src/core/install_kind.cpp
     ${CMAKE_SOURCE_DIR}/src/core/file_utils.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/windows_runner.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/proton_manager.cpp
 )
 
 target_compile_definitions(freetp_plugin PRIVATE ARACHNEL_PLUGIN_BUILD)
@@ -40,6 +43,9 @@ target_include_directories(freetp_plugin
         ${FREETP_PLUGIN_DIR}/src
 )
 target_link_libraries(freetp_plugin PRIVATE Qt6::Core Qt6::Network)
+if(WIN32)
+    target_link_libraries(freetp_plugin PRIVATE shell32)
+endif()
 
 set_target_properties(freetp_plugin PROPERTIES
     OUTPUT_NAME "freetp_plugin"
@@ -65,6 +71,9 @@ add_custom_command(TARGET freetp_plugin POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "${FREETP_CATALOG}"
         "${_PLUGIN_DEPLOY_DIR}/games-arachnel.json"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${FREETP_PLUGIN_DIR}/linux"
+        "${_PLUGIN_DEPLOY_DIR}/linux"
     COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/dist"
     COMMAND ${CMAKE_COMMAND} -E rm -rf "${_FREETP_ARACH_STAGING}"
     COMMAND ${CMAKE_COMMAND} -E make_directory "${_FREETP_ARACH_STAGING}/freetp"
@@ -77,6 +86,9 @@ add_custom_command(TARGET freetp_plugin POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "${_PLUGIN_DEPLOY_DIR}/games-arachnel.json"
         "${_FREETP_ARACH_STAGING}/freetp/games-arachnel.json"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${_PLUGIN_DEPLOY_DIR}/linux"
+        "${_FREETP_ARACH_STAGING}/freetp/linux"
     COMMENT "Stage freetp plugin bundle"
 )
 

@@ -127,6 +127,9 @@ qt_add_executable(arachnel_app
     src/core/plugin_api.cpp
     src/core/plugin_host.cpp
     src/core/process_launcher.cpp
+    src/core/launch_resolver.cpp
+    src/core/proton_manager.cpp
+    src/core/windows_runner.cpp
     src/core/process_tracker.cpp
     src/core/core_controller.cpp
     src/core/translation_service.cpp
