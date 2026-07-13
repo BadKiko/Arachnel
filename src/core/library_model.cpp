@@ -169,7 +169,7 @@ QVariantMap LibraryModel::mostRecentGame() const
     if (!best->lastPlayedAt.isEmpty())
         return toMap(*best);
 
-    return toMap(m_games.front());
+    return {};
 }
 
 QVariantMap LibraryModel::gameInfo(const QString& id) const

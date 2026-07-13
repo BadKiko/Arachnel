@@ -123,6 +123,10 @@ EN_TO_RU: dict[str, str] = {
     "Plugin install failed: %1": "Ошибка установки плагина: %1",
     "File picker is only available on Windows": "Выбор файла пока доступен только в Windows",
     "Could not open plugins folder": "Не удалось открыть папку плагинов",
+    "Choose library folder": "Выберите папку библиотеки",
+    "Plugin package (*.arach)": "Пакет плагина (*.arach)",
+    "Nothing played yet": "Ещё ничего не играли",
+    "Launch a game from your library — it will appear here.": "Запустите игру из библиотеки — она появится здесь.",
 }
 
 
