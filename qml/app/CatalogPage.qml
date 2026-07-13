@@ -23,8 +23,9 @@ Item {
                                              || (!root.noSourceSelected && Core.catalog.count === 0))
     readonly property bool listViewMode: catalogPrefs.viewMode === 1
 
-    readonly property int compactRevealStart: 72
     readonly property int compactRevealRange: 28
+    readonly property real scrollContentY: root.listViewMode ? list.contentY : grid.contentY
+    readonly property real compactRevealStart: root.catalogIntroHeaderHeight + MD.Token.spacing.small
     readonly property real compactBarOpacity: {
         const sc = root.listViewMode ? list : grid
         if (!sc.visible)
@@ -162,6 +163,51 @@ Item {
         }
     }
 
+    Component {
+        id: catalogIntroHeaderComponent
+
+        ColumnLayout {
+            spacing: MD.Token.spacing.small
+
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 4
+
+                MD.Label {
+                    text: qsTr("Catalog")
+                    typescale: MD.Token.typescale.headline_medium
+                }
+
+                MD.Label {
+                    Layout.fillWidth: true
+                    text: qsTr("The source defines how installation works — each plugin has its own pipeline.")
+                    wrapMode: Text.WordWrap
+                    color: MD.Token.color.on_surface_variant
+                    typescale: MD.Token.typescale.body_medium
+                }
+            }
+
+            CatalogSourceChips {
+                Layout.fillWidth: true
+            }
+
+            Item {
+                Layout.preferredHeight: MD.Token.spacing.extra_small
+            }
+        }
+    }
+
+    Loader {
+        id: catalogIntroHeightProbe
+        visible: false
+        width: Math.max(0, root.width - pageMargin * 2)
+        sourceComponent: catalogIntroHeaderComponent
+    }
+
+    readonly property real catalogIntroHeaderHeight: catalogIntroHeightProbe.item
+                                                     ? catalogIntroHeightProbe.item.implicitHeight
+                                                     : 160
+
     Item {
         anchors.fill: parent
         visible: !root.noSources
@@ -176,6 +222,7 @@ Item {
             anchors.topMargin: MD.Token.spacing.medium
             height: catalogStickyCol.implicitHeight + MD.Token.spacing.small
             z: 4
+            layer.enabled: true
 
             Rectangle {
                 anchors.fill: parent
@@ -215,123 +262,103 @@ Item {
         }
 
         Item {
-            id: catalogIntro
+            id: catalogScrollClip
             anchors.top: catalogStickyTop.bottom
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.leftMargin: pageMargin
-            anchors.rightMargin: pageMargin
-            anchors.topMargin: MD.Token.spacing.small
-            height: catalogIntroCol.implicitHeight
-            z: 3
-
-            ColumnLayout {
-                id: catalogIntroCol
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.top: parent.top
-                spacing: MD.Token.spacing.small
-
-                ColumnLayout {
-                    Layout.fillWidth: true
-                    spacing: 4
-
-                    MD.Label {
-                        text: qsTr("Catalog")
-                        typescale: MD.Token.typescale.headline_medium
-                    }
-
-                    MD.Label {
-                        Layout.fillWidth: true
-                        text: qsTr("The source defines how installation works — each plugin has its own pipeline.")
-                        wrapMode: Text.WordWrap
-                        color: MD.Token.color.on_surface_variant
-                        typescale: MD.Token.typescale.body_medium
-                    }
-                }
-
-                CatalogSourceChips {
-                    Layout.fillWidth: true
-                }
-            }
-        }
-
-        GridView {
-            id: grid
-            anchors.top: catalogIntro.bottom
             anchors.topMargin: MD.Token.spacing.small
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.bottom: parent.bottom
-            anchors.leftMargin: pageMargin
-            anchors.rightMargin: pageMargin
-            anchors.bottomMargin: MD.Token.spacing.medium
-            visible: !root.listViewMode
             clip: true
-            model: Core.catalog
-            cellWidth: root.cellWidth
-            cellHeight: root.cellHeight
-            cacheBuffer: root.cellHeight * 2
-            reuseItems: false
-            boundsBehavior: Flickable.StopAtBounds
-            pixelAligned: true
 
-            header: CatalogScrollHeader {
-                contentWidth: grid.width
-                hasSelection: Core.activeCatalogSourceIds.length > 0
-                listViewMode: root.listViewMode
-                onSortRequested: root.openSortMenu
-                onViewModeChangeRequested: function (mode) { catalogPrefs.viewMode = mode }
-                onRefreshRequested: Core.refreshSelectedCatalogs()
+            GridView {
+                id: grid
+                anchors.fill: parent
+                anchors.leftMargin: pageMargin
+                anchors.rightMargin: pageMargin
+                anchors.bottomMargin: MD.Token.spacing.medium
+                visible: !root.listViewMode
+                clip: true
+                model: Core.catalog
+                cellWidth: root.cellWidth
+                cellHeight: root.cellHeight
+                cacheBuffer: root.cellHeight * 2
+                reuseItems: false
+                boundsBehavior: Flickable.StopAtBounds
+                pixelAligned: true
+
+                header: Column {
+                    width: grid.width
+                    spacing: MD.Token.spacing.small
+
+                    Loader {
+                        width: parent.width
+                        sourceComponent: catalogIntroHeaderComponent
+                    }
+
+                    CatalogScrollHeader {
+                        contentWidth: grid.width
+                        hasSelection: Core.activeCatalogSourceIds.length > 0
+                        listViewMode: root.listViewMode
+                        onSortRequested: root.openSortMenu
+                        onViewModeChangeRequested: function (mode) { catalogPrefs.viewMode = mode }
+                        onRefreshRequested: Core.refreshSelectedCatalogs()
+                    }
+                }
+
+                ScrollBar.vertical: MD.ScrollBar {
+                    policy: ScrollBar.AsNeeded
+                }
+
+                delegate: CatalogGameCard {
+                    width: root.cardWidth
+                    height: root.cardHeight
+                    onOpenDetails: function (id) { root.openGame(id) }
+                }
             }
 
-            ScrollBar.vertical: MD.ScrollBar {
-                policy: ScrollBar.AsNeeded
-            }
+            ListView {
+                id: list
+                anchors.fill: parent
+                anchors.leftMargin: pageMargin
+                anchors.rightMargin: pageMargin
+                anchors.bottomMargin: MD.Token.spacing.medium
+                visible: root.listViewMode
+                clip: true
+                model: Core.catalog
+                spacing: MD.Token.spacing.extra_small
+                cacheBuffer: root.listRowHeight * 8
+                reuseItems: true
+                boundsBehavior: Flickable.StopAtBounds
 
-            delegate: CatalogGameCard {
-                width: root.cardWidth
-                height: root.cardHeight
-                onOpenDetails: function (id) { root.openGame(id) }
-            }
-        }
+                header: Column {
+                    width: list.width
+                    spacing: MD.Token.spacing.small
 
-        ListView {
-            id: list
-            anchors.top: catalogIntro.bottom
-            anchors.topMargin: MD.Token.spacing.small
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.bottom: parent.bottom
-            anchors.leftMargin: pageMargin
-            anchors.rightMargin: pageMargin
-            anchors.bottomMargin: MD.Token.spacing.medium
-            visible: root.listViewMode
-            clip: true
-            model: Core.catalog
-            spacing: MD.Token.spacing.extra_small
-            cacheBuffer: root.listRowHeight * 8
-            reuseItems: true
-            boundsBehavior: Flickable.StopAtBounds
+                    Loader {
+                        width: parent.width
+                        sourceComponent: catalogIntroHeaderComponent
+                    }
 
-            header: CatalogScrollHeader {
-                contentWidth: list.width
-                hasSelection: Core.activeCatalogSourceIds.length > 0
-                listViewMode: root.listViewMode
-                onSortRequested: root.openSortMenu
-                onViewModeChangeRequested: function (mode) { catalogPrefs.viewMode = mode }
-                onRefreshRequested: Core.refreshSelectedCatalogs()
-            }
+                    CatalogScrollHeader {
+                        contentWidth: list.width
+                        hasSelection: Core.activeCatalogSourceIds.length > 0
+                        listViewMode: root.listViewMode
+                        onSortRequested: root.openSortMenu
+                        onViewModeChangeRequested: function (mode) { catalogPrefs.viewMode = mode }
+                        onRefreshRequested: Core.refreshSelectedCatalogs()
+                    }
+                }
 
-            ScrollBar.vertical: MD.ScrollBar {
-                policy: ScrollBar.AsNeeded
-            }
+                ScrollBar.vertical: MD.ScrollBar {
+                    policy: ScrollBar.AsNeeded
+                }
 
-            delegate: CatalogGameCard {
-                width: list.width
-                height: root.listRowHeight
-                compactRow: true
-                onOpenDetails: function (id) { root.openGame(id) }
+                delegate: CatalogGameCard {
+                    width: list.width
+                    height: root.listRowHeight
+                    compactRow: true
+                    onOpenDetails: function (id) { root.openGame(id) }
+                }
             }
         }
 
@@ -344,7 +371,8 @@ Item {
             color: MD.Token.color.surface
             opacity: root.compactBarOpacity
             visible: opacity > 0.02
-            z: 2
+            z: 5
+            layer.enabled: visible
 
             MouseArea {
                 anchors.fill: parent

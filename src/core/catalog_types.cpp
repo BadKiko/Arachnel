@@ -1,5 +1,7 @@
 #include "catalog_types.h"
 
+#include <QCoreApplication>
+
 #include <QRegularExpression>
 
 namespace arachnel::core {
@@ -8,24 +10,24 @@ QString catalogItemKindLabel(CatalogItemKind kind)
 {
     switch (kind) {
     case CatalogItemKind::Game:
-        return QStringLiteral("Игра");
+        return QCoreApplication::translate("Core", "Game");
     case CatalogItemKind::Dlc:
         return QStringLiteral("DLC");
     case CatalogItemKind::Addon:
-        return QStringLiteral("Дополнение");
+        return QCoreApplication::translate("Core", "Add-on");
     }
-    return QStringLiteral("Компонент");
+    return QCoreApplication::translate("Core", "Component");
 }
 
 QString componentDeliveryLabel(ComponentDelivery delivery)
 {
     switch (delivery) {
     case ComponentDelivery::Direct:
-        return QStringLiteral("Прямая");
+        return QCoreApplication::translate("Core", "Direct");
     case ComponentDelivery::Magnet:
-        return QStringLiteral("Торрент");
+        return QCoreApplication::translate("Core", "Torrent");
     }
-    return QStringLiteral("Загрузка");
+    return QCoreApplication::translate("Core", "Download");
 }
 
 QString slugifyCatalogId(const QString& title, const QString& sourceId)

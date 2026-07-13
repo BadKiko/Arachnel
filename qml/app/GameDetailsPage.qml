@@ -21,6 +21,12 @@ Item {
 
     readonly property bool playable: Core.isEntryPlayable(gameId)
     readonly property bool installed: root.playable
+    readonly property bool inLibrary: {
+        if (!gameId.length)
+            return false
+        const lib = Core.library.gameInfo(gameId)
+        return (lib.gameId ?? "").length > 0
+    }
     readonly property bool isRunning: Core.gameRunning && Core.runningGameId === root.gameId
     readonly property bool downloadFilesExist: Core.entryDownloadFilesExist(gameId)
     readonly property bool installFailed: (downloadJob.detail || "").indexOf("Install failed") >= 0
@@ -29,6 +35,13 @@ Item {
         && downloadJob.status === "completed"
         && root.downloadFilesExist
         && !root.installFailed
+    readonly property bool canManageDownload: !root.playable && (
+        root.fromCatalog
+        || root.inLibrary
+        || root.showDownloadProgress
+        || root.readyToInstall
+        || root.installFailed
+    )
 
     property var downloadJob: ({})
 
@@ -236,9 +249,7 @@ Item {
                         }
 
                         DownloadProgressButton {
-                            visible: !root.playable
-                                     && (root.fromCatalog || root.showDownloadProgress
-                                         || root.readyToInstall || root.installFailed)
+                            visible: root.canManageDownload
                             progress: root.downloadJob.progress ?? 0
                             downloading: root.downloadActive
                             paused: root.downloadPaused
@@ -256,7 +267,9 @@ Item {
                         }
 
                         MD.Button {
-                            visible: root.playable || Core.isEntryDownloadComplete(root.gameId)
+                            visible: root.playable
+                                     || Core.isEntryDownloadComplete(root.gameId)
+                                     || root.inLibrary
                             text: qsTr("Delete")
                             icon.name: MD.Token.icon.delete
                             mdState.type: MD.Enum.BtOutlined
