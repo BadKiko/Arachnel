@@ -24,6 +24,9 @@ find_package(Qt6 REQUIRED COMPONENTS
     QuickPrivate
     Concurrent
 )
+if(NOT WIN32)
+    find_package(Qt6 REQUIRED COMPONENTS Widgets)
+endif()
 if(UNIX AND NOT APPLE AND NOT ANDROID)
     find_package(Qt6 REQUIRED COMPONENTS DBus)
 endif()
@@ -192,4 +195,6 @@ arachnel_setup_libtorrent(arachnel_app)
 
 if(WIN32)
     target_link_libraries(arachnel_app PRIVATE ole32 shell32)
+else()
+    target_link_libraries(arachnel_app PRIVATE Qt6::Widgets)
 endif()

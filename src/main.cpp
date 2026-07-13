@@ -1,11 +1,16 @@
 #include <QCoreApplication>
-#include <QGuiApplication>
 #include <QIcon>
 #include <QQmlApplicationEngine>
 #include <QQmlError>
 #include <QStyleHints>
 #include <QString>
 #include <cstdio>
+
+#if !defined(Q_OS_WIN)
+#include <QApplication>
+#else
+#include <QGuiApplication>
+#endif
 
 #include "core/core_controller.h"
 #include "core/settings_store.h"
@@ -17,7 +22,11 @@
 
 int main(int argc, char *argv[])
 {
+#if !defined(Q_OS_WIN)
+    QApplication app(argc, argv);
+#else
     QGuiApplication app(argc, argv);
+#endif
     const QIcon windowIcon(QStringLiteral(":/icons/256.png"));
     if (!windowIcon.isNull())
         app.setWindowIcon(windowIcon);
