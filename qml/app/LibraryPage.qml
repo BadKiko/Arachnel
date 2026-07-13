@@ -25,12 +25,23 @@ Item {
     readonly property bool featuredIsRunning: Core.gameRunning
         && Core.runningGameId === (root.heroGame?.gameId ?? "")
     readonly property bool showRunningHero: Core.gameRunning
+    readonly property bool heroHasRecentPlay: root.showRunningHero
+        || !!(root.heroGame?.lastPlayedAt?.length)
     readonly property string heroEyebrow: showRunningHero
         ? qsTr("Playing now")
         : qsTr("Recently played")
-    readonly property string heroTitle: root.heroGame?.title ?? ""
+    readonly property string heroTitle: {
+        if (root.showRunningHero || root.heroHasRecentPlay)
+            return root.heroGame?.title ?? ""
+        return qsTr("Nothing played yet")
+    }
     readonly property string heroCoverUrl: root.heroGame?.coverUrl ?? ""
     readonly property string heroGameId: root.heroGame?.gameId ?? ""
+    readonly property string heroSubtitle: {
+        if (root.showRunningHero || root.heroHasRecentPlay)
+            return (root.heroGame?.sourceName ?? "") + " · v" + (root.heroGame?.version ?? "")
+        return qsTr("Launch a game from your library — it will appear here.")
+    }
     readonly property bool heroHasUpdate: !!(root.heroGame?.hasUpdate)
 
     property int jobRevision: 0
@@ -399,10 +410,13 @@ Item {
 
                             MD.Label {
                                 Layout.fillWidth: true
-                                text: (root.heroGame?.sourceName ?? "") + " · v" + (root.heroGame?.version ?? "")
+                                text: root.heroSubtitle
                                 color: MD.Token.color.on_surface_variant
                                 typescale: MD.Token.typescale.body_large
                                 elide: Text.ElideRight
+                                wrapMode: root.heroHasRecentPlay || root.showRunningHero
+                                           ? Text.NoWrap
+                                           : Text.WordWrap
                                 visible: !root.featuredShowJobStatus && !root.showRunningHero
                             }
 
@@ -457,7 +471,7 @@ Item {
                                 spacing: MD.Token.spacing.small
 
                                 MD.Button {
-                                    visible: !root.showRunningHero
+                                    visible: root.heroHasRecentPlay && !root.showRunningHero
                                     text: qsTr("Play")
                                     mdState.type: MD.Enum.BtFilled
                                     enabled: !!(root.heroGameId)
@@ -466,6 +480,7 @@ Item {
                                 }
 
                                 MD.Button {
+                                    visible: root.heroHasRecentPlay || root.showRunningHero
                                     text: qsTr("Details")
                                     mdState.type: MD.Enum.BtOutlined
                                     enabled: !!(root.heroGameId)
@@ -487,6 +502,7 @@ Item {
                             Layout.preferredWidth: 140
                             Layout.preferredHeight: 186
                             Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
+                            visible: root.heroHasRecentPlay || root.showRunningHero
                             source: root.heroCoverUrl
                             seed: root.heroTitle
                             fallbackText: (root.heroTitle || "?").charAt(0)
