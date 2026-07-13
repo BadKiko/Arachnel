@@ -151,21 +151,22 @@ QVariantMap JobModel::jobForEntry(const QString& entryId) const
         return {};
 
     const JobEntry* activeMatch = nullptr;
-    const JobEntry* anyMatch = nullptr;
+    const JobEntry* completedMatch = nullptr;
     for (const auto& job : m_jobs) {
         if (job.entryId != entryId)
             continue;
-        anyMatch = &job;
         if (isJobInProgress(job.status)) {
             activeMatch = &job;
             break;
         }
+        if (job.status == QStringLiteral("completed"))
+            completedMatch = &job;
     }
 
     if (activeMatch)
         return jobToMap(*activeMatch);
-    if (anyMatch)
-        return jobToMap(*anyMatch);
+    if (completedMatch)
+        return jobToMap(*completedMatch);
     return {};
 }
 
@@ -175,21 +176,22 @@ QVariantMap JobModel::jobForAddon(const QString& parentEntryId, const QString& a
         return {};
 
     const JobEntry* activeMatch = nullptr;
-    const JobEntry* anyMatch = nullptr;
+    const JobEntry* completedMatch = nullptr;
     for (const auto& job : m_jobs) {
         if (job.entryId != addonId || job.parentEntryId != parentEntryId)
             continue;
-        anyMatch = &job;
         if (isJobInProgress(job.status)) {
             activeMatch = &job;
             break;
         }
+        if (job.status == QStringLiteral("completed"))
+            completedMatch = &job;
     }
 
     if (activeMatch)
         return jobToMap(*activeMatch);
-    if (anyMatch)
-        return jobToMap(*anyMatch);
+    if (completedMatch)
+        return jobToMap(*completedMatch);
     return {};
 }
 
