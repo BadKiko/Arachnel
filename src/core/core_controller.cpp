@@ -34,9 +34,13 @@
 #include <QtConcurrent>
 #include <QtQml/qqml.h>
 
+#include <QStandardPaths>
+
 #if defined(Q_OS_WIN)
 #include <objbase.h>
 #include <shobjidl.h>
+#else
+#include <QFileDialog>
 #endif
 
 namespace arachnel::core {
@@ -2212,8 +2216,10 @@ QString CoreController::browseStorageFolder()
         CoUninitialize();
     return path;
 #else
-    showNotice(QCoreApplication::translate("Core", "Folder picker is only available on Windows"));
-    return {};
+    return QFileDialog::getExistingDirectory(
+        nullptr,
+        QCoreApplication::translate("Core", "Choose library folder"),
+        QStandardPaths::writableLocation(QStandardPaths::HomeLocation));
 #endif
 }
 
@@ -2702,7 +2708,13 @@ void CoreController::browsePluginArach()
     if (!path.isEmpty())
         installPluginArach(QUrl::fromLocalFile(path));
 #else
-    showNotice(QCoreApplication::translate("Core", "File picker is only available on Windows"));
+    const QString path = QFileDialog::getOpenFileName(
+        nullptr,
+        QCoreApplication::translate("Core", "Install plugin"),
+        QStandardPaths::writableLocation(QStandardPaths::HomeLocation),
+        QCoreApplication::translate("Core", "Plugin package (*.arach)"));
+    if (!path.isEmpty())
+        installPluginArach(QUrl::fromLocalFile(path));
 #endif
 }
 
