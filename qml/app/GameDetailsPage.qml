@@ -214,7 +214,7 @@ Item {
                     MD.Label {
                         Layout.fillWidth: true
                         visible: root.readyToInstall && !root.installFailed
-                        text: qsTr("Torrent downloaded. Click Install for the source plugin to extract or install the game.")
+                        text: Messages.gameInstallTorrentHint
                         wrapMode: Text.WordWrap
                         color: MD.Token.color.on_surface_variant
                         typescale: MD.Token.typescale.body_medium
@@ -415,7 +415,7 @@ Item {
 
         MD.Label {
             width: removeDialog.width - removeDialog.horizontalPadding * 2
-            text: qsTr("Game files will be deleted from disk. This cannot be undone.")
+            text: Messages.gameDeleteWarning
             wrapMode: Text.WordWrap
             typescale: MD.Token.typescale.body_medium
         }

@@ -160,7 +160,7 @@ Item {
                     MD.Label {
                         Layout.fillWidth: true
                         Layout.maximumWidth: 520
-                        text: qsTr("Your library is empty. Install a source plugin, pick a game in the catalog, and it will show up here.")
+                        text: Messages.libraryEmptySubtitle
                         color: MD.Token.color.on_surface_variant
                         typescale: MD.Token.typescale.body_medium
                         wrapMode: Text.WordWrap
@@ -214,19 +214,19 @@ Item {
                             icon: MD.Token.icon.extension,
                             step: qsTr("Step 1"),
                             title: qsTr("Plugin"),
-                            body: qsTr("Install a source plugin (FreeTP, etc.) under Settings → Plugins.")
+                            body: Messages.libraryStep1Body
                         },
                         {
                             icon: MD.Token.icon.storefront,
                             step: qsTr("Step 2"),
                             title: qsTr("Catalog"),
-                            body: qsTr("Pick a game and start installation — the torrent downloads automatically.")
+                            body: Messages.libraryStep2Body
                         },
                         {
                             icon: MD.Token.icon.sports_esports,
                             step: qsTr("Step 3"),
                             title: qsTr("Library"),
-                            body: qsTr("Installed games live here: launch, updates, and details.")
+                            body: Messages.libraryStep3Body
                         }
                     ]
 

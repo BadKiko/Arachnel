@@ -180,7 +180,7 @@ Item {
 
                 MD.Label {
                     Layout.fillWidth: true
-                    text: qsTr("The source defines how installation works — each plugin has its own pipeline.")
+                    text: Messages.catalogPipelineDesc
                     wrapMode: Text.WordWrap
                     color: MD.Token.color.on_surface_variant
                     typescale: MD.Token.typescale.body_medium
@@ -497,7 +497,7 @@ Item {
                     MD.Label {
                         Layout.fillWidth: true
                         text: root.noSourceSelected
-                              ? qsTr("Enable one or more source chips — or leave them all off.")
+                              ? Messages.catalogEnableChipsHint
                               : qsTr("Try another search or refresh the catalog.")
                         color: MD.Token.color.on_surface_variant
                         typescale: MD.Token.typescale.body_medium
@@ -546,7 +546,7 @@ Item {
             MD.Label {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
-                text: qsTr("Connect a Hydra catalog in Settings — or install a source plugin.")
+                text: Messages.catalogConnectHint
                 color: MD.Token.color.on_surface_variant
                 typescale: MD.Token.typescale.body_medium
                 wrapMode: Text.WordWrap

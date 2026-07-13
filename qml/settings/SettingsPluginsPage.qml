@@ -41,7 +41,7 @@ Flickable {
             Layout.leftMargin: contentMargin
             Layout.rightMargin: contentMargin
             Layout.topMargin: MD.Token.spacing.small
-            text: qsTr("Plugins are sources with catalog, install, and launch. Package: .arach file (ZIP with plugin.json and libraries).")
+            text: Messages.settingsPluginsDesc
             wrapMode: Text.WordWrap
             color: MD.Token.color.on_surface_variant
             typescale: MD.Token.typescale.body_medium
@@ -75,7 +75,7 @@ Flickable {
                 MD.Label {
                     Layout.fillWidth: true
                     wrapMode: Text.WordWrap
-                    text: qsTr("Install the .arach package using the button below.\n\nAfter building, FreeTP is in dist:\nbuild-win/dist/freetp.arach")
+                    text: Messages.settingsPluginsInstallHint
                     color: MD.Token.color.on_surface_variant
                     typescale: MD.Token.typescale.body_small
                 }
