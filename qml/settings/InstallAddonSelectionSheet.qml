@@ -69,8 +69,7 @@ MD.BottomSheet {
             Layout.leftMargin: MD.Token.spacing.large
             Layout.rightMargin: MD.Token.spacing.large
             text: entryTitle.length
-                  ? qsTr("Add-ons are available for \"%1\" — choose what to download with the game.")
-                    .arg(entryTitle)
+                  ? Messages.addonsSelectionHint.arg(entryTitle)
                   : qsTr("Choose add-ons to download together with the game.")
             color: MD.Token.color.on_surface_variant
             typescale: MD.Token.typescale.body_medium

@@ -6,15 +6,43 @@ Arachnel uses **Qt Linguist** (`.ts` files) with **English** as the source langu
 
 | File | Purpose |
 |------|---------|
-| `translations/arachnel_en.ts` | Source catalog (English strings from code) |
-| `translations/arachnel_ru.ts` | Russian translations |
-| `qml/**/*.qml` | UI strings via `qsTr("...")` |
+| `translations/arachnel_en.ts` | **Source template** (English strings only, monolingual) |
+| `translations/arachnel_ru.ts` | Russian translations (bilingual: source + translation) |
+| `qml/i18n/Messages.qml` | Long UI copy with **short `qsTrId` keys** for Weblate |
+| `qml/**/*.qml` | Short UI strings via `qsTr("...")` |
+| `src/core/*.cpp` | C++ strings via `QCoreApplication::translate("Core", ...)` |
+
+## Weblate
+
+Project: [hosted.weblate.org/projects/arachnel](https://hosted.weblate.org/projects/arachnel/)
+
+Repo includes `weblate.yml` with recommended component settings:
+
+- **Template / monolingual base:** `translations/arachnel_en.ts`
+- **Translation files:** `translations/arachnel_*.ts` (e.g. `arachnel_ru.ts`)
+- **Source language:** English — the `en` file is **not** a language to translate; it is the string catalog.
+
+If English shows **0%** on Weblate, the component is misconfigured: enable **monolingual base language file** = `arachnel_en.ts`, or remove English from target languages.
+
+### Short keys (Weblate)
+
+Long help texts use `qsTrId("help.catalog_intro")` in `qml/i18n/Messages.qml`.  
+Weblate shows the **ID** (`help.catalog_intro`) instead of a giant `ContextName+Full English sentence` key.
+
+Short labels still use `qsTr()` with context = QML file name (normal for Qt).
 
 ## Update strings after code changes
 
 ```bash
-cmake --build build-win --target update_translations
-cmake --build build-win --target release_translations
+cmake --build build --target update_translations
+python3 tools/normalize_translations.py
+cmake --build build --target release_translations
+```
+
+Or:
+
+```bash
+cmake --build build --target arachnel_normalize_translations
 ```
 
 Commit updated `translations/*.ts` files.
@@ -24,29 +52,18 @@ Commit updated `translations/*.ts` files.
 1. Copy `translations/arachnel_ru.ts` to `translations/arachnel_<lang>.ts`
 2. Change `language="..."` in the XML header
 3. Add the file to `cmake/ArachnelTranslations.cmake`
-4. Reconfigure CMake and run `release_translations`
+4. Reconfigure CMake, run `update_translations` + `normalize_translations.py` + `release_translations`
 5. Add the language to `languageOptions` in `qml/settings/SettingsAppearancePage.qml`
-
-## Weblate (recommended for contributors)
-
-1. Register the project on [hosted.weblate.org](https://hosted.weblate.org/) (free for open source)
-2. Repository: `https://github.com/BadKiko/Arachnel`
-3. Component settings:
-   - **File format:** Qt Linguist `.ts`
-   - **File mask:** `translations/*.ts`
-   - **Source language:** English
-
-Contributors translate in the browser; Weblate opens pull requests with updated `.ts` files.
 
 ## Translate without Weblate
 
 1. Install [Qt Linguist](https://doc.qt.io/qt-6/linguist-translators.html)
-2. Open `translations/arachnel_ru.ts` (or your language)
-3. Fill in translations
+2. Open `translations/arachnel_ru.ts`
+3. Fill in translations (English source is in `<source>`, write target in `<translation>`)
 4. Send a pull request
 
 ## Runtime
 
-- Default UI language: **English**
+- Default UI language: **English** (no `.qm` loaded)
 - Users change language in **Settings → Appearance → Language**
 - Choice is stored in `settings.json` as `uiLanguage`

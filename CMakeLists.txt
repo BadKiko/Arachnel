@@ -34,6 +34,13 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/ArachnelLibtorrent.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/ArachnelPlugins.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/ArachnelTranslations.cmake)
 
+# After lupdate: English template (monolingual) + filled ru.ts for Weblate.
+add_custom_target(arachnel_normalize_translations
+    COMMAND python3 ${CMAKE_SOURCE_DIR}/tools/normalize_translations.py
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMENT "Normalize translations/*.ts for Weblate"
+)
+
 include(FetchContent)
 FetchContent_Declare(
     qml_material
@@ -143,6 +150,7 @@ file(GLOB_RECURSE ARACHNEL_QML_FILES CONFIGURE_DEPENDS
 set_source_files_properties(
     qml/theme/Appearance.qml
     qml/theme/AccentColors.qml
+    qml/i18n/Messages.qml
     PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
 
 set(_arachnel_qml_module_args

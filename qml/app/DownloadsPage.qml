@@ -83,7 +83,7 @@ Item {
             MD.Label {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
-                text: qsTr("Start installing from the catalog — progress will appear here.")
+                text: Messages.downloadsEmptyHint
                 color: MD.Token.color.on_surface_variant
                 typescale: MD.Token.typescale.body_medium
                 wrapMode: Text.WordWrap
