@@ -124,7 +124,19 @@ TorrentSession::TorrentSession(QObject* parent)
 
 TorrentSession::~TorrentSession()
 {
-    flushResumeData();
+    shutdown();
+}
+
+void TorrentSession::shutdown()
+{
+    if (!m_impl)
+        return;
+
+    if (QCoreApplication::instance())
+        flushResumeData();
+
+    m_impl.reset();
+    m_available = false;
 }
 
 QString TorrentSession::resumeDirectory()
@@ -165,6 +177,8 @@ void TorrentSession::flushResumeData()
     saveAllResumeData();
     for (int i = 0; i < 40; ++i) {
         pollAlerts();
+        if (!QCoreApplication::instance())
+            break;
         QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 25);
     }
 }

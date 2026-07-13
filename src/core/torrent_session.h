@@ -23,6 +23,7 @@ public:
     bool isPaused(const QString& jobId) const;
     void saveAllResumeData();
     void flushResumeData();
+    void shutdown();
     void removeResumeFile(const QString& jobId);
 
     static QString resumeDirectory();

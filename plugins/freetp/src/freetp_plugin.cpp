@@ -10,72 +10,20 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
-#include <QEventLoop>
-
-#include <QFileInfo>
 
 namespace freetp {
 
 namespace {
 
 constexpr auto kSourceId = "freetp";
-constexpr auto kDefaultCatalogUrl =
-    "https://gitlab.com/BadKiko/freetp-hydra-link/-/raw/main/games-arachnel.json?ref_type=heads";
 
-bool isPlaceholderCatalog(const QByteArray& payload)
-{
-    const auto entries =
-        arachnel::core::parseCatalogFeed(payload, QString::fromLatin1(kSourceId));
-    if (entries.size() != 1)
-        return false;
-    return entries.first().id == QStringLiteral("freetp-example-game");
-}
-
-QByteArray downloadCatalogBytes()
-{
-    QNetworkAccessManager network;
-    QNetworkRequest request(QUrl(QString::fromLatin1(kDefaultCatalogUrl)));
-    request.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("Arachnel/0.1"));
-    request.setTransferTimeout(60000);
-
-    QNetworkReply* reply = network.get(request);
-    QEventLoop loop;
-    QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
-    loop.exec();
-
-    QByteArray payload;
-    if (reply->error() == QNetworkReply::NoError)
-        payload = reply->readAll();
-    reply->deleteLater();
-    return payload;
-}
-
-QByteArray readCatalogBytes(const QString& rootPath, bool preferRemote)
+QByteArray readCatalogBytes(const QString& rootPath)
 {
     const QString localPath = rootPath + QStringLiteral("/games-arachnel.json");
-
-    QByteArray local;
     QFile localFile(localPath);
-    if (localFile.open(QIODevice::ReadOnly))
-        local = localFile.readAll();
-
-    const bool localUsable = !local.isEmpty() && !isPlaceholderCatalog(local);
-    if (!preferRemote && localUsable)
-        return local;
-
-    const QByteArray remote = downloadCatalogBytes();
-    if (!remote.isEmpty() && !isPlaceholderCatalog(remote)) {
-        QFile cache(localPath);
-        if (cache.open(QIODevice::WriteOnly))
-            cache.write(remote);
-        return remote;
-    }
-
-    if (!local.isEmpty())
-        return local;
-    return remote;
+    if (!localFile.open(QIODevice::ReadOnly))
+        return {};
+    return localFile.readAll();
 }
 
 bool shouldUseInnoInstaller(const QString& contentRoot,
@@ -145,7 +93,6 @@ void FreetpPlugin::resetCatalogCache()
 {
     m_catalogLoaded = false;
     m_catalog.clear();
-    m_forceRemoteCatalog = true;
 }
 
 void FreetpPlugin::ensureCatalogLoaded() const
@@ -154,8 +101,7 @@ void FreetpPlugin::ensureCatalogLoaded() const
         return;
     m_catalogLoaded = true;
 
-    const QByteArray payload = readCatalogBytes(m_rootPath, m_forceRemoteCatalog);
-    m_forceRemoteCatalog = false;
+    const QByteArray payload = readCatalogBytes(m_rootPath);
     if (payload.isEmpty())
         return;
 

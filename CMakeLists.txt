@@ -182,7 +182,7 @@ arachnel_setup_translations(arachnel_app)
 add_dependencies(arachnel_app qml_materialplugin)
 
 target_compile_definitions(arachnel_app PRIVATE
-    "QT_QML_MATERIAL_IMPORT_PATH=\"${CMAKE_BINARY_DIR}/qml_modules\""
+    "QT_QML_MATERIAL_IMPORT_PATH=\"qml_modules\""
 )
 
 target_link_libraries(arachnel_app
@@ -201,7 +201,8 @@ qt_import_qml_plugins(arachnel_app)
 arachnel_setup_libtorrent(arachnel_app)
 
 if(WIN32)
-    target_link_libraries(arachnel_app PRIVATE ole32 shell32)
+    target_link_libraries(arachnel_app PRIVATE ole32 shell32 dbghelp)
 else()
     target_link_libraries(arachnel_app PRIVATE Qt6::Widgets)
+    target_link_options(arachnel_app PRIVATE -rdynamic)
 endif()

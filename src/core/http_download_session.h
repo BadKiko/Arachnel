@@ -16,6 +16,7 @@ public:
     bool addJob(const QString& jobId, const QString& url, const QString& referer,
                 const QString& saveDirectory);
     void cancel(const QString& jobId);
+    void shutdown();
 
 signals:
     void httpProgress(const QString& jobId, int progress, qint64 downloaded, qint64 total);

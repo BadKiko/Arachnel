@@ -1,4 +1,5 @@
 #include "core_controller.h"
+#include "../crash_log.h"
 
 #include <QDesktopServices>
 
@@ -28,6 +29,8 @@
 #include <QCoreApplication>
 #include <QDate>
 #include <QDateTime>
+#include <QGuiApplication>
+#include <QClipboard>
 #include <QDir>
 #include <QFileInfo>
 #include <QFutureWatcher>
@@ -63,6 +66,8 @@ QStringList variantListToStringList(const QVariantList& values)
     return result;
 }
 
+bool g_crashReporterMode = false;
+
 } // namespace
 
 CoreController* CoreController::create(QQmlEngine* engine, QJSEngine* scriptEngine)
@@ -78,9 +83,17 @@ CoreController& CoreController::instance()
     return controller;
 }
 
+void CoreController::setCrashReporterMode(bool enabled)
+{
+    g_crashReporterMode = enabled;
+}
+
 CoreController::CoreController(QObject* parent)
     : QObject(parent)
 {
+    if (g_crashReporterMode)
+        return;
+
     m_settings.load();
     m_jobStore.load();
     m_libraryStore.load();
@@ -106,6 +119,7 @@ CoreController::CoreController(QObject* parent)
     initializeServices();
     connect(m_pluginHost, &PluginHost::pluginsChanged, this, [this]() {
         syncSourcesFromPlugins();
+        reconcileJobInstallState();
         emit pluginsChanged();
     });
     syncSourcesFromPlugins();
@@ -522,6 +536,8 @@ void CoreController::startPluginInstall(const CatalogEntry& entry, const QString
                                                QStringLiteral("Installed"));
         }
 
+        reconcileJobInstallState();
+
         if (kind == JobKind::Update)
             showNotice(QCoreApplication::translate("Core", "Update installed: %1").arg(entry.title));
         else
@@ -609,6 +625,7 @@ void CoreController::advanceInstallSession(const QString& entryId)
                                    QStringLiteral("Installed"));
     m_installSessions.remove(entryId);
     m_installSelectedAddons.remove(entryId);
+    reconcileJobInstallState();
 }
 
 void CoreController::startPluginAddonInstall(const CatalogEntry& parent,
@@ -847,7 +864,10 @@ std::optional<CatalogEntry> CoreController::resolveCatalogEntry(const QString& e
 
 bool CoreController::gameNeedsInstall(const QString& entryId) const
 {
-    return !isEntryPlayable(entryId);
+    const LibraryGame* game = m_libraryStore.gameById(entryId);
+    if (!game || game->installPath.isEmpty())
+        return true;
+    return !QFileInfo::exists(game->installPath);
 }
 
 const JobEntry* CoreController::findLatestJobForEntry(const QString& entryId) const
@@ -1106,8 +1126,14 @@ void CoreController::reconcileJobInstallState()
         }
         if (job.status != QStringLiteral("completed"))
             continue;
-        if (!gameNeedsInstall(job.entryId))
+        if (!gameNeedsInstall(job.entryId)) {
+            if (job.detail == QStringLiteral("Installation required")
+                || job.detail == QStringLiteral("Требуется установка")) {
+                m_jobOrchestrator->setJobPhase(job.id, QStringLiteral("completed"),
+                                               QStringLiteral("Installed"));
+            }
             continue;
+        }
         if (job.detail == QStringLiteral("Installed")
             || job.detail == QStringLiteral("Установлено")) {
             m_jobOrchestrator->setJobPhase(job.id, QStringLiteral("completed"),
@@ -2983,10 +3009,25 @@ void CoreController::clearFinishedJobs()
 
 void CoreController::prepareShutdown()
 {
+    if (m_runningGameTimer)
+        m_runningGameTimer->stop();
+    clearRunningGame();
+
+    if (m_catalogLoader)
+        m_catalogLoader->cancelActive();
+    if (m_catalogProbeLoader)
+        m_catalogProbeLoader->cancelActive();
+    if (m_catalogValidateLoader)
+        m_catalogValidateLoader->cancelActive();
+
     if (m_jobOrchestrator)
         m_jobOrchestrator->flushPersistence();
+    if (m_httpSession)
+        m_httpSession->shutdown();
     if (m_torrentSession)
-        m_torrentSession->flushResumeData();
+        m_torrentSession->shutdown();
+    if (m_pluginHost)
+        m_pluginHost->shutdownPlugins();
 }
 
 int CoreController::pluginCount() const
@@ -3098,6 +3139,49 @@ void CoreController::rescanPlugins()
     if (!m_pluginHost)
         return;
     m_pluginHost->scan();
+}
+
+bool CoreController::hasPendingCrashReport() const
+{
+    return arachnel::hasPendingCrashReport();
+}
+
+QString CoreController::pendingCrashSummary() const
+{
+    return arachnel::pendingCrashSummary();
+}
+
+QString CoreController::pendingCrashDetails() const
+{
+    return arachnel::pendingCrashDetails();
+}
+
+QString CoreController::pendingCrashReportPath() const
+{
+    return arachnel::pendingCrashReportPath();
+}
+
+void CoreController::dismissPendingCrashReport()
+{
+    arachnel::dismissPendingCrashReport();
+}
+
+void CoreController::openPendingCrashIssue()
+{
+    arachnel::openPendingCrashIssue();
+}
+
+void CoreController::revealPendingCrashReport()
+{
+    arachnel::revealPendingCrashReport();
+}
+
+void CoreController::copyPendingCrashReport()
+{
+    if (QGuiApplication* gui = qobject_cast<QGuiApplication*>(QCoreApplication::instance())) {
+        if (QClipboard* clipboard = gui->clipboard())
+            clipboard->setText(pendingCrashDetails());
+    }
 }
 
 void registerCoreTypes()

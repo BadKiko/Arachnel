@@ -66,6 +66,11 @@ void PluginHost::unloadAll()
     m_plugins.clear();
 }
 
+void PluginHost::shutdownPlugins()
+{
+    unloadAll();
+}
+
 void PluginHost::scan()
 {
     unloadAll();
@@ -270,43 +275,15 @@ bool PluginHost::extractArachArchive(const QString& archivePath, const QString& 
 {
     QDir().mkpath(destDir);
 
-    QString archiveForExtract = archivePath;
-    QTemporaryDir zipCopyDir;
-#if defined(Q_OS_WIN)
-    // Expand-Archive only accepts .zip; .arach is ZIP under another extension.
-    if (!zipCopyDir.isValid()) {
-        if (errorOut)
-            *errorOut = QStringLiteral("Не удалось создать временную папку");
-        return false;
-    }
-    archiveForExtract = zipCopyDir.path() + QStringLiteral("/package.zip");
-    if (QFile::exists(archiveForExtract) && !QFile::remove(archiveForExtract)) {
-        if (errorOut)
-            *errorOut = QStringLiteral("Не удалось подготовить архив к распаковке");
-        return false;
-    }
-    if (!QFile::copy(archivePath, archiveForExtract)) {
-        if (errorOut)
-            *errorOut = QStringLiteral("Не удалось прочитать пакет .arach");
-        return false;
-    }
-#endif
-
     QProcess process;
-#if defined(Q_OS_WIN)
-    process.setProgram(QStringLiteral("powershell"));
-    process.setArguments({QStringLiteral("-NoProfile"), QStringLiteral("-Command"),
-                          QStringLiteral("Expand-Archive -LiteralPath '%1' -DestinationPath '%2' -Force")
-                              .arg(archiveForExtract, destDir)});
-#else
-    process.setProgram(QStringLiteral("unzip"));
-    process.setArguments({QStringLiteral("-o"), archivePath, QStringLiteral("-d"), destDir});
-#endif
+    process.setProgram(QStringLiteral("tar"));
+    process.setArguments({QStringLiteral("-xf"), archivePath, QStringLiteral("-C"), destDir});
 
     process.start();
     if (!process.waitForStarted(15000)) {
-        if (errorOut)
+        if (errorOut) {
             *errorOut = QStringLiteral("Не удалось запустить распаковку архива");
+        }
         return false;
     }
     if (!process.waitForFinished(300000)) {

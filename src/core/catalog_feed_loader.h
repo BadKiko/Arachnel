@@ -20,6 +20,7 @@ public:
     explicit CatalogFeedLoader(QObject* parent = nullptr);
 
     void loadFeed(const QUrl& url, const QString& sourceId);
+    void cancelActive();
 
 signals:
     void feedLoaded(const QString& sourceId, QVector<CatalogEntry> entries);
@@ -27,7 +28,6 @@ signals:
 
 private:
     void handleFinished(QNetworkReply* reply);
-    void abortActiveReply();
 
     QNetworkAccessManager* m_network = nullptr;
     QPointer<QNetworkReply> m_activeReply;

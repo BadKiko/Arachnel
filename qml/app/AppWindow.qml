@@ -79,6 +79,8 @@ MD.ApplicationWindow {
         Appearance.apply()
         if (Qt.platform.os === "linux")
             Core.refreshProtonLatestRelease()
+        if (Core.hasPendingCrashReport())
+            Qt.callLater(function () { crashReportDialog.open() })
     }
 
     Connections {
@@ -316,6 +318,10 @@ MD.ApplicationWindow {
     ProtonRequiredDialog {
         id: protonRequiredDialog
         onOpenLaunchSettings: settingsSheet.openLaunch()
+    }
+
+    CrashReportDialog {
+        id: crashReportDialog
     }
 
     AppSnackbar {

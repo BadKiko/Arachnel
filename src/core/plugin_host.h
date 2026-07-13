@@ -29,6 +29,7 @@ public:
     ~PluginHost() override;
 
     void scan();
+    void shutdownPlugins();
     QVector<SourcePluginInfo> pluginInfos() const;
     ISourcePlugin* plugin(const QString& id) const;
     bool hasPlugin(const QString& id) const;
