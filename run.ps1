@@ -92,14 +92,22 @@ function Get-BuildArgs {
     $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
     if ($env:GITHUB_ACTIONS -eq 'true') {
         $ninja = Get-Command ninja.exe -ErrorAction SilentlyContinue
-        if ($ninja) {
+        $cl = $null
+        if ($env:VCToolsInstallDir) {
+            $clCandidate = Join-Path $env:VCToolsInstallDir "bin\Hostx64\x64\cl.exe"
+            if (Test-Path -LiteralPath $clCandidate) { $cl = $clCandidate }
+        }
+        if (-not $cl) {
+            $cl = Get-Command cl.exe -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source
+        }
+        if ($ninja -and $cl) {
             return @{
                 Qt = $qt
                 Cmake = $cmake
                 Configure = $configureArgs + @(
                     "-G", "Ninja",
-                    "-DCMAKE_C_COMPILER=cl",
-                    "-DCMAKE_CXX_COMPILER=cl"
+                    "-DCMAKE_C_COMPILER=$cl",
+                    "-DCMAKE_CXX_COMPILER=$cl"
                 )
             }
         }
