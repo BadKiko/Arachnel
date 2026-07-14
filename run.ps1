@@ -109,10 +109,23 @@ function Get-BuildArgs {
             )
             if ($env:WindowsSdkDir -and $env:WindowsSDKVersion) {
                 $sdkVer = $env:WindowsSDKVersion.TrimEnd('\')
-                $rcCandidate = Join-Path $env:WindowsSdkDir "bin\$sdkVer\x64\rc.exe"
-                if (Test-Path -LiteralPath $rcCandidate) {
-                    $rcForCmake = ($rcCandidate -replace '\\', '/')
-                    $configureExtras += "-DCMAKE_RC_COMPILER=$rcForCmake"
+                $sdkBin = Join-Path $env:WindowsSdkDir "bin\$sdkVer\x64"
+                foreach ($pair in @(
+                        @{ Flag = "CMAKE_RC_COMPILER"; Name = "rc.exe" },
+                        @{ Flag = "CMAKE_MT"; Name = "mt.exe" }
+                    )) {
+                    $tool = Join-Path $sdkBin $pair.Name
+                    if (Test-Path -LiteralPath $tool) {
+                        $toolForCmake = ($tool -replace '\\', '/')
+                        $configureExtras += "-D$($pair.Flag)=$toolForCmake"
+                    }
+                }
+            }
+            if ($env:VCToolsInstallDir) {
+                $linkCandidate = Join-Path $env:VCToolsInstallDir "bin\Hostx64\x64\link.exe"
+                if (Test-Path -LiteralPath $linkCandidate) {
+                    $linkForCmake = ($linkCandidate -replace '\\', '/')
+                    $configureExtras += "-DCMAKE_LINKER=$linkForCmake"
                 }
             }
             return @{
