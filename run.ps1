@@ -101,16 +101,18 @@ function Get-BuildArgs {
             $cl = Get-Command cl.exe -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source
         }
         if ($ninja -and $cl) {
+            $clForCmake = ($cl -replace '\\', '/')
             $configureExtras = @(
                 "-G", "Ninja",
-                "-DCMAKE_C_COMPILER=$cl",
-                "-DCMAKE_CXX_COMPILER=$cl"
+                "-DCMAKE_C_COMPILER=$clForCmake",
+                "-DCMAKE_CXX_COMPILER=$clForCmake"
             )
             if ($env:WindowsSdkDir -and $env:WindowsSDKVersion) {
                 $sdkVer = $env:WindowsSDKVersion.TrimEnd('\')
                 $rcCandidate = Join-Path $env:WindowsSdkDir "bin\$sdkVer\x64\rc.exe"
                 if (Test-Path -LiteralPath $rcCandidate) {
-                    $configureExtras += "-DCMAKE_RC_COMPILER=$rcCandidate"
+                    $rcForCmake = ($rcCandidate -replace '\\', '/')
+                    $configureExtras += "-DCMAKE_RC_COMPILER=$rcForCmake"
                 }
             }
             return @{
