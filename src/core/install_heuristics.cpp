@@ -147,16 +147,16 @@ InstallAnalysis analyzeDownloadPath(const QString& downloadPath)
 
     if (!findGameExecutableInTree(contentRoot).isEmpty()) {
         return makeInstallAnalysis(InstallKind::PortableArchive, QStringLiteral("portable-ready"),
-                                   90, QStringLiteral("Game executable already present"), false);
+                                   90, QStringLiteral("Game executable already present"), true);
     }
 
     if (pathHasArchive(contentRoot)) {
         return makeInstallAnalysis(InstallKind::PortableArchive, QStringLiteral("portable-archive"),
-                                   80, QStringLiteral("Archive files detected"), false);
+                                   80, QStringLiteral("Archive files detected"), true);
     }
 
     return makeInstallAnalysis(InstallKind::PortableArchive, QStringLiteral("unknown"), 15,
-                               QStringLiteral("Could not determine install method"), false);
+                               QStringLiteral("Could not determine install method"), true);
 }
 
 InstallAnalysis analyzeTorrentFileNames(const QStringList& fileNames)
@@ -189,11 +189,11 @@ InstallAnalysis analyzeTorrentFileNames(const QStringList& fileNames)
 
     if (hasArchive) {
         return makeInstallAnalysis(InstallKind::PortableArchive, QStringLiteral("portable-archive"),
-                                   70, QStringLiteral("Archive files in torrent"), false);
+                                   70, QStringLiteral("Archive files in torrent"), true);
     }
 
     return makeInstallAnalysis(InstallKind::PortableArchive, QStringLiteral("unknown"), 20,
-                               QStringLiteral("No install hints in torrent file list"), false);
+                               QStringLiteral("No install hints in torrent file list"), true);
 }
 
 } // namespace arachnel::core
