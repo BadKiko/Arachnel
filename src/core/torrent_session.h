@@ -5,6 +5,8 @@
 
 #include <memory>
 
+class QTimer;
+
 namespace arachnel::core {
 
 class TorrentSession : public QObject
@@ -38,9 +40,12 @@ private:
     void pollAlerts();
     QString resumeFilePath(const QString& jobId) const;
     void requestResumeSave(const QString& jobId);
+    void updateIdleTimers();
 
     struct Impl;
     std::unique_ptr<Impl> m_impl;
+    QTimer* m_pollTimer = nullptr;
+    QTimer* m_resumeTimer = nullptr;
     bool m_available = true;
 };
 

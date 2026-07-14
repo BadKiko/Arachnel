@@ -32,7 +32,7 @@ MD.Pane {
             color: MD.Token.color.primary
 
             SequentialAnimation on opacity {
-                running: true
+                running: root.visible
                 loops: Animation.Infinite
                 NumberAnimation {
                     from: 1.0

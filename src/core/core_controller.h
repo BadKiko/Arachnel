@@ -233,6 +233,9 @@ private:
     void syncInstallSessionPhase(const QString& entryId);
     void markCatalogAddonInstalled(const QString& parentEntryId, const QString& addonId,
                                    const QString& uploadDate);
+    void commitInstalledCatalogGame(const CatalogEntry& entryHint, const QString& sourceId,
+                                    const QString& savePath, const QString& libraryId,
+                                    const QString& installPath, InstallKind installKind);
     QString resolveAddonArtifactPath(const QString& parentEntryId, const QString& addonId) const;
     std::optional<CatalogEntry> resolveCatalogEntry(const QString& entryId,
                                                     const QString& sourceId,
@@ -267,6 +270,7 @@ private:
     InstallKind detectInstallKindForEntry(const QString& sourceId,
                                           const QString& downloadPath) const;
     void syncCatalogInstallKind(const QString& entryId, InstallKind kind);
+    void syncInstallKindProbeSuspension();
     void applyCachedMetadata(CatalogEntry& entry) const;
     void enrichLibraryGameCover(LibraryGame& game) const;
     void warmCatalogCovers(const QString& sourceId, const QString& query, int limit);

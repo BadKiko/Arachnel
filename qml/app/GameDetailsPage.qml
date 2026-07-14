@@ -18,6 +18,17 @@ Item {
     }
 
     property int detailsRevision: 0
+    property bool mediaLoading: false
+
+    readonly property bool hasCachedMedia: {
+        const _rev = root.detailsRevision
+        const shots = root.info.screenshotUrls ?? []
+        return shots.length > 0 || ((root.info.trailerUrl ?? "")).length > 0
+    }
+
+    function syncMediaLoading() {
+        root.mediaLoading = !root.hasCachedMedia
+    }
 
     readonly property var info: {
         const _rev = root.detailsRevision
@@ -27,8 +38,10 @@ Item {
     Connections {
         target: Core
         function onEntryMetadataChanged(entryId) {
-            if (entryId === root.gameId)
+            if (entryId === root.gameId) {
+                root.mediaLoading = false
                 root.detailsRevision++
+            }
         }
     }
 
@@ -107,6 +120,7 @@ Item {
 
     onGameIdChanged: {
         refreshDownloadJob()
+        syncMediaLoading()
         maybeEnrich()
         if (root.onLinux)
             Core.refreshAvailableProtons()
@@ -114,12 +128,30 @@ Item {
     onFromCatalogChanged: maybeEnrich()
 
     function maybeEnrich() {
-        if (gameId.length > 0)
+        if (gameId.length > 0) {
+            if (!root.hasCachedMedia)
+                root.mediaLoading = true
             Core.enrichCatalogEntry(gameId)
+        }
+    }
+
+    Timer {
+        id: mediaLoadTimeout
+        interval: 20000
+        repeat: false
+        onTriggered: root.mediaLoading = false
+    }
+
+    onMediaLoadingChanged: {
+        if (root.mediaLoading)
+            mediaLoadTimeout.restart()
+        else
+            mediaLoadTimeout.stop()
     }
 
     Component.onCompleted: {
         refreshDownloadJob()
+        syncMediaLoading()
         maybeEnrich()
     }
 
@@ -398,46 +430,27 @@ Item {
             }
 
             MD.ElevationRectangle {
-                id: mediaCard
                 Layout.fillWidth: true
                 Layout.leftMargin: MD.Token.spacing.large
                 Layout.rightMargin: MD.Token.spacing.large
-                Layout.preferredHeight: mediaLoader.item
-                                        ? mediaLoader.item.implicitHeight + 2 * MD.Token.spacing.large
+                Layout.preferredHeight: mediaSection.showSection
+                                        ? mediaSection.implicitHeight + 2 * MD.Token.spacing.large
                                         : 0
-                visible: mediaLoader.status === Loader.Ready && mediaLoader.item && mediaLoader.item.hasMedia
+                visible: mediaSection.showSection
                 radius: MD.Token.shape.corner.extra_large
                 color: MD.Token.color.surface_container
                 elevation: MD.Token.elevation.level0
 
-                readonly property bool wantsMedia: ((root.info.trailerUrl ?? "").length > 0)
-                    || ((root.info.screenshotUrls ?? []).length > 0)
-
-                Loader {
-                    id: mediaLoader
+                GameDetailsMediaSection {
+                    id: mediaSection
                     anchors.left: parent.left
                     anchors.right: parent.right
                     anchors.top: parent.top
                     anchors.margins: MD.Token.spacing.large
-                    active: mediaCard.wantsMedia
-                    source: "../components/GameDetailsMediaSection.qml"
-
-                    onLoaded: {
-                        if (!item)
-                            return
-                        item.screenshotUrls = root.info.screenshotUrls ?? []
-                        item.trailerUrl = root.info.trailerUrl ?? ""
-                    }
-                }
-
-                Connections {
-                    target: root
-                    function onDetailsRevisionChanged() {
-                        if (!mediaLoader.item)
-                            return
-                        mediaLoader.item.screenshotUrls = root.info.screenshotUrls ?? []
-                        mediaLoader.item.trailerUrl = root.info.trailerUrl ?? ""
-                    }
+                    screenshotUrls: root.info.screenshotUrls ?? []
+                    trailerUrl: root.info.trailerUrl ?? ""
+                    trailerThumbnailUrl: root.info.trailerThumbnailUrl ?? ""
+                    loading: root.mediaLoading
                 }
             }
 

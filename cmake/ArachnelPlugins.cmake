@@ -1,11 +1,11 @@
 set(FREETP_PLUGIN_DIR "${CMAKE_SOURCE_DIR}/plugins/freetp")
 set(FREETP_CATALOG "${FREETP_PLUGIN_DIR}/games-arachnel.json")
-set(FREETP_CATALOG_SAMPLE "${FREETP_PLUGIN_DIR}/games.sample.json")
+set(FREETP_CATALOG_FALLBACK "${FREETP_PLUGIN_DIR}/games.json")
 set(FREETP_CATALOG_URL
     "https://gitlab.com/BadKiko/freetp-hydra-link/-/raw/main/games-arachnel.json?ref_type=heads")
 
-if(NOT EXISTS "${FREETP_CATALOG_SAMPLE}")
-    message(FATAL_ERROR "freetp: missing games.sample.json")
+if(NOT EXISTS "${FREETP_CATALOG_FALLBACK}")
+    message(FATAL_ERROR "freetp: missing fallback catalog ${FREETP_CATALOG_FALLBACK}")
 endif()
 
 if(NOT "$ENV{ARACHNEL_SKIP_FREETP_CATALOG_FETCH}" STREQUAL "1")
@@ -13,13 +13,14 @@ if(NOT "$ENV{ARACHNEL_SKIP_FREETP_CATALOG_FETCH}" STREQUAL "1")
     file(DOWNLOAD "${FREETP_CATALOG_URL}" "${FREETP_CATALOG}" STATUS _dl_status TIMEOUT 180)
     list(GET _dl_status 0 _dl_code)
     if(NOT _dl_code EQUAL 0)
-        message(WARNING "freetp: could not download games-arachnel.json (using sample)")
-        file(COPY "${FREETP_CATALOG_SAMPLE}" DESTINATION "${FREETP_PLUGIN_DIR}")
-        file(RENAME "${FREETP_PLUGIN_DIR}/games.sample.json" "${FREETP_CATALOG}")
+        message(WARNING "freetp: could not download games-arachnel.json (using games.json)")
+        execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                        "${FREETP_CATALOG_FALLBACK}" "${FREETP_CATALOG}")
     endif()
 elseif(NOT EXISTS "${FREETP_CATALOG}")
-    file(COPY "${FREETP_CATALOG_SAMPLE}" DESTINATION "${FREETP_PLUGIN_DIR}")
-    file(RENAME "${FREETP_PLUGIN_DIR}/games.sample.json" "${FREETP_CATALOG}")
+    message(STATUS "freetp: using bundled games.json as games-arachnel.json")
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "${FREETP_CATALOG_FALLBACK}" "${FREETP_CATALOG}")
 endif()
 
 add_library(freetp_plugin SHARED

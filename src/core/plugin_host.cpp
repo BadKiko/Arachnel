@@ -1,5 +1,8 @@
 #include "plugin_host.h"
 
+#include "../crash_log.h"
+#include "catalog_types.h"
+
 #include "plugin_api.h"
 
 #include <QCoreApplication>
@@ -12,8 +15,16 @@
 #include <QProcess>
 #include <QStandardPaths>
 #include <QTemporaryDir>
+#include <QTimer>
 #include <QUrl>
 #include <QtConcurrent>
+
+#if defined(Q_OS_WIN)
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+#endif
 
 namespace arachnel::core {
 
@@ -139,12 +150,26 @@ bool PluginHost::loadPluginDir(const QString& dirPath)
         return false;
     }
 
-    auto* apiVersionFn =
-        reinterpret_cast<int (*)()>(loaded->library.resolve("arachnel_plugin_api_version"));
+    auto resolvePluginFn = [&](const char* name) -> QFunctionPointer {
+        QFunctionPointer symbol = loaded->library.resolve(name);
+#if defined(Q_OS_WIN)
+        if (!symbol) {
+            const HMODULE module =
+                LoadLibraryW(reinterpret_cast<LPCWSTR>(libraryPath.utf16()));
+            if (module)
+                symbol = reinterpret_cast<QFunctionPointer>(GetProcAddress(module, name));
+        }
+#endif
+        return symbol;
+    };
+
+    auto* apiVersionFn = reinterpret_cast<int (*)()>(resolvePluginFn("arachnel_plugin_api_version"));
+    auto* catalogEntrySizeFn =
+        reinterpret_cast<int (*)()>(resolvePluginFn("arachnel_plugin_catalog_entry_size"));
     auto* createFn = reinterpret_cast<ISourcePlugin* (*)(const char*)>(
-        loaded->library.resolve("arachnel_plugin_create"));
+        resolvePluginFn("arachnel_plugin_create"));
     auto* destroyFn = reinterpret_cast<void (*)(ISourcePlugin*)>(
-        loaded->library.resolve("arachnel_plugin_destroy"));
+        resolvePluginFn("arachnel_plugin_destroy"));
 
     if (!apiVersionFn || !createFn || !destroyFn) {
         loaded->library.unload();
@@ -155,6 +180,32 @@ bool PluginHost::loadPluginDir(const QString& dirPath)
         loaded->library.unload();
         delete loaded;
         return false;
+    }
+    if (catalogEntrySizeFn) {
+        const int pluginEntrySize = catalogEntrySizeFn();
+        const int coreEntrySize = static_cast<int>(sizeof(CatalogEntry));
+        logDiagnostic(QStringLiteral("Plugin %1 CatalogEntry size: plugin=%2 core=%3")
+                          .arg(id)
+                          .arg(pluginEntrySize)
+                          .arg(coreEntrySize));
+        if (pluginEntrySize != coreEntrySize) {
+            logDiagnostic(QStringLiteral(
+                              "Plugin rejected (CatalogEntry size mismatch): %1 plugin=%2 core=%3 "
+                              "from %4 — rebuild plugins with run.ps1")
+                              .arg(id)
+                              .arg(pluginEntrySize)
+                              .arg(coreEntrySize)
+                              .arg(libraryPath));
+            loaded->library.unload();
+            delete loaded;
+            return false;
+        }
+    } else {
+        logDiagnostic(QStringLiteral(
+                          "Plugin %1: catalog_entry_size export not resolved from %2 (library loaded=%3)")
+                          .arg(id, libraryPath)
+                          .arg(loaded->library.isLoaded() ? QStringLiteral("yes")
+                                                          : QStringLiteral("no")));
     }
 
     loaded->instance = createFn(dirPath.toUtf8().constData());
@@ -179,6 +230,9 @@ bool PluginHost::loadPluginDir(const QString& dirPath)
     loaded->info = info;
 
     m_plugins.insert(id, loaded);
+    logDiagnostic(QStringLiteral("Plugin loaded: %1 v%2 from %3 (CatalogEntry=%4 bytes)")
+                      .arg(info.id, info.pluginVersion, libraryPath)
+                      .arg(sizeof(CatalogEntry)));
     return true;
 }
 
@@ -224,8 +278,7 @@ void PluginHost::runInstallAsync(ISourcePlugin* plugin, const InstallContext& ct
             callback(result);
             return;
         }
-        QMetaObject::invokeMethod(app, [callback, result]() { callback(result); },
-                                  Qt::QueuedConnection);
+        QTimer::singleShot(0, app, [callback, result]() { callback(result); });
     });
 }
 
@@ -247,8 +300,7 @@ void PluginHost::runAddonInstallAsync(ISourcePlugin* plugin, const AddonInstallC
             callback(result);
             return;
         }
-        QMetaObject::invokeMethod(app, [callback, result]() { callback(result); },
-                                  Qt::QueuedConnection);
+        QTimer::singleShot(0, app, [callback, result]() { callback(result); });
     });
 }
 

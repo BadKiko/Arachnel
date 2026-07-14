@@ -405,17 +405,37 @@ function Ensure-DevBuild {
     }
 
     Write-Host "Build ..."
-    & $plan.Cmake --build $BUILD_DIR --target arachnel_app -j $env:NUMBER_OF_PROCESSORS
+    & $plan.Cmake --build $BUILD_DIR --target arachnel_app freetp_plugin -j $env:NUMBER_OF_PROCESSORS
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
     $appPath = Get-AppPath
     if (Test-Path -LiteralPath $appPath) {
         Deploy-QtRuntime $plan.Qt $appPath
+        Deploy-DevPlugins
     }
 }
 
 function Get-ArachnelDataDir {
     Join-Path $env:LOCALAPPDATA "PetWork\Arachnel"
+}
+
+function Deploy-DevPlugins {
+    $pluginName = "freetp"
+    $builtDir = Join-Path $BUILD_DIR "plugin-build\$pluginName"
+    $builtDll = Join-Path $builtDir "freetp_plugin.dll"
+    if (-not (Test-Path -LiteralPath $builtDll)) { return }
+
+    $destDir = Join-Path (Get-ArachnelDataDir) "plugins\$pluginName"
+    New-Item -ItemType Directory -Force -Path $destDir | Out-Null
+
+    $builtTime = (Get-Item -LiteralPath $builtDll).LastWriteTimeUtc
+    $destDll = Join-Path $destDir "freetp_plugin.dll"
+    if ((Test-Path -LiteralPath $destDll) -and ((Get-Item -LiteralPath $destDll).LastWriteTimeUtc -ge $builtTime)) {
+        return
+    }
+
+    Write-Host "Deploy dev plugin: $pluginName -> $destDir" -ForegroundColor Yellow
+    Copy-Item -Path (Join-Path $builtDir "*") -Destination $destDir -Recurse -Force
 }
 
 function Format-ExitCode {

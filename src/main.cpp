@@ -49,10 +49,9 @@ void wireEngineLogging(QQmlApplicationEngine& engine, QCoreApplication& app)
         &QQmlEngine::warnings,
         &app,
         [](const QList<QQmlError>& errors) {
-            for (const QQmlError& error : errors) {
-                fprintf(stderr, "%s\n", qPrintable(error.toString()));
-                fflush(stderr);
-            }
+            for (const QQmlError& error : errors)
+                arachnel::logQmlWarning(error.url(), error.line(), error.column(),
+                                        error.description());
         });
 
     QObject::connect(
@@ -112,6 +111,8 @@ int main(int argc, char* argv[])
     wireEngineLogging(engine, app);
 
     if (!crashDialogMode) {
+        if (auto* guiApp = qobject_cast<QGuiApplication*>(&app))
+            guiApp->setQuitOnLastWindowClosed(false);
         QObject::connect(&app, &QCoreApplication::aboutToQuit, &app, []() {
             arachnel::markApplicationShuttingDown();
             arachnel::core::CoreController::instance().prepareShutdown();
