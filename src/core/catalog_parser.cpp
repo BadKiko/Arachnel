@@ -70,6 +70,7 @@ CatalogEntry parseDownloadObject(const QJsonObject& obj, const QString& sourceId
     if (entry.id.isEmpty())
         entry.id = slugifyCatalogId(title, sourceId);
     entry.sourceId = sourceId;
+    entry.sourcePageUrl = obj.value(QStringLiteral("articleUrl")).toString().trimmed();
     entry.sizeLabel = obj.value(QStringLiteral("fileSize")).toString();
     entry.uploadDate = obj.value(QStringLiteral("uploadDate")).toString();
     entry.version = entry.uploadDate.left(10);

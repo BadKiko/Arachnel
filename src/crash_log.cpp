@@ -367,12 +367,8 @@ QString captureStackTraceWindows(CONTEXT* optionalContext)
     QStringList lines;
     lines.append(QStringLiteral("Stack trace:"));
 
-    void* stack[64] = {};
-    const USHORT frameCount = CaptureStackBackTrace(0, 64, stack, nullptr);
-    if (frameCount > 0) {
-        for (USHORT i = 0; i < frameCount; ++i)
-            appendSymbolLine(lines, process, reinterpret_cast<DWORD64>(stack[i]));
-    } else if (optionalContext) {
+    bool captured = false;
+    if (optionalContext) {
         STACKFRAME64 frame = {};
         frame.AddrPC.Mode = AddrModeFlat;
         frame.AddrFrame.Mode = AddrModeFlat;
@@ -399,7 +395,15 @@ QString captureStackTraceWindows(CONTEXT* optionalContext)
             if (frame.AddrPC.Offset == 0)
                 break;
             appendSymbolLine(lines, process, frame.AddrPC.Offset);
+            captured = true;
         }
+    }
+
+    if (!captured) {
+        void* stack[64] = {};
+        const USHORT frameCount = CaptureStackBackTrace(0, 64, stack, nullptr);
+        for (USHORT i = 0; i < frameCount; ++i)
+            appendSymbolLine(lines, process, reinterpret_cast<DWORD64>(stack[i]));
     }
 
     if (lines.size() <= 1)

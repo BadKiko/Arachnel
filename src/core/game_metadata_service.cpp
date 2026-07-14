@@ -32,6 +32,52 @@ QString normalizeTitle(QString title)
     return title;
 }
 
+QString steamLanguageForUi(const QString& languageCode)
+{
+    const QString code = languageCode.trimmed().toLower();
+    if (code == QStringLiteral("ru"))
+        return QStringLiteral("russian");
+    if (code == QStringLiteral("de"))
+        return QStringLiteral("german");
+    if (code == QStringLiteral("fr"))
+        return QStringLiteral("french");
+    if (code == QStringLiteral("es"))
+        return QStringLiteral("spanish");
+    if (code == QStringLiteral("zh") || code.startsWith(QStringLiteral("zh")))
+        return QStringLiteral("schinese");
+    return QStringLiteral("english");
+}
+
+QString pickTrailerUrl(const QJsonObject& movie)
+{
+    const QJsonObject mp4 = movie.value(QStringLiteral("mp4")).toObject();
+    QString url = mp4.value(QStringLiteral("max")).toString();
+    if (url.isEmpty())
+        url = mp4.value(QStringLiteral("480")).toString();
+    if (!url.isEmpty())
+        return url;
+
+    const QJsonObject webm = movie.value(QStringLiteral("webm")).toObject();
+    url = webm.value(QStringLiteral("max")).toString();
+    if (url.isEmpty())
+        url = webm.value(QStringLiteral("480")).toString();
+    return url;
+}
+
+QStringList parseScreenshotUrls(const QJsonArray& screenshots, int maxCount = 8)
+{
+    QStringList urls;
+    urls.reserve(maxCount);
+    for (const QJsonValue& value : screenshots) {
+        if (urls.size() >= maxCount)
+            break;
+        const QString url = value.toObject().value(QStringLiteral("path_full")).toString();
+        if (!url.isEmpty())
+            urls.append(url);
+    }
+    return urls;
+}
+
 bool isVerticalLibraryCover(const QString& url)
 {
     return url.contains(QStringLiteral("library_capsule"))
@@ -158,8 +204,12 @@ void GameMetadataService::loadCache()
         GameMetadata metadata;
         metadata.coverUrl = obj.value(QStringLiteral("coverUrl")).toString();
         metadata.description = obj.value(QStringLiteral("description")).toString();
+        metadata.descriptionLanguage = obj.value(QStringLiteral("descriptionLanguage")).toString();
         metadata.genres = obj.value(QStringLiteral("genres")).toString();
         metadata.steamAppId = obj.value(QStringLiteral("steamAppId")).toString();
+        metadata.trailerUrl = obj.value(QStringLiteral("trailerUrl")).toString();
+        for (const QJsonValue& shot : obj.value(QStringLiteral("screenshotUrls")).toArray())
+            metadata.screenshotUrls.append(shot.toString());
         if (!isVerticalLibraryCover(metadata.coverUrl))
             metadata.coverUrl.clear();
         m_cache.insert(it.key(), metadata);
@@ -173,8 +223,14 @@ void GameMetadataService::saveCache()
         QJsonObject obj;
         obj.insert(QStringLiteral("coverUrl"), it->coverUrl);
         obj.insert(QStringLiteral("description"), it->description);
+        obj.insert(QStringLiteral("descriptionLanguage"), it->descriptionLanguage);
         obj.insert(QStringLiteral("genres"), it->genres);
         obj.insert(QStringLiteral("steamAppId"), it->steamAppId);
+        obj.insert(QStringLiteral("trailerUrl"), it->trailerUrl);
+        QJsonArray screenshots;
+        for (const QString& url : it->screenshotUrls)
+            screenshots.append(url);
+        obj.insert(QStringLiteral("screenshotUrls"), screenshots);
         root.insert(it.key(), obj);
     }
     QFile file(cacheFilePath());
@@ -241,18 +297,21 @@ void GameMetadataService::failCover(const QString& entryId)
 }
 
 void GameMetadataService::queueFetch(const QString& entryId, const QString& title,
-                                     MetadataFetchMode mode)
+                                     MetadataFetchMode mode, const QString& languageCode)
 {
     if (entryId.isEmpty() || title.isEmpty())
         return;
 
+    const QString uiLanguage = languageCode.trimmed().isEmpty() ? QStringLiteral("en")
+                                                                  : languageCode.trimmed();
     const GameMetadata cached = m_cache.value(title);
     if (mode == MetadataFetchMode::CoverOnly && isVerticalLibraryCover(cached.coverUrl)) {
         emit coverReady(entryId, cached.coverUrl);
         return;
     }
     if (mode == MetadataFetchMode::Full && isVerticalLibraryCover(cached.coverUrl)
-        && !cached.description.isEmpty()) {
+        && !cached.description.isEmpty()
+        && cached.descriptionLanguage.compare(uiLanguage, Qt::CaseInsensitive) == 0) {
         emit metadataReady(entryId, cached);
         return;
     }
@@ -273,11 +332,12 @@ void GameMetadataService::queueFetch(const QString& entryId, const QString& titl
     if (mode == MetadataFetchMode::CoverOnly && !cached.steamAppId.isEmpty()
         && !isVerticalLibraryCover(cached.coverUrl)) {
         m_inFlight.insert(entryId);
-        requestStoreAssets(entryId, title, cached.steamAppId, mode, searchTermsFor(title).mid(1));
+        requestStoreAssets(entryId, title, cached.steamAppId, mode,
+                           searchTermsFor(title).mid(1), uiLanguage);
         return;
     }
 
-    prependPending({entryId, title, searchTermsFor(title), 0, mode});
+    prependPending({entryId, title, searchTermsFor(title), 0, mode, uiLanguage});
 }
 
 void GameMetadataService::requestNext()
@@ -287,11 +347,12 @@ void GameMetadataService::requestNext()
         m_inFlight.insert(request.entryId);
 
         const QString term = request.searchTerms.value(request.termIndex);
+        const QString steamLanguage = steamLanguageForUi(request.languageCode);
         QUrl url(QStringLiteral("https://store.steampowered.com/api/storesearch/"));
         QUrlQuery query;
         query.addQueryItem(QStringLiteral("term"), term);
         query.addQueryItem(QStringLiteral("cc"), QStringLiteral("US"));
-        query.addQueryItem(QStringLiteral("l"), QStringLiteral("english"));
+        query.addQueryItem(QStringLiteral("l"), steamLanguage);
         url.setQuery(query);
 
         QNetworkRequest netRequest(url);
@@ -303,6 +364,7 @@ void GameMetadataService::requestNext()
         reply->setProperty("termIndex", request.termIndex);
         reply->setProperty("searchTerms", request.searchTerms);
         reply->setProperty("fetchMode", static_cast<int>(request.mode));
+        reply->setProperty("languageCode", request.languageCode);
         connect(reply, &QNetworkReply::finished, this,
                 [this, reply]() { handleSearchFinished(reply); });
         ++m_activeRequests;
@@ -320,14 +382,16 @@ void GameMetadataService::finishCover(const QString& entryId, const QString& tit
 
 void GameMetadataService::requestStoreAssets(const QString& entryId, const QString& title,
                                              const QString& appId, MetadataFetchMode mode,
-                                             const QStringList& remainingParentTerms)
+                                             const QStringList& remainingParentTerms,
+                                             const QString& languageCode)
 {
+    const QString steamLanguage = steamLanguageForUi(languageCode);
     QJsonObject payload;
     QJsonArray ids;
     ids.append(QJsonObject{{QStringLiteral("appid"), appId.toLongLong()}});
     payload.insert(QStringLiteral("ids"), ids);
     payload.insert(QStringLiteral("context"),
-                   QJsonObject{{QStringLiteral("language"), QStringLiteral("english")},
+                   QJsonObject{{QStringLiteral("language"), steamLanguage},
                                {QStringLiteral("country_code"), QStringLiteral("US")},
                                {QStringLiteral("steam_realm"), 1}});
     payload.insert(QStringLiteral("data_request"),
@@ -347,6 +411,7 @@ void GameMetadataService::requestStoreAssets(const QString& entryId, const QStri
     reply->setProperty("steamAppId", appId);
     reply->setProperty("fetchMode", static_cast<int>(mode));
     reply->setProperty("parentTerms", remainingParentTerms);
+    reply->setProperty("languageCode", languageCode);
     connect(reply, &QNetworkReply::finished, this,
             [this, reply]() { handleAssetsFinished(reply); });
     ++m_activeRequests;
@@ -354,12 +419,13 @@ void GameMetadataService::requestStoreAssets(const QString& entryId, const QStri
 
 void GameMetadataService::requestAppDetails(const QString& entryId, const QString& title,
                                             const QString& appId, const QString& coverUrl,
-                                            MetadataFetchMode mode)
+                                            MetadataFetchMode mode, const QString& languageCode)
 {
+    const QString steamLanguage = steamLanguageForUi(languageCode);
     QUrl detailsUrl(QStringLiteral("https://store.steampowered.com/api/appdetails"));
     QUrlQuery query;
     query.addQueryItem(QStringLiteral("appids"), appId);
-    query.addQueryItem(QStringLiteral("l"), QStringLiteral("english"));
+    query.addQueryItem(QStringLiteral("l"), steamLanguage);
     detailsUrl.setQuery(query);
 
     QNetworkRequest request(detailsUrl);
@@ -370,6 +436,7 @@ void GameMetadataService::requestAppDetails(const QString& entryId, const QStrin
     detailsReply->setProperty("steamAppId", appId);
     detailsReply->setProperty("coverUrl", coverUrl);
     detailsReply->setProperty("fetchMode", static_cast<int>(mode));
+    detailsReply->setProperty("languageCode", languageCode);
     connect(detailsReply, &QNetworkReply::finished, this,
             [this, detailsReply]() { handleDetailsFinished(detailsReply); });
     ++m_activeRequests;
@@ -385,11 +452,12 @@ void GameMetadataService::handleSearchFinished(QNetworkReply* reply)
     const int termIndex = reply->property("termIndex").toInt();
     const QStringList searchTerms = reply->property("searchTerms").toStringList();
     const auto mode = static_cast<MetadataFetchMode>(reply->property("fetchMode").toInt());
+    const QString languageCode = reply->property("languageCode").toString();
 
     auto retryNextTerm = [&]() {
         reply->deleteLater();
         m_inFlight.remove(entryId);
-        prependPending({entryId, entryTitle, searchTerms, termIndex + 1, mode});
+        prependPending({entryId, entryTitle, searchTerms, termIndex + 1, mode, languageCode});
     };
 
     if (reply->error() != QNetworkReply::NoError) {
@@ -426,7 +494,7 @@ void GameMetadataService::handleSearchFinished(QNetworkReply* reply)
     QStringList parentTerms;
     for (int i = termIndex + 1; i < searchTerms.size(); ++i)
         parentTerms.append(searchTerms.at(i));
-    requestStoreAssets(entryId, entryTitle, appId, mode, parentTerms);
+    requestStoreAssets(entryId, entryTitle, appId, mode, parentTerms, languageCode);
     requestNext();
 }
 
@@ -439,6 +507,7 @@ void GameMetadataService::handleAssetsFinished(QNetworkReply* reply)
     const QString appId = reply->property("steamAppId").toString();
     const auto mode = static_cast<MetadataFetchMode>(reply->property("fetchMode").toInt());
     const QStringList parentTerms = reply->property("parentTerms").toStringList();
+    const QString languageCode = reply->property("languageCode").toString();
 
     GameMetadata metadata = m_cache.value(entryTitle);
     metadata.steamAppId = appId;
@@ -460,7 +529,7 @@ void GameMetadataService::handleAssetsFinished(QNetworkReply* reply)
     if (metadata.coverUrl.isEmpty() && !parentTerms.isEmpty()
         && mode == MetadataFetchMode::CoverOnly) {
         m_inFlight.remove(entryId);
-        prependPending({entryId, entryTitle, parentTerms, 0, mode});
+        prependPending({entryId, entryTitle, parentTerms, 0, mode, languageCode});
         return;
     }
 
@@ -474,7 +543,7 @@ void GameMetadataService::handleAssetsFinished(QNetworkReply* reply)
         return;
     }
 
-    requestAppDetails(entryId, entryTitle, appId, metadata.coverUrl, mode);
+    requestAppDetails(entryId, entryTitle, appId, metadata.coverUrl, mode, languageCode);
     requestNext();
 }
 
@@ -486,10 +555,13 @@ void GameMetadataService::handleDetailsFinished(QNetworkReply* reply)
     const QString entryTitle = reply->property("entryTitle").toString();
     const QString appId = reply->property("steamAppId").toString();
     const QString coverUrl = reply->property("coverUrl").toString();
+    const QString languageCode = reply->property("languageCode").toString();
 
-    GameMetadata metadata;
+    GameMetadata metadata = m_cache.value(entryTitle);
     metadata.steamAppId = appId;
-    metadata.coverUrl = coverUrl;
+    metadata.coverUrl = coverUrl.isEmpty() ? metadata.coverUrl : coverUrl;
+    metadata.descriptionLanguage = languageCode.trimmed().isEmpty() ? QStringLiteral("en")
+                                                                    : languageCode.trimmed();
 
     if (reply->error() == QNetworkReply::NoError) {
         const QJsonObject root = QJsonDocument::fromJson(reply->readAll()).object();
@@ -501,6 +573,12 @@ void GameMetadataService::handleDetailsFinished(QNetworkReply* reply)
             for (const QJsonValue& genreValue : data.value(QStringLiteral("genres")).toArray())
                 genres.append(genreValue.toObject().value(QStringLiteral("description")).toString());
             metadata.genres = genres.join(QStringLiteral(", "));
+            metadata.screenshotUrls =
+                parseScreenshotUrls(data.value(QStringLiteral("screenshots")).toArray());
+
+            const QJsonArray movies = data.value(QStringLiteral("movies")).toArray();
+            if (!movies.isEmpty())
+                metadata.trailerUrl = pickTrailerUrl(movies.first().toObject());
         }
     }
 

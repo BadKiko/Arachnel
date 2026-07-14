@@ -25,6 +25,14 @@ Item {
     }
 
     Connections {
+        target: Core
+        function onEntryMetadataChanged(entryId) {
+            if (entryId === root.gameId)
+                root.detailsRevision++
+        }
+    }
+
+    Connections {
         target: Core.library
         function onLibraryChanged() { root.detailsRevision++ }
     }
@@ -106,7 +114,7 @@ Item {
     onFromCatalogChanged: maybeEnrich()
 
     function maybeEnrich() {
-        if (gameId.length > 0 && fromCatalog)
+        if (gameId.length > 0)
             Core.enrichCatalogEntry(gameId)
     }
 
@@ -264,6 +272,36 @@ Item {
                         }
                     }
 
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: MD.Token.spacing.small
+                        visible: (root.info.sourcePageUrl ?? "").length > 0
+                                 || (root.info.sourceWebsiteUrl ?? "").length > 0
+                                 || (root.info.steamStoreUrl ?? "").length > 0
+
+                        MD.Button {
+                            visible: (root.info.sourcePageUrl ?? "").length > 0
+                                     || (root.info.sourceWebsiteUrl ?? "").length > 0
+                            text: (root.info.sourcePageUrl ?? "").length > 0
+                                  ? qsTr("Source page")
+                                  : qsTr("Source website")
+                            icon.name: MD.Token.icon.open_in_new
+                            mdState.type: MD.Enum.BtText
+                            onClicked: Core.openExternalUrl(
+                                (root.info.sourcePageUrl ?? "").length > 0
+                                    ? root.info.sourcePageUrl
+                                    : root.info.sourceWebsiteUrl)
+                        }
+
+                        MD.Button {
+                            visible: (root.info.steamStoreUrl ?? "").length > 0
+                            text: qsTr("Steam")
+                            icon.name: MD.Token.icon.open_in_new
+                            mdState.type: MD.Enum.BtText
+                            onClicked: Core.openExternalUrl(root.info.steamStoreUrl)
+                        }
+                    }
+
                     MD.Label {
                         Layout.fillWidth: true
                         visible: root.readyToInstall && !root.installFailed
@@ -355,6 +393,50 @@ Item {
                         typescale: MD.Token.typescale.label_medium
                         elide: Text.ElideRight
                         maximumLineCount: 1
+                    }
+                }
+            }
+
+            MD.ElevationRectangle {
+                id: mediaCard
+                Layout.fillWidth: true
+                Layout.leftMargin: MD.Token.spacing.large
+                Layout.rightMargin: MD.Token.spacing.large
+                Layout.preferredHeight: mediaLoader.item
+                                        ? mediaLoader.item.implicitHeight + 2 * MD.Token.spacing.large
+                                        : 0
+                visible: mediaLoader.status === Loader.Ready && mediaLoader.item && mediaLoader.item.hasMedia
+                radius: MD.Token.shape.corner.extra_large
+                color: MD.Token.color.surface_container
+                elevation: MD.Token.elevation.level0
+
+                readonly property bool wantsMedia: ((root.info.trailerUrl ?? "").length > 0)
+                    || ((root.info.screenshotUrls ?? []).length > 0)
+
+                Loader {
+                    id: mediaLoader
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    anchors.margins: MD.Token.spacing.large
+                    active: mediaCard.wantsMedia
+                    source: "../components/GameDetailsMediaSection.qml"
+
+                    onLoaded: {
+                        if (!item)
+                            return
+                        item.screenshotUrls = root.info.screenshotUrls ?? []
+                        item.trailerUrl = root.info.trailerUrl ?? ""
+                    }
+                }
+
+                Connections {
+                    target: root
+                    function onDetailsRevisionChanged() {
+                        if (!mediaLoader.item)
+                            return
+                        mediaLoader.item.screenshotUrls = root.info.screenshotUrls ?? []
+                        mediaLoader.item.trailerUrl = root.info.trailerUrl ?? ""
                     }
                 }
             }

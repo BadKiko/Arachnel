@@ -16,8 +16,11 @@ namespace arachnel::core {
 struct GameMetadata {
     QString coverUrl;
     QString description;
+    QString descriptionLanguage;
     QString genres;
     QString steamAppId;
+    QString trailerUrl;
+    QStringList screenshotUrls;
 };
 
 enum class MetadataFetchMode {
@@ -36,7 +39,8 @@ public:
     void saveCache();
 
     // Visible cards should call this — newest requests jump the queue (lazy-load priority).
-    void queueFetch(const QString& entryId, const QString& title, MetadataFetchMode mode);
+    void queueFetch(const QString& entryId, const QString& title, MetadataFetchMode mode,
+                    const QString& languageCode = QStringLiteral("en"));
     // Drop pending (not in-flight) work when a GridView delegate is recycled.
     // Returns true if a queued request was removed.
     bool cancelPending(const QString& entryId);
@@ -54,6 +58,7 @@ private:
         QStringList searchTerms;
         int termIndex = 0;
         MetadataFetchMode mode = MetadataFetchMode::CoverOnly;
+        QString languageCode = QStringLiteral("en");
     };
 
     void requestNext();
@@ -64,9 +69,11 @@ private:
     void handleDetailsFinished(QNetworkReply* reply);
     void finishCover(const QString& entryId, const QString& title, const GameMetadata& metadata);
     void requestStoreAssets(const QString& entryId, const QString& title, const QString& appId,
-                            MetadataFetchMode mode, const QStringList& remainingParentTerms = {});
+                            MetadataFetchMode mode, const QStringList& remainingParentTerms = {},
+                            const QString& languageCode = QStringLiteral("en"));
     void requestAppDetails(const QString& entryId, const QString& title, const QString& appId,
-                           const QString& coverUrl, MetadataFetchMode mode);
+                           const QString& coverUrl, MetadataFetchMode mode,
+                           const QString& languageCode);
     int indexOfPending(const QString& entryId) const;
 
     QNetworkAccessManager* m_network = nullptr;
