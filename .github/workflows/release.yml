@@ -40,6 +40,12 @@ jobs:
           modules: qtshadertools qtmultimedia
           cache: true
 
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install Ninja
+        run: choco install ninja -y --no-progress
+
       - name: Build installer
         shell: pwsh
         env:
