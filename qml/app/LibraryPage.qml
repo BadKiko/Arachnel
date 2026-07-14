@@ -11,7 +11,7 @@ Item {
     readonly property int gridSpacing: MD.Token.spacing.medium
     readonly property int metaHeight: 48
     readonly property bool libraryEmpty: Core.library.count === 0
-    readonly property int pageMargin: MD.Token.spacing.large
+    readonly property int pageMargin: MD.Token.spacing.medium
     readonly property int cardRadius: MD.Token.shape.corner.extra_large
 
     property string selectedSourceId: Core.sources.firstEnabledId
@@ -338,22 +338,22 @@ Item {
         anchors.fill: parent
         visible: !root.libraryEmpty
         contentWidth: width
-        contentHeight: contentCol.implicitHeight + MD.Token.spacing.large
+        contentHeight: contentCol.implicitHeight + root.pageMargin
         clip: true
         boundsBehavior: Flickable.StopAtBounds
 
         ColumnLayout {
             id: contentCol
             width: flick.width
-            spacing: MD.Token.spacing.large
+            spacing: MD.Token.spacing.medium
 
             Item {
                 id: heroHost
                 Layout.fillWidth: true
                 Layout.leftMargin: root.pageMargin
                 Layout.rightMargin: root.pageMargin
-                Layout.topMargin: MD.Token.spacing.medium
-                Layout.preferredHeight: 280
+                Layout.topMargin: root.pageMargin
+                Layout.preferredHeight: 248
 
                 Item {
                     id: heroCard
@@ -604,72 +604,54 @@ Item {
                 }
             }
 
-            RowLayout {
+            ColumnLayout {
                 Layout.fillWidth: true
                 Layout.leftMargin: root.pageMargin
                 Layout.rightMargin: root.pageMargin
+                spacing: MD.Token.spacing.small
 
-                MD.Label {
+                RowLayout {
                     Layout.fillWidth: true
-                    text: qsTr("My library")
-                    typescale: MD.Token.typescale.title_large
+
+                    MD.Label {
+                        Layout.fillWidth: true
+                        text: qsTr("My library")
+                        typescale: MD.Token.typescale.title_large
+                    }
+
+                    MD.Label {
+                        text: qsTr("%1 games").arg(Core.library.count)
+                        color: MD.Token.color.on_surface_variant
+                        typescale: MD.Token.typescale.label_large
+                    }
                 }
 
-                MD.Label {
-                    text: qsTr("%1 games").arg(Core.library.count)
-                    color: MD.Token.color.on_surface_variant
-                    typescale: MD.Token.typescale.label_large
-                }
-            }
+                Item {
+                    id: gridHost
+                    Layout.fillWidth: true
 
-            Item {
-                id: gridHost
-                Layout.fillWidth: true
-                Layout.leftMargin: root.pageMargin
-                Layout.rightMargin: root.pageMargin
+                    readonly property int columns: Math.max(
+                        2, Math.floor((width + root.gridSpacing) / (root.minCardWidth + root.gridSpacing)))
+                    readonly property real cardWidth: width > 0
+                        ? (width - root.gridSpacing * (columns - 1)) / columns
+                        : root.minCardWidth
+                    readonly property real cardHeight: cardWidth * 4 / 3 + root.metaHeight
+                    readonly property int rows: Math.max(1, Math.ceil(Core.library.count / columns))
+                    Layout.preferredHeight: rows * cardHeight + Math.max(0, rows - 1) * root.gridSpacing
 
-                property int columns: 3
-                property real cardWidth: 160
-                property real cardHeight: 260
-
-                function relayout() {
-                    const cols = Math.max(2, Math.floor((width + root.gridSpacing) / (root.minCardWidth + root.gridSpacing)))
-                    const cardW = (width - root.gridSpacing * (cols - 1)) / cols
-                    columns = cols
-                    cardWidth = cardW
-                    cardHeight = cardW * 4 / 3 + root.metaHeight
-                    const rows = Math.max(1, Math.ceil(Core.library.count / cols))
-                    Layout.preferredHeight = rows * (cardHeight + root.gridSpacing)
-                }
-
-                Timer {
-                    id: layoutTimer
-                    interval: 50
-                    onTriggered: gridHost.relayout()
-                }
-
-                onWidthChanged: layoutTimer.restart()
-                Component.onCompleted: relayout()
-
-                Connections {
-                    target: Core.library
-                    function onModelReset() { gridHost.relayout() }
-                    function onRowsInserted() { gridHost.relayout() }
-                    function onRowsRemoved() { gridHost.relayout() }
-                }
-
-                GridView {
-                    anchors.fill: parent
-                    clip: true
-                    interactive: false
-                    model: Core.library
-                    cellWidth: gridHost.cardWidth + root.gridSpacing
-                    cellHeight: gridHost.cardHeight + root.gridSpacing
-                    cacheBuffer: 0
-                    delegate: LibraryGameCard {
-                        width: Math.max(0, gridHost.cardWidth - root.gridSpacing)
-                        height: gridHost.cardHeight
-                        onOpenDetails: function (id) { root.openGame(id) }
+                    GridView {
+                        anchors.fill: parent
+                        clip: true
+                        interactive: false
+                        model: Core.library
+                        cellWidth: gridHost.cardWidth + root.gridSpacing
+                        cellHeight: gridHost.cardHeight + root.gridSpacing
+                        cacheBuffer: 0
+                        delegate: LibraryGameCard {
+                            width: Math.max(0, gridHost.cardWidth - root.gridSpacing)
+                            height: gridHost.cardHeight
+                            onOpenDetails: function (id) { root.openGame(id) }
+                        }
                     }
                 }
             }

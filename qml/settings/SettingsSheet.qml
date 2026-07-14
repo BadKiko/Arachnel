@@ -28,6 +28,8 @@ MD.BottomSheet {
     }
 
     function openLaunch() {
+        if (Qt.platform.os !== "linux")
+            return
         settingsPage.prepareOpen("launch", false)
         open()
     }

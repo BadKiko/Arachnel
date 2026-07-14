@@ -22,4 +22,3 @@ dist_dlls.txt
 qml-test-err.txt
 
 translations/generated/*.qm
-plugins/freetp/games-arachnel.json

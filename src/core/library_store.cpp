@@ -1,5 +1,7 @@
 #include "library_store.h"
 
+#include "catalog_types.h"
+
 #include <QDir>
 #include <QFile>
 #include <QJsonArray>
@@ -67,8 +69,9 @@ void LibraryStore::setGames(QVector<LibraryGame> games)
 
 const LibraryGame* LibraryStore::gameById(const QString& id) const
 {
+    const QString resolved = repairCatalogEntryId(id);
     for (const auto& game : m_games) {
-        if (game.id == id)
+        if (game.id == resolved || game.id == id)
             return &game;
     }
     return nullptr;

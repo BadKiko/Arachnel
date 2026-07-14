@@ -1,6 +1,7 @@
 #pragma once
 
 #include "catalog_types.h"
+#include "install_analysis.h"
 #include "install_kind.h"
 #include "library_model.h"
 
@@ -77,21 +78,13 @@ public:
         (void)ctx;
         InstallResult result;
         result.success = false;
-        result.error = QStringLiteral("Дополнения не поддерживаются этим источником");
+        result.error = QStringLiteral("Add-ons are not supported by this source");
         return result;
     }
 
-    virtual InstallKind detectInstallKind(const QString& downloadPath) const
-    {
-        (void)downloadPath;
-        return InstallKind::PortableArchive;
-    }
+    virtual InstallAnalysis analyzeDownload(const InstallContext& ctx) const = 0;
 
-    virtual InstallKind detectInstallKindFromFileNames(const QStringList& fileNames) const
-    {
-        (void)fileNames;
-        return InstallKind::PortableArchive;
-    }
+    virtual InstallAnalysis analyzeFileNames(const QStringList& fileNames) const = 0;
 
     virtual std::optional<QString> detectUpdate(const LibraryGame& local,
                                                 const CatalogEntry& remote) const = 0;

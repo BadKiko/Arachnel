@@ -37,7 +37,7 @@ Each source (FreeTP, Online-Fix, …) can define its own catalog, download, inst
 - Cover art and descriptions via Steam API
 - Community translations on [Weblate](https://hosted.weblate.org/projects/arachnel/)
 
-**Docs:** [Vision](docs/VISION.md) · [Architecture](docs/ARCHITECTURE.md) · [Roadmap](docs/ROADMAP.md) · [Translating](docs/TRANSLATING.md)
+**Docs:** [Vision](docs/VISION.md) · [Architecture](docs/ARCHITECTURE.md) · [Roadmap](docs/ROADMAP.md) · [Plugin SDK](docs/PLUGIN_SDK.md) · [Translating](docs/TRANSLATING.md)
 
 ## Quick start
 
@@ -50,6 +50,8 @@ Each source (FreeTP, Online-Fix, …) can define its own catalog, download, inst
 ```
 
 Manual build, dependencies, and environment variables are documented in the repo scripts and `cmake/`.
+
+**Plugin developers:** see [docs/PLUGIN_SDK.md](docs/PLUGIN_SDK.md) and [plugins/README.md](plugins/README.md). Plugins are separate repos (e.g. [arachnel-plugin-freetp](https://github.com/PetWork/arachnel-plugin-freetp)); nothing under `build-*` is committed.
 
 ## Contact
 

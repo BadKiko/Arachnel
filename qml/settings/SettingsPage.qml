@@ -17,6 +17,8 @@ ColumnLayout {
     property string pendingSection: ""
     property bool pendingCreateSource: false
 
+    readonly property bool onLinux: Qt.platform.os === "linux"
+
     readonly property string pageTitle: {
         const item = stack.currentItem
         if (!item)
@@ -48,7 +50,7 @@ ColumnLayout {
                 stack.navigatePush(storageComponent, {}, true)
             else if (section === "updates")
                 stack.navigatePush(updatesComponent, {}, true)
-            else if (section === "launch")
+            else if (section === "launch" && root.onLinux)
                 stack.navigatePush(launchComponent, {}, true)
             else if (section === "appearance")
                 stack.navigatePush(appearanceComponent, {}, true)
@@ -79,7 +81,7 @@ ColumnLayout {
             stack.navigatePush(storageComponent)
         else if (sectionId === "updates")
             stack.navigatePush(updatesComponent)
-        else if (sectionId === "launch")
+        else if (sectionId === "launch" && root.onLinux)
             stack.navigatePush(launchComponent)
         else if (sectionId === "appearance")
             stack.navigatePush(appearanceComponent)

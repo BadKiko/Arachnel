@@ -88,6 +88,7 @@ Item {
     readonly property bool installFailed: (downloadJob.detail || "").indexOf("Install failed") >= 0
     readonly property bool isInstalling: downloadJob.status === "installing"
     readonly property bool readyToInstall: !root.playable
+        && !root.installed
         && downloadJob.status === "completed"
         && root.downloadFilesExist
         && !root.installFailed

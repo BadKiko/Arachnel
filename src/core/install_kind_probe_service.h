@@ -13,14 +13,14 @@ class QTimer;
 
 namespace arachnel::core {
 
-class PluginHost;
+class InstallAnalyzer;
 
 class InstallKindProbeService : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit InstallKindProbeService(PluginHost* pluginHost, QObject* parent = nullptr);
+    explicit InstallKindProbeService(InstallAnalyzer* analyzer, QObject* parent = nullptr);
 
     std::optional<InstallKind> cachedKindForMagnet(const QString& magnetUri) const;
     void applyCachedKinds(QVector<CatalogEntry>& entries) const;
@@ -48,7 +48,7 @@ private:
     void persistCache() const;
     void loadCache();
 
-    PluginHost* m_pluginHost = nullptr;
+    InstallAnalyzer* m_analyzer = nullptr;
     QQueue<ProbeTask> m_queue;
     QSet<QString> m_queuedHashes;
     QSet<QString> m_inFlightHashes;
