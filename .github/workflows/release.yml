@@ -43,8 +43,8 @@ jobs:
       - name: Setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
 
-      - name: Install Ninja
-        run: choco install ninja -y --no-progress
+      - name: Install build tools
+        run: choco install ninja pkgconfiglite -y --no-progress
 
       - name: Build installer
         shell: pwsh
@@ -75,7 +75,7 @@ jobs:
 
   build-linux:
     name: Linux AppImage
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4

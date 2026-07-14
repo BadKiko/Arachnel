@@ -96,7 +96,11 @@ function Get-BuildArgs {
             return @{
                 Qt = $qt
                 Cmake = $cmake
-                Configure = $configureArgs + @("-G", "Ninja")
+                Configure = $configureArgs + @(
+                    "-G", "Ninja",
+                    "-DCMAKE_C_COMPILER=cl",
+                    "-DCMAKE_CXX_COMPILER=cl"
+                )
             }
         }
     }
