@@ -1,40 +1,40 @@
 #include "job_status.h"
 
-#include "i18n.h"
+#include <QCoreApplication>
 
 namespace arachnel::core {
 
 QString jobStatusLabel(const QString& status)
 {
     if (status == QStringLiteral("queued"))
-        return trCore("Queued");
+        return QCoreApplication::translate("Core", "Queued");
     if (status == QStringLiteral("starting"))
-        return trCore("Starting");
+        return QCoreApplication::translate("Core", "Starting");
     if (status == QStringLiteral("checking"))
-        return trCore("Checking");
+        return QCoreApplication::translate("Core", "Checking");
     if (status == QStringLiteral("metadata"))
-        return trCore("Metadata");
+        return QCoreApplication::translate("Core", "Metadata");
     if (status == QStringLiteral("downloading"))
-        return trCore("Downloading");
+        return QCoreApplication::translate("Core", "Downloading");
     if (status == QStringLiteral("installing"))
-        return trCore("Installing");
+        return QCoreApplication::translate("Core", "Installing");
     if (status == QStringLiteral("seeding"))
-        return trCore("Seeding");
+        return QCoreApplication::translate("Core", "Seeding");
     if (status == QStringLiteral("paused"))
-        return trCore("Paused");
+        return QCoreApplication::translate("Core", "Paused");
     if (status == QStringLiteral("completed"))
-        return trCore("Completed");
+        return QCoreApplication::translate("Core", "Completed");
     if (status == QStringLiteral("failed"))
-        return trCore("Failed");
+        return QCoreApplication::translate("Core", "Failed");
     if (status == QStringLiteral("cancelled"))
-        return trCore("Cancelled");
+        return QCoreApplication::translate("Core", "Cancelled");
     return status;
 }
 
 QString jobDisplayStatusLabel(const QString& status, const QString& detail)
 {
     if (status == QStringLiteral("completed") && isJobInstallFailed(detail))
-        return trCore("Install failed");
+        return QCoreApplication::translate("Core", "Install failed");
     return jobStatusLabel(status);
 }
 

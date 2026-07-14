@@ -1,5 +1,5 @@
 #include <QCoreApplication>
-#include <QGuiApplication>
+#include <QDir>
 #include <QIcon>
 #include <QQmlApplicationEngine>
 #include <QQmlError>
@@ -7,45 +7,51 @@
 #include <QString>
 #include <cstdio>
 
+#if !defined(Q_OS_WIN)
+#include <QApplication>
+#else
+#include <QGuiApplication>
+#endif
+
 #include "core/core_controller.h"
 #include "core/settings_store.h"
 #include "core/translation_service.h"
+#include "crash_log.h"
 
 #ifndef QT_QML_MATERIAL_IMPORT_PATH
 #define QT_QML_MATERIAL_IMPORT_PATH ""
 #endif
 
-int main(int argc, char *argv[])
+namespace {
+
+void configureQmlEngine(QQmlApplicationEngine& engine)
 {
-    QGuiApplication app(argc, argv);
-    const QIcon windowIcon(QStringLiteral(":/icons/256.png"));
-    if (!windowIcon.isNull())
-        app.setWindowIcon(windowIcon);
-
-    QCoreApplication::setOrganizationName(QStringLiteral("PetWork"));
-    QCoreApplication::setOrganizationDomain(QStringLiteral("petwork.local"));
-    QCoreApplication::setApplicationName(QStringLiteral("Arachnel"));
-    QCoreApplication::setApplicationVersion(QStringLiteral("0.0.1"));
-
-    arachnel::core::registerCoreTypes();
-
-    QQmlApplicationEngine engine;
+    const QString appDir = QCoreApplication::applicationDirPath();
+    engine.addImportPath(appDir + QStringLiteral("/qml"));
+    engine.addImportPath(appDir + QStringLiteral("/qml_modules"));
 
     const QByteArray materialPathEnv = qgetenv("QT_QML_MATERIAL_IMPORT_PATH");
-    if (!materialPathEnv.isEmpty())
-        engine.addImportPath(QString::fromLocal8Bit(materialPathEnv));
-    else
-        engine.addImportPath(QStringLiteral(QT_QML_MATERIAL_IMPORT_PATH));
+    const QString materialPath = materialPathEnv.isEmpty()
+        ? QStringLiteral(QT_QML_MATERIAL_IMPORT_PATH)
+        : QString::fromLocal8Bit(materialPathEnv);
+    if (!materialPath.isEmpty()) {
+        const QString resolved = QDir::isAbsolutePath(materialPath)
+            ? materialPath
+            : (appDir + QLatin1Char('/') + materialPath);
+        engine.addImportPath(resolved);
+    }
+}
 
+void wireEngineLogging(QQmlApplicationEngine& engine, QCoreApplication& app)
+{
     QObject::connect(
         &engine,
         &QQmlEngine::warnings,
         &app,
-        [](const QList<QQmlError> &errors) {
-            for (const QQmlError &error : errors) {
-                fprintf(stderr, "%s\n", qPrintable(error.toString()));
-                fflush(stderr);
-            }
+        [](const QList<QQmlError>& errors) {
+            for (const QQmlError& error : errors)
+                arachnel::logQmlWarning(error.url(), error.line(), error.column(),
+                                        error.description());
         });
 
     QObject::connect(
@@ -53,18 +59,15 @@ int main(int argc, char *argv[])
         &QQmlApplicationEngine::objectCreationFailed,
         &app,
         []() {
-            fprintf(stderr, "Failed to load arachnel Main.qml\n");
+            fprintf(stderr, "Failed to load arachnel QML entry point\n");
             fflush(stderr);
             QCoreApplication::exit(1);
         },
         Qt::QueuedConnection);
+}
 
-    QObject::connect(&app, &QCoreApplication::aboutToQuit, &app, []() {
-        arachnel::core::CoreController::instance().prepareShutdown();
-    });
-
-    engine.loadFromModule(QStringLiteral("arachnel"), QStringLiteral("Main"));
-
+void applyTranslations(QQmlApplicationEngine& engine, QCoreApplication& app)
+{
     auto& core = arachnel::core::CoreController::instance();
     auto& translations = arachnel::core::TranslationService::instance();
     translations.setEngine(&engine);
@@ -75,6 +78,70 @@ int main(int argc, char *argv[])
                          translations.applyLanguage(core.settings()->uiLanguage());
                          core.jobs()->refreshLocalizedText();
                      });
+}
 
-    return app.exec();
+} // namespace
+
+int main(int argc, char* argv[])
+{
+#if !defined(Q_OS_WIN)
+    QApplication app(argc, argv);
+#else
+    QGuiApplication app(argc, argv);
+#endif
+
+    QCoreApplication::setOrganizationName(QStringLiteral("PetWork"));
+    QCoreApplication::setOrganizationDomain(QStringLiteral("petwork.local"));
+    QCoreApplication::setApplicationName(QStringLiteral("Arachnel"));
+    QCoreApplication::setApplicationVersion(QStringLiteral("0.0.1"));
+
+    const bool crashDialogMode = arachnel::isCrashDialogMode(argc, argv);
+
+    arachnel::installCrashLogging();
+    arachnel::logRunStarted(argc, argv);
+
+    const QIcon windowIcon(QStringLiteral(":/icons/256.png"));
+    if (!windowIcon.isNull())
+        app.setWindowIcon(windowIcon);
+
+    arachnel::core::registerCoreTypes();
+
+    QQmlApplicationEngine engine;
+    configureQmlEngine(engine);
+    wireEngineLogging(engine, app);
+
+    if (!crashDialogMode) {
+        if (auto* guiApp = qobject_cast<QGuiApplication*>(&app))
+            guiApp->setQuitOnLastWindowClosed(false);
+        QObject::connect(&app, &QCoreApplication::aboutToQuit, &app, []() {
+            arachnel::markApplicationShuttingDown();
+            arachnel::core::CoreController::instance().prepareShutdown();
+        });
+    } else {
+        arachnel::core::CoreController::setCrashReporterMode(true);
+        if (auto* guiApp = qobject_cast<QGuiApplication*>(&app))
+            guiApp->setQuitOnLastWindowClosed(true);
+        QObject::connect(&app, &QCoreApplication::aboutToQuit, &app, []() {
+            arachnel::markApplicationShuttingDown();
+        });
+    }
+
+    const int exitCode = [&]() {
+        if (crashDialogMode)
+            engine.loadFromModule(QStringLiteral("arachnel"), QStringLiteral("CrashReportWindow"));
+        else
+            engine.loadFromModule(QStringLiteral("arachnel"), QStringLiteral("Main"));
+
+        if (!crashDialogMode)
+            applyTranslations(engine, app);
+        return app.exec();
+    }();
+
+    if (!crashDialogMode) {
+        arachnel::markApplicationShuttingDown();
+        arachnel::core::CoreController::instance().prepareShutdown();
+    }
+
+    arachnel::logRunFinished(exitCode);
+    return exitCode;
 }

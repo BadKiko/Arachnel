@@ -29,11 +29,15 @@ struct LibraryGame {
     QString sizeLabel;
     InstallKind installKind = InstallKind::PortableArchive;
     bool hasUpdate = false;
+    bool autoUpdate = true;
     QString uploadDate;
     QString magnetUri;
     QString downloadPath;
     QString libraryId;
     QString lastPlayedAt;
+    QString launchArgs;
+    QString executableOverride;
+    QString protonId;
     QVector<InstalledComponent> components;
 };
 

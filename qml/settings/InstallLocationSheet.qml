@@ -13,6 +13,9 @@ MD.BottomSheet {
     property string entryTitle: ""
     property var selectedAddonIds: []
     property string selectedLibraryId: Core.settings.storageLibraries.defaultLibraryId
+    property var installEntry: function (entryId, libraryId, addonIds) {
+        Core.installCatalogEntry(entryId, libraryId, addonIds)
+    }
 
     function openForEntry(id, title, addonIds) {
         entryId = id
@@ -148,8 +151,8 @@ MD.BottomSheet {
                 text: qsTr("Install")
                 enabled: root.entryId.length > 0 && root.selectedLibraryId.length > 0
                 onClicked: {
-                    Core.installCatalogEntry(root.entryId, root.selectedLibraryId,
-                                             root.selectedAddonIds)
+                    root.installEntry(root.entryId, root.selectedLibraryId,
+                                      root.selectedAddonIds)
                     root.close()
                 }
             }

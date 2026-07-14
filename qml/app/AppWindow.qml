@@ -67,7 +67,21 @@ MD.ApplicationWindow {
         root.detailsGameId = ""
     }
 
-    Component.onCompleted: Appearance.apply()
+    function beginCatalogInstall(entryId, libraryId, addonIds) {
+        if (Core.needsProtonOnPlatform() && !Core.protonReady) {
+            protonRequiredDialog.open()
+            return
+        }
+        Core.installCatalogEntry(entryId, libraryId || "", addonIds || [])
+    }
+
+    Component.onCompleted: {
+        Appearance.apply()
+        if (Qt.platform.os === "linux")
+            Core.refreshProtonLatestRelease()
+        if (Core.hasPendingCrashReport())
+            Qt.callLater(function () { crashReportDialog.open() })
+    }
 
     Connections {
         target: Core
@@ -102,12 +116,7 @@ MD.ApplicationWindow {
 
             transformOrigin: Item.Center
 
-            Rectangle {
-                anchors.fill: parent
-                color: MD.Token.color.surface
-            }
-
-            // Keep both pages alive (catalog load must not restart on tab switch).
+            // Background comes from MD.Pane in AppWindow — no fill rect here (it hid bottom corners).
             // Soft crossfade + light bounce on the active tab.
             LibraryPage {
                 anchors.fill: parent
@@ -197,6 +206,7 @@ MD.ApplicationWindow {
             onOpenInstallPicker: function (entryId, title, selectedAddonIds) {
                 installLocationSheet.openForEntry(entryId, title, selectedAddonIds)
             }
+            onProtonRequired: protonRequiredDialog.open()
         }
     }
 
@@ -239,31 +249,47 @@ MD.ApplicationWindow {
                     Layout.fillHeight: true
                     padding: 0
                     radius: MD.Token.shape.corner.extra_large
+                    corners: MD.Util.corners(radius)
                     backgroundColor: MD.Token.color.surface
-                    clip: true
 
-                    ColumnLayout {
+                    Item {
+                        id: mainPaneClip
                         anchors.fill: parent
-                        spacing: 0
+                        clip: true
 
-                        RunningGameBar {
-                            Layout.fillWidth: true
-                            Layout.leftMargin: MD.Token.spacing.medium
-                            Layout.rightMargin: MD.Token.spacing.medium
-                            Layout.topMargin: root.detailsOpen ? MD.Token.spacing.medium : 0
-                            Layout.bottomMargin: MD.Token.spacing.small
-                            visible: Core.gameRunning
-                            gameId: Core.runningGameId
-                            title: Core.runningGameTitle
-                            coverUrl: Core.runningGameCoverUrl
+                        layer.enabled: true
+                        layer.effect: MD.RoundClip {
+                            corners: mainPane.corners
+                            size: Qt.vector2d(mainPaneClip.width, mainPaneClip.height)
                         }
 
-                        PageNavigator {
-                            id: pageStack
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
-                            clip: true
-                            initialItem: mainPagesComponent
+                        ColumnLayout {
+                            anchors.fill: parent
+                            spacing: 0
+
+                            Loader {
+                                Layout.fillWidth: true
+                                Layout.leftMargin: MD.Token.spacing.medium
+                                Layout.rightMargin: MD.Token.spacing.medium
+                                Layout.topMargin: root.detailsOpen && Core.gameRunning
+                                                    ? MD.Token.spacing.medium
+                                                    : 0
+                                Layout.bottomMargin: Core.gameRunning ? MD.Token.spacing.small : 0
+                                active: Core.gameRunning
+                                sourceComponent: RunningGameBar {
+                                    gameId: Core.runningGameId
+                                    title: Core.runningGameTitle
+                                    coverUrl: Core.runningGameCoverUrl
+                                }
+                            }
+
+                            PageNavigator {
+                                id: pageStack
+                                Layout.fillWidth: true
+                                Layout.fillHeight: true
+                                clip: true
+                                initialItem: mainPagesComponent
+                            }
                         }
                     }
                 }
@@ -286,6 +312,7 @@ MD.ApplicationWindow {
     InstallLocationSheet {
         id: installLocationSheet
         anchors.fill: parent
+        installEntry: root.beginCatalogInstall
     }
 
     InstallAddonSelectionSheet {
@@ -295,8 +322,17 @@ MD.ApplicationWindow {
             if (Core.needsInstallLocationChoice())
                 installLocationSheet.openForEntry(entryId, title, selectedAddonIds)
             else
-                Core.installCatalogEntry(entryId, "", selectedAddonIds)
+                root.beginCatalogInstall(entryId, "", selectedAddonIds)
         }
+    }
+
+    ProtonRequiredDialog {
+        id: protonRequiredDialog
+        onOpenLaunchSettings: settingsSheet.openLaunch()
+    }
+
+    CrashReportDialog {
+        id: crashReportDialog
     }
 
     AppSnackbar {

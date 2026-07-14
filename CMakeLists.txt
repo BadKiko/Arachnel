@@ -23,7 +23,11 @@ find_package(Qt6 REQUIRED COMPONENTS
     ShaderTools
     QuickPrivate
     Concurrent
+    Multimedia
 )
+if(NOT WIN32)
+    find_package(Qt6 REQUIRED COMPONENTS Widgets)
+endif()
 if(UNIX AND NOT APPLE AND NOT ANDROID)
     find_package(Qt6 REQUIRED COMPONENTS DBus)
 endif()
@@ -31,8 +35,17 @@ endif()
 qt_standard_project_setup(REQUIRES 6.8)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/ArachnelLibtorrent.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/ArachnelPlugins.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/ArachnelTranslations.cmake)
+
+# Optional Weblate helper — not part of the app build (needs Python).
+find_package(Python3 COMPONENTS Interpreter QUIET)
+if(Python3_FOUND)
+    add_custom_target(arachnel_normalize_translations
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/normalize_translations.py
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        COMMENT "Normalize translations/*.ts for Weblate"
+    )
+endif()
 
 include(FetchContent)
 FetchContent_Declare(
@@ -85,6 +98,7 @@ set(CMAKE_AUTOMOC ON)
 
 qt_add_executable(arachnel_app
     src/main.cpp
+    src/crash_log.cpp
     src/core/install_kind.cpp
     src/core/job_display.cpp
     src/core/job_kind.cpp
@@ -106,13 +120,20 @@ qt_add_executable(arachnel_app
     src/core/game_metadata_service.cpp
     src/core/cover_image_cache.cpp
     src/core/torrent_session.cpp
+    src/core/torrent_settings.cpp
     src/core/http_download_session.cpp
     src/core/torrent_metadata_fetcher.cpp
+    src/core/install_analysis.cpp
+    src/core/install_heuristics.cpp
+    src/core/install_analyzer.cpp
     src/core/install_kind_probe_service.cpp
     src/core/job_orchestrator.cpp
     src/core/plugin_api.cpp
     src/core/plugin_host.cpp
     src/core/process_launcher.cpp
+    src/core/launch_resolver.cpp
+    src/core/proton_manager.cpp
+    src/core/windows_runner.cpp
     src/core/process_tracker.cpp
     src/core/core_controller.cpp
     src/core/translation_service.cpp
@@ -143,6 +164,7 @@ file(GLOB_RECURSE ARACHNEL_QML_FILES CONFIGURE_DEPENDS
 set_source_files_properties(
     qml/theme/Appearance.qml
     qml/theme/AccentColors.qml
+    qml/i18n/Messages.qml
     PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
 
 set(_arachnel_qml_module_args
@@ -164,7 +186,7 @@ arachnel_setup_translations(arachnel_app)
 add_dependencies(arachnel_app qml_materialplugin)
 
 target_compile_definitions(arachnel_app PRIVATE
-    "QT_QML_MATERIAL_IMPORT_PATH=\"${CMAKE_BINARY_DIR}/qml_modules\""
+    "QT_QML_MATERIAL_IMPORT_PATH=\"qml_modules\""
 )
 
 target_link_libraries(arachnel_app
@@ -183,5 +205,9 @@ qt_import_qml_plugins(arachnel_app)
 arachnel_setup_libtorrent(arachnel_app)
 
 if(WIN32)
-    target_link_libraries(arachnel_app PRIVATE ole32 shell32)
+    target_link_libraries(arachnel_app PRIVATE ole32 shell32 dbghelp)
+    add_subdirectory(setup)
+else()
+    target_link_libraries(arachnel_app PRIVATE Qt6::Widgets)
+    target_link_options(arachnel_app PRIVATE -rdynamic)
 endif()
