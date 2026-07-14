@@ -37,7 +37,7 @@ jobs:
         with:
           version: ${{ env.QT_VERSION }}
           arch: win64_msvc2022_64
-          modules: qtshadertools qtmultimedia qtquickcontrols2
+          modules: qtshadertools qtmultimedia
           cache: true
 
       - name: Build installer
@@ -92,7 +92,7 @@ jobs:
         with:
           version: ${{ env.QT_VERSION }}
           arch: linux_gcc_64
-          modules: qtshadertools qtmultimedia qtquickcontrols2
+          modules: qtshadertools qtmultimedia
           cache: true
           tools: ninja
           tools-only: false
