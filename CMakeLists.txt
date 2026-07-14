@@ -21,7 +21,6 @@ find_package(Qt6 REQUIRED COMPONENTS
     Quick
     QuickControls2
     ShaderTools
-    QuickPrivate
     Concurrent
     Multimedia
 )
