@@ -133,8 +133,13 @@ bool PluginHost::loadPluginDir(const QString& dirPath)
 
     if (id.isEmpty() || libraryBase.isEmpty())
         return false;
-    if (apiVersion != ARACHNEL_PLUGIN_API_VERSION)
+    if (apiVersion != ARACHNEL_PLUGIN_API_VERSION) {
+        logDiagnostic(QStringLiteral("Plugin rejected (apiVersion %1, expected %2): %3")
+                          .arg(apiVersion)
+                          .arg(ARACHNEL_PLUGIN_API_VERSION)
+                          .arg(dirPath));
         return false;
+    }
     if (m_plugins.contains(id))
         return false;
 
@@ -258,6 +263,11 @@ ISourcePlugin* PluginHost::plugin(const QString& id) const
 bool PluginHost::hasPlugin(const QString& id) const
 {
     return m_plugins.contains(id);
+}
+
+QStringList PluginHost::pluginIds() const
+{
+    return m_plugins.keys();
 }
 
 void PluginHost::runInstallAsync(ISourcePlugin* plugin, const InstallContext& ctx,

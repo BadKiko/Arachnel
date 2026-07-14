@@ -7,8 +7,47 @@ Flickable {
     id: root
 
     property int contentMargin: MD.Token.spacing.large
+    readonly property bool onLinux: Qt.platform.os === "linux"
 
     signal openSection(string sectionId)
+
+    readonly property var sectionModel: {
+        const sections = [
+            {
+                id: "plugins",
+                title: qsTr("Plugins"),
+                subtitle: qsTr("FreeTP and others — install, launch, add-ons (.arach)")
+            },
+            {
+                id: "sources",
+                title: qsTr("Hydra catalogs"),
+                subtitle: qsTr("games.json by URL — migrate from Hydra Launcher")
+            },
+            {
+                id: "storage",
+                title: qsTr("Storage"),
+                subtitle: qsTr("Library and download folders")
+            },
+            {
+                id: "updates",
+                title: qsTr("Updates"),
+                subtitle: qsTr("Auto-check updates and portable integrity")
+            },
+            {
+                id: "launch",
+                title: qsTr("Launch"),
+                subtitle: qsTr("Global arguments and Proton-GE on Linux")
+            },
+            {
+                id: "appearance",
+                title: qsTr("Appearance"),
+                subtitle: qsTr("Theme, palette, accent color, and language")
+            }
+        ]
+        if (root.onLinux)
+            return sections
+        return sections.filter(function (entry) { return entry.id !== "launch" })
+    }
 
     contentWidth: width
     contentHeight: body.implicitHeight
@@ -41,38 +80,7 @@ Flickable {
             spacing: MD.Token.spacing.small
 
             Repeater {
-                model: [
-                    {
-                        id: "plugins",
-                        title: qsTr("Plugins"),
-                        subtitle: qsTr("FreeTP and others — install, launch, add-ons (.arach)")
-                    },
-                    {
-                        id: "sources",
-                        title: qsTr("Hydra catalogs"),
-                        subtitle: qsTr("games.json by URL — migrate from Hydra Launcher")
-                    },
-                    {
-                        id: "storage",
-                        title: qsTr("Storage"),
-                        subtitle: qsTr("Library and download folders")
-                    },
-                    {
-                        id: "updates",
-                        title: qsTr("Updates"),
-                        subtitle: qsTr("Auto-check updates and portable integrity")
-                    },
-                    {
-                        id: "launch",
-                        title: qsTr("Launch"),
-                        subtitle: qsTr("Global arguments and Proton-GE on Linux")
-                    },
-                    {
-                        id: "appearance",
-                        title: qsTr("Appearance"),
-                        subtitle: qsTr("Theme, palette, accent color, and language")
-                    }
-                ]
+                model: root.sectionModel
 
                 Rectangle {
                     id: sectionCard

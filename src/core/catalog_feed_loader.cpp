@@ -77,7 +77,11 @@ void CatalogFeedLoader::handleFinished(QNetworkReply* reply)
         return;
     }
 
-    const QVector<CatalogEntry> entries = parseCatalogFeed(payload, sourceId);
+  QString parseSourceId = sourceId;
+    if (parseSourceId.startsWith(QStringLiteral("count:")))
+        parseSourceId = parseSourceId.mid(6);
+
+    const QVector<CatalogEntry> entries = parseCatalogFeed(payload, parseSourceId);
 
     if (entries.isEmpty()) {
         emit feedFailed(sourceId, QStringLiteral("Каталог пуст или формат не распознан"));

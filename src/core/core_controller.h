@@ -33,6 +33,7 @@ class GameMetadataService;
 class HttpDownloadSession;
 class JobOrchestrator;
 class InstallKindProbeService;
+class InstallAnalyzer;
 class PluginHost;
 class ProtonManager;
 class TorrentSession;
@@ -146,6 +147,10 @@ public:
     Q_INVOKABLE void retryJob(const QString& jobId);
     Q_INVOKABLE void retryInstall(const QString& jobId);
     Q_INVOKABLE bool canRetryJobInstall(const QString& jobId) const;
+    Q_INVOKABLE bool canManualInstallJob(const QString& jobId) const;
+    Q_INVOKABLE void openJobDownloadFolder(const QString& jobId);
+    Q_INVOKABLE void confirmManualInstall(const QString& jobId);
+    Q_INVOKABLE QString browseInstallFolder(const QString& startPath = {});
     Q_INVOKABLE void clearFinishedJobs();
     Q_INVOKABLE void markNotificationsRead();
     Q_INVOKABLE void clearNotifications();
@@ -243,6 +248,7 @@ private:
     bool gameNeedsInstall(const QString& entryId) const;
     void retryPendingInstalls();
     void pruneBrokenLibraryEntries();
+    void migratePollutedEntryIds();
     void pruneAddonLibraryEntries();
     void restoreLibraryPlaceholders();
     void ensureLibraryPlaceholder(const CatalogEntry& entry, const QString& libraryId,
@@ -264,11 +270,14 @@ private:
     bool gameHasUpdate(const LibraryGame& game, const CatalogEntry& remote) const;
     int recalculateLibraryUpdates(bool notify);
     const CatalogEntry* findCatalogEntry(const QString& entryId) const;
+    std::optional<CatalogEntry> resolveCatalogEntry(const QString& entryId) const;
     const CatalogComponent* findCatalogAddon(const CatalogEntry& entry,
                                              const QString& addonId) const;
     void syncEntryToCatalogModel(const QString& entryId);
     InstallKind detectInstallKindForEntry(const QString& sourceId,
                                           const QString& downloadPath) const;
+    bool hasInstallHandlerForPath(const QString& sourceId, const QString& downloadPath) const;
+    void offerManualInstallForJob(const JobEntry& job);
     void syncCatalogInstallKind(const QString& entryId, InstallKind kind);
     void syncInstallKindProbeSuspension();
     void applyCachedMetadata(CatalogEntry& entry) const;
@@ -295,6 +304,7 @@ private:
     HttpDownloadSession* m_httpSession = nullptr;
     JobOrchestrator* m_jobOrchestrator = nullptr;
     PluginHost* m_pluginHost = nullptr;
+    InstallAnalyzer* m_installAnalyzer = nullptr;
     InstallKindProbeService* m_installKindProbe = nullptr;
     ProtonManager* m_protonManager = nullptr;
 

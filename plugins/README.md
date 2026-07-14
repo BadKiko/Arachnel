@@ -1,42 +1,37 @@
 # Плагины источников
 
-Каждый каталог — отдельный источник со своим пайплайном установки и обновления.
+Плагины живут в **отдельных репозиториях**. В этом репозитории только хост и SDK.
+
+**Полная инструкция для разработчиков:** [docs/PLUGIN_SDK.md](../docs/PLUGIN_SDK.md)  
+(клонирование, сборка, куда копировать, `.arach`, новый плагин с нуля, ABI, отладка)
 
 ## Статус
 
-| Плагин | Статус |
-|--------|--------|
-| `online-fix` | не начат |
-| `freetp` | не начат |
+| Плагин | Репозиторий | Статус |
+|--------|-------------|--------|
+| `freetp` | [arachnel-plugin-freetp](https://github.com/PetWork/arachnel-plugin-freetp) | реализован |
+| `online-fix` | — | не начат |
 
-**Промежуточно:** источники настраиваются в UI (имя + URL JSON-каталога) и хранятся в `settings.json`. Это не заменяет плагины — только этап до `PluginHost`.
+Hydra-каталоги (только JSON по URL, без своего install-пайплайна) настраиваются в UI: **Настройки → Каталоги Hydra**.
 
-## Планируемые ячейки
+## Минимальный цикл (FreeTP)
 
-| Плагин | Особенности установки |
-|--------|------------------------|
-| `online-fix` | Portable-архивы, распаковка |
-| `freetp` | Installer / portable / встроенный фикс / отдельный патч |
+```powershell
+git clone …/Arachnel
+git clone …/arachnel-plugin-freetp
+cd arachnel-plugin-freetp
+$env:ARACHNEL_SDK_DIR = "C:\path\to\Arachnel"
+.\run.ps1
+cd ..\Arachnel
+.\run.ps1
+```
+
+Плагин окажется в `%LOCALAPPDATA%\PetWork\Arachnel\plugins\freetp\`.  
+Либо установите `arachnel-plugin-freetp/build-win/dist/freetp.arach` через **Настройки → Плагины**.
 
 ## Контракт
 
-См. [docs/ARCHITECTURE.md](../docs/ARCHITECTURE.md) и [docs/ROADMAP.md](../docs/ROADMAP.md).
+`ISourcePlugin` — `src/core/plugin_interface.h`, API v2 — `src/core/plugin_api.h`.  
+См. также [ARCHITECTURE.md](../docs/ARCHITECTURE.md).
 
-Каждый плагин — **самодостаточная ячейка**: свои библиотеки, установка, обновление, `launchInfo`. Ядро оркестрирует библиотеку и torrent-загрузку; распаковку и парсинг сайтов ядро не реализует.
-
-## Целевая структура
-
-```
-plugins/
-  freetp/
-    plugin.json
-    CMakeLists.txt
-    src/
-      freetp_plugin.cpp
-      portable_installer.cpp
-    README.md
-```
-
-`plugin.json` — манифест для `PluginHost` (id, name, version, capabilities, entry point).
-
-Ядро линкуется только с `ISourcePlugin` (`src/core/plugin_interface.h`).
+Ядро не хранит исходники плагинов; папка `plugins/` здесь — только этот README.

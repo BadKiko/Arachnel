@@ -38,7 +38,7 @@ EN_TO_RU.update({
     "Missing your language? Help translate Arachnel on Weblate or send a pull request with translations/*.ts files.": "Нет вашего языка? Помогите перевести Arachnel на Weblate или отправьте pull request с файлами translations/*.ts.",
     "Help translate": "Помочь с переводом",
     "Theme, palette, accent color, and language": "Тема, палитра, акцентный цвет и язык",
-    "Install the .arach package using the button below.\n\nAfter building, FreeTP is in dist:\nbuild-win/dist/freetp.arach": "Установите пакет .arach через кнопку ниже.\n\nПосле сборки FreeTP лежит в dist:\nbuild-win/dist/freetp.arach",
+    "Install the .arach package using the button below.\n\nBuild the plugin from the arachnel-plugin-freetp repository (dist/freetp.arach)": "Установите пакет .arach через кнопку ниже.\n\nСоберите плагин в репозитории arachnel-plugin-freetp (dist/freetp.arach).",
 })
 
 

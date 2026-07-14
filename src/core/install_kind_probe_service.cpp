@@ -1,5 +1,5 @@
 #include "install_kind_probe_service.h"
-#include "plugin_host.h"
+#include "install_analyzer.h"
 #include "torrent_metadata_fetcher.h"
 
 #include <QDir>
@@ -34,9 +34,9 @@ QString pickMagnet(const QStringList& uris)
 
 } // namespace
 
-InstallKindProbeService::InstallKindProbeService(PluginHost* pluginHost, QObject* parent)
+InstallKindProbeService::InstallKindProbeService(InstallAnalyzer* analyzer, QObject* parent)
     : QObject(parent)
-    , m_pluginHost(pluginHost)
+    , m_analyzer(analyzer)
 {
     loadCache();
 
@@ -71,7 +71,7 @@ void InstallKindProbeService::queueCatalog(const QString& sourceId,
                                            const QVector<CatalogEntry>& entries,
                                            const QString& priorityQuery)
 {
-    if (!m_pluginHost || !m_pluginHost->hasPlugin(sourceId))
+    if (!m_analyzer)
         return;
 
     const QString needle = priorityQuery.trimmed().toLower();
@@ -115,7 +115,7 @@ void InstallKindProbeService::queueCatalog(const QString& sourceId,
 void InstallKindProbeService::prioritizeEntry(const QString& sourceId, const QString& entryId,
                                               const QString& magnetUri)
 {
-    if (!m_pluginHost || !m_pluginHost->hasPlugin(sourceId))
+    if (!m_analyzer)
         return;
 
     const QString hashKey = magnetInfoHashKey(magnetUri);
@@ -180,11 +180,10 @@ void InstallKindProbeService::pumpQueue()
 
                 InstallKind kind = InstallKind::PortableArchive;
                 bool resolved = false;
-                if (!fileNames.isEmpty()) {
-                    if (ISourcePlugin* plugin = m_pluginHost->plugin(task.sourceId)) {
-                        kind = plugin->detectInstallKindFromFileNames(fileNames);
-                        resolved = true;
-                    }
+                if (!fileNames.isEmpty() && m_analyzer) {
+                    const InstallPlan plan = m_analyzer->resolveFileNames(task.sourceId, fileNames);
+                    kind = plan.analysis.kind;
+                    resolved = plan.analysis.confidence > 0;
                 }
 
                 if (resolved && !task.hashKey.isEmpty()) {

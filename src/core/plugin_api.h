@@ -12,7 +12,7 @@
 #  define ARACHNEL_PLUGIN_EXPORT __attribute__((visibility("default")))
 #endif
 
-#define ARACHNEL_PLUGIN_API_VERSION 1
+#define ARACHNEL_PLUGIN_API_VERSION 2
 
 extern "C" {
 

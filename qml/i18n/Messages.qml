@@ -28,7 +28,7 @@ QtObject {
     //% "Missing your language? Help translate Arachnel on <a href=\"%1\">Weblate</a> or send a pull request with translations/*.ts files."
     readonly property string settingsWeblateHint: qsTrId("settings.appearance.weblate_hint")
 
-    //% "Install the .arach package using the button below.\n\nAfter building, FreeTP is in dist:\nbuild-win/dist/freetp.arach"
+    //% "Install the .arach package using the button below.\n\nBuild the plugin from the arachnel-plugin-freetp repository (dist/freetp.arach)."
     readonly property string settingsPluginsInstallHint: qsTrId("settings.plugins.install_hint")
 
     //% "Plugins are sources with catalog, install, and launch. Package: .arach file (ZIP with plugin.json and libraries)."

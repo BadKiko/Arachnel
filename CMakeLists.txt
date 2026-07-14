@@ -35,7 +35,6 @@ endif()
 qt_standard_project_setup(REQUIRES 6.8)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/ArachnelLibtorrent.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/ArachnelPlugins.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/ArachnelTranslations.cmake)
 
 # Optional Weblate helper — not part of the app build (needs Python).
@@ -124,6 +123,9 @@ qt_add_executable(arachnel_app
     src/core/torrent_settings.cpp
     src/core/http_download_session.cpp
     src/core/torrent_metadata_fetcher.cpp
+    src/core/install_analysis.cpp
+    src/core/install_heuristics.cpp
+    src/core/install_analyzer.cpp
     src/core/install_kind_probe_service.cpp
     src/core/job_orchestrator.cpp
     src/core/plugin_api.cpp

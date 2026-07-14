@@ -169,8 +169,9 @@ int CatalogModel::indexOfEntry(const QString& id) const
 
 const CatalogEntry* CatalogModel::entryById(const QString& id) const
 {
+    const QString resolved = repairCatalogEntryId(id);
     for (const auto& entry : m_entries) {
-        if (entry.id == id)
+        if (entry.id == resolved || entry.id == id)
             return &entry;
     }
     return nullptr;

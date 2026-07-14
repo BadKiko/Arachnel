@@ -59,6 +59,7 @@ struct CatalogEntry {
 };
 
 QString catalogItemKindLabel(CatalogItemKind kind);
+QString repairCatalogEntryId(const QString& entryId);
 QString slugifyCatalogId(const QString& title, const QString& sourceId);
 
 } // namespace arachnel::core

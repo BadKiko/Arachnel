@@ -43,6 +43,20 @@ QString statusStateLabel(const lt::torrent_status& status)
     }
 }
 
+QString libtorrentErrorMessage(const lt::error_code& ec)
+{
+    const std::string& msg = ec.message();
+    if (msg.empty())
+        return QCoreApplication::translate("Core", "Torrent error %1").arg(ec.value());
+
+    QString text = QString::fromUtf8(msg.data(), static_cast<int>(msg.size()));
+    if (text.contains(QChar::ReplacementCharacter))
+        text = QString::fromLocal8Bit(msg.data(), static_cast<int>(msg.size()));
+    if (text.isEmpty())
+        return QCoreApplication::translate("Core", "Torrent error %1").arg(ec.value());
+    return text;
+}
+
 } // namespace
 
 namespace arachnel::core {
@@ -225,12 +239,13 @@ bool TorrentSession::addJob(const QString& jobId, const QString& magnetUri, cons
 
     if (!usedResume) {
         if (magnetUri.isEmpty()) {
-            emit torrentFailed(jobId, QStringLiteral("Нет magnet-ссылки"));
+            emit torrentFailed(jobId,
+                               QCoreApplication::translate("Core", "No magnet link"));
             return false;
         }
         params = lt::parse_magnet_uri(magnetUri.toStdString(), ec);
         if (ec) {
-            emit torrentFailed(jobId, QString::fromStdString(ec.message()));
+            emit torrentFailed(jobId, libtorrentErrorMessage(ec));
             return false;
         }
     }
@@ -241,7 +256,7 @@ bool TorrentSession::addJob(const QString& jobId, const QString& magnetUri, cons
 
     const lt::torrent_handle handle = m_impl->session.add_torrent(params, ec);
     if (ec) {
-        emit torrentFailed(jobId, QString::fromStdString(ec.message()));
+        emit torrentFailed(jobId, libtorrentErrorMessage(ec));
         return false;
     }
 
@@ -342,7 +357,7 @@ void TorrentSession::pollAlerts()
         if (auto* failed = lt::alert_cast<lt::torrent_error_alert>(alert)) {
             const QString jobId = findJobId(failed->handle);
             if (!jobId.isEmpty()) {
-                emit torrentFailed(jobId, QString::fromStdString(failed->error.message()));
+                emit torrentFailed(jobId, libtorrentErrorMessage(failed->error));
                 m_impl->handles.remove(jobId);
                 m_impl->savePaths.remove(jobId);
                 m_impl->magnetUris.remove(jobId);

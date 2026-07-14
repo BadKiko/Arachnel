@@ -405,7 +405,7 @@ function Ensure-DevBuild {
     }
 
     Write-Host "Build ..."
-    & $plan.Cmake --build $BUILD_DIR --target arachnel_app freetp_plugin -j $env:NUMBER_OF_PROCESSORS
+    & $plan.Cmake --build $BUILD_DIR --target arachnel_app -j $env:NUMBER_OF_PROCESSORS
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
     $appPath = Get-AppPath
@@ -419,12 +419,29 @@ function Get-ArachnelDataDir {
     Join-Path $env:LOCALAPPDATA "PetWork\Arachnel"
 }
 
+function Get-FreetpPluginBundleDir {
+    if ($env:ARACHNEL_FREETP_PLUGIN_BUILD_DIR) {
+        return $env:ARACHNEL_FREETP_PLUGIN_BUILD_DIR
+    }
+    $candidates = @(
+        (Join-Path $PSScriptRoot "..\arachnel-plugin-freetp\build-win\plugin-bundle"),
+        "D:\PetWork\arachnel-plugin-freetp\build-win\plugin-bundle"
+    )
+    foreach ($path in $candidates) {
+        $resolved = $path
+        if (Test-Path -LiteralPath $resolved) { return $resolved }
+    }
+    return $null
+}
+
 function Deploy-DevPlugins {
-    $pluginName = "freetp"
-    $builtDir = Join-Path $BUILD_DIR "plugin-build\$pluginName"
-    $builtDll = Join-Path $builtDir "freetp_plugin.dll"
+    $bundleDir = Get-FreetpPluginBundleDir
+    if (-not $bundleDir) { return }
+
+    $builtDll = Join-Path $bundleDir "freetp_plugin.dll"
     if (-not (Test-Path -LiteralPath $builtDll)) { return }
 
+    $pluginName = "freetp"
     $destDir = Join-Path (Get-ArachnelDataDir) "plugins\$pluginName"
     New-Item -ItemType Directory -Force -Path $destDir | Out-Null
 
@@ -435,7 +452,7 @@ function Deploy-DevPlugins {
     }
 
     Write-Host "Deploy dev plugin: $pluginName -> $destDir" -ForegroundColor Yellow
-    Copy-Item -Path (Join-Path $builtDir "*") -Destination $destDir -Recurse -Force
+    Copy-Item -Path (Join-Path $bundleDir "*") -Destination $destDir -Recurse -Force
 }
 
 function Format-ExitCode {

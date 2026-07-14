@@ -1,5 +1,7 @@
 #include "library_model.h"
 
+#include "catalog_types.h"
+
 namespace arachnel::core {
 
 namespace {
@@ -111,8 +113,9 @@ void LibraryModel::setGames(QVector<LibraryGame> games)
 
 const LibraryGame* LibraryModel::gameById(const QString& id) const
 {
+    const QString resolved = repairCatalogEntryId(id);
     for (const auto& game : m_games) {
-        if (game.id == id)
+        if (game.id == resolved || game.id == id)
             return &game;
     }
     return nullptr;

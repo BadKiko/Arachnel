@@ -30,8 +30,16 @@ QString componentDeliveryLabel(ComponentDelivery delivery)
     return QCoreApplication::translate("Core", "Download");
 }
 
+QString repairCatalogEntryId(const QString& entryId)
+{
+    if (entryId.startsWith(QStringLiteral("count:")))
+        return entryId.mid(6);
+    return entryId;
+}
+
 QString slugifyCatalogId(const QString& title, const QString& sourceId)
 {
+    const QString source = repairCatalogEntryId(sourceId);
     QString slug = title.toLower();
     slug.replace(QRegularExpression(QStringLiteral("[^a-z0-9а-яё]+"), QRegularExpression::UseUnicodePropertiesOption),
                  QStringLiteral("-"));
@@ -43,7 +51,7 @@ QString slugifyCatalogId(const QString& title, const QString& sourceId)
         slug.chop(1);
     if (slug.isEmpty())
         slug = QStringLiteral("entry");
-    return QStringLiteral("%1-%2").arg(sourceId, slug);
+    return QStringLiteral("%1-%2").arg(source, slug);
 }
 
 } // namespace arachnel::core
