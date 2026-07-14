@@ -2,1217 +2,2051 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="en_US">
 <context>
+    <name />
+    <message id="help.catalog_intro">
+        
+        <location filename="../qml/i18n/Messages.qml" line="8" />
+        <source>Two ways to fill the catalog: Hydra catalogs (games.json) for migrating from Hydra; plugins (.arach) for the full cycle: catalog, install, launch, and add-ons.</source>
+        </message>
+    <message id="help.hydra_catalog_body">
+        
+        <location filename="../qml/i18n/Messages.qml" line="11" />
+        <source>A games.json feed by URL — the same format as Hydra Launcher. Add it under Settings → Hydra catalogs; games appear in Catalog.</source>
+        </message>
+    <message id="help.catalog_body">
+        
+        <location filename="../qml/i18n/Messages.qml" line="14" />
+        <source>Games from enabled catalogs appear in Catalog. Downloads use torrent magnets from JSON.</source>
+        </message>
+    <message id="help.library_body">
+        
+        <location filename="../qml/i18n/Messages.qml" line="17" />
+        <source>After download and install, the game appears here — launch, updates, and details.</source>
+        </message>
+    <message id="settings.sources.connect_hint">
+        
+        <location filename="../qml/i18n/Messages.qml" line="20" />
+        <source>Connect catalogs in Hydra Launcher format (games.json). Handy when migrating from Hydra — same game links, torrent downloads. A source plugin is required to install and launch.</source>
+        </message>
+    <message id="settings.sources.add_hint">
+        
+        <location filename="../qml/i18n/Messages.qml" line="23" />
+        <source>Click Add catalog and paste your games.json URL — like Hydra, or a public community feed.</source>
+        </message>
+    <message id="settings.source_form.desc">
+        
+        <location filename="../qml/i18n/Messages.qml" line="26" />
+        <source>Hydra catalog — a games.json JSON feed by URL. Arachnel pulls the game list and magnet links like Hydra Launcher. Install and launch via a source plugin (e.g. FreeTP).</source>
+        </message>
+    <message id="settings.appearance.weblate_hint">
+        
+        <location filename="../qml/i18n/Messages.qml" line="29" />
+        <source>Missing your language? Help translate Arachnel on &lt;a href="%1"&gt;Weblate&lt;/a&gt; or send a pull request with translations/*.ts files.</source>
+        </message>
+    <message id="settings.plugins.install_hint">
+        
+        <location filename="../qml/i18n/Messages.qml" line="32" />
+        <source>Install the .arach package using the button below.
+
+Build the plugin from the arachnel-plugin-freetp repository (dist/freetp.arach).</source>
+        </message>
+    <message id="settings.plugins.desc">
+        
+        <location filename="../qml/i18n/Messages.qml" line="35" />
+        <source>Plugins are sources with catalog, install, and launch. Package: .arach file (ZIP with plugin.json and libraries).</source>
+        </message>
+    <message id="library.empty.subtitle">
+        
+        <location filename="../qml/i18n/Messages.qml" line="38" />
+        <source>Your library is empty. Install a source plugin, pick a game in the catalog, and it will show up here.</source>
+        </message>
+    <message id="library.step1.body">
+        
+        <location filename="../qml/i18n/Messages.qml" line="41" />
+        <source>Install a source plugin (FreeTP, etc.) under Settings → Plugins.</source>
+        </message>
+    <message id="library.step2.body">
+        
+        <location filename="../qml/i18n/Messages.qml" line="44" />
+        <source>Pick a game and start installation — the torrent downloads automatically.</source>
+        </message>
+    <message id="library.step3.body">
+        
+        <location filename="../qml/i18n/Messages.qml" line="47" />
+        <source>Installed games live here: launch, updates, and details.</source>
+        </message>
+    <message id="game.install.torrent_hint">
+        
+        <location filename="../qml/i18n/Messages.qml" line="50" />
+        <source>Torrent downloaded. Click Install for the source plugin to extract or install the game.</source>
+        </message>
+    <message id="catalog.pipeline_desc">
+        
+        <location filename="../qml/i18n/Messages.qml" line="53" />
+        <source>The source defines how installation works — each plugin has its own pipeline.</source>
+        </message>
+    <message id="catalog.connect_hint">
+        
+        <location filename="../qml/i18n/Messages.qml" line="56" />
+        <source>Connect a Hydra catalog in Settings — or install a source plugin.</source>
+        </message>
+    <message id="catalog.enable_chips_hint">
+        
+        <location filename="../qml/i18n/Messages.qml" line="59" />
+        <source>Enable one or more source chips — or leave them all off.</source>
+        </message>
+    <message id="storage.libraries_desc">
+        
+        <location filename="../qml/i18n/Messages.qml" line="62" />
+        <source>Libraries on disks — like Steam. Default is C:; you can add other drives.</source>
+        </message>
+    <message id="addons.selection_hint">
+        
+        <location filename="../qml/i18n/Messages.qml" line="65" />
+        <source>Add-ons are available for "%1" — choose what to download with the game.</source>
+        </message>
+    <message id="downloads.empty_hint">
+        
+        <location filename="../qml/i18n/Messages.qml" line="68" />
+        <source>Start installing from the catalog — progress will appear here.</source>
+        </message>
+    <message id="game.delete_warning">
+        
+        <location filename="../qml/i18n/Messages.qml" line="71" />
+        <source>Game files will be deleted from disk. This cannot be undone.</source>
+        </message>
+
+</context>
+<context>
     <name>AppWindow</name>
     <message>
-        <location filename="../qml/app/AppWindow.qml" line="16"/>
+        
+        <location filename="../qml/app/AppWindow.qml" line="16" />
         <source>Arachnel</source>
-        <translation>Arachnel</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/AppWindow.qml" line="82"/>
+        
+        <location filename="../qml/app/AppWindow.qml" line="96" />
         <source>Library</source>
-        <translation>Library</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/AppWindow.qml" line="86"/>
+        
+        <location filename="../qml/app/AppWindow.qml" line="100" />
         <source>Catalog</source>
-        <translation>Catalog</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/AppWindow.qml" line="90"/>
+        
+        <location filename="../qml/app/AppWindow.qml" line="104" />
         <source>Downloads</source>
-        <translation>Downloads</translation>
-    </message>
+        </message>
+
 </context>
 <context>
     <name>CatalogPage</name>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="39"/>
+        
+        <location filename="../qml/app/CatalogPage.qml" line="40" />
         <source>Newest first</source>
-        <translation>Newest first</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="40"/>
+        
+        <location filename="../qml/app/CatalogPage.qml" line="41" />
         <source>Oldest first</source>
-        <translation>Oldest first</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="41"/>
+        
+        <location filename="../qml/app/CatalogPage.qml" line="42" />
         <source>Title A–Z</source>
-        <translation>Title A–Z</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="42"/>
+        
+        <location filename="../qml/app/CatalogPage.qml" line="43" />
         <source>Title Z–A</source>
-        <translation>Title Z–A</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="135"/>
+        
+        <location filename="../qml/app/CatalogPage.qml" line="136" />
         <source>Sort</source>
-        <translation>Sort</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="240"/>
-        <location filename="../qml/app/CatalogPage.qml" line="373"/>
+        
+        <location filename="../qml/app/CatalogPage.qml" line="177" />
+        
+        <location filename="../qml/app/CatalogPage.qml" line="401" />
         <source>Catalog</source>
-        <translation>Catalog</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="246"/>
-        <source>The source defines how installation works — each plugin has its own pipeline.</source>
-        <translation>The source defines how installation works — each plugin has its own pipeline.</translation>
-    </message>
-    <message>
-        <location filename="../qml/app/CatalogPage.qml" line="382"/>
+        
+        <location filename="../qml/app/CatalogPage.qml" line="410" />
         <source>Loading…</source>
-        <translation>Loading…</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="383"/>
+        
+        <location filename="../qml/app/CatalogPage.qml" line="411" />
         <source>Found: %1</source>
-        <translation>Found: %1</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="464"/>
+        
+        <location filename="../qml/app/CatalogPage.qml" line="492" />
         <source>Select sources</source>
-        <translation>Select sources</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="465"/>
+        
+        <location filename="../qml/app/CatalogPage.qml" line="493" />
         <source>Nothing found</source>
-        <translation>Nothing found</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="472"/>
-        <source>Enable one or more source chips — or leave them all off.</source>
-        <translation>Enable one or more source chips — or leave them all off.</translation>
-    </message>
-    <message>
-        <location filename="../qml/app/CatalogPage.qml" line="473"/>
+        
+        <location filename="../qml/app/CatalogPage.qml" line="501" />
         <source>Try another search or refresh the catalog.</source>
-        <translation>Try another search or refresh the catalog.</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="481"/>
+        
+        <location filename="../qml/app/CatalogPage.qml" line="509" />
         <source>Refresh</source>
-        <translation>Refresh</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="514"/>
+        
+        <location filename="../qml/app/CatalogPage.qml" line="542" />
         <source>No games</source>
-        <translation>No games</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="521"/>
-        <source>Connect a Hydra catalog in Settings — or install a source plugin.</source>
-        <translation>Connect a Hydra catalog in Settings — or install a source plugin.</translation>
-    </message>
-    <message>
-        <location filename="../qml/app/CatalogPage.qml" line="532"/>
+        
+        <location filename="../qml/app/CatalogPage.qml" line="560" />
         <source>Add catalog</source>
-        <translation>Add catalog</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="539"/>
+        
+        <location filename="../qml/app/CatalogPage.qml" line="567" />
         <source>Settings</source>
-        <translation>Settings</translation>
-    </message>
+        </message>
+
 </context>
 <context>
     <name>CatalogScrollHeader</name>
     <message>
-        <location filename="../qml/components/CatalogScrollHeader.qml" line="34"/>
+        
+        <location filename="../qml/components/CatalogScrollHeader.qml" line="34" />
         <source>Loading catalog…</source>
-        <translation>Loading catalog…</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/components/CatalogScrollHeader.qml" line="35"/>
+        
+        <location filename="../qml/components/CatalogScrollHeader.qml" line="35" />
         <source>Found: %1</source>
-        <translation>Found: %1</translation>
-    </message>
+        </message>
+
 </context>
 <context>
     <name>CatalogSourceChips</name>
     <message>
-        <location filename="../qml/components/CatalogSourceChips.qml" line="27"/>
+        
+        <location filename="../qml/components/CatalogSourceChips.qml" line="27" />
         <source>%1 · %2</source>
-        <translation>%1 · %2</translation>
-    </message>
+        </message>
+
+</context>
+<context>
+    <name>Core</name>
+    <message>
+        
+        <location filename="../src/core/catalog_types.cpp" line="13" />
+        <source>Game</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/catalog_types.cpp" line="17" />
+        <source>Add-on</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/catalog_types.cpp" line="19" />
+        <source>Component</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/catalog_types.cpp" line="26" />
+        <source>Direct</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/catalog_types.cpp" line="28" />
+        <source>Torrent</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/catalog_types.cpp" line="30" />
+        
+        <location filename="../src/core/job_kind.cpp" line="11" />
+        <source>Download</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/install_kind.cpp" line="11" />
+        <source>Portable</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/install_kind.cpp" line="13" />
+        <source>Installer</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/install_kind.cpp" line="15" />
+        <source>Bundled fix</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/install_kind.cpp" line="17" />
+        <source>Separate fix</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/install_kind.cpp" line="19" />
+        <source>Unknown</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/job_display.cpp" line="45" />
+        
+        <location filename="../src/core/job_display.cpp" line="50" />
+        <source>Add-on %1 — %2</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/job_display.cpp" line="99" />
+        
+        <location filename="../src/core/job_display.cpp" line="101" />
+        <source>Install failed: %1</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/job_display.cpp" line="104" />
+        
+        <location filename="../src/core/job_display.cpp" line="108" />
+        <source>Installing (%1/%2)</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/job_display.cpp" line="113" />
+        
+        <location filename="../src/core/job_display.cpp" line="115" />
+        <source>Error: %1</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/job_kind.cpp" line="13" />
+        <source>Install</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/job_kind.cpp" line="15" />
+        <source>Update</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/job_kind.cpp" line="17" />
+        <source>Task</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/job_status.cpp" line="10" />
+        <source>Queued</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/job_status.cpp" line="12" />
+        <source>Starting</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/job_status.cpp" line="14" />
+        <source>Checking</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/job_status.cpp" line="16" />
+        <source>Metadata</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/job_status.cpp" line="18" />
+        <source>Downloading</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/job_status.cpp" line="20" />
+        <source>Installing</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/job_status.cpp" line="22" />
+        <source>Seeding</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/job_status.cpp" line="24" />
+        <source>Paused</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/job_status.cpp" line="26" />
+        <source>Completed</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/job_status.cpp" line="28" />
+        <source>Failed</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/job_status.cpp" line="30" />
+        <source>Cancelled</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/job_status.cpp" line="37" />
+        <source>Install failed</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="238" />
+        <source>Catalog error: %1</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="339" />
+        <source>Game not found for add-on</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="344" />
+        <source>Add-on not found in catalog</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="355" />
+        <source>Could not find game to install: %1</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="391" />
+        <source>Download error: %1</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="435" />
+        <source>Installation of %1 is already in progress</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="641" />
+        <source>Source plugin not found: %1</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="495" />
+        <source>Install failed for %1: %2</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="531" />
+        <source>Update installed: %1</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="533" />
+        <source>Installed: %1</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="629" />
+        <source>Add-on installation is already in progress</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="635" />
+        <source>Install the game first</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="698" />
+        <source>Add-on install failed for %1: %2</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="719" />
+        <source>Add-on installed: %1</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="863" />
+        
+        <location filename="../src/core/core_controller.cpp" line="3047" />
+        <source>Game not found</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="869" />
+        
+        <location filename="../src/core/core_controller.cpp" line="3122" />
+        <source>Add-on not found</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="875" />
+        <source>Download the add-on first</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="1555" />
+        
+        <location filename="../src/core/core_controller.cpp" line="1568" />
+        <source>%1 update(s) available</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="1597" />
+        <source>Started %1 update(s)</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="1904" />
+        <source>Install Proton-GE in Settings → Launch before downloading games</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="1907" />
+        <source>Install %1 (Proton-GE) in Settings → Launch before downloading games</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="2968" />
+        <source>Choose library folder</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="3394" />
+        <source>Choose game install folder</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="3423" />
+        <source>No game executable found in %1</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="3439" />
+        <source>Installed</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="3440" />
+        <source>Manual install complete for %1</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="3559" />
+        <source>Install plugin</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="3561" />
+        <source>Plugin package (*.arach)</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="1557" />
+        <source>No updates</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="199" />
+        <source>Proton-GE installed</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="201" />
+        <source>Proton-GE download failed: %1</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="385" />
+        <source>Download complete — install manually</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="462" />
+        <source>No install handler for %1</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="1742" />
+        <source>Choose game executable</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="1745" />
+        <source>Executables (*.exe *.sh *.x86_64);;All files (*)</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="2354" />
+        <source>%1 · %2 games</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="2356" />
+        <source>%1 sources · %2 games</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="2447" />
+        <source>Catalog empty or unavailable: %1</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="2463" />
+        <source>No catalog URL configured for source %1</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="2559" />
+        
+        <location filename="../src/core/core_controller.cpp" line="3116" />
+        <source>Game not found: %1</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="2563" />
+        <source>%1 is not installed yet</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="2568" />
+        <source>%1 is already running</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="2585" />
+        <source>Proton not found. Install Proton-GE in Settings → Launch.</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="2592" />
+        <source>Executable not found for %1</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="2602" />
+        <source>Failed to launch game</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="2618" />
+        <source>Failed to stop game</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="2643" />
+        <source>Unknown source: %1</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="2647" />
+        <source>Source "%1" is disabled in settings</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="2866" />
+        <source>Enter a catalog URL</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="2874" />
+        <source>Invalid URL — http or https required</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="2893" />
+        <source>Catalog entry not found: %1</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="2900" />
+        <source>No magnet link for %1</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="2909" />
+        <source>Could not start download for %1</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="2977" />
+        <source>Game not found in library</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="3002" />
+        <source>Game removed: %1</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="3033" />
+        <source>No destination library selected</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="3054" />
+        <source>Game is already on this library</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="3064" />
+        
+        <location filename="../src/core/core_controller.cpp" line="3070" />
+        <source>Could not move: %1</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="3086" />
+        <source>Game moved: %1</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="3128" />
+        <source>Could not start add-on download</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="3137" />
+        <source>Entry not found: %1</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="3143" />
+        <source>Could not start update for %1</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="3153" />
+        <source>No catalog sources enabled</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="3221" />
+        <source>Download not found</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="3225" />
+        <source>Installation is only available for completed downloads</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="3257" />
+        <source>Add-on file not found</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="3262" />
+        
+        <location filename="../src/core/core_controller.cpp" line="3413" />
+        <source>Download files not found</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="3268" />
+        
+        <location filename="../src/core/core_controller.cpp" line="3430" />
+        <source>Could not find game to install</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="3401" />
+        <source>Automatic install is unavailable. Run setup.exe from the download folder, then use the folder button to point to the game.</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="3514" />
+        <source>Plugin installed</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="3517" />
+        <source>Plugin install failed: %1</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/core_controller.cpp" line="3572" />
+        <source>Could not open plugins folder</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/torrent_session.cpp" line="50" />
+        
+        <location filename="../src/core/torrent_session.cpp" line="56" />
+        <source>Torrent error %1</source>
+        </message>
+    <message>
+        
+        <location filename="../src/core/torrent_session.cpp" line="243" />
+        <source>No magnet link</source>
+        </message>
+
+</context>
+<context>
+    <name>CrashReportDialog</name>
+    <message>
+        
+        <location filename="../qml/components/CrashReportDialog.qml" line="14" />
+        <source>Application crashed</source>
+        </message>
+
+</context>
+<context>
+    <name>CrashReportPanel</name>
+    <message>
+        
+        <location filename="../qml/components/CrashReportPanel.qml" line="28" />
+        <source>Application crashed</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/components/CrashReportPanel.qml" line="35" />
+        
+        <location filename="../qml/components/CrashReportPanel.qml" line="47" />
+        <source>Arachnel has crashed.</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/components/CrashReportPanel.qml" line="36" />
+        
+        <location filename="../qml/components/CrashReportPanel.qml" line="48" />
+        <source>Arachnel stopped unexpectedly during the last session.</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/components/CrashReportPanel.qml" line="93" />
+        <source>Report file: %1</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/components/CrashReportPanel.qml" line="106" />
+        <source>Dismiss</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/components/CrashReportPanel.qml" line="112" />
+        <source>Open folder</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/components/CrashReportPanel.qml" line="118" />
+        <source>Copy report</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/components/CrashReportPanel.qml" line="126" />
+        <source>Create GitHub issue</source>
+        </message>
+
+</context>
+<context>
+    <name>CrashReportWindow</name>
+    <message>
+        
+        <location filename="../qml/app/CrashReportWindow.qml" line="16" />
+        <source>Application crashed</source>
+        </message>
+
 </context>
 <context>
     <name>DownloadJobGroupCard</name>
     <message>
-        <location filename="../qml/components/DownloadJobGroupCard.qml" line="65"/>
+        
+        <location filename="../qml/components/DownloadJobGroupCard.qml" line="66" />
         <source>%1 add-ons · %2 downloading</source>
-        <translation>%1 add-ons · %2 downloading</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/components/DownloadJobGroupCard.qml" line="67"/>
+        
+        <location filename="../qml/components/DownloadJobGroupCard.qml" line="68" />
         <source>%1 add-ons · done</source>
-        <translation>%1 add-ons · done</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/components/DownloadJobGroupCard.qml" line="68"/>
+        
+        <location filename="../qml/components/DownloadJobGroupCard.qml" line="69" />
         <source>%1 add-ons</source>
-        <translation>%1 add-ons</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/components/DownloadJobGroupCard.qml" line="182"/>
+        
+        <location filename="../qml/components/DownloadJobGroupCard.qml" line="191" />
         <source>Add-ons</source>
-        <translation>Add-ons</translation>
-    </message>
+        </message>
+
 </context>
 <context>
     <name>DownloadProgressButton</name>
     <message>
-        <location filename="../qml/components/DownloadProgressButton.qml" line="17"/>
+        
+        <location filename="../qml/components/DownloadProgressButton.qml" line="17" />
         <source>Download torrent</source>
-        <translation>Download torrent</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/components/DownloadProgressButton.qml" line="40"/>
+        
+        <location filename="../qml/components/DownloadProgressButton.qml" line="40" />
         <source>Installing…</source>
-        <translation>Installing…</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/components/DownloadProgressButton.qml" line="42"/>
+        
+        <location filename="../qml/components/DownloadProgressButton.qml" line="42" />
         <source>Retry install</source>
-        <translation>Retry install</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/components/DownloadProgressButton.qml" line="44"/>
+        
+        <location filename="../qml/components/DownloadProgressButton.qml" line="44" />
         <source>Install</source>
-        <translation>Install</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/components/DownloadProgressButton.qml" line="46"/>
+        
+        <location filename="../qml/components/DownloadProgressButton.qml" line="46" />
         <source>Downloaded</source>
-        <translation>Downloaded</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/components/DownloadProgressButton.qml" line="48"/>
+        
+        <location filename="../qml/components/DownloadProgressButton.qml" line="48" />
         <source>Paused · %1%</source>
-        <translation>Paused · %1%</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/components/DownloadProgressButton.qml" line="50"/>
+        
+        <location filename="../qml/components/DownloadProgressButton.qml" line="50" />
         <source>Downloading · %1%</source>
-        <translation>Downloading · %1%</translation>
-    </message>
+        </message>
+
 </context>
 <context>
     <name>DownloadsPage</name>
     <message>
-        <location filename="../qml/app/DownloadsPage.qml" line="79"/>
+        
+        <location filename="../qml/app/DownloadsPage.qml" line="79" />
         <source>No downloads</source>
-        <translation>No downloads</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/DownloadsPage.qml" line="86"/>
-        <source>Start installing from the catalog — progress will appear here.</source>
-        <translation>Start installing from the catalog — progress will appear here.</translation>
-    </message>
-    <message>
-        <location filename="../qml/app/DownloadsPage.qml" line="111"/>
+        
+        <location filename="../qml/app/DownloadsPage.qml" line="111" />
         <source>Downloads</source>
-        <translation>Downloads</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/DownloadsPage.qml" line="117"/>
+        
+        <location filename="../qml/app/DownloadsPage.qml" line="117" />
         <source>%1 active · resume after restart</source>
-        <translation>%1 active · resume after restart</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/DownloadsPage.qml" line="118"/>
+        
+        <location filename="../qml/app/DownloadsPage.qml" line="118" />
         <source>Torrents resume after restart</source>
-        <translation>Torrents resume after restart</translation>
-    </message>
+        </message>
+
+</context>
+<context>
+    <name>GameDetailsMediaSection</name>
+    <message>
+        
+        <location filename="../qml/components/GameDetailsMediaSection.qml" line="316" />
+        <source>Gameplay video</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/components/GameDetailsMediaSection.qml" line="88" />
+        
+        <location filename="../qml/components/GameDetailsMediaSection.qml" line="497" />
+        <source>Screenshots</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/components/GameDetailsMediaSection.qml" line="494" />
+        <source>Screenshot %1 of %2</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/components/GameDetailsMediaSection.qml" line="430" />
+        
+        <location filename="../qml/components/GameDetailsMediaSection.qml" line="603" />
+        <source>Close</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/components/GameDetailsMediaSection.qml" line="448" />
+        
+        <location filename="../qml/components/GameDetailsMediaSection.qml" line="612" />
+        <source>Open in browser</source>
+        </message>
+
 </context>
 <context>
     <name>GameDetailsPage</name>
     <message>
-        <location filename="../qml/app/GameDetailsPage.qml" line="127"/>
+        
+        <location filename="../qml/app/GameDetailsPage.qml" line="233" />
         <source>Game details</source>
-        <translation>Game details</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/GameDetailsPage.qml" line="154"/>
+        
+        <location filename="../qml/app/GameDetailsPage.qml" line="260" />
         <source>Game not found</source>
-        <translation>Game not found</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/GameDetailsPage.qml" line="187"/>
+        
+        <location filename="../qml/app/GameDetailsPage.qml" line="293" />
         <source>%1 add-ons</source>
-        <translation>%1 add-ons</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/GameDetailsPage.qml" line="196"/>
+        
+        <location filename="../qml/app/GameDetailsPage.qml" line="302" />
         <source>Update available</source>
-        <translation>Update available</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/GameDetailsPage.qml" line="204"/>
-        <source>Torrent downloaded. Click Install for the source plugin to extract or install the game.</source>
-        <translation>Torrent downloaded. Click Install for the source plugin to extract or install the game.</translation>
-    </message>
+        
+        <location filename="../qml/app/GameDetailsPage.qml" line="318" />
+        <source>Source page</source>
+        </message>
     <message>
-        <location filename="../qml/app/GameDetailsPage.qml" line="213"/>
+        
+        <location filename="../qml/app/GameDetailsPage.qml" line="319" />
+        <source>Source website</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/app/GameDetailsPage.qml" line="330" />
+        <source>Steam</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/app/GameDetailsPage.qml" line="349" />
         <source>Install failed</source>
-        <translation>Install failed</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/GameDetailsPage.qml" line="224"/>
+        
+        <location filename="../qml/app/GameDetailsPage.qml" line="360" />
         <source>Stop</source>
-        <translation>Stop</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/GameDetailsPage.qml" line="224"/>
+        
+        <location filename="../qml/app/GameDetailsPage.qml" line="360" />
         <source>Play</source>
-        <translation>Play</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/GameDetailsPage.qml" line="260"/>
-        <location filename="../qml/app/GameDetailsPage.qml" line="427"/>
+        
+        <location filename="../qml/app/GameDetailsPage.qml" line="396" />
+        
+        <location filename="../qml/app/GameDetailsPage.qml" line="526" />
         <source>Delete</source>
-        <translation>Delete</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/GameDetailsPage.qml" line="268"/>
-        <source>Refresh</source>
-        <translation>Refresh</translation>
-    </message>
+        
+        <location filename="../qml/app/GameDetailsPage.qml" line="413" />
+        <source>Update</source>
+        </message>
     <message>
-        <location filename="../qml/app/GameDetailsPage.qml" line="277"/>
-        <source>Verify files</source>
-        <translation>Verify files</translation>
-    </message>
-    <message>
-        <location filename="../qml/app/GameDetailsPage.qml" line="314"/>
+        
+        <location filename="../qml/app/GameDetailsPage.qml" line="475" />
         <source>Description</source>
-        <translation>Description</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/GameDetailsPage.qml" line="320"/>
+        
+        <location filename="../qml/app/GameDetailsPage.qml" line="481" />
         <source>Description is not available yet.</source>
-        <translation>Description is not available yet.</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/GameDetailsPage.qml" line="346"/>
-        <source>Information</source>
-        <translation>Information</translation>
-    </message>
-    <message>
-        <location filename="../qml/app/GameDetailsPage.qml" line="352"/>
-        <source>Source</source>
-        <translation>Source</translation>
-    </message>
-    <message>
-        <location filename="../qml/app/GameDetailsPage.qml" line="353"/>
-        <source>Version</source>
-        <translation>Version</translation>
-    </message>
-    <message>
-        <location filename="../qml/app/GameDetailsPage.qml" line="354"/>
-        <source>Size</source>
-        <translation>Size</translation>
-    </message>
-    <message>
-        <location filename="../qml/app/GameDetailsPage.qml" line="355"/>
-        <source>Install type</source>
-        <translation>Install type</translation>
-    </message>
-    <message>
-        <location filename="../qml/app/GameDetailsPage.qml" line="357"/>
-        <source>Install path</source>
-        <translation>Install path</translation>
-    </message>
-    <message>
-        <location filename="../qml/app/GameDetailsPage.qml" line="361"/>
-        <source>Installing…</source>
-        <translation>Installing…</translation>
-    </message>
-    <message>
-        <location filename="../qml/app/GameDetailsPage.qml" line="363"/>
-        <source>Waiting to install</source>
-        <translation>Waiting to install</translation>
-    </message>
-    <message>
-        <location filename="../qml/app/GameDetailsPage.qml" line="364"/>
-        <source>—</source>
-        <translation>—</translation>
-    </message>
-    <message>
-        <location filename="../qml/app/GameDetailsPage.qml" line="367"/>
-        <source>Download</source>
-        <translation>Download</translation>
-    </message>
-    <message>
-        <location filename="../qml/app/GameDetailsPage.qml" line="399"/>
+        
+        <location filename="../qml/app/GameDetailsPage.qml" line="498" />
         <source>Remove game?</source>
-        <translation>Remove game?</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/GameDetailsPage.qml" line="405"/>
-        <source>Game files will be deleted from disk. This cannot be undone.</source>
-        <translation>Game files will be deleted from disk. This cannot be undone.</translation>
-    </message>
-    <message>
-        <location filename="../qml/app/GameDetailsPage.qml" line="421"/>
+        
+        <location filename="../qml/app/GameDetailsPage.qml" line="520" />
         <source>Cancel</source>
-        <translation>Cancel</translation>
-    </message>
+        </message>
+
+</context>
+<context>
+    <name>GameSettingsSheet</name>
+    <message>
+        
+        <location filename="../qml/app/GameSettingsSheet.qml" line="87" />
+        <source>Game settings</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/app/GameSettingsSheet.qml" line="119" />
+        <source>Auto-update this game</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/app/GameSettingsSheet.qml" line="125" />
+        <source>When enabled, updates start automatically after the catalog loads.</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/app/GameSettingsSheet.qml" line="158" />
+        <source>Proton</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/app/GameSettingsSheet.qml" line="164" />
+        <source>Override Proton for this game. Default uses Settings → Launch.</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/app/GameSettingsSheet.qml" line="175" />
+        <source>Default</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/app/GameSettingsSheet.qml" line="214" />
+        <source>Launch options</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/app/GameSettingsSheet.qml" line="221" />
+        <source>Extra launch arguments for this game</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/app/GameSettingsSheet.qml" line="232" />
+        <source>Custom executable (optional)</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/app/GameSettingsSheet.qml" line="269" />
+        <source>Information</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/app/GameSettingsSheet.qml" line="275" />
+        <source>Source</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/app/GameSettingsSheet.qml" line="276" />
+        <source>Version</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/app/GameSettingsSheet.qml" line="277" />
+        <source>Size</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/app/GameSettingsSheet.qml" line="278" />
+        <source>Install type</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/app/GameSettingsSheet.qml" line="280" />
+        <source>Install path</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/app/GameSettingsSheet.qml" line="284" />
+        <source>Installing…</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/app/GameSettingsSheet.qml" line="286" />
+        <source>Waiting to install</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/app/GameSettingsSheet.qml" line="287" />
+        <source>—</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/app/GameSettingsSheet.qml" line="290" />
+        <source>Download</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/app/GameSettingsSheet.qml" line="324" />
+        <source>Done</source>
+        </message>
+
 </context>
 <context>
     <name>InstallAddonSelectionSheet</name>
     <message>
-        <location filename="../qml/settings/InstallAddonSelectionSheet.qml" line="63"/>
+        
+        <location filename="../qml/settings/InstallAddonSelectionSheet.qml" line="63" />
         <source>Add-ons</source>
-        <translation>Add-ons</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/InstallAddonSelectionSheet.qml" line="72"/>
-        <source>Add-ons are available for &quot;%1&quot; — choose what to download with the game.</source>
-        <translation>Add-ons are available for &quot;%1&quot; — choose what to download with the game.</translation>
-    </message>
-    <message>
-        <location filename="../qml/settings/InstallAddonSelectionSheet.qml" line="74"/>
+        
+        <location filename="../qml/settings/InstallAddonSelectionSheet.qml" line="73" />
         <source>Choose add-ons to download together with the game.</source>
-        <translation>Choose add-ons to download together with the game.</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/InstallAddonSelectionSheet.qml" line="88"/>
+        
+        <location filename="../qml/settings/InstallAddonSelectionSheet.qml" line="87" />
         <source>All</source>
-        <translation>All</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/InstallAddonSelectionSheet.qml" line="94"/>
+        
+        <location filename="../qml/settings/InstallAddonSelectionSheet.qml" line="93" />
         <source>Deselect</source>
-        <translation>Deselect</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/InstallAddonSelectionSheet.qml" line="175"/>
+        
+        <location filename="../qml/settings/InstallAddonSelectionSheet.qml" line="174" />
         <source>Optional</source>
-        <translation>Optional</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/InstallAddonSelectionSheet.qml" line="212"/>
+        
+        <location filename="../qml/settings/InstallAddonSelectionSheet.qml" line="211" />
         <source>Cancel</source>
-        <translation>Cancel</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/InstallAddonSelectionSheet.qml" line="219"/>
+        
+        <location filename="../qml/settings/InstallAddonSelectionSheet.qml" line="218" />
         <source>Next</source>
-        <translation>Next</translation>
-    </message>
+        </message>
+
 </context>
 <context>
     <name>InstallLocationSheet</name>
     <message>
-        <location filename="../qml/settings/InstallLocationSheet.qml" line="34"/>
-        <location filename="../qml/settings/InstallLocationSheet.qml" line="148"/>
+        
+        <location filename="../qml/settings/InstallLocationSheet.qml" line="37" />
+        
+        <location filename="../qml/settings/InstallLocationSheet.qml" line="151" />
         <source>Install</source>
-        <translation>Install</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/InstallLocationSheet.qml" line="42"/>
+        
+        <location filename="../qml/settings/InstallLocationSheet.qml" line="45" />
         <source>Choose a drive for installation</source>
-        <translation>Choose a drive for installation</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/InstallLocationSheet.qml" line="52"/>
+        
+        <location filename="../qml/settings/InstallLocationSheet.qml" line="55" />
         <source>Install to:</source>
-        <translation>Install to:</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/InstallLocationSheet.qml" line="141"/>
+        
+        <location filename="../qml/settings/InstallLocationSheet.qml" line="144" />
         <source>Cancel</source>
-        <translation>Cancel</translation>
-    </message>
+        </message>
+
 </context>
 <context>
     <name>LibraryGameCard</name>
     <message>
-        <location filename="../qml/components/LibraryGameCard.qml" line="25"/>
-        <location filename="../qml/components/LibraryGameCard.qml" line="28"/>
+        
+        <location filename="../qml/components/LibraryGameCard.qml" line="25" />
+        
+        <location filename="../qml/components/LibraryGameCard.qml" line="28" />
         <source>%1 add-ons</source>
-        <translation>%1 add-ons</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/components/LibraryGameCard.qml" line="27"/>
+        
+        <location filename="../qml/components/LibraryGameCard.qml" line="27" />
         <source>%1/%2 add-ons</source>
-        <translation>%1/%2 add-ons</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/components/LibraryGameCard.qml" line="51"/>
+        
+        <location filename="../qml/components/LibraryGameCard.qml" line="60" />
         <source>Installing %1%</source>
-        <translation>Installing %1%</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/components/LibraryGameCard.qml" line="54"/>
+        
+        <location filename="../qml/components/LibraryGameCard.qml" line="63" />
         <source>Installing…</source>
-        <translation>Installing…</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/components/LibraryGameCard.qml" line="56"/>
+        
+        <location filename="../qml/components/LibraryGameCard.qml" line="65" />
         <source>Paused · %1%</source>
-        <translation>Paused · %1%</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/components/LibraryGameCard.qml" line="57"/>
+        
+        <location filename="../qml/components/LibraryGameCard.qml" line="66" />
         <source>Downloading %1%</source>
-        <translation>Downloading %1%</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/components/LibraryGameCard.qml" line="115"/>
+        
+        <location filename="../qml/components/LibraryGameCard.qml" line="124" />
         <source>Playing</source>
-        <translation>Playing</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/components/LibraryGameCard.qml" line="134"/>
+        
+        <location filename="../qml/components/LibraryGameCard.qml" line="143" />
         <source>Updating</source>
-        <translation>Updating</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/components/LibraryGameCard.qml" line="186"/>
+        
+        <location filename="../qml/components/LibraryGameCard.qml" line="195" />
         <source>Running</source>
-        <translation>Running</translation>
-    </message>
+        </message>
+
 </context>
 <context>
     <name>LibraryPage</name>
     <message>
-        <location filename="../qml/app/LibraryPage.qml" line="29"/>
+        
+        <location filename="../qml/app/LibraryPage.qml" line="31" />
         <source>Playing now</source>
-        <translation>Playing now</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/LibraryPage.qml" line="30"/>
+        
+        <location filename="../qml/app/LibraryPage.qml" line="32" />
         <source>Recently played</source>
-        <translation>Recently played</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/LibraryPage.qml" line="60"/>
+        
+        <location filename="../qml/app/LibraryPage.qml" line="36" />
+        <source>Nothing played yet</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/app/LibraryPage.qml" line="43" />
+        <source>Launch a game from your library — it will appear here.</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/app/LibraryPage.qml" line="75" />
         <source>Installing %1%</source>
-        <translation>Installing %1%</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/LibraryPage.qml" line="63"/>
+        
+        <location filename="../qml/app/LibraryPage.qml" line="78" />
         <source>Installing…</source>
-        <translation>Installing…</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/LibraryPage.qml" line="65"/>
+        
+        <location filename="../qml/app/LibraryPage.qml" line="80" />
         <source>Paused · %1%</source>
-        <translation>Paused · %1%</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/LibraryPage.qml" line="66"/>
+        
+        <location filename="../qml/app/LibraryPage.qml" line="81" />
         <source>Downloading %1%</source>
-        <translation>Downloading %1%</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/LibraryPage.qml" line="155"/>
+        
+        <location filename="../qml/app/LibraryPage.qml" line="170" />
         <source>Nothing here yet</source>
-        <translation>Nothing here yet</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/LibraryPage.qml" line="163"/>
-        <source>Your library is empty. Install a source plugin, pick a game in the catalog, and it will show up here.</source>
-        <translation>Your library is empty. Install a source plugin, pick a game in the catalog, and it will show up here.</translation>
-    </message>
-    <message>
-        <location filename="../qml/app/LibraryPage.qml" line="175"/>
+        
+        <location filename="../qml/app/LibraryPage.qml" line="190" />
         <source>Open catalog</source>
-        <translation>Open catalog</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/LibraryPage.qml" line="176"/>
+        
+        <location filename="../qml/app/LibraryPage.qml" line="191" />
         <source>Install plugin</source>
-        <translation>Install plugin</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/LibraryPage.qml" line="191"/>
+        
+        <location filename="../qml/app/LibraryPage.qml" line="206" />
         <source>Settings</source>
-        <translation>Settings</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/LibraryPage.qml" line="199"/>
+        
+        <location filename="../qml/app/LibraryPage.qml" line="214" />
         <source>Catalogs and plugins</source>
-        <translation>Catalogs and plugins</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/LibraryPage.qml" line="215"/>
+        
+        <location filename="../qml/app/LibraryPage.qml" line="230" />
         <source>Step 1</source>
-        <translation>Step 1</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/LibraryPage.qml" line="216"/>
+        
+        <location filename="../qml/app/LibraryPage.qml" line="231" />
         <source>Plugin</source>
-        <translation>Plugin</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/LibraryPage.qml" line="217"/>
-        <source>Install a source plugin (FreeTP, etc.) under Settings → Plugins.</source>
-        <translation>Install a source plugin (FreeTP, etc.) under Settings → Plugins.</translation>
-    </message>
-    <message>
-        <location filename="../qml/app/LibraryPage.qml" line="221"/>
+        
+        <location filename="../qml/app/LibraryPage.qml" line="236" />
         <source>Step 2</source>
-        <translation>Step 2</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/LibraryPage.qml" line="222"/>
+        
+        <location filename="../qml/app/LibraryPage.qml" line="237" />
         <source>Catalog</source>
-        <translation>Catalog</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/LibraryPage.qml" line="223"/>
-        <source>Pick a game and start installation — the torrent downloads automatically.</source>
-        <translation>Pick a game and start installation — the torrent downloads automatically.</translation>
-    </message>
-    <message>
-        <location filename="../qml/app/LibraryPage.qml" line="227"/>
+        
+        <location filename="../qml/app/LibraryPage.qml" line="242" />
         <source>Step 3</source>
-        <translation>Step 3</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/LibraryPage.qml" line="228"/>
+        
+        <location filename="../qml/app/LibraryPage.qml" line="243" />
         <source>Library</source>
-        <translation>Library</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/LibraryPage.qml" line="229"/>
-        <source>Installed games live here: launch, updates, and details.</source>
-        <translation>Installed games live here: launch, updates, and details.</translation>
-    </message>
-    <message>
-        <location filename="../qml/app/LibraryPage.qml" line="422"/>
+        
+        <location filename="../qml/app/LibraryPage.qml" line="440" />
         <source>Running</source>
-        <translation>Running</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/LibraryPage.qml" line="461"/>
+        
+        <location filename="../qml/app/LibraryPage.qml" line="479" />
         <source>Play</source>
-        <translation>Play</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/LibraryPage.qml" line="469"/>
+        
+        <location filename="../qml/app/LibraryPage.qml" line="488" />
         <source>Details</source>
-        <translation>Details</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/LibraryPage.qml" line="477"/>
-        <source>Refresh</source>
-        <translation>Refresh</translation>
-    </message>
+        
+        <location filename="../qml/app/LibraryPage.qml" line="496" />
+        <source>Update</source>
+        </message>
     <message>
-        <location filename="../qml/app/LibraryPage.qml" line="514"/>
+        
+        <location filename="../qml/app/LibraryPage.qml" line="534" />
         <source>In library</source>
-        <translation>In library</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/LibraryPage.qml" line="521"/>
+        
+        <location filename="../qml/app/LibraryPage.qml" line="541" />
         <source>Sources</source>
-        <translation>Sources</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/LibraryPage.qml" line="528"/>
+        
+        <location filename="../qml/app/LibraryPage.qml" line="548" />
         <source>Tasks</source>
-        <translation>Tasks</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/LibraryPage.qml" line="535"/>
+        
+        <location filename="../qml/app/LibraryPage.qml" line="555" />
         <source>Updates</source>
-        <translation>Updates</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/LibraryPage.qml" line="567"/>
+        
+        <location filename="../qml/app/LibraryPage.qml" line="587" />
         <source>%1 active downloads</source>
-        <translation>%1 active downloads</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/LibraryPage.qml" line="574"/>
+        
+        <location filename="../qml/app/LibraryPage.qml" line="594" />
         <source>Downloads continue after restart</source>
-        <translation>Downloads continue after restart</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/LibraryPage.qml" line="581"/>
+        
+        <location filename="../qml/app/LibraryPage.qml" line="601" />
         <source>Open</source>
-        <translation>Open</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/LibraryPage.qml" line="594"/>
+        
+        <location filename="../qml/app/LibraryPage.qml" line="614" />
         <source>My library</source>
-        <translation>My library</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/app/LibraryPage.qml" line="599"/>
+        
+        <location filename="../qml/app/LibraryPage.qml" line="619" />
         <source>%1 games</source>
-        <translation>%1 games</translation>
-    </message>
+        </message>
+
 </context>
 <context>
     <name>NotificationsPopup</name>
     <message>
-        <location filename="../qml/components/NotificationsPopup.qml" line="46"/>
+        
+        <location filename="../qml/components/NotificationsPopup.qml" line="46" />
         <source>Notifications</source>
-        <translation>Notifications</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/components/NotificationsPopup.qml" line="88"/>
+        
+        <location filename="../qml/components/NotificationsPopup.qml" line="88" />
         <source>Empty for now</source>
-        <translation>Empty for now</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/components/NotificationsPopup.qml" line="97"/>
+        
+        <location filename="../qml/components/NotificationsPopup.qml" line="97" />
         <source>Installs, errors, and other events will appear here.</source>
-        <translation>Installs, errors, and other events will appear here.</translation>
-    </message>
+        </message>
+
+</context>
+<context>
+    <name>ProtonRequiredDialog</name>
+    <message>
+        
+        <location filename="../qml/components/ProtonRequiredDialog.qml" line="13" />
+        <source>Proton required</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/components/ProtonRequiredDialog.qml" line="19" />
+        <source>latest Proton-GE</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/components/ProtonRequiredDialog.qml" line="29" />
+        <source>Games run through Proton on Linux. Install %1 before downloading.</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/components/ProtonRequiredDialog.qml" line="31" />
+        <source>Games run through Proton on Linux. Install Proton-GE before downloading.</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/components/ProtonRequiredDialog.qml" line="39" />
+        <source>Currently installed: %1</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/components/ProtonRequiredDialog.qml" line="56" />
+        <source>Cancel</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/components/ProtonRequiredDialog.qml" line="63" />
+        <source>Settings</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/components/ProtonRequiredDialog.qml" line="73" />
+        <source>Downloading…</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/components/ProtonRequiredDialog.qml" line="74" />
+        <source>Download %1</source>
+        </message>
+
 </context>
 <context>
     <name>RunningGameBar</name>
     <message>
-        <location filename="../qml/components/RunningGameBar.qml" line="67"/>
+        
+        <location filename="../qml/components/RunningGameBar.qml" line="67" />
         <source>Playing now</source>
-        <translation>Playing now</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/components/RunningGameBar.qml" line="84"/>
+        
+        <location filename="../qml/components/RunningGameBar.qml" line="84" />
         <source>Stop</source>
-        <translation>Stop</translation>
-    </message>
+        </message>
+
 </context>
 <context>
     <name>SettingsAppearancePage</name>
     <message>
-        <location filename="../qml/settings/SettingsAppearancePage.qml" line="15"/>
+        
+        <location filename="../qml/settings/SettingsAppearancePage.qml" line="15" />
         <source>English</source>
-        <translation>English</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsAppearancePage.qml" line="16"/>
+        
+        <location filename="../qml/settings/SettingsAppearancePage.qml" line="16" />
         <source>Russian</source>
-        <translation>Russian</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsAppearancePage.qml" line="46"/>
+        
+        <location filename="../qml/settings/SettingsAppearancePage.qml" line="46" />
         <source>Material 3 theme and palette apply across the app.</source>
-        <translation>Material 3 theme and palette apply across the app.</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsAppearancePage.qml" line="59"/>
+        
+        <location filename="../qml/settings/SettingsAppearancePage.qml" line="59" />
         <source>Dark theme</source>
-        <translation>Dark theme</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsAppearancePage.qml" line="59"/>
+        
+        <location filename="../qml/settings/SettingsAppearancePage.qml" line="59" />
         <source>Light theme</source>
-        <translation>Light theme</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsAppearancePage.qml" line="81"/>
+        
+        <location filename="../qml/settings/SettingsAppearancePage.qml" line="81" />
         <source>Palette</source>
-        <translation>Palette</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsAppearancePage.qml" line="124"/>
+        
+        <location filename="../qml/settings/SettingsAppearancePage.qml" line="124" />
         <source>Primary</source>
-        <translation>Primary</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsAppearancePage.qml" line="159"/>
+        
+        <location filename="../qml/settings/SettingsAppearancePage.qml" line="159" />
         <source>Language</source>
-        <translation>Language</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsAppearancePage.qml" line="194"/>
+        
+        <location filename="../qml/settings/SettingsAppearancePage.qml" line="194" />
         <source>Community translations</source>
-        <translation>Community translations</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsAppearancePage.qml" line="202"/>
-        <source>Missing your language? Help translate Arachnel on &lt;a href=&quot;%1&quot;&gt;Weblate&lt;/a&gt; or send a pull request with translations/*.ts files.</source>
-        <translation>Missing your language? Help translate Arachnel on &lt;a href=&quot;%1&quot;&gt;Weblate&lt;/a&gt; or send a pull request with translations/*.ts files.</translation>
-    </message>
-    <message>
-        <location filename="../qml/settings/SettingsAppearancePage.qml" line="211"/>
+        
+        <location filename="../qml/settings/SettingsAppearancePage.qml" line="210" />
         <source>Help translate</source>
-        <translation>Help translate</translation>
-    </message>
+        </message>
+
 </context>
 <context>
     <name>SettingsHubPage</name>
     <message>
-        <location filename="../qml/settings/SettingsHubPage.qml" line="20"/>
+        
+        <location filename="../qml/settings/SettingsHubPage.qml" line="29" />
         <source>Choose a section — each screen covers part of your setup.</source>
-        <translation>Choose a section — each screen covers part of your setup.</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsHubPage.qml" line="37"/>
+        
+        <location filename="../qml/settings/SettingsHubPage.qml" line="47" />
         <source>Plugins</source>
-        <translation>Plugins</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsHubPage.qml" line="38"/>
+        
+        <location filename="../qml/settings/SettingsHubPage.qml" line="48" />
         <source>FreeTP and others — install, launch, add-ons (.arach)</source>
-        <translation>FreeTP and others — install, launch, add-ons (.arach)</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsHubPage.qml" line="42"/>
+        
+        <location filename="../qml/settings/SettingsHubPage.qml" line="52" />
         <source>Hydra catalogs</source>
-        <translation>Hydra catalogs</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsHubPage.qml" line="43"/>
+        
+        <location filename="../qml/settings/SettingsHubPage.qml" line="53" />
         <source>games.json by URL — migrate from Hydra Launcher</source>
-        <translation>games.json by URL — migrate from Hydra Launcher</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsHubPage.qml" line="47"/>
+        
+        <location filename="../qml/settings/SettingsHubPage.qml" line="57" />
         <source>Storage</source>
-        <translation>Storage</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsHubPage.qml" line="48"/>
+        
+        <location filename="../qml/settings/SettingsHubPage.qml" line="58" />
         <source>Library and download folders</source>
-        <translation>Library and download folders</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsHubPage.qml" line="52"/>
+        
+        <location filename="../qml/settings/SettingsHubPage.qml" line="62" />
         <source>Updates</source>
-        <translation>Updates</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsHubPage.qml" line="53"/>
+        
+        <location filename="../qml/settings/SettingsHubPage.qml" line="63" />
         <source>Auto-check updates and portable integrity</source>
-        <translation>Auto-check updates and portable integrity</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsHubPage.qml" line="57"/>
+        
+        <location filename="../qml/settings/SettingsHubPage.qml" line="67" />
+        <source>Launch</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/settings/SettingsHubPage.qml" line="68" />
+        <source>Global arguments and Proton-GE on Linux</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/settings/SettingsHubPage.qml" line="72" />
         <source>Appearance</source>
-        <translation>Appearance</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsHubPage.qml" line="58"/>
+        
+        <location filename="../qml/settings/SettingsHubPage.qml" line="73" />
         <source>Theme, palette, accent color, and language</source>
-        <translation>Theme, palette, accent color, and language</translation>
-    </message>
+        </message>
+
+</context>
+<context>
+    <name>SettingsLaunchPage</name>
+    <message>
+        
+        <location filename="../qml/settings/SettingsLaunchPage.qml" line="38" />
+        <source>Extra command-line arguments appended to every game launch.</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/settings/SettingsLaunchPage.qml" line="49" />
+        <source>Global launch arguments</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/settings/SettingsLaunchPage.qml" line="59" />
+        <source>Linux: all games run through Proton (Windows builds).</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/settings/SettingsLaunchPage.qml" line="91" />
+        <source>Default: %1</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/settings/SettingsLaunchPage.qml" line="101" />
+        <source>Required before download: %1</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/settings/SettingsLaunchPage.qml" line="102" />
+        <source>Install Proton-GE before downloading games.</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/settings/SettingsLaunchPage.qml" line="110" />
+        <source>Pick default Proton and drag priority with arrows. Steam installs are detected automatically.</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/settings/SettingsLaunchPage.qml" line="122" />
+        <source>Download %1</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/settings/SettingsLaunchPage.qml" line="130" />
+        <source>Rescan</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/settings/SettingsLaunchPage.qml" line="228" />
+        <source>No Proton found. Download Proton-GE or install Proton in Steam.</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/settings/SettingsLaunchPage.qml" line="84" />
+        <source>Proton runtime</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/settings/SettingsLaunchPage.qml" line="123" />
+        <source>Download Proton-GE</source>
+        </message>
+
 </context>
 <context>
     <name>SettingsPage</name>
     <message>
-        <location filename="../qml/settings/SettingsPage.qml" line="23"/>
-        <location filename="../qml/settings/SettingsPage.qml" line="26"/>
-        <location filename="../qml/settings/SettingsPage.qml" line="117"/>
+        
+        <location filename="../qml/settings/SettingsPage.qml" line="23" />
+        
+        <location filename="../qml/settings/SettingsPage.qml" line="26" />
+        
+        <location filename="../qml/settings/SettingsPage.qml" line="121" />
         <source>Settings</source>
-        <translation>Settings</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsPage.qml" line="126"/>
+        
+        <location filename="../qml/settings/SettingsPage.qml" line="130" />
         <source>Plugins</source>
-        <translation>Plugins</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsPage.qml" line="134"/>
+        
+        <location filename="../qml/settings/SettingsPage.qml" line="138" />
         <source>Hydra catalogs</source>
-        <translation>Hydra catalogs</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsPage.qml" line="146"/>
+        
+        <location filename="../qml/settings/SettingsPage.qml" line="150" />
         <source>Edit catalog</source>
-        <translation>Edit catalog</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsPage.qml" line="146"/>
+        
+        <location filename="../qml/settings/SettingsPage.qml" line="150" />
         <source>New Hydra catalog</source>
-        <translation>New Hydra catalog</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsPage.qml" line="156"/>
+        
+        <location filename="../qml/settings/SettingsPage.qml" line="160" />
         <source>Storage</source>
-        <translation>Storage</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsPage.qml" line="164"/>
+        
+        <location filename="../qml/settings/SettingsPage.qml" line="168" />
         <source>Updates</source>
-        <translation>Updates</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsPage.qml" line="172"/>
+        
+        <location filename="../qml/settings/SettingsPage.qml" line="176" />
+        <source>Launch</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/settings/SettingsPage.qml" line="184" />
         <source>Appearance</source>
-        <translation>Appearance</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsPage.qml" line="226"/>
+        
+        <location filename="../qml/settings/SettingsPage.qml" line="238" />
         <source>Back</source>
-        <translation>Back</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsPage.qml" line="239"/>
+        
+        <location filename="../qml/settings/SettingsPage.qml" line="251" />
         <source>Done</source>
-        <translation>Done</translation>
-    </message>
+        </message>
+
 </context>
 <context>
     <name>SettingsPluginsPage</name>
     <message>
-        <location filename="../qml/settings/SettingsPluginsPage.qml" line="44"/>
-        <source>Plugins are sources with catalog, install, and launch. Package: .arach file (ZIP with plugin.json and libraries).</source>
-        <translation>Plugins are sources with catalog, install, and launch. Package: .arach file (ZIP with plugin.json and libraries).</translation>
-    </message>
-    <message>
-        <location filename="../qml/settings/SettingsPluginsPage.qml" line="71"/>
+        
+        <location filename="../qml/settings/SettingsPluginsPage.qml" line="71" />
         <source>No plugins found</source>
-        <translation>No plugins found</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsPluginsPage.qml" line="78"/>
-        <source>Install the .arach package using the button below.
-
-After building, FreeTP is in dist:
-build-win/dist/freetp.arach</source>
-        <translation>Install the .arach package using the button below.
-
-After building, FreeTP is in dist:
-build-win/dist/freetp.arach</translation>
-    </message>
-    <message>
-        <location filename="../qml/settings/SettingsPluginsPage.qml" line="147"/>
+        
+        <location filename="../qml/settings/SettingsPluginsPage.qml" line="147" />
         <source>v%1 · %2</source>
-        <translation>v%1 · %2</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsPluginsPage.qml" line="187"/>
+        
+        <location filename="../qml/settings/SettingsPluginsPage.qml" line="187" />
         <source>Install .arach…</source>
-        <translation>Install .arach…</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsPluginsPage.qml" line="198"/>
+        
+        <location filename="../qml/settings/SettingsPluginsPage.qml" line="198" />
         <source>Open folder</source>
-        <translation>Open folder</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsPluginsPage.qml" line="205"/>
+        
+        <location filename="../qml/settings/SettingsPluginsPage.qml" line="205" />
         <source>Refresh</source>
-        <translation>Refresh</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsPluginsPage.qml" line="215"/>
+        
+        <location filename="../qml/settings/SettingsPluginsPage.qml" line="215" />
         <source>User-installed: %1</source>
-        <translation>User-installed: %1</translation>
-    </message>
+        </message>
+
 </context>
 <context>
     <name>SettingsSourceFormPage</name>
     <message>
-        <location filename="../qml/settings/SettingsSourceFormPage.qml" line="61"/>
+        
+        <location filename="../qml/settings/SettingsSourceFormPage.qml" line="61" />
         <source>Enter a name and catalog URL.</source>
-        <translation>Enter a name and catalog URL.</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsSourceFormPage.qml" line="71"/>
+        
+        <location filename="../qml/settings/SettingsSourceFormPage.qml" line="71" />
         <source>Validating catalog…</source>
-        <translation>Validating catalog…</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsSourceFormPage.qml" line="86"/>
+        
+        <location filename="../qml/settings/SettingsSourceFormPage.qml" line="86" />
         <source>Could not save changes.</source>
-        <translation>Could not save changes.</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsSourceFormPage.qml" line="92"/>
+        
+        <location filename="../qml/settings/SettingsSourceFormPage.qml" line="92" />
         <source>Could not add catalog.</source>
-        <translation>Could not add catalog.</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsSourceFormPage.qml" line="113"/>
+        
+        <location filename="../qml/settings/SettingsSourceFormPage.qml" line="113" />
         <source>Could not load catalog from this URL.</source>
-        <translation>Could not load catalog from this URL.</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsSourceFormPage.qml" line="117"/>
+        
+        <location filename="../qml/settings/SettingsSourceFormPage.qml" line="117" />
         <source>Games found: %1</source>
-        <translation>Games found: %1</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsSourceFormPage.qml" line="132"/>
-        <source>Hydra catalog — a games.json JSON feed by URL. Arachnel pulls the game list and magnet links like Hydra Launcher. Install and launch via a source plugin (e.g. FreeTP).</source>
-        <translation>Hydra catalog — a games.json JSON feed by URL. Arachnel pulls the game list and magnet links like Hydra Launcher. Install and launch via a source plugin (e.g. FreeTP).</translation>
-    </message>
-    <message>
-        <location filename="../qml/settings/SettingsSourceFormPage.qml" line="143"/>
+        
+        <location filename="../qml/settings/SettingsSourceFormPage.qml" line="143" />
         <source>Name</source>
-        <translation>Name</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsSourceFormPage.qml" line="152"/>
+        
+        <location filename="../qml/settings/SettingsSourceFormPage.qml" line="152" />
         <source>URL games.json</source>
-        <translation>URL games.json</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsSourceFormPage.qml" line="161"/>
+        
+        <location filename="../qml/settings/SettingsSourceFormPage.qml" line="161" />
         <source>Short description (optional)</source>
-        <translation>Short description (optional)</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsSourceFormPage.qml" line="186"/>
+        
+        <location filename="../qml/settings/SettingsSourceFormPage.qml" line="186" />
         <source>Cancel</source>
-        <translation>Cancel</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsSourceFormPage.qml" line="193"/>
+        
+        <location filename="../qml/settings/SettingsSourceFormPage.qml" line="193" />
         <source>Validating…</source>
-        <translation>Validating…</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsSourceFormPage.qml" line="194"/>
+        
+        <location filename="../qml/settings/SettingsSourceFormPage.qml" line="194" />
         <source>Save</source>
-        <translation>Save</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsSourceFormPage.qml" line="194"/>
+        
+        <location filename="../qml/settings/SettingsSourceFormPage.qml" line="194" />
         <source>Add</source>
-        <translation>Add</translation>
-    </message>
+        </message>
+
 </context>
 <context>
     <name>SettingsSourcesPage</name>
     <message>
-        <location filename="../qml/settings/SettingsSourcesPage.qml" line="28"/>
+        
+        <location filename="../qml/settings/SettingsSourcesPage.qml" line="28" />
         <source>Games: …</source>
-        <translation>Games: …</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsSourcesPage.qml" line="29"/>
+        
+        <location filename="../qml/settings/SettingsSourcesPage.qml" line="29" />
         <source>Games: %1</source>
-        <translation>Games: %1</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsSourcesPage.qml" line="58"/>
-        <source>Connect catalogs in Hydra Launcher format (games.json). Handy when migrating from Hydra — same game links, torrent downloads. A source plugin is required to install and launch.</source>
-        <translation>Connect catalogs in Hydra Launcher format (games.json). Handy when migrating from Hydra — same game links, torrent downloads. A source plugin is required to install and launch.</translation>
-    </message>
-    <message>
-        <location filename="../qml/settings/SettingsSourcesPage.qml" line="85"/>
+        
+        <location filename="../qml/settings/SettingsSourcesPage.qml" line="85" />
         <source>No catalogs yet</source>
-        <translation>No catalogs yet</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsSourcesPage.qml" line="91"/>
-        <source>Click Add catalog and paste your games.json URL — like Hydra, or a public community feed.</source>
-        <translation>Click Add catalog and paste your games.json URL — like Hydra, or a public community feed.</translation>
-    </message>
-    <message>
-        <location filename="../qml/settings/SettingsSourcesPage.qml" line="171"/>
+        
+        <location filename="../qml/settings/SettingsSourcesPage.qml" line="171" />
         <source>Plugin · v%1</source>
-        <translation>Plugin · v%1</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsSourcesPage.qml" line="201"/>
+        
+        <location filename="../qml/settings/SettingsSourcesPage.qml" line="201" />
         <source>No URL — catalog will not load</source>
-        <translation>No URL — catalog will not load</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsSourcesPage.qml" line="203"/>
+        
+        <location filename="../qml/settings/SettingsSourcesPage.qml" line="203" />
         <source>Active in catalog</source>
-        <translation>Active in catalog</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsSourcesPage.qml" line="204"/>
+        
+        <location filename="../qml/settings/SettingsSourcesPage.qml" line="204" />
         <source>Disabled</source>
-        <translation>Disabled</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsSourcesPage.qml" line="214"/>
+        
+        <location filename="../qml/settings/SettingsSourcesPage.qml" line="214" />
         <source>Edit</source>
-        <translation>Edit</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsSourcesPage.qml" line="226"/>
+        
+        <location filename="../qml/settings/SettingsSourcesPage.qml" line="226" />
         <source>Delete</source>
-        <translation>Delete</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsSourcesPage.qml" line="241"/>
+        
+        <location filename="../qml/settings/SettingsSourcesPage.qml" line="241" />
         <source>Add Hydra catalog</source>
-        <translation>Add Hydra catalog</translation>
-    </message>
+        </message>
+
 </context>
 <context>
     <name>SettingsStoragePage</name>
     <message>
-        <location filename="../qml/settings/SettingsStoragePage.qml" line="72"/>
-        <source>Libraries on disks — like Steam. Default is C:; you can add other drives.</source>
-        <translation>Libraries on disks — like Steam. Default is C:; you can add other drives.</translation>
-    </message>
-    <message>
-        <location filename="../qml/settings/SettingsStoragePage.qml" line="176"/>
+        
+        <location filename="../qml/settings/SettingsStoragePage.qml" line="176" />
         <source>Add drive…</source>
-        <translation>Add drive…</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsStoragePage.qml" line="194"/>
+        
+        <location filename="../qml/settings/SettingsStoragePage.qml" line="194" />
         <source>Games: %1</source>
-        <translation>Games: %1</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsStoragePage.qml" line="281"/>
+        
+        <location filename="../qml/settings/SettingsStoragePage.qml" line="281" />
         <source>No games on this drive yet</source>
-        <translation>No games on this drive yet</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsStoragePage.qml" line="299"/>
+        
+        <location filename="../qml/settings/SettingsStoragePage.qml" line="299" />
         <source>Delete</source>
-        <translation>Delete</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsStoragePage.qml" line="313"/>
+        
+        <location filename="../qml/settings/SettingsStoragePage.qml" line="313" />
         <source>Move…</source>
-        <translation>Move…</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsStoragePage.qml" line="332"/>
+        
+        <location filename="../qml/settings/SettingsStoragePage.qml" line="332" />
         <source>Move to drive</source>
-        <translation>Move to drive</translation>
-    </message>
+        </message>
+
 </context>
 <context>
     <name>SettingsUpdatesPage</name>
     <message>
-        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="28"/>
-        <source>Update checks and portable build integrity verification.</source>
-        <translation>Update checks and portable build integrity verification.</translation>
-    </message>
+        
+        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="28" />
+        <source>Update checks and automatic installs.</source>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="46"/>
+        
+        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="46" />
         <source>Check for updates when loading the catalog</source>
-        <translation>Check for updates when loading the catalog</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="52"/>
+        
+        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="52" />
         <source>Compares build dates in the catalog with installed games.</source>
-        <translation>Compares build dates in the catalog with installed games.</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="77"/>
-        <source>Verify portable files before launch</source>
-        <translation>Verify portable files before launch</translation>
-    </message>
+        
+        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="77" />
+        <source>Install updates automatically on launch</source>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="83"/>
-        <source>The install folder and .exe must exist.</source>
-        <translation>The install folder and .exe must exist.</translation>
-    </message>
+        
+        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="83" />
+        <source>Starts downloads for games with updates when the catalog finishes loading. Per-game opt-out is available in game details.</source>
+        </message>
     <message>
-        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="103"/>
+        
+        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="103" />
         <source>Check for updates</source>
-        <translation>Check for updates</translation>
-    </message>
-    <message>
-        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="110"/>
-        <source>Verify portable</source>
-        <translation>Verify portable</translation>
-    </message>
+        </message>
+
 </context>
 <context>
     <name>SourceHelpDialog</name>
     <message>
-        <location filename="../qml/components/SourceHelpDialog.qml" line="12"/>
+        
+        <location filename="../qml/components/SourceHelpDialog.qml" line="12" />
         <source>Catalogs and plugins</source>
-        <translation>Catalogs and plugins</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/components/SourceHelpDialog.qml" line="19"/>
+        
+        <location filename="../qml/components/SourceHelpDialog.qml" line="19" />
         <source>Step 1</source>
-        <translation>Step 1</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/components/SourceHelpDialog.qml" line="20"/>
+        
+        <location filename="../qml/components/SourceHelpDialog.qml" line="20" />
         <source>Hydra catalog</source>
-        <translation>Hydra catalog</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/components/SourceHelpDialog.qml" line="21"/>
-        <source>A games.json feed by URL — the same format as Hydra Launcher. Add it under Settings → Hydra catalogs; games appear in Catalog.</source>
-        <translation>A games.json feed by URL — the same format as Hydra Launcher. Add it under Settings → Hydra catalogs; games appear in Catalog.</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/SourceHelpDialog.qml" line="25"/>
+        
+        <location filename="../qml/components/SourceHelpDialog.qml" line="25" />
         <source>Step 2</source>
-        <translation>Step 2</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/components/SourceHelpDialog.qml" line="26"/>
+        
+        <location filename="../qml/components/SourceHelpDialog.qml" line="26" />
         <source>Catalog</source>
-        <translation>Catalog</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/components/SourceHelpDialog.qml" line="27"/>
-        <source>Games from enabled catalogs appear in Catalog. Downloads use torrent magnets from JSON.</source>
-        <translation>Games from enabled catalogs appear in Catalog. Downloads use torrent magnets from JSON.</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/SourceHelpDialog.qml" line="31"/>
+        
+        <location filename="../qml/components/SourceHelpDialog.qml" line="31" />
         <source>Step 3</source>
-        <translation>Step 3</translation>
-    </message>
+        </message>
     <message>
-        <location filename="../qml/components/SourceHelpDialog.qml" line="32"/>
+        
+        <location filename="../qml/components/SourceHelpDialog.qml" line="32" />
         <source>Library</source>
-        <translation>Library</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/SourceHelpDialog.qml" line="33"/>
-        <source>After download and install, the game appears here — launch, updates, and details.</source>
-        <translation>After download and install, the game appears here — launch, updates, and details.</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/SourceHelpDialog.qml" line="43"/>
-        <source>Two ways to fill the catalog: Hydra catalogs (games.json) for migrating from Hydra; plugins (.arach) for the full cycle: catalog, install, launch, and add-ons.</source>
-        <translation>Two ways to fill the catalog: Hydra catalogs (games.json) for migrating from Hydra; plugins (.arach) for the full cycle: catalog, install, launch, and add-ons.</translation>
-    </message>
-</context>
-<context>
-    <name>arachnel::core::CoreController</name>
-    <message>
-        <location filename="../src/core/core_controller.cpp" line="363"/>
-        <source>Installation of %1 is already in progress</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/core/core_controller.cpp" line="411"/>
-        <source>Install failed for %1: %2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/core/core_controller.cpp" line="468"/>
-        <source>Update installed: %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/core/core_controller.cpp" line="470"/>
-        <source>Installed: %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/core/core_controller.cpp" line="565"/>
-        <source>Add-on installation is already in progress</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/core/core_controller.cpp" line="631"/>
-        <source>Add-on install failed for %1: %2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/core/core_controller.cpp" line="2482"/>
-        <source>Download not found</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/core/core_controller.cpp" line="2486"/>
-        <source>Installation is only available for completed downloads</source>
-        <translation type="unfinished"></translation>
-    </message>
+        </message>
+
 </context>
 </TS>

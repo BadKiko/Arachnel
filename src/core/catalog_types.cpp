@@ -1,5 +1,7 @@
 #include "catalog_types.h"
 
+#include <QCoreApplication>
+
 #include <QRegularExpression>
 
 namespace arachnel::core {
@@ -8,28 +10,36 @@ QString catalogItemKindLabel(CatalogItemKind kind)
 {
     switch (kind) {
     case CatalogItemKind::Game:
-        return QStringLiteral("Игра");
+        return QCoreApplication::translate("Core", "Game");
     case CatalogItemKind::Dlc:
         return QStringLiteral("DLC");
     case CatalogItemKind::Addon:
-        return QStringLiteral("Дополнение");
+        return QCoreApplication::translate("Core", "Add-on");
     }
-    return QStringLiteral("Компонент");
+    return QCoreApplication::translate("Core", "Component");
 }
 
 QString componentDeliveryLabel(ComponentDelivery delivery)
 {
     switch (delivery) {
     case ComponentDelivery::Direct:
-        return QStringLiteral("Прямая");
+        return QCoreApplication::translate("Core", "Direct");
     case ComponentDelivery::Magnet:
-        return QStringLiteral("Торрент");
+        return QCoreApplication::translate("Core", "Torrent");
     }
-    return QStringLiteral("Загрузка");
+    return QCoreApplication::translate("Core", "Download");
+}
+
+QString repairCatalogEntryId(const QString& entryId)
+{
+    if (entryId.startsWith(QStringLiteral("count:")))
+        return entryId.mid(6);
+    return entryId;
 }
 
 QString slugifyCatalogId(const QString& title, const QString& sourceId)
 {
+    const QString source = repairCatalogEntryId(sourceId);
     QString slug = title.toLower();
     slug.replace(QRegularExpression(QStringLiteral("[^a-z0-9а-яё]+"), QRegularExpression::UseUnicodePropertiesOption),
                  QStringLiteral("-"));
@@ -41,7 +51,7 @@ QString slugifyCatalogId(const QString& title, const QString& sourceId)
         slug.chop(1);
     if (slug.isEmpty())
         slug = QStringLiteral("entry");
-    return QStringLiteral("%1-%2").arg(sourceId, slug);
+    return QStringLiteral("%1-%2").arg(source, slug);
 }
 
 } // namespace arachnel::core

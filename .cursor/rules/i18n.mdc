@@ -1,0 +1,35 @@
+---
+description: Все новые UI-строки — на английском в коде и с русским переводом в .ts
+alwaysApply: true
+---
+
+# i18n (Arachnel)
+
+**English** — язык исходника. **Russian** — основной перевод в `translations/arachnel_ru.ts`.
+
+## При добавлении любой пользовательской строки
+
+1. **QML** — `qsTr("English text")`, не хардкод на русском.
+2. **C++** — `QCoreApplication::translate("Core", "English text")`.
+3. **Длинные тексты** (подсказки, help) — `qml/i18n/Messages.qml` + `qsTrId("short.id")` и `//% "English"`.
+4. **Сразу после изменений** — обновить переводы и закоммитить `.ts`:
+
+```bash
+cmake --build build --target update_translations
+python3 tools/normalize_translations.py
+cmake --build build --target release_translations
+```
+
+5. Новые строки для `normalize_translations.py`: добавить пару `English → Русский` в `EN_TO_RU`, либо вручную заполнить `<translation>` в `arachnel_ru.ts` (без `type="unfinished"`).
+
+## Нельзя
+
+- Оставлять новые строки только на русском в коде.
+- Завершать задачу с `type="unfinished"` в `arachnel_ru.ts` для добавленных строк.
+- Пропускать `update_translations` + `normalize` при изменении `qsTr` / `translate` / `Messages.qml`.
+
+## Файлы
+
+- `translations/arachnel_en.ts` — шаблон (только `<source>`)
+- `translations/arachnel_ru.ts` — русский
+- `docs/TRANSLATING.md` — подробности

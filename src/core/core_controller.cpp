@@ -1,46 +1,72 @@
 #include "core_controller.h"
 
+#include "../crash_log.h"
+
 #include <QDesktopServices>
 
 #include "catalog_feed_loader.h"
 #include "catalog_parser.h"
 #include "cover_image_cache.h"
 #include "file_utils.h"
+#include "i18n.h"
+#include "install_analyzer.h"
+#include "install_heuristics.h"
 #include "install_kind_probe_service.h"
 #include "game_metadata_service.h"
 #include "http_download_session.h"
 #include "job_orchestrator.h"
 #include "job_status.h"
 #include "job_store.h"
+#include "launch_resolver.h"
 #include "library_store.h"
 #include "plugin_host.h"
 #include "plugin_interface.h"
 #include "process_launcher.h"
 #include "process_tracker.h"
+#include "proton_manager.h"
+#include "windows_runner.h"
 #include "settings_store.h"
 #include "storage_library_model.h"
 #include "torrent_session.h"
 
 #include <QCoreApplication>
+#include <QFileInfo>
 #include <QDate>
 #include <QDateTime>
+#include <QGuiApplication>
+#include <QClipboard>
 #include <QDir>
 #include <QFileInfo>
 #include <QFutureWatcher>
 #include <QJSEngine>
 #include <QQmlEngine>
+#include <QSet>
 #include <QTimer>
+#include <QUrl>
 #include <QtConcurrent>
 #include <QtQml/qqml.h>
+
+#include <QStandardPaths>
 
 #if defined(Q_OS_WIN)
 #include <objbase.h>
 #include <shobjidl.h>
+#else
+#include <QFileDialog>
 #endif
 
 namespace arachnel::core {
 
 namespace {
+
+bool catalogCacheHasPollutedIds(const QVector<CatalogEntry>& entries)
+{
+    for (const auto& entry : entries) {
+        if (entry.id.startsWith(QStringLiteral("count:")))
+            return true;
+    }
+    return false;
+}
 
 QStringList variantListToStringList(const QVariantList& values)
 {
@@ -53,6 +79,8 @@ QStringList variantListToStringList(const QVariantList& values)
     }
     return result;
 }
+
+bool g_crashReporterMode = false;
 
 } // namespace
 
@@ -69,12 +97,21 @@ CoreController& CoreController::instance()
     return controller;
 }
 
+void CoreController::setCrashReporterMode(bool enabled)
+{
+    g_crashReporterMode = enabled;
+}
+
 CoreController::CoreController(QObject* parent)
     : QObject(parent)
 {
+    if (g_crashReporterMode)
+        return;
+
     m_settings.load();
     m_jobStore.load();
     m_libraryStore.load();
+    migratePollutedEntryIds();
     {
         QVector<LibraryGame> games = m_libraryStore.games();
         bool cleared = false;
@@ -89,7 +126,9 @@ CoreController::CoreController(QObject* parent)
     }
     m_pluginHost = new PluginHost(this);
     m_pluginHost->scan();
-    m_installKindProbe = new InstallKindProbeService(m_pluginHost, this);
+    logDiagnostic(QStringLiteral("Core CatalogEntry=%1 bytes").arg(sizeof(CatalogEntry)));
+    m_installAnalyzer = new InstallAnalyzer(m_pluginHost);
+    m_installKindProbe = new InstallKindProbeService(m_installAnalyzer, this);
     connect(m_installKindProbe, &InstallKindProbeService::installKindResolved, this,
             [this](const QString& entryId, InstallKind kind) {
                 syncCatalogInstallKind(entryId, kind);
@@ -97,6 +136,7 @@ CoreController::CoreController(QObject* parent)
     initializeServices();
     connect(m_pluginHost, &PluginHost::pluginsChanged, this, [this]() {
         syncSourcesFromPlugins();
+        reconcileJobInstallState();
         emit pluginsChanged();
     });
     syncSourcesFromPlugins();
@@ -134,6 +174,54 @@ void CoreController::initializeServices()
     m_jobOrchestrator = new JobOrchestrator(&m_settings, &m_jobStore, m_torrentSession,
                                             m_httpSession, &m_jobs, this);
     m_jobOrchestrator->restoreJobs();
+    connect(&m_jobs, &JobModel::jobsChanged, this, &CoreController::syncInstallKindProbeSuspension);
+    syncInstallKindProbeSuspension();
+    m_protonManager = new ProtonManager(this);
+    connect(m_protonManager, &ProtonManager::downloadStateChanged, this,
+            &CoreController::protonDownloadChanged);
+    connect(m_protonManager, &ProtonManager::downloadFinished, this,
+            [this](bool success, const QString& error) {
+                emit protonDownloadChanged();
+                emit availableProtonsChanged();
+                emit protonStateChanged();
+                if (success) {
+                    syncProtonCatalog();
+                    if (m_settings.defaultProtonId().isEmpty()) {
+                        const QString latest = m_protonManager->latestGeReleaseName();
+                        for (const ProtonEntry& entry :
+                             m_protonManager->availableEntries(true)) {
+                            if (entry.name == latest) {
+                                m_settings.setDefaultProtonId(entry.id);
+                                break;
+                            }
+                        }
+                    }
+                    showNotice(QCoreApplication::translate("Core", "Proton-GE installed"));
+                } else if (!error.isEmpty()) {
+                    showNotice(QCoreApplication::translate("Core", "Proton-GE download failed: %1")
+                                   .arg(error));
+                }
+            });
+    connect(m_protonManager, &ProtonManager::versionsChanged, this, [this]() {
+        syncProtonCatalog();
+        emit availableProtonsChanged();
+        emit protonStateChanged();
+    });
+    connect(m_protonManager, &ProtonManager::availableEntriesChanged, this,
+            &CoreController::availableProtonsChanged);
+    connect(m_protonManager, &ProtonManager::latestGeReleaseChanged, this,
+            &CoreController::protonLatestReleaseChanged);
+    connect(&m_settings, &SettingsStore::defaultProtonIdChanged, this,
+            &CoreController::protonStateChanged);
+    connect(&m_settings, &SettingsStore::protonPriorityChanged, this,
+            &CoreController::protonStateChanged);
+
+#if defined(Q_OS_LINUX)
+    if (m_protonManager) {
+        m_protonManager->refreshLatestGeRelease();
+        syncProtonCatalog();
+    }
+#endif
 
     connect(m_catalogLoader, &CatalogFeedLoader::feedLoaded, this,
             [this](const QString& sourceId, const QVector<CatalogEntry> entries) {
@@ -147,7 +235,7 @@ void CoreController::initializeServices()
                 m_catalogHttpLoadActive = false;
                 m_loadingSourceIds.remove(sourceId);
                 if (m_activeSourceIds.contains(sourceId))
-                    showNotice(QStringLiteral("Ошибка каталога: %1").arg(error));
+                    showNotice(QCoreApplication::translate("Core", "Catalog error: %1").arg(error));
                 rebuildMergedCatalog();
                 processCatalogLoadQueue();
             });
@@ -159,13 +247,10 @@ void CoreController::initializeServices()
                     return;
 
                 const QString sourceId = tag.mid(6);
-                QVector<CatalogEntry> normalized = entries;
-                normalizeCatalogSourceIds(normalized, sourceId);
-                m_catalogCounts.insert(sourceId, normalized.size());
-                m_catalogBySource.insert(sourceId, normalized);
+                m_catalogCounts.insert(sourceId, entries.size());
                 emit catalogCountsChanged();
-                if (m_activeSourceIds.contains(sourceId))
-                    rebuildMergedCatalog();
+                if (m_activeSourceIds.contains(sourceId) && !m_catalogBySource.contains(sourceId))
+                    requestCatalogLoad(sourceId);
                 startNextCatalogPrefetch();
             });
     connect(m_catalogProbeLoader, &CatalogFeedLoader::feedFailed, this,
@@ -212,10 +297,7 @@ void CoreController::initializeServices()
                 for (auto& entry : m_catalogCache) {
                     if (entry.id != entryId)
                         continue;
-                    if (!metadata.description.isEmpty())
-                        entry.description = metadata.description;
-                    if (!metadata.genres.isEmpty())
-                        entry.genres = metadata.genres;
+                    applyMetadataToEntry(entry, metadata);
                     syncEntryToCatalogModel(entryId);
                     break;
                 }
@@ -223,6 +305,7 @@ void CoreController::initializeServices()
                     ensureDiskCover(entryId, metadata.coverUrl);
                 else
                     applyCoverToEntry(entryId, QString());
+                emit entryMetadataChanged(entryId);
             });
 
     connect(m_coverCache, &CoverImageCache::ready, this,
@@ -253,12 +336,12 @@ void CoreController::initializeServices()
                 if (job && !job->parentEntryId.isEmpty()) {
                     const CatalogEntry* parent = findCatalogEntry(job->parentEntryId);
                     if (!parent) {
-                        showNotice(QStringLiteral("Игра не найдена для дополнения"));
+                        showNotice(QCoreApplication::translate("Core", "Game not found for add-on"));
                         return;
                     }
                     const CatalogComponent* addon = findCatalogAddon(*parent, entryId);
                     if (!addon) {
-                        showNotice(QStringLiteral("Дополнение не найдено в каталоге"));
+                        showNotice(QCoreApplication::translate("Core", "Add-on not found in catalog"));
                         return;
                     }
 
@@ -269,12 +352,16 @@ void CoreController::initializeServices()
                 const JobEntry* jobHint = job;
                 const auto entry = resolveCatalogEntry(entryId, sourceId, jobHint);
                 if (!entry) {
-                    showNotice(QStringLiteral("Не удалось найти игру для установки: %1")
+                    showNotice(QCoreApplication::translate("Core", "Could not find game to install: %1")
                                       .arg(entryId));
                     return;
                 }
 
-                if (m_pluginHost && m_pluginHost->hasPlugin(sourceId)) {
+                InstallContext probeCtx;
+                probeCtx.sourceId = sourceId;
+                probeCtx.downloadPath = artifactPath;
+                if (m_installAnalyzer
+                    && m_installAnalyzer->resolveDownload(probeCtx).installerPlugin) {
                     const InstallKind detectedKind =
                         detectInstallKindForEntry(sourceId, artifactPath);
                     syncCatalogInstallKind(entryId, detectedKind);
@@ -282,41 +369,26 @@ void CoreController::initializeServices()
                     return;
                 }
 
-                LibraryGame game;
-                game.id = entryId;
-                game.title = entry->title;
-                game.coverUrl = entry->coverUrl;
-                game.sourceId = sourceId;
-                game.sourceName = m_sources.nameForId(sourceId);
-                game.version = entry->version;
-                game.installPath = QString();
-                game.description = entry->description;
-                game.genres = entry->genres;
-                game.sizeLabel = entry->sizeLabel;
-                game.installKind = entry->installKind;
-                game.uploadDate = entry->uploadDate;
-                game.magnetUri = entry->magnetUris.value(0);
-                game.downloadPath = artifactPath;
-                game.libraryId = libraryId.isEmpty() ? m_settings.defaultLibraryId() : libraryId;
-                game.hasUpdate = false;
-
-                for (const auto& addon : entry->addons) {
-                    InstalledComponent component;
-                    component.id = addon.id;
-                    component.title = addon.title;
-                    component.uploadDate = addon.uploadDate;
-                    component.installed = false;
-                    game.components.append(component);
+                const LibraryGame* existing = m_libraryStore.gameById(entryId);
+                const QString installPath =
+                    existing && !existing->installPath.isEmpty() ? existing->installPath
+                                                                 : QString();
+                if (!installPath.isEmpty()) {
+                    commitInstalledCatalogGame(*entry, sourceId, artifactPath, libraryId, installPath,
+                                               entry->installKind);
+                    return;
                 }
 
-                m_libraryStore.upsertGame(game);
-                syncLibraryFromStore();
+                ensureLibraryPlaceholder(*entry, libraryId);
+                m_jobOrchestrator->setJobPhase(
+                    jobId, QStringLiteral("completed"),
+                    QCoreApplication::translate("Core", "Download complete — install manually"));
             });
 
     connect(m_jobOrchestrator, &JobOrchestrator::downloadFailed, this,
             [this](const QString& jobId, const QString& error) {
                 Q_UNUSED(jobId)
-                showNotice(QStringLiteral("Ошибка загрузки: %1").arg(error));
+                showNotice(QCoreApplication::translate("Core", "Download error: %1").arg(error));
             });
 }
 
@@ -360,23 +432,14 @@ void CoreController::startPluginInstall(const CatalogEntry& entry, const QString
                                         const QString& libraryId, const QString& jobId)
 {
     if (m_installingEntries.contains(entry.id)) {
-        showNotice(tr("Installation of %1 is already in progress").arg(entry.title));
+        showNotice(QCoreApplication::translate("Core", "Installation of %1 is already in progress").arg(entry.title));
         return;
     }
-
-    ISourcePlugin* plugin = m_pluginHost ? m_pluginHost->plugin(sourceId) : nullptr;
-    if (!plugin) {
-        showNotice(QStringLiteral("Плагин источника не найден: %1").arg(sourceId));
-        return;
-    }
-
-    m_installingEntries.insert(entry.id);
 
     const QString libId = libraryId.isEmpty() ? m_settings.defaultLibraryId() : libraryId;
-    const InstallKind detectedKind = detectInstallKindForEntry(sourceId, savePath);
-    syncCatalogInstallKind(entry.id, detectedKind);
 
     InstallContext ctx;
+    ctx.jobId = jobId;
     ctx.entryId = entry.id;
     ctx.sourceId = sourceId;
     ctx.title = entry.title;
@@ -385,6 +448,26 @@ void CoreController::startPluginInstall(const CatalogEntry& entry, const QString
     ctx.downloadPath = savePath;
     ctx.magnetUri = entry.magnetUris.value(0);
     ctx.uploadDate = entry.uploadDate;
+    fillProtonInstallFields(ctx.entryId,
+                            m_settings.resolvedProtonId(QString(), *m_protonManager),
+                            &ctx.protonExecutable, &ctx.compatDataPath, &ctx.steamCompatClientPath);
+
+    const InstallPlan plan =
+        m_installAnalyzer ? m_installAnalyzer->resolveDownload(ctx) : InstallPlan{};
+    if (!plan.installerPlugin) {
+        if (!jobId.isEmpty()) {
+            if (const JobEntry* job = m_jobStore.jobById(jobId))
+                offerManualInstallForJob(*job);
+        } else {
+            showNotice(QCoreApplication::translate("Core", "No install handler for %1").arg(entry.title));
+        }
+        return;
+    }
+
+    m_installingEntries.insert(entry.id);
+
+    const InstallKind detectedKind = plan.analysis.kind;
+    syncCatalogInstallKind(entry.id, detectedKind);
     ctx.installKind = detectedKind;
 
     if (!jobId.isEmpty()) {
@@ -395,8 +478,9 @@ void CoreController::startPluginInstall(const CatalogEntry& entry, const QString
                                            QStringLiteral("Installing…"));
     }
 
-    m_pluginHost->runInstallAsync(plugin, ctx, [this, entry, sourceId, savePath, kind, libId, jobId,
-                                                detectedKind](const InstallResult& result) {
+    m_pluginHost->runInstallAsync(plan.installerPlugin, ctx,
+                                  [this, entry, sourceId, savePath, kind, libId, jobId,
+                                   detectedKind](const InstallResult& result) {
         m_installingEntries.remove(entry.id);
 
         if (!result.success) {
@@ -408,40 +492,17 @@ void CoreController::startPluginInstall(const CatalogEntry& entry, const QString
                 m_jobOrchestrator->setJobPhase(jobId, QStringLiteral("completed"), detail);
             m_installSessions.remove(entry.id);
             m_installSelectedAddons.remove(entry.id);
-            showNotice(tr("Install failed for %1: %2")
+            showNotice(QCoreApplication::translate("Core", "Install failed for %1: %2")
                               .arg(entry.title, result.error));
+            if (!jobId.isEmpty()) {
+                if (const JobEntry* job = m_jobStore.jobById(jobId))
+                    offerManualInstallForJob(*job);
+            }
             return;
         }
 
-        LibraryGame game;
-        game.id = entry.id;
-        game.title = entry.title;
-        game.coverUrl = entry.coverUrl;
-        game.sourceId = sourceId;
-        game.sourceName = m_sources.nameForId(sourceId);
-        game.version = entry.version;
-        game.installPath = result.installPath;
-        game.description = entry.description;
-        game.genres = entry.genres;
-        game.sizeLabel = entry.sizeLabel;
-        game.installKind = detectedKind;
-        game.uploadDate = entry.uploadDate;
-        game.magnetUri = entry.magnetUris.value(0);
-        game.downloadPath = savePath;
-        game.libraryId = libId;
-        game.hasUpdate = false;
-
-        for (const auto& addon : entry.addons) {
-            InstalledComponent component;
-            component.id = addon.id;
-            component.title = addon.title;
-            component.uploadDate = addon.uploadDate;
-            component.installed = false;
-            game.components.append(component);
-        }
-
-        m_libraryStore.upsertGame(game);
-        syncLibraryFromStore();
+        commitInstalledCatalogGame(entry, sourceId, savePath, libId, result.installPath,
+                                   detectedKind);
 
         if (GameInstallSession* session = m_installSessions.contains(entry.id)
                                               ? &m_installSessions[entry.id]
@@ -464,10 +525,12 @@ void CoreController::startPluginInstall(const CatalogEntry& entry, const QString
                                                QStringLiteral("Installed"));
         }
 
+        reconcileJobInstallState();
+
         if (kind == JobKind::Update)
-            showNotice(tr("Update installed: %1").arg(entry.title));
+            showNotice(QCoreApplication::translate("Core", "Update installed: %1").arg(entry.title));
         else
-            showNotice(tr("Installed: %1").arg(entry.title));
+            showNotice(QCoreApplication::translate("Core", "Installed: %1").arg(entry.title));
     });
 }
 
@@ -551,6 +614,7 @@ void CoreController::advanceInstallSession(const QString& entryId)
                                    QStringLiteral("Installed"));
     m_installSessions.remove(entryId);
     m_installSelectedAddons.remove(entryId);
+    reconcileJobInstallState();
 }
 
 void CoreController::startPluginAddonInstall(const CatalogEntry& parent,
@@ -562,19 +626,19 @@ void CoreController::startPluginAddonInstall(const CatalogEntry& parent,
 {
     const QString installKey = parent.id + QLatin1Char(':') + addon.id;
     if (m_installingAddons.contains(installKey)) {
-        showNotice(tr("Add-on installation is already in progress"));
+        showNotice(QCoreApplication::translate("Core", "Add-on installation is already in progress"));
         return;
     }
 
     const LibraryGame* game = m_libraryStore.gameById(parent.id);
     if (!game || game->installPath.isEmpty()) {
-        showNotice(QStringLiteral("Сначала установите игру"));
+        showNotice(QCoreApplication::translate("Core", "Install the game first"));
         return;
     }
 
     ISourcePlugin* plugin = m_pluginHost ? m_pluginHost->plugin(sourceId) : nullptr;
     if (!plugin) {
-        showNotice(QStringLiteral("Плагин источника не найден: %1").arg(sourceId));
+        showNotice(QCoreApplication::translate("Core", "Source plugin not found: %1").arg(sourceId));
         return;
     }
 
@@ -599,6 +663,9 @@ void CoreController::startPluginAddonInstall(const CatalogEntry& parent,
     ctx.gameInstallPath = game->installPath;
     ctx.downloadPath = artifactPath;
     ctx.addonKind = addon.kind;
+    fillProtonInstallFields(parent.id,
+                            m_settings.resolvedProtonId(QString(), *m_protonManager),
+                            &ctx.protonExecutable, &ctx.compatDataPath, &ctx.steamCompatClientPath);
 
     m_pluginHost->runAddonInstallAsync(plugin, ctx,
                                          [this, parent, addon, progressJobId, installKey, done](
@@ -628,7 +695,7 @@ void CoreController::startPluginAddonInstall(const CatalogEntry& parent,
                                                          QStringLiteral("completed"), detail);
                                                  m_installSessions.remove(parent.id);
                                                  m_installSelectedAddons.remove(parent.id);
-                                                 showNotice(tr("Add-on install failed for %1: %2")
+                                                 showNotice(QCoreApplication::translate("Core", "Add-on install failed for %1: %2")
                                                                    .arg(addon.title, result.error));
                                                  if (done)
                                                      done(false);
@@ -649,11 +716,71 @@ void CoreController::startPluginAddonInstall(const CatalogEntry& parent,
                                                      QStringLiteral("completed"),
                                                      QStringLiteral("Installed"));
 
-                                             showNotice(QStringLiteral("Дополнение установлено: %1")
+                                             showNotice(QCoreApplication::translate("Core", "Add-on installed: %1")
                                                                .arg(addon.title));
                                              if (done)
                                                  done(true);
                                          });
+}
+
+void CoreController::commitInstalledCatalogGame(const CatalogEntry& entryHint,
+                                                const QString& sourceId, const QString& savePath,
+                                                const QString& libraryId, const QString& installPath,
+                                                InstallKind installKind)
+{
+    const CatalogEntry* fresh = findCatalogEntry(entryHint.id);
+    const CatalogEntry& catalog = fresh ? *fresh : entryHint;
+    const QString libId = libraryId.isEmpty() ? m_settings.defaultLibraryId() : libraryId;
+
+    LibraryGame game;
+    const LibraryGame* existing = m_libraryStore.gameById(catalog.id);
+    if (existing)
+        game = *existing;
+
+    game.id = catalog.id;
+    game.title = catalog.title;
+    game.coverUrl = catalog.coverUrl;
+    game.sourceId = sourceId;
+    game.sourceName = m_sources.nameForId(sourceId);
+    game.version = catalog.version;
+    game.description = catalog.description;
+    game.genres = catalog.genres;
+    game.sizeLabel = catalog.sizeLabel;
+    game.installKind = installKind;
+    game.uploadDate = catalog.uploadDate;
+    game.magnetUri = catalog.magnetUris.value(0);
+    game.downloadPath = savePath;
+    game.libraryId = libId;
+    game.hasUpdate = false;
+    if (!installPath.isEmpty())
+        game.installPath = installPath;
+    if (!installPath.isEmpty() && game.executableOverride.trimmed().isEmpty()) {
+        const QString executable = findGameExecutableInTree(installPath);
+        if (!executable.isEmpty())
+            game.executableOverride = executable;
+    }
+
+    QHash<QString, InstalledComponent> previousComponents;
+    for (const auto& component : game.components)
+        previousComponents.insert(component.id, component);
+
+    QVector<InstalledComponent> components;
+    components.reserve(catalog.addons.size());
+    for (const auto& addon : catalog.addons) {
+        InstalledComponent component;
+        component.id = addon.id;
+        component.title = addon.title;
+        component.uploadDate = addon.uploadDate;
+        if (const auto it = previousComponents.constFind(addon.id); it != previousComponents.cend())
+            component.installed = it->installed;
+        components.append(component);
+    }
+    game.components = components;
+
+    m_libraryStore.upsertGame(game);
+    syncLibraryFromStore();
+    if (!m_catalogCache.isEmpty())
+        recalculateLibraryUpdates(false);
 }
 
 void CoreController::markCatalogAddonInstalled(const QString& parentEntryId,
@@ -663,14 +790,22 @@ void CoreController::markCatalogAddonInstalled(const QString& parentEntryId,
     if (!existing)
         return;
 
+    QString resolvedUploadDate = uploadDate;
+    if (const CatalogEntry* parent = findCatalogEntry(parentEntryId)) {
+        if (const CatalogComponent* remoteAddon = findCatalogAddon(*parent, addonId)) {
+            if (!remoteAddon->uploadDate.isEmpty())
+                resolvedUploadDate = remoteAddon->uploadDate;
+        }
+    }
+
     LibraryGame game = *existing;
     bool found = false;
     for (auto& component : game.components) {
         if (component.id != addonId)
             continue;
         component.installed = true;
-        if (!uploadDate.isEmpty())
-            component.uploadDate = uploadDate;
+        if (!resolvedUploadDate.isEmpty())
+            component.uploadDate = resolvedUploadDate;
         found = true;
         break;
     }
@@ -679,7 +814,7 @@ void CoreController::markCatalogAddonInstalled(const QString& parentEntryId,
         InstalledComponent component;
         component.id = addonId;
         component.installed = true;
-        component.uploadDate = uploadDate;
+        component.uploadDate = resolvedUploadDate;
         game.components.append(component);
     }
 
@@ -730,19 +865,19 @@ void CoreController::installDownloadedCatalogAddon(const QString& entryId, const
 {
     const CatalogEntry* parent = findCatalogEntry(entryId);
     if (!parent) {
-        showNotice(QStringLiteral("Игра не найдена"));
+        showNotice(QCoreApplication::translate("Core", "Game not found"));
         return;
     }
 
     const CatalogComponent* addon = findCatalogAddon(*parent, addonId);
     if (!addon) {
-        showNotice(QStringLiteral("Дополнение не найдено"));
+        showNotice(QCoreApplication::translate("Core", "Add-on not found"));
         return;
     }
 
     const QString artifactPath = resolveAddonArtifactPath(entryId, addonId);
     if (artifactPath.isEmpty()) {
-        showNotice(QStringLiteral("Сначала скачайте дополнение"));
+        showNotice(QCoreApplication::translate("Core", "Download the add-on first"));
         return;
     }
 
@@ -786,7 +921,10 @@ std::optional<CatalogEntry> CoreController::resolveCatalogEntry(const QString& e
 
 bool CoreController::gameNeedsInstall(const QString& entryId) const
 {
-    return !isEntryPlayable(entryId);
+    const LibraryGame* game = m_libraryStore.gameById(entryId);
+    if (!game || game->installPath.isEmpty())
+        return true;
+    return !QFileInfo::exists(game->installPath);
 }
 
 const JobEntry* CoreController::findLatestJobForEntry(const QString& entryId) const
@@ -809,15 +947,20 @@ bool CoreController::isEntryPlayable(const QString& entryId) const
     if (!QFileInfo::exists(game->installPath))
         return false;
 
+    LaunchInfo info;
     if (m_pluginHost) {
-        if (ISourcePlugin* plugin = m_pluginHost->plugin(game->sourceId)) {
-            const LaunchInfo info = plugin->launchInfo(*game);
-            if (!info.executable.isEmpty())
-                return QFileInfo::exists(info.executable);
-        }
+        if (ISourcePlugin* plugin = m_pluginHost->plugin(game->sourceId))
+            info = plugin->launchInfo(*game);
     }
 
-    return true;
+    if (info.executable.isEmpty() && game->executableOverride.trimmed().isEmpty()) {
+        const QString found = findGameExecutableInTree(game->installPath);
+        if (!found.isEmpty())
+            info.executable = found;
+    }
+
+    const ResolvedLaunch resolved = resolveLaunch(info, *game, m_settings);
+    return !resolved.program.isEmpty() && QFileInfo::exists(resolved.program);
 }
 
 bool CoreController::isEntryDownloadComplete(const QString& entryId) const
@@ -873,6 +1016,52 @@ QVariantMap CoreController::entryDetails(const QString& entryId) const
         fillIfEmpty(QStringLiteral("uploadDate"));
         fillIfEmpty(QStringLiteral("installKind"));
         fillIfEmpty(QStringLiteral("installKindLabel"));
+        fillIfEmpty(QStringLiteral("sourcePageUrl"));
+        fillIfEmpty(QStringLiteral("steamAppId"));
+        fillIfEmpty(QStringLiteral("trailerUrl"));
+        fillIfEmpty(QStringLiteral("trailerThumbnailUrl"));
+        if (!info.contains(QStringLiteral("screenshotUrls"))
+            || info.value(QStringLiteral("screenshotUrls")).toList().isEmpty()) {
+            const QVariantList shots = catalogInfo.value(QStringLiteral("screenshotUrls")).toList();
+            if (!shots.isEmpty())
+                info.insert(QStringLiteral("screenshotUrls"), shots);
+        }
+    }
+
+    const QString title = info.value(QStringLiteral("title")).toString();
+    if (!title.isEmpty()) {
+        const GameMetadata cached = m_metadataService->metadataForTitle(title);
+        const QString uiLanguage = m_settings.uiLanguage();
+        const bool languageMatches =
+            cached.descriptionLanguage.isEmpty()
+            || cached.descriptionLanguage.compare(uiLanguage, Qt::CaseInsensitive) == 0;
+        if (info.value(QStringLiteral("description")).toString().isEmpty()
+            && !cached.description.isEmpty() && languageMatches)
+            info.insert(QStringLiteral("description"), cached.description);
+        if (info.value(QStringLiteral("genres")).toString().isEmpty() && !cached.genres.isEmpty())
+            info.insert(QStringLiteral("genres"), cached.genres);
+        if (info.value(QStringLiteral("steamAppId")).toString().isEmpty()
+            && !cached.steamAppId.isEmpty())
+            info.insert(QStringLiteral("steamAppId"), cached.steamAppId);
+        if (info.value(QStringLiteral("trailerUrl")).toString().isEmpty()
+            && !cached.trailerUrl.isEmpty())
+            info.insert(QStringLiteral("trailerUrl"), cached.trailerUrl);
+        if (info.value(QStringLiteral("trailerThumbnailUrl")).toString().isEmpty()
+            && !cached.trailerThumbnailUrl.isEmpty())
+            info.insert(QStringLiteral("trailerThumbnailUrl"), cached.trailerThumbnailUrl);
+        if (!info.contains(QStringLiteral("screenshotUrls"))
+            || info.value(QStringLiteral("screenshotUrls")).toList().isEmpty()) {
+            if (!cached.screenshotUrls.isEmpty())
+                info.insert(QStringLiteral("screenshotUrls"), QVariant::fromValue(cached.screenshotUrls));
+        }
+    }
+
+    const QString sourceId = info.value(QStringLiteral("sourceId")).toString();
+    info.insert(QStringLiteral("sourceWebsiteUrl"), sourceWebsiteFor(sourceId));
+    const QString steamAppId = info.value(QStringLiteral("steamAppId")).toString();
+    if (!steamAppId.isEmpty()) {
+        info.insert(QStringLiteral("steamStoreUrl"),
+                    QStringLiteral("https://store.steampowered.com/app/%1/").arg(steamAppId));
     }
 
     if (const CatalogEntry* catalogEntry = findCatalogEntry(entryId)) {
@@ -890,7 +1079,6 @@ QVariantMap CoreController::entryDetails(const QString& entryId) const
     }
 
     const QString downloadPath = info.value(QStringLiteral("downloadPath")).toString();
-    const QString sourceId = info.value(QStringLiteral("sourceId")).toString();
     if (!downloadPath.isEmpty() && !sourceId.isEmpty()) {
         const InstallKind detected = detectInstallKindForEntry(sourceId, downloadPath);
         info.insert(QStringLiteral("installKind"), static_cast<int>(detected));
@@ -899,6 +1087,58 @@ QVariantMap CoreController::entryDetails(const QString& entryId) const
 
     info.insert(QStringLiteral("installed"), isEntryPlayable(entryId));
     return info;
+}
+
+void CoreController::migratePollutedEntryIds()
+{
+    bool libraryDirty = false;
+    QVector<LibraryGame> games = m_libraryStore.games();
+    QSet<QString> seen;
+    QVector<LibraryGame> unique;
+    unique.reserve(games.size());
+
+    for (auto& game : games) {
+        const QString beforeId = game.id;
+        game.id = repairCatalogEntryId(game.id);
+        const QString beforeDownload = game.downloadPath;
+        const QString beforeInstall = game.installPath;
+        game.downloadPath.replace(QStringLiteral("count:"), QString());
+        game.installPath.replace(QStringLiteral("count:"), QString());
+
+        if (game.id != beforeId || game.downloadPath != beforeDownload
+            || game.installPath != beforeInstall)
+            libraryDirty = true;
+
+        if (seen.contains(game.id))
+            continue;
+        seen.insert(game.id);
+        unique.append(game);
+    }
+
+    if (libraryDirty) {
+        m_libraryStore.setGames(unique);
+        m_libraryStore.save();
+    }
+
+    bool jobsDirty = false;
+    QVector<JobEntry> jobs = m_jobStore.jobs();
+    for (auto& job : jobs) {
+        const QString entryBefore = job.entryId;
+        const QString parentBefore = job.parentEntryId;
+        const QString pathBefore = job.savePath;
+        job.entryId = repairCatalogEntryId(job.entryId);
+        job.parentEntryId = repairCatalogEntryId(job.parentEntryId);
+        job.savePath.replace(QStringLiteral("count:"), QString());
+
+        if (job.entryId != entryBefore || job.parentEntryId != parentBefore
+            || job.savePath != pathBefore)
+            jobsDirty = true;
+    }
+
+    if (jobsDirty) {
+        m_jobStore.setJobs(jobs);
+        m_jobStore.save();
+    }
 }
 
 void CoreController::pruneBrokenLibraryEntries()
@@ -1044,8 +1284,14 @@ void CoreController::reconcileJobInstallState()
         }
         if (job.status != QStringLiteral("completed"))
             continue;
-        if (!gameNeedsInstall(job.entryId))
+        if (!gameNeedsInstall(job.entryId)) {
+            if (job.detail == QStringLiteral("Installation required")
+                || job.detail == QStringLiteral("Требуется установка")) {
+                m_jobOrchestrator->setJobPhase(job.id, QStringLiteral("completed"),
+                                               QStringLiteral("Installed"));
+            }
             continue;
+        }
         if (job.detail == QStringLiteral("Installed")
             || job.detail == QStringLiteral("Установлено")) {
             m_jobOrchestrator->setJobPhase(job.id, QStringLiteral("completed"),
@@ -1112,7 +1358,7 @@ void CoreController::retryPendingInstalls()
             continue;
         if (job.savePath.isEmpty() || !QDir(job.savePath).exists())
             continue;
-        if (!m_pluginHost->hasPlugin(job.sourceId))
+        if (!hasInstallHandlerForPath(job.sourceId, job.savePath))
             continue;
 
         const auto entry = resolveCatalogEntry(job.entryId, job.sourceId, &job);
@@ -1239,16 +1485,33 @@ bool CoreController::isRemoteUploadDateNewer(const QString& remote, const QStrin
     return remote > local;
 }
 
+namespace {
+
+bool installedGameMatchesCatalogTorrent(const LibraryGame& game, const CatalogEntry& remote)
+{
+    if (game.installPath.isEmpty() || !QFileInfo::exists(game.installPath))
+        return false;
+
+    const QString localHash = catalogMagnetInfoHash(
+        game.magnetUri.isEmpty() ? QStringList{} : QStringList{game.magnetUri});
+    const QString remoteHash = catalogMagnetInfoHash(remote.magnetUris);
+    return !localHash.isEmpty() && localHash == remoteHash;
+}
+
+} // namespace
+
 bool CoreController::gameHasUpdate(const LibraryGame& game, const CatalogEntry& remote) const
 {
     if (remote.id.isEmpty())
         return false;
 
-    if (ISourcePlugin* plugin = m_pluginHost ? m_pluginHost->plugin(game.sourceId) : nullptr) {
-        if (plugin->detectUpdate(game, remote))
+    if (!installedGameMatchesCatalogTorrent(game, remote)) {
+        if (ISourcePlugin* plugin = m_pluginHost ? m_pluginHost->plugin(game.sourceId) : nullptr) {
+            if (plugin->detectUpdate(game, remote))
+                return true;
+        } else if (isRemoteUploadDateNewer(remote.uploadDate, game.uploadDate)) {
             return true;
-    } else if (isRemoteUploadDateNewer(remote.uploadDate, game.uploadDate)) {
-        return true;
+        }
     }
 
     for (const auto& component : game.components) {
@@ -1278,6 +1541,15 @@ int CoreController::recalculateLibraryUpdates(bool notify)
     int updates = 0;
     for (auto& game : games) {
         const CatalogEntry remote = remoteById.value(game.id);
+        if (game.magnetUri.isEmpty() && !remote.magnetUris.isEmpty()
+            && !game.installPath.isEmpty() && QFileInfo::exists(game.installPath))
+            game.magnetUri = remote.magnetUris.value(0);
+
+        if (installedGameMatchesCatalogTorrent(game, remote)) {
+            game.uploadDate = remote.uploadDate;
+            game.version = remote.version;
+        }
+
         const bool hasUpdate = gameHasUpdate(game, remote);
         game.hasUpdate = hasUpdate;
         if (hasUpdate)
@@ -1289,9 +1561,9 @@ int CoreController::recalculateLibraryUpdates(bool notify)
 
     if (notify) {
         if (updates > 0)
-            showNotice(QStringLiteral("Доступно обновлений: %1").arg(updates));
+            showNotice(QCoreApplication::translate("Core", "%1 update(s) available").arg(updates));
         else
-            showNotice(QStringLiteral("Обновлений нет"), false);
+            showNotice(QCoreApplication::translate("Core", "No updates"), false);
     }
 
     return updates;
@@ -1299,42 +1571,410 @@ int CoreController::recalculateLibraryUpdates(bool notify)
 
 void CoreController::onCatalogReady()
 {
-    if (!m_settings.autoCheckUpdates())
-        return;
     const int updates = recalculateLibraryUpdates(false);
-    if (updates > 0)
-        showNotice(QStringLiteral("Доступно обновлений: %1").arg(updates));
+
+    if (m_settings.autoCheckUpdates() && updates > 0)
+        showNotice(QCoreApplication::translate("Core", "%1 update(s) available").arg(updates));
+
+    runAutoInstallUpdates();
 }
 
-QString CoreController::verifyEntryFilesMessage(const QString& entryId) const
+void CoreController::runAutoInstallUpdates()
 {
-    const LibraryGame* game = m_libraryStore.gameById(entryId);
-    if (!game)
-        return QStringLiteral("Игра не найдена");
-    if (game->installPath.isEmpty())
-        return QStringLiteral("Игра не установлена");
-    if (!QDir(game->installPath).exists())
-        return QStringLiteral("Папка установки не найдена");
+    if (!m_settings.autoInstallUpdates())
+        return;
 
-    LaunchInfo info;
-    if (ISourcePlugin* plugin = m_pluginHost ? m_pluginHost->plugin(game->sourceId) : nullptr)
-        info = plugin->launchInfo(*game);
+    int started = 0;
+    for (const LibraryGame& game : m_libraryStore.games()) {
+        if (!game.hasUpdate || !game.autoUpdate)
+            continue;
+        if (!isEntryPlayable(game.id))
+            continue;
+        if (entryHasActiveJob(game.id))
+            continue;
 
-    if (info.executable.isEmpty())
-        return QStringLiteral("Исполняемый файл не найден");
-    if (!QFileInfo::exists(info.executable))
-        return QStringLiteral("Исполняемый файл отсутствует");
+        const CatalogEntry* entry = findCatalogEntry(game.id);
+        if (!entry)
+            continue;
 
-    return {};
+        const QString jobId = m_jobOrchestrator->startCatalogDownload(*entry, JobKind::Update);
+        if (!jobId.isEmpty())
+            ++started;
+    }
+
+    if (started > 0) {
+        showNotice(QCoreApplication::translate("Core", "Started %1 update(s)").arg(started));
+    }
+}
+
+bool CoreController::entryHasActiveJob(const QString& entryId) const
+{
+    for (const JobEntry& job : m_jobStore.jobs()) {
+        if (job.entryId != entryId && job.parentEntryId != entryId)
+            continue;
+        if (isJobInProgress(job.status))
+            return true;
+    }
+    return false;
+}
+
+void CoreController::setGameAutoUpdate(const QString& entryId, bool enabled)
+{
+    const LibraryGame* existing = m_libraryStore.gameById(entryId);
+    if (!existing)
+        return;
+
+    LibraryGame game = *existing;
+    if (game.autoUpdate == enabled)
+        return;
+
+    game.autoUpdate = enabled;
+    m_libraryStore.upsertGame(game);
+    syncLibraryFromStore();
+}
+
+void CoreController::setGameLaunchArgs(const QString& entryId, const QString& args)
+{
+    const LibraryGame* existing = m_libraryStore.gameById(entryId);
+    if (!existing)
+        return;
+
+    LibraryGame game = *existing;
+    if (game.launchArgs == args)
+        return;
+
+    game.launchArgs = args;
+    m_libraryStore.upsertGame(game);
+    syncLibraryFromStore();
+}
+
+void CoreController::setGameExecutableOverride(const QString& entryId, const QString& path)
+{
+    const LibraryGame* existing = m_libraryStore.gameById(entryId);
+    if (!existing)
+        return;
+
+    LibraryGame game = *existing;
+    if (game.executableOverride == path)
+        return;
+
+    game.executableOverride = path;
+    m_libraryStore.upsertGame(game);
+    syncLibraryFromStore();
+}
+
+void CoreController::setGameProtonId(const QString& entryId, const QString& protonId)
+{
+    const QString normalized = protonId.trimmed();
+
+    const LibraryGame* existing = m_libraryStore.gameById(entryId);
+    if (existing) {
+        LibraryGame game = *existing;
+        if (game.protonId == normalized)
+            return;
+        game.protonId = normalized;
+        m_libraryStore.upsertGame(game);
+        syncLibraryFromStore();
+        return;
+    }
+
+    const CatalogEntry* catalogEntry = findCatalogEntry(entryId);
+    if (!catalogEntry)
+        return;
+
+    LibraryGame game;
+    game.id = catalogEntry->id;
+    game.title = catalogEntry->title;
+    game.coverUrl = catalogEntry->coverUrl;
+    game.sourceId = catalogEntry->sourceId;
+    game.sourceName = m_sources.nameForId(catalogEntry->sourceId);
+    game.version = catalogEntry->version;
+    game.description = catalogEntry->description;
+    game.genres = catalogEntry->genres;
+    game.sizeLabel = catalogEntry->sizeLabel;
+    game.installKind = catalogEntry->installKind;
+    game.uploadDate = catalogEntry->uploadDate;
+    game.magnetUri = catalogEntry->magnetUris.value(0);
+    game.libraryId = m_settings.defaultLibraryId();
+    game.protonId = normalized;
+    m_libraryStore.upsertGame(game);
+    syncLibraryFromStore();
+}
+
+QString CoreController::browseGameExecutable(const QString& currentPath)
+{
+#if defined(Q_OS_WIN)
+    QString path;
+    HRESULT hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+    const bool comOwned = SUCCEEDED(hr);
+
+    IFileOpenDialog* dialog = nullptr;
+    if (SUCCEEDED(CoCreateInstance(CLSID_FileOpenDialog, nullptr, CLSCTX_ALL,
+                                   IID_PPV_ARGS(&dialog)))) {
+        const COMDLG_FILTERSPEC filters[] = {
+            {L"Executables (*.exe)", L"*.exe"},
+            {L"All files (*.*)", L"*.*"},
+        };
+        dialog->SetFileTypes(2, filters);
+        dialog->SetTitle(L"Choose game executable");
+
+        if (!currentPath.isEmpty()) {
+            IShellItem* folder = nullptr;
+            const QString folderPath = QFileInfo(currentPath).absolutePath();
+            if (SUCCEEDED(
+                    SHCreateItemFromParsingName(reinterpret_cast<LPCWSTR>(folderPath.utf16()),
+                                                nullptr, IID_PPV_ARGS(&folder)))) {
+                dialog->SetFolder(folder);
+                folder->Release();
+            }
+        }
+
+        if (SUCCEEDED(dialog->Show(nullptr))) {
+            IShellItem* item = nullptr;
+            if (SUCCEEDED(dialog->GetResult(&item))) {
+                PWSTR widePath = nullptr;
+                if (SUCCEEDED(item->GetDisplayName(SIGDN_FILESYSPATH, &widePath))) {
+                    path = QString::fromWCharArray(widePath);
+                    CoTaskMemFree(widePath);
+                }
+                item->Release();
+            }
+        }
+        dialog->Release();
+    }
+
+    if (comOwned)
+        CoUninitialize();
+    return path;
+#else
+    return QFileDialog::getOpenFileName(
+        nullptr, QCoreApplication::translate("Core", "Choose game executable"),
+        currentPath.isEmpty() ? QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
+                              : QFileInfo(currentPath).absolutePath(),
+        QCoreApplication::translate("Core", "Executables (*.exe *.sh *.x86_64);;All files (*)"));
+#endif
+}
+
+void CoreController::refreshAvailableProtons()
+{
+    if (!m_protonManager)
+        return;
+    m_protonManager->availableEntries(true);
+    syncProtonCatalog();
+    emit availableProtonsChanged();
+}
+
+void CoreController::moveProtonInPriority(const QString& protonId, int delta)
+{
+    const QString id = protonId.trimmed();
+    if (id.isEmpty() || delta == 0)
+        return;
+
+    QStringList priority = m_settings.protonPriority();
+    const int index = priority.indexOf(id);
+    if (index < 0)
+        return;
+
+    const int target = index + delta;
+    if (target < 0 || target >= priority.size())
+        return;
+
+    priority.move(index, target);
+    m_settings.setProtonPriority(priority);
+}
+
+QString CoreController::protonNameForId(const QString& protonId) const
+{
+    return m_protonManager ? m_protonManager->nameForId(protonId) : QString();
+}
+
+QVariantList CoreController::availableProtons() const
+{
+    QVariantList result;
+    if (!m_protonManager)
+        return result;
+
+    const QString defaultId = m_settings.defaultProtonId();
+    const QStringList priority = m_settings.protonPriority();
+    QSet<QString> emitted;
+
+    const auto appendEntry = [&](const ProtonEntry& entry) {
+        if (emitted.contains(entry.id))
+            return;
+        emitted.insert(entry.id);
+        result.append(QVariantMap{
+            {QStringLiteral("id"), entry.id},
+            {QStringLiteral("name"), entry.name},
+            {QStringLiteral("source"), entry.source},
+            {QStringLiteral("sourceLabel"), entry.sourceLabel},
+            {QStringLiteral("installDir"), entry.installDir},
+            {QStringLiteral("isDefault"), entry.id == defaultId},
+            {QStringLiteral("priorityIndex"), priority.indexOf(entry.id)},
+        });
+    };
+
+    for (const QString& id : priority) {
+        for (const ProtonEntry& entry : m_protonManager->availableEntries()) {
+            if (entry.id == id)
+                appendEntry(entry);
+        }
+    }
+
+    for (const ProtonEntry& entry : m_protonManager->availableEntries())
+        appendEntry(entry);
+
+    return result;
+}
+
+void CoreController::syncProtonCatalog()
+{
+    if (!m_protonManager)
+        return;
+
+    const QVector<ProtonEntry> entries = m_protonManager->availableEntries(true);
+    QStringList priority = m_settings.protonPriority();
+    bool priorityChanged = false;
+
+    for (const ProtonEntry& entry : entries) {
+        if (!priority.contains(entry.id)) {
+            priority.append(entry.id);
+            priorityChanged = true;
+        }
+    }
+
+    if (priorityChanged)
+        m_settings.setProtonPriority(priority);
+
+    if (!m_settings.legacyProtonPath().isEmpty()) {
+        const QString legacyId = m_protonManager->idForInstallDir(m_settings.legacyProtonPath());
+        if (!legacyId.isEmpty() && m_settings.defaultProtonId().isEmpty())
+            m_settings.setDefaultProtonId(legacyId);
+        m_settings.clearLegacyProtonPath();
+    }
+
+    if (m_settings.defaultProtonId().isEmpty() && !entries.isEmpty())
+        m_settings.setDefaultProtonId(entries.first().id);
+}
+
+void CoreController::downloadProtonGe()
+{
+    if (!m_protonManager)
+        return;
+    m_protonManager->downloadLatestGe();
+}
+
+void CoreController::refreshProtonLatestRelease()
+{
+    if (m_protonManager)
+        m_protonManager->refreshLatestGeRelease();
+}
+
+bool CoreController::needsProtonOnPlatform() const
+{
+#if defined(Q_OS_LINUX)
+    return true;
+#else
+    return false;
+#endif
+}
+
+bool CoreController::protonReady() const
+{
+    if (!needsProtonOnPlatform())
+        return true;
+    if (!m_protonManager)
+        return false;
+    const QString protonId = m_settings.resolvedProtonId(QString(), *m_protonManager);
+    return !m_protonManager->executableForId(protonId).isEmpty();
+}
+
+QString CoreController::protonVersion() const
+{
+    if (!m_protonManager)
+        return {};
+    const QString protonId = m_settings.resolvedProtonId(QString(), *m_protonManager);
+    return m_protonManager->nameForId(protonId);
+}
+
+QString CoreController::protonLatestRelease() const
+{
+    return m_protonManager ? m_protonManager->latestGeReleaseName() : QString();
+}
+
+bool CoreController::ensureProtonReady()
+{
+    if (protonReady())
+        return true;
+
+    refreshProtonLatestRelease();
+
+    const QString latest = protonLatestRelease();
+    if (latest.isEmpty()) {
+        showNotice(QCoreApplication::translate(
+            "Core", "Install Proton-GE in Settings → Launch before downloading games"));
+    } else {
+        showNotice(QCoreApplication::translate(
+            "Core", "Install %1 (Proton-GE) in Settings → Launch before downloading games")
+                       .arg(latest));
+    }
+    return false;
+}
+
+bool CoreController::protonDownloadInProgress() const
+{
+    return m_protonManager && m_protonManager->isDownloading();
+}
+
+int CoreController::protonDownloadProgress() const
+{
+    return m_protonManager ? m_protonManager->downloadProgress() : 0;
+}
+
+QString CoreController::protonDownloadStatus() const
+{
+    return m_protonManager ? m_protonManager->downloadStatus() : QString();
 }
 
 const CatalogEntry* CoreController::findCatalogEntry(const QString& entryId) const
 {
+    const QString resolved = repairCatalogEntryId(entryId);
     for (const auto& entry : m_catalogCache) {
-        if (entry.id == entryId)
+        if (entry.id == resolved)
             return &entry;
     }
-    return m_catalog.entryById(entryId);
+    for (auto it = m_catalogBySource.cbegin(); it != m_catalogBySource.cend(); ++it) {
+        for (const auto& entry : it.value()) {
+            if (entry.id == resolved)
+                return &entry;
+        }
+    }
+    if (const CatalogEntry* found = m_catalog.entryById(resolved))
+        return found;
+    if (resolved != entryId)
+        return m_catalog.entryById(entryId);
+    return nullptr;
+}
+
+std::optional<CatalogEntry> CoreController::resolveCatalogEntry(const QString& entryId) const
+{
+    if (const CatalogEntry* found = findCatalogEntry(entryId))
+        return *found;
+
+    const LibraryGame* game = m_libraryStore.gameById(entryId);
+    if (!game || game->magnetUri.isEmpty())
+        return std::nullopt;
+
+    CatalogEntry entry;
+    entry.id = game->id;
+    entry.title = game->title;
+    entry.coverUrl = game->coverUrl;
+    entry.sourceId = game->sourceId;
+    entry.version = game->version;
+    entry.sizeLabel = game->sizeLabel;
+    entry.uploadDate = game->uploadDate;
+    entry.installKind = game->installKind;
+    entry.magnetUris.append(game->magnetUri);
+    return entry;
 }
 
 const CatalogComponent* CoreController::findCatalogAddon(const CatalogEntry& entry,
@@ -1358,11 +1998,38 @@ void CoreController::applyCachedMetadata(CatalogEntry& entry) const
         else if (entry.coverUrl.isEmpty() && isRemoteLibraryCover(metadata.coverUrl))
             entry.coverUrl = metadata.coverUrl;
     }
+    applyMetadataToEntry(entry, metadata);
+    // Leave metadataPending alone — it tracks an in-flight/queued fetch, not "missing cover".
+}
+
+QString CoreController::sourceWebsiteFor(const QString& sourceId) const
+{
+    if (sourceId == QStringLiteral("freetp"))
+        return QStringLiteral("https://freetp.org/");
+
+    if (const SourcePluginInfo* plugin = m_sources.pluginById(sourceId)) {
+        const QUrl catalogUrl(plugin->catalogUrl);
+        if (catalogUrl.isValid() && !catalogUrl.host().isEmpty())
+            return QStringLiteral("%1://%2").arg(catalogUrl.scheme(), catalogUrl.host());
+    }
+    return {};
+}
+
+void CoreController::applyMetadataToEntry(CatalogEntry& entry,
+                                          const GameMetadata& metadata) const
+{
     if (!metadata.description.isEmpty())
         entry.description = metadata.description;
     if (!metadata.genres.isEmpty())
         entry.genres = metadata.genres;
-    // Leave metadataPending alone — it tracks an in-flight/queued fetch, not "missing cover".
+    if (!metadata.steamAppId.isEmpty())
+        entry.steamAppId = metadata.steamAppId;
+    if (!metadata.trailerUrl.isEmpty())
+        entry.trailerUrl = metadata.trailerUrl;
+    if (!metadata.trailerThumbnailUrl.isEmpty())
+        entry.trailerThumbnailUrl = metadata.trailerThumbnailUrl;
+    if (!metadata.screenshotUrls.isEmpty())
+        entry.screenshotUrls = metadata.screenshotUrls;
 }
 
 bool CoreController::isRemoteLibraryCover(const QString& url)
@@ -1423,12 +2090,45 @@ void CoreController::syncEntryToCatalogModel(const QString& entryId)
 InstallKind CoreController::detectInstallKindForEntry(const QString& sourceId,
                                                       const QString& downloadPath) const
 {
-    if (downloadPath.isEmpty() || !m_pluginHost)
+    if (downloadPath.isEmpty() || !m_installAnalyzer)
         return InstallKind::PortableArchive;
 
-    if (ISourcePlugin* plugin = m_pluginHost->plugin(sourceId))
-        return plugin->detectInstallKind(downloadPath);
-    return InstallKind::PortableArchive;
+    InstallContext ctx;
+    ctx.sourceId = sourceId;
+    ctx.downloadPath = downloadPath;
+    return m_installAnalyzer->resolveDownload(ctx).analysis.kind;
+}
+
+bool CoreController::hasInstallHandlerForPath(const QString& sourceId,
+                                              const QString& downloadPath) const
+{
+    if (downloadPath.isEmpty() || !m_installAnalyzer)
+        return false;
+
+    InstallContext ctx;
+    ctx.sourceId = sourceId;
+    ctx.downloadPath = downloadPath;
+    return m_installAnalyzer->resolveDownload(ctx).installerPlugin != nullptr;
+}
+
+void CoreController::syncInstallKindProbeSuspension()
+{
+    if (!m_installKindProbe)
+        return;
+
+    bool hasActiveTorrent = false;
+    for (int i = 0; i < m_jobs.rowCount(); ++i) {
+        const QModelIndex idx = m_jobs.index(i, 0);
+        if (m_jobs.data(idx, JobModel::HttpDownloadRole).toBool())
+            continue;
+        const QString status = m_jobs.data(idx, JobModel::StatusRole).toString();
+        if (isJobActive(status) || isJobQueued(status) || isJobPaused(status)) {
+            hasActiveTorrent = true;
+            break;
+        }
+    }
+
+    m_installKindProbe->setBackgroundProbesEnabled(!hasActiveTorrent);
 }
 
 void CoreController::syncCatalogInstallKind(const QString& entryId, InstallKind kind)
@@ -1483,7 +2183,8 @@ void CoreController::requestCatalogCover(const QString& entryId)
         entry->metadataPending = true;
         syncEntryToCatalogModel(entryId);
     }
-    m_metadataService->queueFetch(entryId, entry->title, MetadataFetchMode::CoverOnly);
+    m_metadataService->queueFetch(entryId, entry->title, MetadataFetchMode::CoverOnly,
+                                  m_settings.uiLanguage());
 }
 
 void CoreController::cancelCatalogCover(const QString& entryId)
@@ -1525,7 +2226,8 @@ void CoreController::invalidateCatalogCover(const QString& entryId)
     entry->coverUrl.clear();
     entry->metadataPending = true;
     syncEntryToCatalogModel(entryId);
-    m_metadataService->queueFetch(entryId, entry->title, MetadataFetchMode::CoverOnly);
+    m_metadataService->queueFetch(entryId, entry->title, MetadataFetchMode::CoverOnly,
+                                  m_settings.uiLanguage());
 }
 
 void CoreController::enrichCatalogEntry(const QString& entryId)
@@ -1534,9 +2236,10 @@ void CoreController::enrichCatalogEntry(const QString& entryId)
     if (!entry)
         return;
 
-    m_metadataService->queueFetch(entryId, entry->title, MetadataFetchMode::Full);
+    m_metadataService->queueFetch(entryId, entry->title, MetadataFetchMode::Full,
+                                  m_settings.uiLanguage());
 
-    if (m_installKindProbe && m_pluginHost && m_pluginHost->hasPlugin(entry->sourceId)) {
+    if (m_installKindProbe) {
         QString magnet;
         for (const QString& uri : entry->magnetUris) {
             if (uri.startsWith(QStringLiteral("magnet:"), Qt::CaseInsensitive)) {
@@ -1546,15 +2249,18 @@ void CoreController::enrichCatalogEntry(const QString& entryId)
         }
         if (magnet.isEmpty())
             magnet = entry->magnetUris.value(0);
-        m_installKindProbe->prioritizeEntry(entry->sourceId, entryId, magnet);
+        if (!magnet.isEmpty())
+            m_installKindProbe->prioritizeEntry(entry->sourceId, entryId, magnet);
     }
 }
 
 void CoreController::normalizeCatalogSourceIds(QVector<CatalogEntry>& entries,
                                                const QString& sourceId)
 {
-    for (auto& entry : entries)
+    for (auto& entry : entries) {
+        entry.id = repairCatalogEntryId(entry.id);
         entry.sourceId = sourceId;
+    }
 }
 
 void CoreController::applyCatalogFilter(const QString& query)
@@ -1571,14 +2277,14 @@ void CoreController::applyCatalogFilter(const QString& query)
 
     m_catalog.setEntries(std::move(filtered));
 
-    const QString coverSourceId = m_activeSourceIds.value(0);
-    warmCatalogCovers(coverSourceId, query, 80);
+    const int warmLimit =
+        qMax(32, 80 / qMax(1, static_cast<int>(m_activeSourceIds.size())));
+    for (const QString& sourceId : m_activeSourceIds)
+        warmCatalogCovers(sourceId, query, warmLimit);
 
-    if (m_installKindProbe && m_pluginHost) {
-        for (const QString& sourceId : m_activeSourceIds) {
-            if (m_pluginHost->hasPlugin(sourceId))
-                m_installKindProbe->queueCatalog(sourceId, m_catalogCache, query);
-        }
+    if (m_installKindProbe) {
+        for (const QString& sourceId : m_activeSourceIds)
+            m_installKindProbe->queueCatalog(sourceId, m_catalogCache, query);
     }
 }
 
@@ -1626,28 +2332,37 @@ void CoreController::rebuildMergedCatalog()
     for (const QString& sourceId : pendingLoads)
         requestCatalogLoad(sourceId);
 
+    for (auto& entry : merged)
+        entry.id = repairCatalogEntryId(entry.id);
+
     deduplicateCatalogEntries(merged);
+
+    logDiagnostic(QStringLiteral("rebuildMergedCatalog: %1 entries after dedupe").arg(merged.size()));
 
     m_catalogCache = std::move(merged);
     for (auto& entry : m_catalogCache)
         applyCachedMetadata(entry);
 
+    logDiagnostic(QStringLiteral("rebuildMergedCatalog: metadata applied"));
+
     if (m_installKindProbe) {
         m_installKindProbe->applyCachedKinds(m_catalogCache);
-        for (const QString& sourceId : m_activeSourceIds) {
-            if (m_pluginHost && m_pluginHost->hasPlugin(sourceId))
-                m_installKindProbe->queueCatalog(sourceId, m_catalogCache, m_activeQuery);
-        }
+        for (const QString& sourceId : m_activeSourceIds)
+            m_installKindProbe->queueCatalog(sourceId, m_catalogCache, m_activeQuery);
     }
 
+    logDiagnostic(QStringLiteral("rebuildMergedCatalog: install kinds queued"));
+
     applyCatalogFilter(m_activeQuery);
+
+    logDiagnostic(QStringLiteral("rebuildMergedCatalog: filter applied, visible=%1").arg(m_catalog.count()));
 
     if (m_activeSourceIds.size() == 1) {
         const SourcePluginInfo* source = m_sources.pluginById(m_activeSourceIds.first());
         const QString name = source ? source->name : m_activeSourceIds.first();
-        setCatalogStatus(QStringLiteral("%1 · %2 игр").arg(name).arg(m_catalog.count()));
+        setCatalogStatus(QCoreApplication::translate("Core", "%1 · %2 games").arg(name).arg(m_catalog.count()));
     } else {
-        setCatalogStatus(QStringLiteral("%1 источников · %2 игр")
+        setCatalogStatus(QCoreApplication::translate("Core", "%1 sources · %2 games")
                              .arg(m_activeSourceIds.size())
                              .arg(m_catalog.count()));
     }
@@ -1658,8 +2373,15 @@ void CoreController::rebuildMergedCatalog()
 
 void CoreController::requestCatalogLoad(const QString& sourceId)
 {
-    if (sourceId.isEmpty() || m_catalogBySource.contains(sourceId))
+    if (sourceId.isEmpty())
         return;
+
+    if (m_catalogBySource.contains(sourceId)) {
+        const QVector<CatalogEntry>& cached = m_catalogBySource.value(sourceId);
+        if (!catalogCacheHasPollutedIds(cached))
+            return;
+        m_catalogBySource.remove(sourceId);
+    }
 
     if (m_loadingSourceIds.contains(sourceId)) {
         if (!m_catalogLoadQueue.contains(sourceId))
@@ -1688,8 +2410,12 @@ void CoreController::processCatalogLoadQueue()
     while (!m_catalogLoadQueue.isEmpty()) {
         const QString sourceId = m_catalogLoadQueue.first();
         if (m_catalogBySource.contains(sourceId)) {
-            m_catalogLoadQueue.removeFirst();
-            continue;
+            const QVector<CatalogEntry>& cached = m_catalogBySource.value(sourceId);
+            if (!catalogCacheHasPollutedIds(cached)) {
+                m_catalogLoadQueue.removeFirst();
+                continue;
+            }
+            m_catalogBySource.remove(sourceId);
         }
         if (m_loadingSourceIds.contains(sourceId) && m_pluginHost
             && m_pluginHost->hasPlugin(sourceId))
@@ -1705,16 +2431,29 @@ void CoreController::processCatalogLoadQueue()
 
 void CoreController::loadCatalogSourceNow(const QString& sourceId)
 {
+    const QString catalogUrl = m_sources.catalogUrlFor(sourceId);
+    if (!catalogUrl.isEmpty()) {
+        logDiagnostic(QStringLiteral("Loading catalog via feed: %1 url=%2").arg(sourceId, catalogUrl));
+        m_catalogHttpLoadActive = true;
+        updateCatalogLoadingState();
+        m_catalogLoader->loadFeed(QUrl(catalogUrl), sourceId);
+        return;
+    }
+
     if (ISourcePlugin* plugin = m_pluginHost->plugin(sourceId)) {
+        logDiagnostic(QStringLiteral("Loading catalog via plugin DLL: %1").arg(sourceId));
         auto* watcher = new QFutureWatcher<QVector<CatalogEntry>>(this);
         connect(watcher, &QFutureWatcher<QVector<CatalogEntry>>::finished, this,
                 [this, watcher, sourceId]() {
                     const QVector<CatalogEntry> entries = watcher->result();
                     watcher->deleteLater();
                     m_loadingSourceIds.remove(sourceId);
+                    logDiagnostic(QStringLiteral("Plugin catalog ready: %1 entries=%2")
+                                      .arg(sourceId)
+                                      .arg(entries.size()));
                     if (entries.isEmpty()) {
                         if (m_activeSourceIds.contains(sourceId)) {
-                            showNotice(QStringLiteral("Каталог пуст или недоступен: %1")
+                            showNotice(QCoreApplication::translate("Core", "Catalog empty or unavailable: %1")
                                                .arg(m_sources.nameForId(sourceId)));
                         }
                         rebuildMergedCatalog();
@@ -1729,17 +2468,9 @@ void CoreController::loadCatalogSourceNow(const QString& sourceId)
         return;
     }
 
-    const QString url = m_sources.catalogUrlFor(sourceId);
-    if (url.isEmpty()) {
-        m_loadingSourceIds.remove(sourceId);
-        showNotice(QStringLiteral("Для источника %1 не задан URL каталога").arg(sourceId));
-        rebuildMergedCatalog();
-        return;
-    }
-
-    m_catalogHttpLoadActive = true;
-    updateCatalogLoadingState();
-    m_catalogLoader->loadFeed(QUrl(url), sourceId);
+    m_loadingSourceIds.remove(sourceId);
+    showNotice(QCoreApplication::translate("Core", "No catalog URL configured for source %1").arg(sourceId));
+    rebuildMergedCatalog();
 }
 
 void CoreController::updateCatalogLoadingState()
@@ -1781,6 +2512,9 @@ void CoreController::markGameRunning(const LibraryGame& game, const qint64 proce
     m_runningGameTitle = game.title;
     m_runningGameCoverUrl = game.coverUrl;
     m_runningProcessId = processId;
+    arachnel::logDiagnostic(QStringLiteral("Game launched: %1 pid=%2")
+                                .arg(game.title)
+                                .arg(processId));
     emit runningGameChanged();
 
     if (processId > 0)
@@ -1794,11 +2528,14 @@ void CoreController::clearRunningGame()
     if (m_runningGameId.isEmpty())
         return;
 
+    const QString endedId = m_runningGameId;
+    const QString endedTitle = m_runningGameTitle;
     m_runningGameId.clear();
     m_runningGameTitle.clear();
     m_runningGameCoverUrl.clear();
     m_runningProcessId = 0;
     m_runningGameTimer->stop();
+    arachnel::logDiagnostic(QStringLiteral("Game session ended: %1 (%2)").arg(endedTitle, endedId));
     emit runningGameChanged();
 }
 
@@ -1811,7 +2548,16 @@ void CoreController::pollRunningGame()
         return;
 
     if (!ProcessTracker::isProcessRunning(m_runningProcessId)) {
-        clearRunningGame();
+        // Defer UI teardown so we do not re-enter QML/layout from QTimer while the
+        // game process is still unwinding (avoids intermittent crashes on Windows).
+        const QString endedGameId = m_runningGameId;
+        QTimer::singleShot(0, this, [this, endedGameId]() {
+            if (m_runningGameId != endedGameId)
+                return;
+            arachnel::logDiagnostic(
+                QStringLiteral("Running game process ended: %1").arg(endedGameId));
+            clearRunningGame();
+        });
     }
 }
 
@@ -1819,25 +2565,16 @@ void CoreController::launchGame(const QString& gameId)
 {
     const LibraryGame* game = m_library.gameById(gameId);
     if (!game) {
-        showNotice(QStringLiteral("Игра не найдена: %1").arg(gameId));
+        showNotice(QCoreApplication::translate("Core", "Game not found: %1").arg(gameId));
         return;
     }
     if (game->installPath.isEmpty()) {
-        showNotice(QStringLiteral("%1 ещё не установлена").arg(game->title));
+        showNotice(QCoreApplication::translate("Core", "%1 is not installed yet").arg(game->title));
         return;
     }
 
-    if (m_settings.verifyPortableFiles()
-        && game->installKind == InstallKind::PortableArchive) {
-        const QString verifyError = verifyEntryFilesMessage(gameId);
-        if (!verifyError.isEmpty()) {
-            showNotice(QStringLiteral("%1: %2").arg(game->title, verifyError));
-            return;
-        }
-    }
-
     if (gameRunning() && m_runningGameId == gameId) {
-        showNotice(QStringLiteral("%1 уже запущена").arg(game->title));
+        showNotice(QCoreApplication::translate("Core", "%1 is already running").arg(game->title));
         return;
     }
 
@@ -1845,18 +2582,39 @@ void CoreController::launchGame(const QString& gameId)
     if (ISourcePlugin* plugin = m_pluginHost->plugin(game->sourceId))
         info = plugin->launchInfo(*game);
 
-    if (info.executable.isEmpty()) {
-        showNotice(QStringLiteral("Не найден исполняемый файл для %1").arg(game->title));
+    if (info.executable.isEmpty() && game->executableOverride.trimmed().isEmpty()) {
+        const QString found = findGameExecutableInTree(game->installPath);
+        if (!found.isEmpty())
+            info.executable = found;
+    }
+
+    const ResolvedLaunch resolved = resolveLaunch(info, *game, m_settings);
+    if (resolved.program.isEmpty()) {
+#if defined(Q_OS_LINUX)
+        if (!info.executable.isEmpty()
+            && info.executable.endsWith(QStringLiteral(".exe"), Qt::CaseInsensitive)
+            && m_protonManager) {
+            const QString protonId =
+                m_settings.resolvedProtonId(game->protonId, *m_protonManager);
+            if (m_protonManager->executableForId(protonId).isEmpty()) {
+                showNotice(QCoreApplication::translate(
+                    "Core", "Proton not found. Install Proton-GE in Settings → Launch."));
+                return;
+            }
+        }
+#endif
+        showNotice(
+            QCoreApplication::translate("Core", "Executable not found for %1").arg(game->title));
         return;
     }
 
     QString error;
     qint64 processId = 0;
-    if (ProcessLauncher::launch(info, &error, &processId)) {
+    if (ProcessLauncher::launch(resolved, &error, &processId)) {
         markGameRunning(*game, processId);
         return;
     }
-    showNotice(error.isEmpty() ? QStringLiteral("Не удалось запустить игру") : error);
+    showNotice(error.isEmpty() ? QCoreApplication::translate("Core", "Failed to launch game") : error);
 }
 
 void CoreController::stopRunningGame()
@@ -1872,7 +2630,7 @@ void CoreController::stopRunningGame()
     if (ProcessTracker::terminateProcess(m_runningProcessId))
         clearRunningGame();
     else
-        showNotice(QStringLiteral("Не удалось остановить игру"));
+        showNotice(QCoreApplication::translate("Core", "Failed to stop game"));
 }
 
 void CoreController::refreshCatalog(const QString& sourceId)
@@ -1897,11 +2655,11 @@ void CoreController::searchCatalog(const QString& sourceId, const QString& query
 {
     const SourcePluginInfo* source = m_sources.pluginById(sourceId);
     if (!source) {
-        showNotice(QStringLiteral("Неизвестный источник: %1").arg(sourceId));
+        showNotice(QCoreApplication::translate("Core", "Unknown source: %1").arg(sourceId));
         return;
     }
     if (!source->enabled) {
-        showNotice(QStringLiteral("Источник «%1» выключен в настройках").arg(source->name));
+        showNotice(QCoreApplication::translate("Core", "Source \"%1\" is disabled in settings").arg(source->name));
         return;
     }
 
@@ -2120,7 +2878,7 @@ void CoreController::validateHydraCatalogUrl(const QString& requestId, const QSt
     const QString trimmed = url.trimmed();
     if (requestId.isEmpty() || trimmed.isEmpty()) {
         emit hydraCatalogUrlValidated(requestId, false, 0,
-                                      QStringLiteral("Укажите URL каталога"));
+                                      QCoreApplication::translate("Core", "Enter a catalog URL"));
         return;
     }
 
@@ -2128,7 +2886,7 @@ void CoreController::validateHydraCatalogUrl(const QString& requestId, const QSt
     if (!parsed.isValid() || !parsed.scheme().startsWith(QStringLiteral("http"),
                                                          Qt::CaseInsensitive)) {
         emit hydraCatalogUrlValidated(requestId, false, 0,
-                                      QStringLiteral("Некорректный URL — нужен http или https"));
+                                      QCoreApplication::translate("Core", "Invalid URL — http or https required"));
         return;
     }
 
@@ -2138,38 +2896,47 @@ void CoreController::validateHydraCatalogUrl(const QString& requestId, const QSt
 void CoreController::installCatalogEntry(const QString& entryId, const QString& libraryId,
                                          const QVariantList& addonIdsVariant)
 {
-    const CatalogEntry* entry = findCatalogEntry(entryId);
-    if (!entry) {
-        showNotice(QStringLiteral("Запись каталога не найдена: %1").arg(entryId));
+    if (!ensureProtonReady())
+        return;
+
+    const std::optional<CatalogEntry> entryOpt = resolveCatalogEntry(entryId);
+    if (!entryOpt) {
+        if (const LibraryGame* game = m_libraryStore.gameById(entryId)) {
+            if (!game->sourceId.isEmpty())
+                requestCatalogLoad(game->sourceId);
+        }
+        showNotice(QCoreApplication::translate("Core", "Catalog entry not found: %1").arg(entryId));
         return;
     }
 
-    if (entry->magnetUris.isEmpty()) {
-        showNotice(QStringLiteral("Нет magnet-ссылки для %1").arg(entry->title));
+    const CatalogEntry& entry = *entryOpt;
+
+    if (entry.magnetUris.isEmpty()) {
+        showNotice(QCoreApplication::translate("Core", "No magnet link for %1").arg(entry.title));
         return;
     }
 
     const QStringList addonIds = variantListToStringList(addonIdsVariant);
     const QString libId = libraryId.isEmpty() ? m_settings.defaultLibraryId() : libraryId;
 
-    const QString jobId = m_jobOrchestrator->startCatalogDownload(*entry, JobKind::Download, libId);
+    const QString jobId = m_jobOrchestrator->startCatalogDownload(entry, JobKind::Download, libId);
     if (jobId.isEmpty()) {
-        showNotice(QStringLiteral("Не удалось начать загрузку %1").arg(entry->title));
+        showNotice(QCoreApplication::translate("Core", "Could not start download for %1").arg(entry.title));
         return;
     }
 
-    ensureLibraryPlaceholder(*entry, libId, addonIds);
+    ensureLibraryPlaceholder(entry, libId, addonIds);
 
     pruneUnselectedAddonJobs(entryId, addonIds);
 
     if (!addonIds.isEmpty())
-        beginInstallSession(entryId, jobId, entry->sourceId, addonIds);
+        beginInstallSession(entryId, jobId, entry.sourceId, addonIds);
 
     for (const QString& addonId : addonIds) {
-        const CatalogComponent* addon = findCatalogAddon(*entry, addonId);
+        const CatalogComponent* addon = findCatalogAddon(entry, addonId);
         if (!addon)
             continue;
-        m_jobOrchestrator->startAddonDownload(*entry, *addon);
+        m_jobOrchestrator->startAddonDownload(entry, *addon);
     }
 }
 
@@ -2211,8 +2978,10 @@ QString CoreController::browseStorageFolder()
         CoUninitialize();
     return path;
 #else
-    showNotice(QStringLiteral("Выбор папки пока доступен только в Windows"));
-    return {};
+    return QFileDialog::getExistingDirectory(
+        nullptr,
+        QCoreApplication::translate("Core", "Choose library folder"),
+        QStandardPaths::writableLocation(QStandardPaths::HomeLocation));
 #endif
 }
 
@@ -2220,7 +2989,7 @@ void CoreController::removeGame(const QString& gameId, bool deleteFiles)
 {
     const LibraryGame* game = m_libraryStore.gameById(gameId);
     if (!game) {
-        showNotice(QStringLiteral("Игра не найдена в библиотеке"));
+        showNotice(QCoreApplication::translate("Core", "Game not found in library"));
         return;
     }
 
@@ -2245,7 +3014,7 @@ void CoreController::removeGame(const QString& gameId, bool deleteFiles)
     m_libraryStore.save();
     syncLibraryFromStore();
     removeJobsForEntry(gameId);
-    showNotice(QStringLiteral("Игра удалена: %1").arg(game->title));
+    showNotice(QCoreApplication::translate("Core", "Game removed: %1").arg(game->title));
 }
 
 void CoreController::removeEntry(const QString& entryId, bool deleteFiles)
@@ -2276,7 +3045,7 @@ void CoreController::removeEntry(const QString& entryId, bool deleteFiles)
 void CoreController::moveGame(const QString& gameId, const QString& targetLibraryId)
 {
     if (targetLibraryId.isEmpty()) {
-        showNotice(QStringLiteral("Не выбран диск назначения"));
+        showNotice(QCoreApplication::translate("Core", "No destination library selected"));
         return;
     }
 
@@ -2290,14 +3059,14 @@ void CoreController::moveGame(const QString& gameId, const QString& targetLibrar
         }
     }
     if (!found) {
-        showNotice(QStringLiteral("Игра не найдена"));
+        showNotice(QCoreApplication::translate("Core", "Game not found"));
         return;
     }
 
     const QString sourceLibId =
         game.libraryId.isEmpty() ? m_settings.defaultLibraryId() : game.libraryId;
     if (sourceLibId == targetLibraryId) {
-        showNotice(QStringLiteral("Игра уже на этом диске"));
+        showNotice(QCoreApplication::translate("Core", "Game is already on this library"));
         return;
     }
 
@@ -2307,13 +3076,13 @@ void CoreController::moveGame(const QString& gameId, const QString& targetLibrar
     QString error;
     if (QDir(srcDir).exists()) {
         if (!movePathRecursive(srcDir, dstDir, &error)) {
-            showNotice(QStringLiteral("Не удалось перенести: %1").arg(error));
+            showNotice(QCoreApplication::translate("Core", "Could not move: %1").arg(error));
             return;
         }
     } else if (!game.installPath.isEmpty() && QDir(game.installPath).exists()) {
         QDir().mkpath(QFileInfo(dstDir).absolutePath());
         if (!movePathRecursive(game.installPath, dstDir, &error)) {
-            showNotice(QStringLiteral("Не удалось перенести: %1").arg(error));
+            showNotice(QCoreApplication::translate("Core", "Could not move: %1").arg(error));
             return;
         }
     }
@@ -2329,7 +3098,7 @@ void CoreController::moveGame(const QString& gameId, const QString& targetLibrar
 
     m_libraryStore.upsertGame(game);
     syncLibraryFromStore();
-    showNotice(QStringLiteral("Игра перенесена: %1").arg(game.title));
+    showNotice(QCoreApplication::translate("Core", "Game moved: %1").arg(game.title));
 }
 
 QVariantList CoreController::gamesOnLibrary(const QString& libraryId) const
@@ -2359,19 +3128,19 @@ void CoreController::installCatalogAddon(const QString& entryId, const QString& 
 {
     const CatalogEntry* entry = findCatalogEntry(entryId);
     if (!entry) {
-        showNotice(QStringLiteral("Игра не найдена: %1").arg(entryId));
+        showNotice(QCoreApplication::translate("Core", "Game not found: %1").arg(entryId));
         return;
     }
 
     const CatalogComponent* addon = findCatalogAddon(*entry, addonId);
     if (!addon) {
-        showNotice(QStringLiteral("Дополнение не найдено"));
+        showNotice(QCoreApplication::translate("Core", "Add-on not found"));
         return;
     }
 
     const QString jobId = m_jobOrchestrator->startAddonDownload(*entry, *addon);
     if (jobId.isEmpty()) {
-        showNotice(QStringLiteral("Не удалось начать загрузку дополнения"));
+        showNotice(QCoreApplication::translate("Core", "Could not start add-on download"));
         return;
     }
 }
@@ -2380,13 +3149,13 @@ void CoreController::updateCatalogEntry(const QString& entryId)
 {
     const CatalogEntry* entry = findCatalogEntry(entryId);
     if (!entry) {
-        showNotice(QStringLiteral("Запись не найдена: %1").arg(entryId));
+        showNotice(QCoreApplication::translate("Core", "Entry not found: %1").arg(entryId));
         return;
     }
 
     const QString jobId = m_jobOrchestrator->startCatalogDownload(*entry, JobKind::Update);
     if (jobId.isEmpty()) {
-        showNotice(QStringLiteral("Не удалось начать обновление %1").arg(entry->title));
+        showNotice(QCoreApplication::translate("Core", "Could not start update for %1").arg(entry->title));
         return;
     }
 }
@@ -2396,7 +3165,7 @@ void CoreController::checkUpdates()
     if (m_catalogCache.isEmpty()) {
         const QString sourceId = m_sources.firstEnabledId();
         if (sourceId.isEmpty()) {
-            showNotice(QStringLiteral("Нет включённых источников каталога"));
+            showNotice(QCoreApplication::translate("Core", "No catalog sources enabled"));
             return;
         }
         refreshCatalog(sourceId);
@@ -2404,40 +3173,6 @@ void CoreController::checkUpdates()
     }
 
     recalculateLibraryUpdates(true);
-}
-
-void CoreController::verifyEntryFiles(const QString& entryId)
-{
-    const LibraryGame* game = m_libraryStore.gameById(entryId);
-    const QString title = game ? game->title : entryId;
-    const QString error = verifyEntryFilesMessage(entryId);
-    if (error.isEmpty())
-        showNotice(QStringLiteral("Файлы в порядке: %1").arg(title));
-    else
-        showNotice(QStringLiteral("%1: %2").arg(title, error));
-}
-
-void CoreController::verifyAllPortableGames()
-{
-    int checked = 0;
-    int failed = 0;
-    for (const LibraryGame& game : m_libraryStore.games()) {
-        if (game.installPath.isEmpty() || game.installKind != InstallKind::PortableArchive)
-            continue;
-        ++checked;
-        if (!verifyEntryFilesMessage(game.id).isEmpty())
-            ++failed;
-    }
-
-    if (checked == 0) {
-        showNotice(QStringLiteral("Нет установленных portable-игр для проверки"));
-        return;
-    }
-
-    if (failed == 0)
-        showNotice(QStringLiteral("Проверено portable-игр: %1 — всё в порядке").arg(checked));
-    else
-        showNotice(QStringLiteral("Проверено: %1, проблем: %2").arg(checked).arg(failed));
 }
 
 void CoreController::cancelJob(const QString& jobId)
@@ -2448,7 +3183,26 @@ void CoreController::cancelJob(const QString& jobId)
         return;
     }
 
+    const QString entryId = job ? job->entryId : QString();
     m_jobOrchestrator->cancelJob(jobId);
+
+    if (entryId.isEmpty())
+        return;
+
+    m_installingEntries.remove(entryId);
+    m_installSessions.remove(entryId);
+    m_installSelectedAddons.remove(entryId);
+
+    QVector<QString> staleJobIds;
+    for (const JobEntry& stored : m_jobStore.jobs()) {
+        if (stored.entryId != entryId || !stored.parentEntryId.isEmpty())
+            continue;
+        if (stored.status == QStringLiteral("cancelled")
+            || stored.status == QStringLiteral("failed"))
+            staleJobIds.append(stored.id);
+    }
+    for (const QString& staleId : staleJobIds)
+        m_jobOrchestrator->removeJob(staleId);
 }
 
 void CoreController::toggleJobPause(const QString& jobId)
@@ -2479,11 +3233,11 @@ void CoreController::retryInstall(const QString& jobId)
 
     const JobEntry* job = m_jobStore.jobById(jobId);
     if (!job) {
-        showNotice(tr("Download not found"));
+        showNotice(QCoreApplication::translate("Core", "Download not found"));
         return;
     }
     if (job->status != QStringLiteral("completed")) {
-        showNotice(tr("Installation is only available for completed downloads"));
+        showNotice(QCoreApplication::translate("Core", "Installation is only available for completed downloads"));
         return;
     }
 
@@ -2514,23 +3268,39 @@ void CoreController::retryInstall(const QString& jobId)
                     return;
                 }
             }
+
+            bool pendingAddon = false;
+            for (const auto& addon : parent->addons) {
+                if (!isCatalogAddonInstalled(job->entryId, addon.id)) {
+                    pendingAddon = true;
+                    break;
+                }
+            }
+            if (pendingAddon) {
+                showNotice(QCoreApplication::translate("Core", "Add-on file not found"));
+                return;
+            }
         }
-        showNotice(QStringLiteral("Файл дополнения не найден"));
-        return;
+
+        if (isEntryPlayable(job->entryId))
+            return;
+
+        // Install folder exists but launch is not ready — allow base game reinstall.
     }
 
     if (job->savePath.isEmpty() || !QDir(job->savePath).exists()) {
-        showNotice(QStringLiteral("Файлы загрузки не найдены"));
-        return;
-    }
-    if (!m_pluginHost || !m_pluginHost->hasPlugin(job->sourceId)) {
-        showNotice(QStringLiteral("Плагин источника не найден"));
+        showNotice(QCoreApplication::translate("Core", "Download files not found"));
         return;
     }
 
     const auto entry = resolveCatalogEntry(job->entryId, job->sourceId, job);
     if (!entry) {
-        showNotice(QStringLiteral("Не удалось найти игру для установки"));
+        showNotice(QCoreApplication::translate("Core", "Could not find game to install"));
+        return;
+    }
+
+    if (!hasInstallHandlerForPath(job->sourceId, job->savePath)) {
+        offerManualInstallForJob(*job);
         return;
     }
 
@@ -2583,6 +3353,123 @@ bool CoreController::canRetryJobInstall(const QString& jobId) const
     return false;
 }
 
+bool CoreController::canManualInstallJob(const QString& jobId) const
+{
+    const JobEntry* job = m_jobStore.jobById(jobId);
+    if (!job || job->status != QStringLiteral("completed"))
+        return false;
+    if (!job->parentEntryId.isEmpty())
+        return false;
+    if (!gameNeedsInstall(job->entryId))
+        return false;
+    return !job->savePath.isEmpty() && QDir(job->savePath).exists();
+}
+
+void CoreController::openJobDownloadFolder(const QString& jobId)
+{
+    const JobEntry* job = m_jobStore.jobById(jobId);
+    if (!job || job->savePath.isEmpty())
+        return;
+    QDesktopServices::openUrl(QUrl::fromLocalFile(job->savePath));
+}
+
+QString CoreController::browseInstallFolder(const QString& startPath)
+{
+#if defined(Q_OS_WIN)
+    QString path;
+    HRESULT hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+    const bool comOwned = SUCCEEDED(hr);
+
+    IFileOpenDialog* dialog = nullptr;
+    if (SUCCEEDED(CoCreateInstance(CLSID_FileOpenDialog, nullptr, CLSCTX_ALL,
+                                   IID_PPV_ARGS(&dialog)))) {
+        DWORD options = 0;
+        if (SUCCEEDED(dialog->GetOptions(&options)))
+            dialog->SetOptions(options | FOS_PICKFOLDERS | FOS_FORCEFILESYSTEM);
+        dialog->SetTitle(L"Choose game install folder");
+
+        if (!startPath.isEmpty()) {
+            IShellItem* folder = nullptr;
+            QString folderPath = QFileInfo(startPath).isDir() ? startPath
+                                                              : QFileInfo(startPath).absolutePath();
+            folderPath = QDir::toNativeSeparators(folderPath);
+            if (QDir(folderPath).exists()
+                && SUCCEEDED(SHCreateItemFromParsingName(
+                    reinterpret_cast<LPCWSTR>(folderPath.utf16()), nullptr,
+                    IID_PPV_ARGS(&folder)))) {
+                dialog->SetFolder(folder);
+                folder->Release();
+            }
+        }
+
+        if (SUCCEEDED(dialog->Show(nullptr))) {
+            IShellItem* item = nullptr;
+            if (SUCCEEDED(dialog->GetResult(&item))) {
+                PWSTR widePath = nullptr;
+                if (SUCCEEDED(item->GetDisplayName(SIGDN_FILESYSPATH, &widePath))) {
+                    path = QString::fromWCharArray(widePath);
+                    CoTaskMemFree(widePath);
+                }
+                item->Release();
+            }
+        }
+        dialog->Release();
+    }
+
+    if (comOwned)
+        CoUninitialize();
+    return path;
+#else
+    return QFileDialog::getExistingDirectory(
+        nullptr, QCoreApplication::translate("Core", "Choose game install folder"), startPath);
+#endif
+}
+
+void CoreController::offerManualInstallForJob(const JobEntry& job)
+{
+    openJobDownloadFolder(job.id);
+    showNotice(QCoreApplication::translate(
+        "Core",
+        "Automatic install is unavailable. Run setup.exe from the download folder, then use the folder button to point to the game."));
+}
+
+void CoreController::confirmManualInstall(const QString& jobId)
+{
+    const JobEntry* job = m_jobStore.jobById(jobId);
+    if (!job)
+        return;
+
+    if (job->savePath.isEmpty() || !QDir(job->savePath).exists()) {
+        showNotice(QCoreApplication::translate("Core", "Download files not found"));
+        return;
+    }
+
+    const QString installFolder = browseInstallFolder(job->savePath);
+    if (installFolder.isEmpty())
+        return;
+
+    const QString executable = findGameExecutableInTree(installFolder);
+    if (executable.isEmpty()) {
+        showNotice(QCoreApplication::translate(
+            "Core", "No game executable found in %1").arg(installFolder));
+        return;
+    }
+
+    const auto entry = resolveCatalogEntry(job->entryId, job->sourceId, job);
+    if (!entry) {
+        showNotice(QCoreApplication::translate("Core", "Could not find game to install"));
+        return;
+    }
+
+    const InstallKind kind = detectInstallKindForEntry(job->sourceId, job->savePath);
+    commitInstalledCatalogGame(*entry, job->sourceId, job->savePath, job->libraryId, installFolder,
+                               kind);
+    setGameExecutableOverride(job->entryId, executable);
+    m_jobOrchestrator->setJobPhase(jobId, QStringLiteral("completed"),
+                                   QCoreApplication::translate("Core", "Installed"));
+    showNotice(QCoreApplication::translate("Core", "Manual install complete for %1").arg(entry->title));
+}
+
 void CoreController::clearFinishedJobs()
 {
     m_jobOrchestrator->clearFinishedJobs();
@@ -2590,10 +3477,25 @@ void CoreController::clearFinishedJobs()
 
 void CoreController::prepareShutdown()
 {
+    if (m_runningGameTimer)
+        m_runningGameTimer->stop();
+    clearRunningGame();
+
+    if (m_catalogLoader)
+        m_catalogLoader->cancelActive();
+    if (m_catalogProbeLoader)
+        m_catalogProbeLoader->cancelActive();
+    if (m_catalogValidateLoader)
+        m_catalogValidateLoader->cancelActive();
+
     if (m_jobOrchestrator)
         m_jobOrchestrator->flushPersistence();
+    if (m_httpSession)
+        m_httpSession->shutdown();
     if (m_torrentSession)
-        m_torrentSession->flushResumeData();
+        m_torrentSession->shutdown();
+    if (m_pluginHost)
+        m_pluginHost->shutdownPlugins();
 }
 
 int CoreController::pluginCount() const
@@ -2639,10 +3541,10 @@ bool CoreController::installPluginArach(const QUrl& fileUrl)
     m_lastPluginError = ok ? QString() : m_pluginHost->lastError();
     emit lastPluginErrorChanged();
     if (ok) {
-        showNotice(QStringLiteral("Плагин установлен"));
+        showNotice(QCoreApplication::translate("Core", "Plugin installed"));
         emit pluginsChanged();
     } else {
-        showNotice(QStringLiteral("Ошибка установки плагина: %1").arg(m_lastPluginError));
+        showNotice(QCoreApplication::translate("Core", "Plugin install failed: %1").arg(m_lastPluginError));
     }
     return ok;
 }
@@ -2682,7 +3584,13 @@ void CoreController::browsePluginArach()
     if (!path.isEmpty())
         installPluginArach(QUrl::fromLocalFile(path));
 #else
-    showNotice(QStringLiteral("Выбор файла пока доступен только в Windows"));
+    const QString path = QFileDialog::getOpenFileName(
+        nullptr,
+        QCoreApplication::translate("Core", "Install plugin"),
+        QStandardPaths::writableLocation(QStandardPaths::HomeLocation),
+        QCoreApplication::translate("Core", "Plugin package (*.arach)"));
+    if (!path.isEmpty())
+        installPluginArach(QUrl::fromLocalFile(path));
 #endif
 }
 
@@ -2691,7 +3599,7 @@ void CoreController::openPluginsFolder()
     if (!m_pluginHost)
         return;
     if (!PluginHost::openWritablePluginsDir())
-        showNotice(QStringLiteral("Не удалось открыть папку плагинов"));
+        showNotice(QCoreApplication::translate("Core", "Could not open plugins folder"));
 }
 
 void CoreController::rescanPlugins()
@@ -2699,6 +3607,49 @@ void CoreController::rescanPlugins()
     if (!m_pluginHost)
         return;
     m_pluginHost->scan();
+}
+
+bool CoreController::hasPendingCrashReport() const
+{
+    return arachnel::hasPendingCrashReport();
+}
+
+QString CoreController::pendingCrashSummary() const
+{
+    return arachnel::pendingCrashSummary();
+}
+
+QString CoreController::pendingCrashDetails() const
+{
+    return arachnel::pendingCrashDetails();
+}
+
+QString CoreController::pendingCrashReportPath() const
+{
+    return arachnel::pendingCrashReportPath();
+}
+
+void CoreController::dismissPendingCrashReport()
+{
+    arachnel::dismissPendingCrashReport();
+}
+
+void CoreController::openPendingCrashIssue()
+{
+    arachnel::openPendingCrashIssue();
+}
+
+void CoreController::revealPendingCrashReport()
+{
+    arachnel::revealPendingCrashReport();
+}
+
+void CoreController::copyPendingCrashReport()
+{
+    if (QGuiApplication* gui = qobject_cast<QGuiApplication*>(QCoreApplication::instance())) {
+        if (QClipboard* clipboard = gui->clipboard())
+            clipboard->setText(pendingCrashDetails());
+    }
 }
 
 void registerCoreTypes()

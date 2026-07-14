@@ -1,0 +1,42 @@
+=== Arachnel 0.0.1 started 2026-07-14T03:59:05 ===
+Args: D:\Work\Arachnel\build-win\arachnel_app.exe
+
+Access violation at 0x00007ff707cd3481
+
+Arachnel 0.0.1
+Time: 2026-07-14T03:59:06
+Executable: D:\Work\Arachnel\build-win\arachnel_app.exe
+OS: Windows 11 Version 25H2 (x86_64)
+Summary: Access violation at 0x00007ff707cd3481
+Invalid read at address 0x0000000000000001
+Fault module: D:/Work/Arachnel/build-win/arachnel_app.exe
+Stack trace:
+  0x00007ff707c295b5 [arachnel_app]
+  0x00007ff707c2dbfc [arachnel_app]
+  0x00007ff9ba92f913 U+0x1f3 [KERNELBASE]
+  0x00007ff9bd228a0b s+0x25fb [ntdll]
+  0x00007ff9bd1df933 _+0x93 [ntdll]
+  0x00007ff9bd2247af _+0x9f [ntdll]
+  0x00007ff9bd0e21c7 R+0x597 [ntdll]
+  0x00007ff9bd2240ee K+0x2e [ntdll]
+  0x00007ff707cd3481 Z+0x24c61 [arachnel_app]
+  0x00007ff707c973fd [arachnel_app]
+  0x00007ff707cacab8 [arachnel_app]
+  0x00007ff707cacfb3 [arachnel_app]
+  0x00007ff93ad53d39 z+0x6b4b9 [Qt6Core]
+  0x00007ff93abc4f68 Z+0x28 [Qt6Core]
+  0x00007ff93a9da50a Z+0x19a [Qt6Core]
+  0x00007ff93a9df135 Z+0x445 [Qt6Core]
+  0x00007ff93638c6d2 Z+0x12 [Qt6Gui]
+  0x00007ff93aba87e7 Z+0xaa7 [Qt6Core]
+  0x00007ff93638c6a9 Z+0x19 [Qt6Gui]
+  0x00007ff93a9e5932 Z+0x232 [Qt6Core]
+  0x00007ff93a9e37b6 Z+0x96 [Qt6Core]
+  0x00007ff707c27ae6 [arachnel_app]
+  0x00007ff707cb0c26 Z+0x2406 [arachnel_app]
+  0x00007ff707c212ef [arachnel_app]
+  0x00007ff707c213e6 [arachnel_app]
+  0x00007ff9bce4e957 B+0x17 [KERNEL32]
+  0x00007ff9bd147c1c R+0x2c [ntdll]
+Report file: C:/Users/kiril/AppData/Roaming/PetWork/Arachnel/crash-report-latest.txt
+Run log: C:/Users/kiril/AppData/Roaming/PetWork/Arachnel/run.log

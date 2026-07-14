@@ -40,10 +40,15 @@ struct CatalogEntry {
     QString title;
     QString coverUrl;
     QString sourceId;
+    QString sourcePageUrl;
     QString version;
     QString sizeLabel;
     QString description;
     QString genres;
+    QString steamAppId;
+    QString trailerUrl;
+    QString trailerThumbnailUrl;
+    QStringList screenshotUrls;
     InstallKind installKind = InstallKind::PortableArchive;
     QStringList magnetUris;
     QString uploadDate;
@@ -54,6 +59,7 @@ struct CatalogEntry {
 };
 
 QString catalogItemKindLabel(CatalogItemKind kind);
+QString repairCatalogEntryId(const QString& entryId);
 QString slugifyCatalogId(const QString& title, const QString& sourceId);
 
 } // namespace arachnel::core

@@ -25,6 +25,7 @@ private:
 
     QQmlApplicationEngine* m_engine = nullptr;
     QTranslator* m_appTranslator = nullptr;
+    QTranslator* m_idTranslator = nullptr;
     QString m_currentLanguage = QStringLiteral("en");
 };
 

@@ -25,13 +25,17 @@ class QJSEngine;
 
 namespace arachnel::core {
 
+struct GameMetadata;
+
 class CatalogFeedLoader;
 class CoverImageCache;
 class GameMetadataService;
 class HttpDownloadSession;
 class JobOrchestrator;
 class InstallKindProbeService;
+class InstallAnalyzer;
 class PluginHost;
+class ProtonManager;
 class TorrentSession;
 
 class CoreController : public QObject
@@ -58,10 +62,18 @@ class CoreController : public QObject
     Q_PROPERTY(QString runningGameId READ runningGameId NOTIFY runningGameChanged)
     Q_PROPERTY(QString runningGameTitle READ runningGameTitle NOTIFY runningGameChanged)
     Q_PROPERTY(QString runningGameCoverUrl READ runningGameCoverUrl NOTIFY runningGameChanged)
+    Q_PROPERTY(bool protonDownloadInProgress READ protonDownloadInProgress NOTIFY protonDownloadChanged)
+    Q_PROPERTY(int protonDownloadProgress READ protonDownloadProgress NOTIFY protonDownloadChanged)
+    Q_PROPERTY(QString protonDownloadStatus READ protonDownloadStatus NOTIFY protonDownloadChanged)
+    Q_PROPERTY(QString protonLatestRelease READ protonLatestRelease NOTIFY protonLatestReleaseChanged)
+    Q_PROPERTY(bool protonReady READ protonReady NOTIFY protonStateChanged)
+    Q_PROPERTY(QString protonVersion READ protonVersion NOTIFY protonStateChanged)
+    Q_PROPERTY(QVariantList availableProtons READ availableProtons NOTIFY availableProtonsChanged)
 
 public:
     static CoreController* create(QQmlEngine* engine, QJSEngine* scriptEngine);
     static CoreController& instance();
+    static void setCrashReporterMode(bool enabled);
 
     LibraryModel* library() { return &m_library; }
     SourcePluginModel* sources() { return &m_sources; }
@@ -83,6 +95,13 @@ public:
     QString runningGameId() const { return m_runningGameId; }
     QString runningGameTitle() const { return m_runningGameTitle; }
     QString runningGameCoverUrl() const { return m_runningGameCoverUrl; }
+    bool protonDownloadInProgress() const;
+    int protonDownloadProgress() const;
+    QString protonDownloadStatus() const;
+    QString protonLatestRelease() const;
+    bool protonReady() const;
+    QString protonVersion() const;
+    QVariantList availableProtons() const;
 
     Q_INVOKABLE QVariantList pluginEntries() const;
     Q_INVOKABLE void browsePluginArach();
@@ -99,7 +118,19 @@ public:
     Q_INVOKABLE void installDownloadedCatalogAddon(const QString& entryId, const QString& addonId);
     Q_INVOKABLE bool isCatalogAddonInstalled(const QString& entryId, const QString& addonId) const;
     Q_INVOKABLE void updateCatalogEntry(const QString& entryId);
+    Q_INVOKABLE void setGameAutoUpdate(const QString& entryId, bool enabled);
+    Q_INVOKABLE void setGameLaunchArgs(const QString& entryId, const QString& args);
+    Q_INVOKABLE void setGameExecutableOverride(const QString& entryId, const QString& path);
+    Q_INVOKABLE void setGameProtonId(const QString& entryId, const QString& protonId);
+    Q_INVOKABLE void refreshAvailableProtons();
+    Q_INVOKABLE void moveProtonInPriority(const QString& protonId, int delta);
+    Q_INVOKABLE QString protonNameForId(const QString& protonId) const;
+    Q_INVOKABLE void downloadProtonGe();
+    Q_INVOKABLE void refreshProtonLatestRelease();
+    Q_INVOKABLE bool needsProtonOnPlatform() const;
+    Q_INVOKABLE bool ensureProtonReady();
     Q_INVOKABLE bool needsInstallLocationChoice() const;
+    Q_INVOKABLE QString browseGameExecutable(const QString& currentPath = {});
     Q_INVOKABLE QString browseStorageFolder();
     Q_INVOKABLE void removeGame(const QString& gameId, bool deleteFiles = true);
     Q_INVOKABLE void removeEntry(const QString& entryId, bool deleteFiles = true);
@@ -110,14 +141,16 @@ public:
     Q_INVOKABLE bool entryDownloadFilesExist(const QString& entryId) const;
     Q_INVOKABLE QVariantMap entryDetails(const QString& entryId) const;
     Q_INVOKABLE void checkUpdates();
-    Q_INVOKABLE void verifyEntryFiles(const QString& entryId);
-    Q_INVOKABLE void verifyAllPortableGames();
     Q_INVOKABLE void cancelJob(const QString& jobId);
     Q_INVOKABLE void toggleJobPause(const QString& jobId);
     Q_INVOKABLE void removeJob(const QString& jobId);
     Q_INVOKABLE void retryJob(const QString& jobId);
     Q_INVOKABLE void retryInstall(const QString& jobId);
     Q_INVOKABLE bool canRetryJobInstall(const QString& jobId) const;
+    Q_INVOKABLE bool canManualInstallJob(const QString& jobId) const;
+    Q_INVOKABLE void openJobDownloadFolder(const QString& jobId);
+    Q_INVOKABLE void confirmManualInstall(const QString& jobId);
+    Q_INVOKABLE QString browseInstallFolder(const QString& startPath = {});
     Q_INVOKABLE void clearFinishedJobs();
     Q_INVOKABLE void markNotificationsRead();
     Q_INVOKABLE void clearNotifications();
@@ -135,6 +168,14 @@ public:
     Q_INVOKABLE void validateHydraCatalogUrl(const QString& requestId, const QString& url);
     Q_INVOKABLE void invalidateSourceCatalog(const QString& sourceId);
     Q_INVOKABLE void openExternalUrl(const QString& url);
+    Q_INVOKABLE bool hasPendingCrashReport() const;
+    Q_INVOKABLE QString pendingCrashSummary() const;
+    Q_INVOKABLE QString pendingCrashDetails() const;
+    Q_INVOKABLE QString pendingCrashReportPath() const;
+    Q_INVOKABLE void dismissPendingCrashReport();
+    Q_INVOKABLE void openPendingCrashIssue();
+    Q_INVOKABLE void revealPendingCrashReport();
+    Q_INVOKABLE void copyPendingCrashReport();
     Q_INVOKABLE void requestCatalogCover(const QString& entryId);
     Q_INVOKABLE void cancelCatalogCover(const QString& entryId);
     Q_INVOKABLE void invalidateCatalogCover(const QString& entryId);
@@ -153,16 +194,25 @@ signals:
     void pluginsChanged();
     void lastPluginErrorChanged();
     void runningGameChanged();
+    void protonDownloadChanged();
+    void protonLatestReleaseChanged();
+    void protonStateChanged();
+    void availableProtonsChanged();
+    void entryMetadataChanged(const QString& entryId);
 
 private:
     explicit CoreController(QObject* parent = nullptr);
 
     void initializeServices();
+    QString sourceWebsiteFor(const QString& sourceId) const;
+    void applyMetadataToEntry(CatalogEntry& entry, const GameMetadata& metadata) const;
     void syncSourcesFromPlugins();
     void persistSourcesToSettings();
     void applyPluginCatalog(const QString& sourceId, QVector<CatalogEntry> entries);
     void onCatalogReady();
+    void runAutoInstallUpdates();
     void syncLibraryFromStore();
+    void syncProtonCatalog();
     void applyCatalogFilter(const QString& query);
     void commitCatalogLoad(const QString& sourceId, QVector<CatalogEntry> entries);
     void storeCatalogForSource(const QString& sourceId, QVector<CatalogEntry> entries);
@@ -188,6 +238,9 @@ private:
     void syncInstallSessionPhase(const QString& entryId);
     void markCatalogAddonInstalled(const QString& parentEntryId, const QString& addonId,
                                    const QString& uploadDate);
+    void commitInstalledCatalogGame(const CatalogEntry& entryHint, const QString& sourceId,
+                                    const QString& savePath, const QString& libraryId,
+                                    const QString& installPath, InstallKind installKind);
     QString resolveAddonArtifactPath(const QString& parentEntryId, const QString& addonId) const;
     std::optional<CatalogEntry> resolveCatalogEntry(const QString& entryId,
                                                     const QString& sourceId,
@@ -195,6 +248,7 @@ private:
     bool gameNeedsInstall(const QString& entryId) const;
     void retryPendingInstalls();
     void pruneBrokenLibraryEntries();
+    void migratePollutedEntryIds();
     void pruneAddonLibraryEntries();
     void restoreLibraryPlaceholders();
     void ensureLibraryPlaceholder(const CatalogEntry& entry, const QString& libraryId,
@@ -208,20 +262,24 @@ private:
     void clearRunningGame();
     void pollRunningGame();
     const JobEntry* findLatestJobForEntry(const QString& entryId) const;
+    bool entryHasActiveJob(const QString& entryId) const;
     void showNotice(const QString& message, bool addToHistory = true);
     void setCatalogLoading(bool loading);
     void setCatalogStatus(const QString& status);
     bool isRemoteUploadDateNewer(const QString& remote, const QString& local) const;
     bool gameHasUpdate(const LibraryGame& game, const CatalogEntry& remote) const;
     int recalculateLibraryUpdates(bool notify);
-    QString verifyEntryFilesMessage(const QString& entryId) const;
     const CatalogEntry* findCatalogEntry(const QString& entryId) const;
+    std::optional<CatalogEntry> resolveCatalogEntry(const QString& entryId) const;
     const CatalogComponent* findCatalogAddon(const CatalogEntry& entry,
                                              const QString& addonId) const;
     void syncEntryToCatalogModel(const QString& entryId);
     InstallKind detectInstallKindForEntry(const QString& sourceId,
                                           const QString& downloadPath) const;
+    bool hasInstallHandlerForPath(const QString& sourceId, const QString& downloadPath) const;
+    void offerManualInstallForJob(const JobEntry& job);
     void syncCatalogInstallKind(const QString& entryId, InstallKind kind);
+    void syncInstallKindProbeSuspension();
     void applyCachedMetadata(CatalogEntry& entry) const;
     void enrichLibraryGameCover(LibraryGame& game) const;
     void warmCatalogCovers(const QString& sourceId, const QString& query, int limit);
@@ -246,7 +304,9 @@ private:
     HttpDownloadSession* m_httpSession = nullptr;
     JobOrchestrator* m_jobOrchestrator = nullptr;
     PluginHost* m_pluginHost = nullptr;
+    InstallAnalyzer* m_installAnalyzer = nullptr;
     InstallKindProbeService* m_installKindProbe = nullptr;
+    ProtonManager* m_protonManager = nullptr;
 
     QVector<CatalogEntry> m_catalogCache;
     QHash<QString, QVector<CatalogEntry>> m_catalogBySource;

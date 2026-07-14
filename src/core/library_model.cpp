@@ -1,5 +1,7 @@
 #include "library_model.h"
 
+#include "catalog_types.h"
+
 namespace arachnel::core {
 
 namespace {
@@ -111,8 +113,9 @@ void LibraryModel::setGames(QVector<LibraryGame> games)
 
 const LibraryGame* LibraryModel::gameById(const QString& id) const
 {
+    const QString resolved = repairCatalogEntryId(id);
     for (const auto& game : m_games) {
-        if (game.id == id)
+        if (game.id == resolved || game.id == id)
             return &game;
     }
     return nullptr;
@@ -135,10 +138,14 @@ QVariantMap LibraryModel::toMap(const LibraryGame& game) const
         {QStringLiteral("installKind"), static_cast<int>(game.installKind)},
         {QStringLiteral("installKindLabel"), installKindLabel(game.installKind)},
         {QStringLiteral("hasUpdate"), game.hasUpdate},
+        {QStringLiteral("autoUpdate"), game.autoUpdate},
         {QStringLiteral("uploadDate"), game.uploadDate},
         {QStringLiteral("downloadPath"), game.downloadPath},
         {QStringLiteral("libraryId"), game.libraryId},
         {QStringLiteral("lastPlayedAt"), game.lastPlayedAt},
+        {QStringLiteral("launchArgs"), game.launchArgs},
+        {QStringLiteral("executableOverride"), game.executableOverride},
+        {QStringLiteral("protonId"), game.protonId},
         {QStringLiteral("componentCount"), game.components.size()},
         {QStringLiteral("installedComponentCount"), installedComponentCount(game.components)},
         {QStringLiteral("installed"), true},
@@ -168,7 +175,7 @@ QVariantMap LibraryModel::mostRecentGame() const
     if (!best->lastPlayedAt.isEmpty())
         return toMap(*best);
 
-    return toMap(m_games.front());
+    return {};
 }
 
 QVariantMap LibraryModel::gameInfo(const QString& id) const

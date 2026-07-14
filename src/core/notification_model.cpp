@@ -9,11 +9,14 @@ QString notificationKindForMessage(const QString& message)
 {
     const QString lower = message.toLower();
     if (lower.contains(QStringLiteral("ошибка")) || lower.contains(QStringLiteral("не удалось"))
-        || lower.contains(QStringLiteral("не найден")))
+        || lower.contains(QStringLiteral("не найден")) || lower.contains(QStringLiteral("error"))
+        || lower.contains(QStringLiteral("failed")) || lower.contains(QStringLiteral("not found")))
         return QStringLiteral("error");
     if (lower.contains(QStringLiteral("установлен")) || lower.contains(QStringLiteral("удалена"))
         || lower.contains(QStringLiteral("перенесена"))
-        || lower.contains(QStringLiteral("доступно обновлений")))
+        || lower.contains(QStringLiteral("доступно обновлений"))
+        || lower.contains(QStringLiteral("installed")) || lower.contains(QStringLiteral("removed"))
+        || lower.contains(QStringLiteral("moved")) || lower.contains(QStringLiteral("update(s) available")))
         return QStringLiteral("success");
     return QStringLiteral("info");
 }

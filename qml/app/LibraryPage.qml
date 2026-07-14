@@ -11,7 +11,7 @@ Item {
     readonly property int gridSpacing: MD.Token.spacing.medium
     readonly property int metaHeight: 48
     readonly property bool libraryEmpty: Core.library.count === 0
-    readonly property int pageMargin: MD.Token.spacing.large
+    readonly property int pageMargin: MD.Token.spacing.medium
     readonly property int cardRadius: MD.Token.shape.corner.extra_large
 
     property string selectedSourceId: Core.sources.firstEnabledId
@@ -25,12 +25,23 @@ Item {
     readonly property bool featuredIsRunning: Core.gameRunning
         && Core.runningGameId === (root.heroGame?.gameId ?? "")
     readonly property bool showRunningHero: Core.gameRunning
+    readonly property bool heroHasRecentPlay: root.showRunningHero
+        || !!(root.heroGame?.lastPlayedAt?.length)
     readonly property string heroEyebrow: showRunningHero
         ? qsTr("Playing now")
         : qsTr("Recently played")
-    readonly property string heroTitle: root.heroGame?.title ?? ""
+    readonly property string heroTitle: {
+        if (root.showRunningHero || root.heroHasRecentPlay)
+            return root.heroGame?.title ?? ""
+        return qsTr("Nothing played yet")
+    }
     readonly property string heroCoverUrl: root.heroGame?.coverUrl ?? ""
     readonly property string heroGameId: root.heroGame?.gameId ?? ""
+    readonly property string heroSubtitle: {
+        if (root.showRunningHero || root.heroHasRecentPlay)
+            return (root.heroGame?.sourceName ?? "") + " · v" + (root.heroGame?.version ?? "")
+        return qsTr("Launch a game from your library — it will appear here.")
+    }
     readonly property bool heroHasUpdate: !!(root.heroGame?.hasUpdate)
 
     property int jobRevision: 0
@@ -44,6 +55,10 @@ Item {
     readonly property bool featuredShowJobStatus: root.heroGameId.length
         && !Core.isEntryPlayable(root.heroGameId)
         && !!(featuredJob.jobId)
+        && !((root.heroGame?.installPath ?? "").length)
+        && (featuredJob.inProgress
+            || featuredJob.status === "installing"
+            || featuredJob.status === "completed")
     readonly property real featuredFillProgress: {
         if (!featuredShowJobStatus)
             return -1
@@ -160,7 +175,7 @@ Item {
                     MD.Label {
                         Layout.fillWidth: true
                         Layout.maximumWidth: 520
-                        text: qsTr("Your library is empty. Install a source plugin, pick a game in the catalog, and it will show up here.")
+                        text: Messages.libraryEmptySubtitle
                         color: MD.Token.color.on_surface_variant
                         typescale: MD.Token.typescale.body_medium
                         wrapMode: Text.WordWrap
@@ -214,19 +229,19 @@ Item {
                             icon: MD.Token.icon.extension,
                             step: qsTr("Step 1"),
                             title: qsTr("Plugin"),
-                            body: qsTr("Install a source plugin (FreeTP, etc.) under Settings → Plugins.")
+                            body: Messages.libraryStep1Body
                         },
                         {
                             icon: MD.Token.icon.storefront,
                             step: qsTr("Step 2"),
                             title: qsTr("Catalog"),
-                            body: qsTr("Pick a game and start installation — the torrent downloads automatically.")
+                            body: Messages.libraryStep2Body
                         },
                         {
                             icon: MD.Token.icon.sports_esports,
                             step: qsTr("Step 3"),
                             title: qsTr("Library"),
-                            body: qsTr("Installed games live here: launch, updates, and details.")
+                            body: Messages.libraryStep3Body
                         }
                     ]
 
@@ -323,22 +338,22 @@ Item {
         anchors.fill: parent
         visible: !root.libraryEmpty
         contentWidth: width
-        contentHeight: contentCol.implicitHeight + MD.Token.spacing.large
+        contentHeight: contentCol.implicitHeight + root.pageMargin
         clip: true
         boundsBehavior: Flickable.StopAtBounds
 
         ColumnLayout {
             id: contentCol
             width: flick.width
-            spacing: MD.Token.spacing.large
+            spacing: MD.Token.spacing.medium
 
             Item {
                 id: heroHost
                 Layout.fillWidth: true
                 Layout.leftMargin: root.pageMargin
                 Layout.rightMargin: root.pageMargin
-                Layout.topMargin: MD.Token.spacing.medium
-                Layout.preferredHeight: 280
+                Layout.topMargin: root.pageMargin
+                Layout.preferredHeight: 248
 
                 Item {
                     id: heroCard
@@ -399,10 +414,13 @@ Item {
 
                             MD.Label {
                                 Layout.fillWidth: true
-                                text: (root.heroGame?.sourceName ?? "") + " · v" + (root.heroGame?.version ?? "")
+                                text: root.heroSubtitle
                                 color: MD.Token.color.on_surface_variant
                                 typescale: MD.Token.typescale.body_large
                                 elide: Text.ElideRight
+                                wrapMode: root.heroHasRecentPlay || root.showRunningHero
+                                           ? Text.NoWrap
+                                           : Text.WordWrap
                                 visible: !root.featuredShowJobStatus && !root.showRunningHero
                             }
 
@@ -457,7 +475,7 @@ Item {
                                 spacing: MD.Token.spacing.small
 
                                 MD.Button {
-                                    visible: !root.showRunningHero
+                                    visible: root.heroHasRecentPlay && !root.showRunningHero
                                     text: qsTr("Play")
                                     mdState.type: MD.Enum.BtFilled
                                     enabled: !!(root.heroGameId)
@@ -466,6 +484,7 @@ Item {
                                 }
 
                                 MD.Button {
+                                    visible: root.heroHasRecentPlay || root.showRunningHero
                                     text: qsTr("Details")
                                     mdState.type: MD.Enum.BtOutlined
                                     enabled: !!(root.heroGameId)
@@ -474,7 +493,7 @@ Item {
 
                                 MD.Button {
                                     visible: root.heroHasUpdate && !root.showRunningHero
-                                    text: qsTr("Refresh")
+                                    text: qsTr("Update")
                                     icon.name: MD.Token.icon.update
                                     mdState.type: MD.Enum.BtFilledTonal
                                     enabled: !!(root.heroGameId)
@@ -487,6 +506,7 @@ Item {
                             Layout.preferredWidth: 140
                             Layout.preferredHeight: 186
                             Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
+                            visible: root.heroHasRecentPlay || root.showRunningHero
                             source: root.heroCoverUrl
                             seed: root.heroTitle
                             fallbackText: (root.heroTitle || "?").charAt(0)
@@ -584,72 +604,54 @@ Item {
                 }
             }
 
-            RowLayout {
+            ColumnLayout {
                 Layout.fillWidth: true
                 Layout.leftMargin: root.pageMargin
                 Layout.rightMargin: root.pageMargin
+                spacing: MD.Token.spacing.small
 
-                MD.Label {
+                RowLayout {
                     Layout.fillWidth: true
-                    text: qsTr("My library")
-                    typescale: MD.Token.typescale.title_large
+
+                    MD.Label {
+                        Layout.fillWidth: true
+                        text: qsTr("My library")
+                        typescale: MD.Token.typescale.title_large
+                    }
+
+                    MD.Label {
+                        text: qsTr("%1 games").arg(Core.library.count)
+                        color: MD.Token.color.on_surface_variant
+                        typescale: MD.Token.typescale.label_large
+                    }
                 }
 
-                MD.Label {
-                    text: qsTr("%1 games").arg(Core.library.count)
-                    color: MD.Token.color.on_surface_variant
-                    typescale: MD.Token.typescale.label_large
-                }
-            }
+                Item {
+                    id: gridHost
+                    Layout.fillWidth: true
 
-            Item {
-                id: gridHost
-                Layout.fillWidth: true
-                Layout.leftMargin: root.pageMargin
-                Layout.rightMargin: root.pageMargin
+                    readonly property int columns: Math.max(
+                        2, Math.floor((width + root.gridSpacing) / (root.minCardWidth + root.gridSpacing)))
+                    readonly property real cardWidth: width > 0
+                        ? (width - root.gridSpacing * (columns - 1)) / columns
+                        : root.minCardWidth
+                    readonly property real cardHeight: cardWidth * 4 / 3 + root.metaHeight
+                    readonly property int rows: Math.max(1, Math.ceil(Core.library.count / columns))
+                    Layout.preferredHeight: rows * cardHeight + Math.max(0, rows - 1) * root.gridSpacing
 
-                property int columns: 3
-                property real cardWidth: 160
-                property real cardHeight: 260
-
-                function relayout() {
-                    const cols = Math.max(2, Math.floor((width + root.gridSpacing) / (root.minCardWidth + root.gridSpacing)))
-                    const cardW = (width - root.gridSpacing * (cols - 1)) / cols
-                    columns = cols
-                    cardWidth = cardW
-                    cardHeight = cardW * 4 / 3 + root.metaHeight
-                    const rows = Math.max(1, Math.ceil(Core.library.count / cols))
-                    Layout.preferredHeight = rows * (cardHeight + root.gridSpacing)
-                }
-
-                Timer {
-                    id: layoutTimer
-                    interval: 50
-                    onTriggered: gridHost.relayout()
-                }
-
-                onWidthChanged: layoutTimer.restart()
-                Component.onCompleted: relayout()
-
-                Connections {
-                    target: Core.library
-                    function onModelReset() { gridHost.relayout() }
-                    function onRowsInserted() { gridHost.relayout() }
-                    function onRowsRemoved() { gridHost.relayout() }
-                }
-
-                GridView {
-                    anchors.fill: parent
-                    clip: true
-                    interactive: false
-                    model: Core.library
-                    cellWidth: gridHost.cardWidth + root.gridSpacing
-                    cellHeight: gridHost.cardHeight + root.gridSpacing
-                    cacheBuffer: 0
-                    delegate: LibraryGameCard {
-                        width: Math.max(0, gridHost.cardWidth - root.gridSpacing)
-                        height: gridHost.cardHeight
-                        onOpenDetails: function (id) { root.openGame(id) }
+                    GridView {
+                        anchors.fill: parent
+                        clip: true
+                        interactive: false
+                        model: Core.library
+                        cellWidth: gridHost.cardWidth + root.gridSpacing
+                        cellHeight: gridHost.cardHeight + root.gridSpacing
+                        cacheBuffer: 0
+                        delegate: LibraryGameCard {
+                            width: Math.max(0, gridHost.cardWidth - root.gridSpacing)
+                            height: gridHost.cardHeight
+                            onOpenDetails: function (id) { root.openGame(id) }
+                        }
                     }
                 }
             }

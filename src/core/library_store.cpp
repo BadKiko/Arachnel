@@ -1,5 +1,7 @@
 #include "library_store.h"
 
+#include "catalog_types.h"
+
 #include <QDir>
 #include <QFile>
 #include <QJsonArray>
@@ -67,8 +69,9 @@ void LibraryStore::setGames(QVector<LibraryGame> games)
 
 const LibraryGame* LibraryStore::gameById(const QString& id) const
 {
+    const QString resolved = repairCatalogEntryId(id);
     for (const auto& game : m_games) {
-        if (game.id == id)
+        if (game.id == resolved || game.id == id)
             return &game;
     }
     return nullptr;
@@ -125,11 +128,15 @@ void LibraryStore::load()
         game.installKind =
             static_cast<InstallKind>(obj.value(QStringLiteral("installKind")).toInt());
         game.hasUpdate = obj.value(QStringLiteral("hasUpdate")).toBool();
+        game.autoUpdate = obj.value(QStringLiteral("autoUpdate")).toBool(true);
         game.uploadDate = obj.value(QStringLiteral("uploadDate")).toString();
         game.magnetUri = obj.value(QStringLiteral("magnetUri")).toString();
         game.downloadPath = obj.value(QStringLiteral("downloadPath")).toString();
         game.libraryId = obj.value(QStringLiteral("libraryId")).toString();
         game.lastPlayedAt = obj.value(QStringLiteral("lastPlayedAt")).toString();
+        game.launchArgs = obj.value(QStringLiteral("launchArgs")).toString();
+        game.executableOverride = obj.value(QStringLiteral("executableOverride")).toString();
+        game.protonId = obj.value(QStringLiteral("protonId")).toString();
         game.components = componentsFromJson(obj.value(QStringLiteral("components")).toArray());
         games.append(game);
     }
@@ -154,11 +161,15 @@ void LibraryStore::save()
         obj.insert(QStringLiteral("sizeLabel"), game.sizeLabel);
         obj.insert(QStringLiteral("installKind"), static_cast<int>(game.installKind));
         obj.insert(QStringLiteral("hasUpdate"), game.hasUpdate);
+        obj.insert(QStringLiteral("autoUpdate"), game.autoUpdate);
         obj.insert(QStringLiteral("uploadDate"), game.uploadDate);
         obj.insert(QStringLiteral("magnetUri"), game.magnetUri);
         obj.insert(QStringLiteral("downloadPath"), game.downloadPath);
         obj.insert(QStringLiteral("libraryId"), game.libraryId);
         obj.insert(QStringLiteral("lastPlayedAt"), game.lastPlayedAt);
+        obj.insert(QStringLiteral("launchArgs"), game.launchArgs);
+        obj.insert(QStringLiteral("executableOverride"), game.executableOverride);
+        obj.insert(QStringLiteral("protonId"), game.protonId);
         obj.insert(QStringLiteral("components"), componentsToJson(game.components));
         array.append(obj);
     }

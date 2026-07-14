@@ -25,7 +25,7 @@ Flickable {
             Layout.leftMargin: contentMargin
             Layout.rightMargin: contentMargin
             Layout.topMargin: MD.Token.spacing.small
-            text: qsTr("Update checks and portable build integrity verification.")
+            text: qsTr("Update checks and automatic installs.")
             color: MD.Token.color.on_surface_variant
             wrapMode: Text.WordWrap
             typescale: MD.Token.typescale.body_medium
@@ -74,13 +74,13 @@ Flickable {
 
                 MD.Label {
                     Layout.fillWidth: true
-                    text: qsTr("Verify portable files before launch")
+                    text: qsTr("Install updates automatically on launch")
                     typescale: MD.Token.typescale.body_large
                 }
 
                 MD.Label {
                     Layout.fillWidth: true
-                    text: qsTr("The install folder and .exe must exist.")
+                    text: qsTr("Starts downloads for games with updates when the catalog finishes loading. Per-game opt-out is available in game details.")
                     color: MD.Token.color.on_surface_variant
                     typescale: MD.Token.typescale.body_small
                     wrapMode: Text.WordWrap
@@ -88,8 +88,8 @@ Flickable {
             }
 
             MD.Switch {
-                checked: Core.settings.verifyPortableFiles
-                onToggled: Core.settings.verifyPortableFiles = checked
+                checked: Core.settings.autoInstallUpdates
+                onToggled: Core.settings.autoInstallUpdates = checked
             }
         }
 
@@ -104,13 +104,6 @@ Flickable {
                 icon.name: MD.Token.icon.update
                 mdState.type: MD.Enum.BtOutlined
                 onClicked: Core.checkUpdates()
-            }
-
-            MD.Button {
-                text: qsTr("Verify portable")
-                icon.name: MD.Token.icon.fact_check
-                mdState.type: MD.Enum.BtOutlined
-                onClicked: Core.verifyAllPortableGames()
             }
         }
     }

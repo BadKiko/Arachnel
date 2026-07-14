@@ -1,0 +1,24 @@
+# Weblate component definition (https://docs.weblate.org/en/latest/admin/component.html)
+# Import or mirror this when configuring hosted.weblate.org.
+#
+# English is the SOURCE catalog (monolingual template), not a language to translate.
+# Only arachnel_ru.ts (and future arachnel_*.ts targets) need translator work.
+
+language:
+  code: en
+  name: English
+
+components:
+  - name: Application
+    slug: application
+    repo: https://github.com/BadKiko/Arachnel
+    push: https://github.com/BadKiko/Arachnel
+    branch: main
+    filemask: translations/arachnel_*.ts
+    template: translations/arachnel_en.ts
+    file_format: ts
+    new_base: translations/arachnel_en.ts
+    edit_template: true
+    intermediate: translations/arachnel_en.ts
+    # Monolingual: base file holds English sources; locale files hold translations only.
+    translation: translations/arachnel_ru.ts

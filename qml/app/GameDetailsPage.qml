@@ -17,18 +17,88 @@ Item {
         color: MD.Token.color.surface
     }
 
-    readonly property var info: gameId.length ? Core.entryDetails(gameId) : ({})
+    property int detailsRevision: 0
+    property bool mediaLoading: false
 
-    readonly property bool playable: Core.isEntryPlayable(gameId)
-    readonly property bool installed: root.playable
+    readonly property bool hasCachedMedia: {
+        const _rev = root.detailsRevision
+        const shots = root.info.screenshotUrls ?? []
+        return shots.length > 0 || ((root.info.trailerUrl ?? "")).length > 0
+    }
+
+    function syncMediaLoading() {
+        root.mediaLoading = !root.hasCachedMedia
+    }
+
+    readonly property var info: {
+        const _rev = root.detailsRevision
+        return gameId.length ? Core.entryDetails(gameId) : ({})
+    }
+
+    Connections {
+        target: Core
+        function onEntryMetadataChanged(entryId) {
+            if (entryId === root.gameId) {
+                root.mediaLoading = false
+                root.detailsRevision++
+            }
+        }
+    }
+
+    Connections {
+        target: Core.library
+        function onLibraryChanged() { root.detailsRevision++ }
+    }
+
+    Connections {
+        target: Core
+        function onPluginsChanged() { root.detailsRevision++ }
+    }
+
+    readonly property bool playable: {
+        const _rev = root.detailsRevision
+        return Core.isEntryPlayable(gameId)
+    }
+    readonly property bool installed: {
+        const _rev = root.detailsRevision
+        if (root.playable)
+            return true
+        if (!gameId.length)
+            return false
+        const lib = Core.library.gameInfo(gameId)
+        return ((lib.installPath ?? "")).length > 0
+    }
+    readonly property bool inLibrary: {
+        const _rev = root.detailsRevision
+        if (!gameId.length)
+            return false
+        const lib = Core.library.gameInfo(gameId)
+        return (lib.gameId ?? "").length > 0
+    }
     readonly property bool isRunning: Core.gameRunning && Core.runningGameId === root.gameId
-    readonly property bool downloadFilesExist: Core.entryDownloadFilesExist(gameId)
+    readonly property bool onLinux: Qt.platform.os === "linux"
+    readonly property bool downloadFilesExist: {
+        const _rev = root.detailsRevision
+        return Core.entryDownloadFilesExist(gameId)
+    }
+    readonly property bool downloadComplete: {
+        const _rev = root.detailsRevision
+        return Core.isEntryDownloadComplete(gameId)
+    }
     readonly property bool installFailed: (downloadJob.detail || "").indexOf("Install failed") >= 0
     readonly property bool isInstalling: downloadJob.status === "installing"
     readonly property bool readyToInstall: !root.playable
+        && !root.installed
         && downloadJob.status === "completed"
         && root.downloadFilesExist
         && !root.installFailed
+    readonly property bool canManageDownload: !root.playable && (
+        root.fromCatalog
+        || root.inLibrary
+        || root.showDownloadProgress
+        || root.readyToInstall
+        || root.installFailed
+    )
 
     property var downloadJob: ({})
 
@@ -43,22 +113,46 @@ Item {
 
     Connections {
         target: Core.jobs
-        function onJobsChanged() { root.refreshDownloadJob() }
+        function onJobsChanged() {
+            root.refreshDownloadJob()
+            root.detailsRevision++
+        }
     }
 
     onGameIdChanged: {
         refreshDownloadJob()
+        syncMediaLoading()
         maybeEnrich()
+        if (root.onLinux)
+            Core.refreshAvailableProtons()
     }
     onFromCatalogChanged: maybeEnrich()
 
     function maybeEnrich() {
-        if (gameId.length > 0 && fromCatalog)
+        if (gameId.length > 0) {
+            if (!root.hasCachedMedia)
+                root.mediaLoading = true
             Core.enrichCatalogEntry(gameId)
+        }
+    }
+
+    Timer {
+        id: mediaLoadTimeout
+        interval: 20000
+        repeat: false
+        onTriggered: root.mediaLoading = false
+    }
+
+    onMediaLoadingChanged: {
+        if (root.mediaLoading)
+            mediaLoadTimeout.restart()
+        else
+            mediaLoadTimeout.stop()
     }
 
     Component.onCompleted: {
         refreshDownloadJob()
+        syncMediaLoading()
         maybeEnrich()
     }
 
@@ -74,8 +168,17 @@ Item {
     signal backRequested()
     signal openAddonPicker(string entryId, string title)
     signal openInstallPicker(string entryId, string title, var selectedAddonIds)
+    signal protonRequired()
+
+    function needsProtonCheck() {
+        return root.onLinux && Core.needsProtonOnPlatform() && !Core.protonReady
+    }
 
     function proceedToInstall(selectedAddonIds) {
+        if (root.needsProtonCheck()) {
+            root.protonRequired()
+            return
+        }
         const ids = selectedAddonIds || []
         if (Core.needsInstallLocationChoice())
             root.openInstallPicker(root.gameId, root.info.title || "", ids)
@@ -84,6 +187,10 @@ Item {
     }
 
     function beginInstall() {
+        if (root.needsProtonCheck()) {
+            root.protonRequired()
+            return
+        }
         const addonCount = root.info.addonCount ?? 0
         if (addonCount > 0)
             root.openAddonPicker(root.gameId, root.info.title || "")
@@ -198,10 +305,40 @@ Item {
                         }
                     }
 
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: MD.Token.spacing.small
+                        visible: (root.info.sourcePageUrl ?? "").length > 0
+                                 || (root.info.sourceWebsiteUrl ?? "").length > 0
+                                 || (root.info.steamStoreUrl ?? "").length > 0
+
+                        MD.Button {
+                            visible: (root.info.sourcePageUrl ?? "").length > 0
+                                     || (root.info.sourceWebsiteUrl ?? "").length > 0
+                            text: (root.info.sourcePageUrl ?? "").length > 0
+                                  ? qsTr("Source page")
+                                  : qsTr("Source website")
+                            icon.name: MD.Token.icon.open_in_new
+                            mdState.type: MD.Enum.BtText
+                            onClicked: Core.openExternalUrl(
+                                (root.info.sourcePageUrl ?? "").length > 0
+                                    ? root.info.sourcePageUrl
+                                    : root.info.sourceWebsiteUrl)
+                        }
+
+                        MD.Button {
+                            visible: (root.info.steamStoreUrl ?? "").length > 0
+                            text: qsTr("Steam")
+                            icon.name: MD.Token.icon.open_in_new
+                            mdState.type: MD.Enum.BtText
+                            onClicked: Core.openExternalUrl(root.info.steamStoreUrl)
+                        }
+                    }
+
                     MD.Label {
                         Layout.fillWidth: true
                         visible: root.readyToInstall && !root.installFailed
-                        text: qsTr("Torrent downloaded. Click Install for the source plugin to extract or install the game.")
+                        text: Messages.gameInstallTorrentHint
                         wrapMode: Text.WordWrap
                         color: MD.Token.color.on_surface_variant
                         typescale: MD.Token.typescale.body_medium
@@ -236,9 +373,7 @@ Item {
                         }
 
                         DownloadProgressButton {
-                            visible: !root.playable
-                                     && (root.fromCatalog || root.showDownloadProgress
-                                         || root.readyToInstall || root.installFailed)
+                            visible: root.canManageDownload
                             progress: root.downloadJob.progress ?? 0
                             downloading: root.downloadActive
                             paused: root.downloadPaused
@@ -256,28 +391,30 @@ Item {
                         }
 
                         MD.Button {
-                            visible: root.playable || Core.isEntryDownloadComplete(root.gameId)
+                            visible: root.playable
+                                     || root.downloadComplete
+                                     || root.inLibrary
                             text: qsTr("Delete")
                             icon.name: MD.Token.icon.delete
                             mdState.type: MD.Enum.BtOutlined
                             onClicked: removeDialog.open()
                         }
 
-                        MD.Button {
-                            visible: root.installed && !!(root.info.hasUpdate) && !root.downloadJob.inProgress
-                            text: qsTr("Refresh")
-                            icon.name: MD.Token.icon.update
-                            mdState.type: MD.Enum.BtFilledTonal
-                            onClicked: Core.updateCatalogEntry(root.gameId)
+                        MD.IconButton {
+                            visible: root.playable
+                                     || root.downloadComplete
+                                     || root.inLibrary
+                            mdState.type: MD.Enum.IBtOutlined
+                            icon.name: MD.Token.icon.settings
+                            onClicked: gameSettingsSheet.openForGame(root.gameId)
                         }
 
                         MD.Button {
-                            visible: root.playable
-                                     && (root.info.installKind === 0)
-                            text: qsTr("Verify files")
-                            icon.name: MD.Token.icon.fact_check
-                            mdState.type: MD.Enum.BtText
-                            onClicked: Core.verifyEntryFiles(root.gameId)
+                            visible: root.installed && !!(root.info.hasUpdate) && !root.downloadJob.inProgress
+                            text: qsTr("Update")
+                            icon.name: MD.Token.icon.update
+                            mdState.type: MD.Enum.BtFilledTonal
+                            onClicked: Core.updateCatalogEntry(root.gameId)
                         }
                     }
 
@@ -290,6 +427,31 @@ Item {
                         elide: Text.ElideRight
                         maximumLineCount: 1
                     }
+                }
+            }
+
+            MD.ElevationRectangle {
+                Layout.fillWidth: true
+                Layout.leftMargin: MD.Token.spacing.large
+                Layout.rightMargin: MD.Token.spacing.large
+                Layout.preferredHeight: mediaSection.showSection
+                                        ? mediaSection.implicitHeight + 2 * MD.Token.spacing.large
+                                        : 0
+                visible: mediaSection.showSection
+                radius: MD.Token.shape.corner.extra_large
+                color: MD.Token.color.surface_container
+                elevation: MD.Token.elevation.level0
+
+                GameDetailsMediaSection {
+                    id: mediaSection
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    anchors.margins: MD.Token.spacing.large
+                    screenshotUrls: root.info.screenshotUrls ?? []
+                    trailerUrl: root.info.trailerUrl ?? ""
+                    trailerThumbnailUrl: root.info.trailerThumbnailUrl ?? ""
+                    loading: root.mediaLoading
                 }
             }
 
@@ -324,74 +486,12 @@ Item {
                     }
                 }
             }
-
-            MD.ElevationRectangle {
-                Layout.fillWidth: true
-                Layout.leftMargin: MD.Token.spacing.large
-                Layout.rightMargin: MD.Token.spacing.large
-                Layout.preferredHeight: metaCol.implicitHeight + 2 * MD.Token.spacing.large
-                radius: MD.Token.shape.corner.extra_large
-                color: MD.Token.color.surface_container
-                elevation: MD.Token.elevation.level0
-
-                ColumnLayout {
-                    id: metaCol
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    anchors.top: parent.top
-                    anchors.margins: MD.Token.spacing.large
-                    spacing: MD.Token.spacing.small
-
-                    MD.Label {
-                        text: qsTr("Information")
-                        typescale: MD.Token.typescale.title_medium
-                    }
-
-                    Repeater {
-                        model: [
-                            { label: qsTr("Source"), value: root.sourceLabel },
-                            { label: qsTr("Version"), value: root.info.version ?? "" },
-                            { label: qsTr("Size"), value: root.info.sizeLabel || "—" },
-                            { label: qsTr("Install type"), value: root.info.installKindLabel ?? "" },
-                            {
-                                label: qsTr("Install path"),
-                                value: root.playable
-                                       ? (root.info.installPath || "—")
-                                       : (root.isInstalling
-                                              ? qsTr("Installing…")
-                                              : root.readyToInstall || root.installFailed
-                                              ? qsTr("Waiting to install")
-                                              : qsTr("—"))
-                            },
-                            {
-                                label: qsTr("Download"),
-                                value: root.info.downloadPath || "—"
-                            }
-                        ]
-
-                        RowLayout {
-                            required property var modelData
-                            Layout.fillWidth: true
-                            spacing: MD.Token.spacing.medium
-
-                            MD.Label {
-                                Layout.preferredWidth: 140
-                                text: modelData.label
-                                color: MD.Token.color.on_surface_variant
-                                typescale: MD.Token.typescale.body_medium
-                            }
-
-                            MD.Label {
-                                Layout.fillWidth: true
-                                text: modelData.value
-                                typescale: MD.Token.typescale.body_medium
-                                elide: Text.ElideMiddle
-                            }
-                        }
-                    }
-                }
-            }
         }
+    }
+
+    GameSettingsSheet {
+        id: gameSettingsSheet
+        anchors.fill: parent
     }
 
     MD.Dialog {
@@ -402,7 +502,7 @@ Item {
 
         MD.Label {
             width: removeDialog.width - removeDialog.horizontalPadding * 2
-            text: qsTr("Game files will be deleted from disk. This cannot be undone.")
+            text: Messages.gameDeleteWarning
             wrapMode: Text.WordWrap
             typescale: MD.Token.typescale.body_medium
         }

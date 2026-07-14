@@ -169,8 +169,9 @@ int CatalogModel::indexOfEntry(const QString& id) const
 
 const CatalogEntry* CatalogModel::entryById(const QString& id) const
 {
+    const QString resolved = repairCatalogEntryId(id);
     for (const auto& entry : m_entries) {
-        if (entry.id == id)
+        if (entry.id == resolved || entry.id == id)
             return &entry;
     }
     return nullptr;
@@ -185,6 +186,11 @@ QVariantMap CatalogModel::toMap(const CatalogEntry& entry) const
         {QStringLiteral("coverUrl"), entry.coverUrl},
         {QStringLiteral("sourceId"), entry.sourceId},
         {QStringLiteral("sourceName"), entry.sourceId},
+        {QStringLiteral("sourcePageUrl"), entry.sourcePageUrl},
+        {QStringLiteral("steamAppId"), entry.steamAppId},
+        {QStringLiteral("trailerUrl"), entry.trailerUrl},
+        {QStringLiteral("trailerThumbnailUrl"), entry.trailerThumbnailUrl},
+        {QStringLiteral("screenshotUrls"), QVariant::fromValue(entry.screenshotUrls)},
         {QStringLiteral("version"), entry.version},
         {QStringLiteral("installPath"), QString()},
         {QStringLiteral("description"), entry.description},
