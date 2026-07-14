@@ -187,7 +187,9 @@ function Test-QtRuntimeDeployed {
         (Join-Path $AppDir "Qt6Core.dll"),
         (Join-Path $AppDir "Qt6Gui.dll"),
         (Join-Path $AppDir "Qt6Qml.dll"),
-        (Join-Path $AppDir "platforms\qwindows.dll")
+        (Join-Path $AppDir "Qt6Multimedia.dll"),
+        (Join-Path $AppDir "platforms\qwindows.dll"),
+        (Join-Path $AppDir "qml\QtMultimedia\qmldir")
     )
     foreach ($path in $required) {
         if (-not (Test-Path -LiteralPath $path)) { return $false }

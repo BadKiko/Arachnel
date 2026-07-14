@@ -23,6 +23,7 @@ find_package(Qt6 REQUIRED COMPONENTS
     ShaderTools
     QuickPrivate
     Concurrent
+    Multimedia
 )
 if(NOT WIN32)
     find_package(Qt6 REQUIRED COMPONENTS Widgets)

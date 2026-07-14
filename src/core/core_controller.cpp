@@ -38,6 +38,7 @@
 #include <QQmlEngine>
 #include <QSet>
 #include <QTimer>
+#include <QUrl>
 #include <QtConcurrent>
 #include <QtQml/qqml.h>
 
@@ -281,10 +282,7 @@ void CoreController::initializeServices()
                 for (auto& entry : m_catalogCache) {
                     if (entry.id != entryId)
                         continue;
-                    if (!metadata.description.isEmpty())
-                        entry.description = metadata.description;
-                    if (!metadata.genres.isEmpty())
-                        entry.genres = metadata.genres;
+                    applyMetadataToEntry(entry, metadata);
                     syncEntryToCatalogModel(entryId);
                     break;
                 }
@@ -292,6 +290,7 @@ void CoreController::initializeServices()
                     ensureDiskCover(entryId, metadata.coverUrl);
                 else
                     applyCoverToEntry(entryId, QString());
+                emit entryMetadataChanged(entryId);
             });
 
     connect(m_coverCache, &CoverImageCache::ready, this,
@@ -955,6 +954,48 @@ QVariantMap CoreController::entryDetails(const QString& entryId) const
         fillIfEmpty(QStringLiteral("uploadDate"));
         fillIfEmpty(QStringLiteral("installKind"));
         fillIfEmpty(QStringLiteral("installKindLabel"));
+        fillIfEmpty(QStringLiteral("sourcePageUrl"));
+        fillIfEmpty(QStringLiteral("steamAppId"));
+        fillIfEmpty(QStringLiteral("trailerUrl"));
+        if (!info.contains(QStringLiteral("screenshotUrls"))
+            || info.value(QStringLiteral("screenshotUrls")).toList().isEmpty()) {
+            const QVariantList shots = catalogInfo.value(QStringLiteral("screenshotUrls")).toList();
+            if (!shots.isEmpty())
+                info.insert(QStringLiteral("screenshotUrls"), shots);
+        }
+    }
+
+    const QString title = info.value(QStringLiteral("title")).toString();
+    if (!title.isEmpty()) {
+        const GameMetadata cached = m_metadataService->metadataForTitle(title);
+        const QString uiLanguage = m_settings.uiLanguage();
+        const bool languageMatches =
+            cached.descriptionLanguage.isEmpty()
+            || cached.descriptionLanguage.compare(uiLanguage, Qt::CaseInsensitive) == 0;
+        if (info.value(QStringLiteral("description")).toString().isEmpty()
+            && !cached.description.isEmpty() && languageMatches)
+            info.insert(QStringLiteral("description"), cached.description);
+        if (info.value(QStringLiteral("genres")).toString().isEmpty() && !cached.genres.isEmpty())
+            info.insert(QStringLiteral("genres"), cached.genres);
+        if (info.value(QStringLiteral("steamAppId")).toString().isEmpty()
+            && !cached.steamAppId.isEmpty())
+            info.insert(QStringLiteral("steamAppId"), cached.steamAppId);
+        if (info.value(QStringLiteral("trailerUrl")).toString().isEmpty()
+            && !cached.trailerUrl.isEmpty())
+            info.insert(QStringLiteral("trailerUrl"), cached.trailerUrl);
+        if (!info.contains(QStringLiteral("screenshotUrls"))
+            || info.value(QStringLiteral("screenshotUrls")).toList().isEmpty()) {
+            if (!cached.screenshotUrls.isEmpty())
+                info.insert(QStringLiteral("screenshotUrls"), QVariant::fromValue(cached.screenshotUrls));
+        }
+    }
+
+    const QString sourceId = info.value(QStringLiteral("sourceId")).toString();
+    info.insert(QStringLiteral("sourceWebsiteUrl"), sourceWebsiteFor(sourceId));
+    const QString steamAppId = info.value(QStringLiteral("steamAppId")).toString();
+    if (!steamAppId.isEmpty()) {
+        info.insert(QStringLiteral("steamStoreUrl"),
+                    QStringLiteral("https://store.steampowered.com/app/%1/").arg(steamAppId));
     }
 
     if (const CatalogEntry* catalogEntry = findCatalogEntry(entryId)) {
@@ -972,7 +1013,6 @@ QVariantMap CoreController::entryDetails(const QString& entryId) const
     }
 
     const QString downloadPath = info.value(QStringLiteral("downloadPath")).toString();
-    const QString sourceId = info.value(QStringLiteral("sourceId")).toString();
     if (!downloadPath.isEmpty() && !sourceId.isEmpty()) {
         const InstallKind detected = detectInstallKindForEntry(sourceId, downloadPath);
         info.insert(QStringLiteral("installKind"), static_cast<int>(detected));
@@ -1781,11 +1821,36 @@ void CoreController::applyCachedMetadata(CatalogEntry& entry) const
         else if (entry.coverUrl.isEmpty() && isRemoteLibraryCover(metadata.coverUrl))
             entry.coverUrl = metadata.coverUrl;
     }
+    applyMetadataToEntry(entry, metadata);
+    // Leave metadataPending alone — it tracks an in-flight/queued fetch, not "missing cover".
+}
+
+QString CoreController::sourceWebsiteFor(const QString& sourceId) const
+{
+    if (sourceId == QStringLiteral("freetp"))
+        return QStringLiteral("https://freetp.org/");
+
+    if (const SourcePluginInfo* plugin = m_sources.pluginById(sourceId)) {
+        const QUrl catalogUrl(plugin->catalogUrl);
+        if (catalogUrl.isValid() && !catalogUrl.host().isEmpty())
+            return QStringLiteral("%1://%2").arg(catalogUrl.scheme(), catalogUrl.host());
+    }
+    return {};
+}
+
+void CoreController::applyMetadataToEntry(CatalogEntry& entry,
+                                          const GameMetadata& metadata) const
+{
     if (!metadata.description.isEmpty())
         entry.description = metadata.description;
     if (!metadata.genres.isEmpty())
         entry.genres = metadata.genres;
-    // Leave metadataPending alone — it tracks an in-flight/queued fetch, not "missing cover".
+    if (!metadata.steamAppId.isEmpty())
+        entry.steamAppId = metadata.steamAppId;
+    if (!metadata.trailerUrl.isEmpty())
+        entry.trailerUrl = metadata.trailerUrl;
+    if (!metadata.screenshotUrls.isEmpty())
+        entry.screenshotUrls = metadata.screenshotUrls;
 }
 
 bool CoreController::isRemoteLibraryCover(const QString& url)
@@ -1906,7 +1971,8 @@ void CoreController::requestCatalogCover(const QString& entryId)
         entry->metadataPending = true;
         syncEntryToCatalogModel(entryId);
     }
-    m_metadataService->queueFetch(entryId, entry->title, MetadataFetchMode::CoverOnly);
+    m_metadataService->queueFetch(entryId, entry->title, MetadataFetchMode::CoverOnly,
+                                  m_settings.uiLanguage());
 }
 
 void CoreController::cancelCatalogCover(const QString& entryId)
@@ -1948,7 +2014,8 @@ void CoreController::invalidateCatalogCover(const QString& entryId)
     entry->coverUrl.clear();
     entry->metadataPending = true;
     syncEntryToCatalogModel(entryId);
-    m_metadataService->queueFetch(entryId, entry->title, MetadataFetchMode::CoverOnly);
+    m_metadataService->queueFetch(entryId, entry->title, MetadataFetchMode::CoverOnly,
+                                  m_settings.uiLanguage());
 }
 
 void CoreController::enrichCatalogEntry(const QString& entryId)
@@ -1957,7 +2024,8 @@ void CoreController::enrichCatalogEntry(const QString& entryId)
     if (!entry)
         return;
 
-    m_metadataService->queueFetch(entryId, entry->title, MetadataFetchMode::Full);
+    m_metadataService->queueFetch(entryId, entry->title, MetadataFetchMode::Full,
+                                  m_settings.uiLanguage());
 
     if (m_installKindProbe && m_pluginHost && m_pluginHost->hasPlugin(entry->sourceId)) {
         QString magnet;

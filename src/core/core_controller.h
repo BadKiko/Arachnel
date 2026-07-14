@@ -25,6 +25,8 @@ class QJSEngine;
 
 namespace arachnel::core {
 
+struct GameMetadata;
+
 class CatalogFeedLoader;
 class CoverImageCache;
 class GameMetadataService;
@@ -191,11 +193,14 @@ signals:
     void protonLatestReleaseChanged();
     void protonStateChanged();
     void availableProtonsChanged();
+    void entryMetadataChanged(const QString& entryId);
 
 private:
     explicit CoreController(QObject* parent = nullptr);
 
     void initializeServices();
+    QString sourceWebsiteFor(const QString& sourceId) const;
+    void applyMetadataToEntry(CatalogEntry& entry, const GameMetadata& metadata) const;
     void syncSourcesFromPlugins();
     void persistSourcesToSettings();
     void applyPluginCatalog(const QString& sourceId, QVector<CatalogEntry> entries);

@@ -40,10 +40,14 @@ struct CatalogEntry {
     QString title;
     QString coverUrl;
     QString sourceId;
+    QString sourcePageUrl;
     QString version;
     QString sizeLabel;
     QString description;
     QString genres;
+    QString steamAppId;
+    QString trailerUrl;
+    QStringList screenshotUrls;
     InstallKind installKind = InstallKind::PortableArchive;
     QStringList magnetUris;
     QString uploadDate;
