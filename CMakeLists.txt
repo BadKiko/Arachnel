@@ -206,6 +206,7 @@ arachnel_setup_libtorrent(arachnel_app)
 
 if(WIN32)
     target_link_libraries(arachnel_app PRIVATE ole32 shell32 dbghelp)
+    add_subdirectory(setup)
 else()
     target_link_libraries(arachnel_app PRIVATE Qt6::Widgets)
     target_link_options(arachnel_app PRIVATE -rdynamic)

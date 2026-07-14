@@ -49,6 +49,8 @@ Each source (FreeTP, Online-Fix, …) can define its own catalog, download, inst
 .\run.ps1
 ```
 
+**Releases:** [docs/RELEASE.md](docs/RELEASE.md) — GitHub Actions manual release (Setup.exe + AppImage, optional code signing).
+
 Manual build, dependencies, and environment variables are documented in the repo scripts and `cmake/`.
 
 **Plugin developers:** see [docs/PLUGIN_SDK.md](docs/PLUGIN_SDK.md) and [plugins/README.md](plugins/README.md). Plugins are separate repos (e.g. [arachnel-plugin-freetp](https://github.com/PetWork/arachnel-plugin-freetp)); nothing under `build-*` is committed.
