@@ -388,6 +388,7 @@ Item {
                                     root.beginInstall()
                             }
                             onPauseToggleRequested: Core.toggleJobPause(root.downloadJob.jobId)
+                            onCancelRequested: Core.cancelJob(root.downloadJob.jobId)
                         }
 
                         MD.Button {

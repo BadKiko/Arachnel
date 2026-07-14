@@ -25,6 +25,26 @@ bool catalogEntryLess(const CatalogEntry& a, const CatalogEntry& b, CatalogModel
         return normalizedTitle(a).compare(normalizedTitle(b), Qt::CaseInsensitive) < 0;
     case CatalogModel::SortTitleDesc:
         return normalizedTitle(a).compare(normalizedTitle(b), Qt::CaseInsensitive) > 0;
+    case CatalogModel::SortPortableFirst:
+        if (a.installKind != b.installKind) {
+            const bool aPortable = (a.installKind == InstallKind::PortableArchive);
+            const bool bPortable = (b.installKind == InstallKind::PortableArchive);
+            if (aPortable != bPortable)
+                return aPortable && !bPortable;
+        }
+        if (a.uploadDate != b.uploadDate)
+            return a.uploadDate > b.uploadDate;
+        break;
+    case CatalogModel::SortNonPortableFirst:
+        if (a.installKind != b.installKind) {
+            const bool aPortable = (a.installKind == InstallKind::PortableArchive);
+            const bool bPortable = (b.installKind == InstallKind::PortableArchive);
+            if (aPortable != bPortable)
+                return !aPortable && bPortable;
+        }
+        if (a.uploadDate != b.uploadDate)
+            return a.uploadDate > b.uploadDate;
+        break;
     case CatalogModel::SortNewest:
     default:
         if (a.uploadDate != b.uploadDate)
@@ -117,7 +137,7 @@ QHash<int, QByteArray> CatalogModel::roleNames() const
 void CatalogModel::setSortMode(int mode)
 {
     const auto next = static_cast<SortMode>(
-        qBound(static_cast<int>(SortNewest), mode, static_cast<int>(SortTitleDesc)));
+        qBound(static_cast<int>(SortNewest), mode, static_cast<int>(SortNonPortableFirst)));
     if (m_sortMode == next)
         return;
 
@@ -130,8 +150,30 @@ void CatalogModel::setSortMode(int mode)
     emit sortModeChanged();
 }
 
+void CatalogModel::setInstallKindFilter(int filter)
+{
+    if (m_installKindFilter == filter)
+        return;
+
+    m_installKindFilter = filter;
+    if (!m_entries.isEmpty()) {
+        beginResetModel();
+        sortEntries();
+        endResetModel();
+    }
+    emit installKindFilterChanged();
+}
+
 void CatalogModel::sortEntries()
 {
+    // First filter, then sort
+    if (m_installKindFilter >= 0) {
+        std::stable_partition(m_entries.begin(), m_entries.end(),
+                              [this](const CatalogEntry& entry) {
+                                  return static_cast<int>(entry.installKind) == m_installKindFilter;
+                              });
+    }
+    
     std::stable_sort(m_entries.begin(), m_entries.end(),
                      [this](const CatalogEntry& a, const CatalogEntry& b) {
                          return catalogEntryLess(a, b, m_sortMode);
