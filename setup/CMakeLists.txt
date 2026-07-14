@@ -20,6 +20,8 @@ if(EXISTS "${_setup_icon_ico}")
     target_sources(arachnel_setup PRIVATE "${_setup_icon_rc}")
 endif()
 
+target_sources(arachnel_setup PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/arachnel_admin.manifest.rc")
+
 qt_add_resources(arachnel_setup "arachnel_setup_icons"
     PREFIX "/icons"
     FILES
@@ -96,11 +98,9 @@ if(EXISTS "${_setup_icon_ico}")
     target_sources(arachnel_setup_launcher PRIVATE "${_setup_launcher_icon_rc}")
 endif()
 
-target_link_libraries(arachnel_setup_launcher PRIVATE shell32 ole32)
+target_sources(arachnel_setup_launcher PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/arachnel_admin.manifest.rc")
 
-if(MINGW)
-    target_link_options(arachnel_setup_launcher PRIVATE -static-libgcc -static-libstdc++)
-endif()
+target_link_libraries(arachnel_setup_launcher PRIVATE shell32 ole32)
 
 add_executable(arachnel_uninstall WIN32
     src/uninstall_main.cpp
@@ -117,8 +117,26 @@ if(EXISTS "${_setup_icon_ico}")
     target_sources(arachnel_uninstall PRIVATE "${_setup_uninstall_icon_rc}")
 endif()
 
+target_sources(arachnel_uninstall PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/arachnel_admin.manifest.rc")
+
 target_link_libraries(arachnel_uninstall PRIVATE shell32 ole32 advapi32)
 
+function(_arachnel_setup_mingw_static_runtime target)
+    if(NOT MINGW)
+        return()
+    endif()
+    target_link_options(${target} PRIVATE
+        -static-libgcc
+        -static-libstdc++
+        -Wl,-Bstatic
+        -lwinpthread
+        -Wl,-Bdynamic
+    )
+endfunction()
+
+_arachnel_setup_mingw_static_runtime(arachnel_setup)
+_arachnel_setup_mingw_static_runtime(arachnel_uninstall)
+
 if(MINGW)
-    target_link_options(arachnel_uninstall PRIVATE -static-libgcc -static-libstdc++)
+    target_link_options(arachnel_setup_launcher PRIVATE -static)
 endif()

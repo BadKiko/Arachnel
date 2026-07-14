@@ -109,6 +109,32 @@ if (-not (Test-Path -LiteralPath $windeployqt)) {
     throw "windeployqt not found at $windeployqt"
 }
 
+function Copy-MingwRuntimeDlls {
+    param(
+        [string]$QtPrefix,
+        [string]$DestDir
+    )
+
+    if ($QtPrefix -notmatch 'mingw') { return }
+
+    $searchRoots = @(
+        (Join-Path $QtPrefix "bin"),
+        (Join-Path (Split-Path (Split-Path $QtPrefix -Parent) -Parent) "Tools")
+    )
+
+    foreach ($dllName in @('libwinpthread-1.dll', 'libgcc_s_seh-1.dll', 'libstdc++-6.dll')) {
+        foreach ($root in $searchRoots) {
+            if (-not (Test-Path -LiteralPath $root)) { continue }
+            $match = Get-ChildItem -LiteralPath $root -Filter $dllName -Recurse -File -ErrorAction SilentlyContinue |
+                Select-Object -First 1
+            if ($match) {
+                Copy-Item -LiteralPath $match.FullName -Destination (Join-Path $DestDir $dllName) -Force
+                break
+            }
+        }
+    }
+}
+
 if (Test-Path -LiteralPath $STAGING) {
     Remove-Item -LiteralPath $STAGING -Recurse -Force
 }
@@ -141,6 +167,8 @@ $qmlMaterialDll = Join-Path $BuildDir "qml_material.dll"
 if (Test-Path -LiteralPath $qmlMaterialDll) {
     Copy-Item -LiteralPath $qmlMaterialDll -Destination (Join-Path $RUNTIME_DIR "qml_material.dll") -Force
 }
+
+Copy-MingwRuntimeDlls -QtPrefix $QtPrefix -DestDir $RUNTIME_DIR
 
 $runtimeZip = Join-Path $STAGING "runtime.zip"
 $appZip = Join-Path $STAGING "app.zip"
