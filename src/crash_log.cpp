@@ -493,7 +493,7 @@ QString demangleSymbol(const char* symbol)
 
     QString text = QString::fromUtf8(symbol);
 #if defined(__GNUC__)
-    const int status = 0;
+    int status = 0;
     if (const char* nameStart = std::strchr(symbol, '(')) {
         if (const char* nameEnd = std::strchr(nameStart, '+')) {
             const QString mangled = QString::fromUtf8(nameStart + 1,
@@ -675,9 +675,9 @@ void installCrashLogging()
     action.sa_flags = SA_SIGINFO | SA_RESETHAND;
     sigemptyset(&action.sa_mask);
 
-    const int signals[] = {SIGSEGV, SIGABRT, SIGFPE, SIGILL, SIGBUS};
-    for (const int signal : signals)
-        sigaction(signal, &action, nullptr);
+    const int crashSignals[] = {SIGSEGV, SIGABRT, SIGFPE, SIGILL, SIGBUS};
+    for (const int sigNum : crashSignals)
+        sigaction(sigNum, &action, nullptr);
 #endif
     qInstallMessageHandler(qtMessageHandler);
     QDir().mkpath(logDirectory());
