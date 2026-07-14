@@ -14,13 +14,23 @@ set_target_properties(arachnel_setup PROPERTIES
 )
 
 set(_setup_icon_ico "${CMAKE_SOURCE_DIR}/resources/icons/arachnel.ico")
+
+function(_arachnel_setup_admin_manifest target)
+    if(MSVC)
+        target_link_options(${target} PRIVATE
+            "/MANIFESTUAC:level='requireAdministrator' uiAccess='false'")
+    else()
+        target_sources(${target} PRIVATE
+            "${CMAKE_CURRENT_SOURCE_DIR}/arachnel_admin.manifest.rc")
+    endif()
+endfunction()
 if(EXISTS "${_setup_icon_ico}")
     set(_setup_icon_rc "${CMAKE_CURRENT_BINARY_DIR}/arachnel_setup_icon.rc")
     file(WRITE "${_setup_icon_rc}" "IDI_ICON1 ICON \"${_setup_icon_ico}\"\n")
     target_sources(arachnel_setup PRIVATE "${_setup_icon_rc}")
 endif()
 
-target_sources(arachnel_setup PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/arachnel_admin.manifest.rc")
+_arachnel_setup_admin_manifest(arachnel_setup)
 
 qt_add_resources(arachnel_setup "arachnel_setup_icons"
     PREFIX "/icons"
@@ -98,7 +108,7 @@ if(EXISTS "${_setup_icon_ico}")
     target_sources(arachnel_setup_launcher PRIVATE "${_setup_launcher_icon_rc}")
 endif()
 
-target_sources(arachnel_setup_launcher PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/arachnel_admin.manifest.rc")
+_arachnel_setup_admin_manifest(arachnel_setup_launcher)
 
 target_link_libraries(arachnel_setup_launcher PRIVATE shell32 ole32)
 
@@ -117,7 +127,7 @@ if(EXISTS "${_setup_icon_ico}")
     target_sources(arachnel_uninstall PRIVATE "${_setup_uninstall_icon_rc}")
 endif()
 
-target_sources(arachnel_uninstall PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/arachnel_admin.manifest.rc")
+_arachnel_setup_admin_manifest(arachnel_uninstall)
 
 target_link_libraries(arachnel_uninstall PRIVATE shell32 ole32 advapi32)
 
