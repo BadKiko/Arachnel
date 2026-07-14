@@ -23,23 +23,28 @@ MD.Dialog {
             Core.refreshProtonLatestRelease()
     }
 
-    MD.Label {
-        width: root.width - root.horizontalPadding * 2
-        text: Core.protonLatestRelease.length
-              ? qsTr("Games run through Proton on Linux. Install %1 before downloading.")
-                    .arg(Core.protonLatestRelease)
-              : qsTr("Games run through Proton on Linux. Install Proton-GE before downloading.")
-        wrapMode: Text.WordWrap
-        typescale: MD.Token.typescale.body_medium
-    }
+    contentItem: ColumnLayout {
+        spacing: MD.Token.spacing.medium
+        width: parent ? parent.width : implicitWidth
 
-    MD.Label {
-        width: root.width - root.horizontalPadding * 2
-        visible: Core.protonVersion.length > 0
-        text: qsTr("Currently installed: %1").arg(Core.protonVersion)
-        wrapMode: Text.WordWrap
-        color: MD.Token.color.on_surface_variant
-        typescale: MD.Token.typescale.body_small
+        MD.Label {
+            Layout.fillWidth: true
+            text: Core.protonLatestRelease.length
+                  ? qsTr("Games run through Proton on Linux. Install %1 before downloading.")
+                        .arg(Core.protonLatestRelease)
+                  : qsTr("Games run through Proton on Linux. Install Proton-GE before downloading.")
+            wrapMode: Text.WordWrap
+            typescale: MD.Token.typescale.body_medium
+        }
+
+        MD.Label {
+            Layout.fillWidth: true
+            visible: Core.protonVersion.length > 0
+            text: qsTr("Currently installed: %1").arg(Core.protonVersion)
+            wrapMode: Text.WordWrap
+            color: MD.Token.color.on_surface_variant
+            typescale: MD.Token.typescale.body_small
+        }
     }
 
     footer: Item {
