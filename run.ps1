@@ -101,14 +101,22 @@ function Get-BuildArgs {
             $cl = Get-Command cl.exe -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source
         }
         if ($ninja -and $cl) {
+            $configureExtras = @(
+                "-G", "Ninja",
+                "-DCMAKE_C_COMPILER=$cl",
+                "-DCMAKE_CXX_COMPILER=$cl"
+            )
+            if ($env:WindowsSdkDir -and $env:WindowsSDKVersion) {
+                $sdkVer = $env:WindowsSDKVersion.TrimEnd('\')
+                $rcCandidate = Join-Path $env:WindowsSdkDir "bin\$sdkVer\x64\rc.exe"
+                if (Test-Path -LiteralPath $rcCandidate) {
+                    $configureExtras += "-DCMAKE_RC_COMPILER=$rcCandidate"
+                }
+            }
             return @{
                 Qt = $qt
                 Cmake = $cmake
-                Configure = $configureArgs + @(
-                    "-G", "Ninja",
-                    "-DCMAKE_C_COMPILER=$cl",
-                    "-DCMAKE_CXX_COMPILER=$cl"
-                )
+                Configure = $configureArgs + $configureExtras
             }
         }
     }
@@ -451,6 +459,7 @@ function Test-NeedsCmakeConfigure {
 }
 
 function Enable-CompileCache {
+    if ($env:GITHUB_ACTIONS -eq 'true') { return }
     foreach ($name in @("sccache", "ccache")) {
         $cmd = Get-Command $name -ErrorAction SilentlyContinue
         if ($cmd) {

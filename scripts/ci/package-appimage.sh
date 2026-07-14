@@ -56,7 +56,6 @@ if [[ ! -x "${LINUXDEPLOY_QT}" ]]; then
 fi
 
 export QML_SOURCES_PATHS="${ROOT}/qml:${BUILD}/qml_modules"
-export EXTRA_PLATFORM_PLUGINS="libqwaylandcompositorplugin.so;libqwaylandeglplatformplugin.so"
 export LINUXDEPLOY_PLUGIN_QT="${LINUXDEPLOY_QT}"
 
 echo "==> linuxdeploy (Qt plugin)"
