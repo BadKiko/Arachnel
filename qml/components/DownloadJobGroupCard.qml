@@ -16,6 +16,7 @@ MD.ElevationRectangle {
     readonly property var addons: group.addons ?? []
     readonly property bool hasAddons: !!(group.hasAddons) && addons.length > 0
     readonly property bool gameJobActive: jobIsActive(root.group)
+    readonly property int expandColumnWidth: 40
     property real addonsPanelHeight: 0
 
     function updateAddonsPanelHeight() {
@@ -101,17 +102,25 @@ MD.ElevationRectangle {
             Layout.fillWidth: true
             spacing: MD.Token.spacing.small
 
-            MD.IconButton {
-                visible: root.hasAddons
-                mdState.type: MD.Enum.IBtStandard
-                rotation: root.expanded ? 90 : 0
-                icon.name: MD.Token.icon.chevron_right
-                onClicked: root.toggleExpanded()
+            Item {
+                Layout.preferredWidth: root.expandColumnWidth
+                Layout.preferredHeight: root.expandColumnWidth
+                Layout.alignment: Qt.AlignTop
 
-                Behavior on rotation {
-                    NumberAnimation {
-                        duration: MD.Token.duration.short4
-                        easing: MD.Token.easing.standard
+                MD.IconButton {
+                    anchors.centerIn: parent
+                    visible: root.hasAddons
+                    enabled: root.hasAddons
+                    mdState.type: MD.Enum.IBtStandard
+                    rotation: root.expanded ? 90 : 0
+                    icon.name: MD.Token.icon.chevron_right
+                    onClicked: root.toggleExpanded()
+
+                    Behavior on rotation {
+                        NumberAnimation {
+                            duration: MD.Token.duration.short4
+                            easing: MD.Token.easing.standard
+                        }
                     }
                 }
             }
@@ -143,7 +152,7 @@ MD.ElevationRectangle {
 
         MD.Label {
             Layout.fillWidth: true
-            Layout.leftMargin: root.hasAddons ? 48 : 0
+            Layout.leftMargin: root.expandColumnWidth + MD.Token.spacing.small
             Layout.topMargin: MD.Token.spacing.extra_small
             visible: root.hasAddons && !root.expanded
             text: collapsedAddonSummary()
@@ -154,7 +163,7 @@ MD.ElevationRectangle {
 
         Item {
             Layout.fillWidth: true
-            Layout.leftMargin: 40
+            Layout.leftMargin: root.expandColumnWidth + MD.Token.spacing.small
             Layout.topMargin: root.expanded ? MD.Token.spacing.small : 0
             Layout.preferredHeight: root.hasAddons && root.expanded ? root.addonsPanelHeight : 0
             visible: root.hasAddons

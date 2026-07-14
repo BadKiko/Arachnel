@@ -199,8 +199,7 @@ Flickable {
                 Layout.fillWidth: true
                 textFormat: Text.StyledText
                 linkColor: MD.Token.color.primary
-                text: qsTr("Missing your language? Help translate Arachnel on <a href=\"%1\">Weblate</a> or send a pull request with translations/*.ts files.")
-                      .arg(root.weblateTranslateUrl)
+                text: Messages.settingsWeblateHint.arg(root.weblateTranslateUrl)
                 wrapMode: Text.WordWrap
                 color: MD.Token.color.on_surface_variant
                 typescale: MD.Token.typescale.body_small

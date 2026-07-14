@@ -12,10 +12,12 @@ ColumnLayout {
     spacing: 0
 
     readonly property int contentMargin: MD.Token.spacing.large
-    readonly property int pageHeight: 480
+    readonly property int pageHeight: 560
 
     property string pendingSection: ""
     property bool pendingCreateSource: false
+
+    readonly property bool onLinux: Qt.platform.os === "linux"
 
     readonly property string pageTitle: {
         const item = stack.currentItem
@@ -48,6 +50,8 @@ ColumnLayout {
                 stack.navigatePush(storageComponent, {}, true)
             else if (section === "updates")
                 stack.navigatePush(updatesComponent, {}, true)
+            else if (section === "launch" && root.onLinux)
+                stack.navigatePush(launchComponent, {}, true)
             else if (section === "appearance")
                 stack.navigatePush(appearanceComponent, {}, true)
             else if (section === "plugins")
@@ -77,6 +81,8 @@ ColumnLayout {
             stack.navigatePush(storageComponent)
         else if (sectionId === "updates")
             stack.navigatePush(updatesComponent)
+        else if (sectionId === "launch" && root.onLinux)
+            stack.navigatePush(launchComponent)
         else if (sectionId === "appearance")
             stack.navigatePush(appearanceComponent)
     }
@@ -162,6 +168,14 @@ ColumnLayout {
         id: updatesComponent
         SettingsUpdatesPage {
             property string pageTitle: qsTr("Updates")
+            contentMargin: root.contentMargin
+        }
+    }
+
+    Component {
+        id: launchComponent
+        SettingsLaunchPage {
+            property string pageTitle: qsTr("Launch")
             contentMargin: root.contentMargin
         }
     }

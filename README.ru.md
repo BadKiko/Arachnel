@@ -36,7 +36,7 @@
 - Обложки и описания через Steam API
 - Переводы сообщества на [Weblate](https://hosted.weblate.org/projects/arachnel/)
 
-**Документация:** [Vision](docs/VISION.md) · [Architecture](docs/ARCHITECTURE.md) · [Roadmap](docs/ROADMAP.md) · [Translating](docs/TRANSLATING.md)
+**Документация:** [Vision](docs/VISION.md) · [Architecture](docs/ARCHITECTURE.md) · [Roadmap](docs/ROADMAP.md) · [Plugin SDK](docs/PLUGIN_SDK.md) · [Translating](docs/TRANSLATING.md)
 
 ## Быстрый старт
 
@@ -49,6 +49,8 @@
 ```
 
 Сборка вручную, зависимости и переменные окружения — в скриптах репозитория и `cmake/`.
+
+**Разработчикам плагинов:** [docs/PLUGIN_SDK.md](docs/PLUGIN_SDK.md) и [plugins/README.md](plugins/README.md). Плагины — отдельные репозитории (например [arachnel-plugin-freetp](https://github.com/PetWork/arachnel-plugin-freetp)); папки `build-*` в git не коммитятся.
 
 ## Связь
 

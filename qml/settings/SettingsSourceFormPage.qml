@@ -129,7 +129,7 @@ Flickable {
             Layout.leftMargin: contentMargin
             Layout.rightMargin: contentMargin
             Layout.topMargin: MD.Token.spacing.small
-            text: qsTr("Hydra catalog — a games.json JSON feed by URL. Arachnel pulls the game list and magnet links like Hydra Launcher. Install and launch via a source plugin (e.g. FreeTP).")
+            text: Messages.settingsSourceFormDesc
             wrapMode: Text.WordWrap
             color: MD.Token.color.on_surface_variant
             typescale: MD.Token.typescale.body_medium

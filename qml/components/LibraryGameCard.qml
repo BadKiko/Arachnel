@@ -34,7 +34,16 @@ Item {
         root.jobRevision
         return Core.jobs.jobForEntry(root.gameId)
     }
-    readonly property bool showJobStatus: !Core.isEntryPlayable(root.gameId) && !!(activeJob.jobId)
+    readonly property bool hasInstallFolder: {
+        const lib = Core.library.gameInfo(root.gameId)
+        return ((lib.installPath ?? "")).length > 0
+    }
+    readonly property bool showJobStatus: !root.hasInstallFolder
+        && !Core.isEntryPlayable(root.gameId)
+        && !!(activeJob.jobId)
+        && (activeJob.inProgress
+            || activeJob.status === "installing"
+            || activeJob.status === "completed")
     readonly property real posterFillProgress: {
         if (!showJobStatus)
             return -1

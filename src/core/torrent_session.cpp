@@ -1,5 +1,7 @@
 #include "torrent_session.h"
 
+#include "torrent_settings.h"
+
 #include <QCoreApplication>
 #include <QDateTime>
 #include <QDir>
@@ -41,6 +43,20 @@ QString statusStateLabel(const lt::torrent_status& status)
     }
 }
 
+QString libtorrentErrorMessage(const lt::error_code& ec)
+{
+    const std::string& msg = ec.message();
+    if (msg.empty())
+        return QCoreApplication::translate("Core", "Torrent error %1").arg(ec.value());
+
+    QString text = QString::fromUtf8(msg.data(), static_cast<int>(msg.size()));
+    if (text.contains(QChar::ReplacementCharacter))
+        text = QString::fromLocal8Bit(msg.data(), static_cast<int>(msg.size()));
+    if (text.isEmpty())
+        return QCoreApplication::translate("Core", "Torrent error %1").arg(ec.value());
+    return text;
+}
+
 } // namespace
 
 namespace arachnel::core {
@@ -53,23 +69,12 @@ struct TorrentSession::Impl
     QHash<QString, QString> magnetUris;
     QSet<QString> pausedJobs;
     QHash<QString, qint64> metadataStallSinceMs;
+    QHash<QString, qint64> lastPeerRefreshMs;
 };
 
 namespace {
 
 constexpr int kMetadataKickAfterMs = 3000;
-
-void applySessionDefaults(lt::session& session)
-{
-    lt::settings_pack pack;
-    pack.set_int(lt::settings_pack::active_downloads, 8);
-    pack.set_int(lt::settings_pack::active_seeds, 4);
-    pack.set_bool(lt::settings_pack::enable_dht, true);
-    pack.set_bool(lt::settings_pack::enable_lsd, true);
-    pack.set_bool(lt::settings_pack::enable_upnp, true);
-    pack.set_bool(lt::settings_pack::enable_natpmp, true);
-    session.apply_settings(pack);
-}
 
 void kickStalledMetadata(const QString& jobId, lt::torrent_handle handle,
                          QHash<QString, qint64>& metadataStallSinceMs)
@@ -98,6 +103,7 @@ void kickStalledMetadata(const QString& jobId, lt::torrent_handle handle,
 
     handle.resume();
     handle.force_reannounce(0, lt::torrent_handle::ignore_min_interval);
+    handle.force_dht_announce();
     metadataStallSinceMs.insert(jobId, now);
 }
 
@@ -108,23 +114,50 @@ TorrentSession::TorrentSession(QObject* parent)
     , m_impl(std::make_unique<Impl>())
     , m_available(true)
 {
-    applySessionDefaults(m_impl->session);
+    torrent_settings::applySessionDefaults(m_impl->session);
     QDir().mkpath(resumeDirectory());
 
-    auto* timer = new QTimer(this);
-    timer->setInterval(500);
-    connect(timer, &QTimer::timeout, this, &TorrentSession::pollAlerts);
-    timer->start();
+    m_pollTimer = new QTimer(this);
+    m_pollTimer->setInterval(500);
+    connect(m_pollTimer, &QTimer::timeout, this, &TorrentSession::pollAlerts);
 
-    auto* resumeTimer = new QTimer(this);
-    resumeTimer->setInterval(30000);
-    connect(resumeTimer, &QTimer::timeout, this, &TorrentSession::saveAllResumeData);
-    resumeTimer->start();
+    m_resumeTimer = new QTimer(this);
+    m_resumeTimer->setInterval(30000);
+    connect(m_resumeTimer, &QTimer::timeout, this, &TorrentSession::saveAllResumeData);
+}
+
+void TorrentSession::updateIdleTimers()
+{
+    const bool active = m_impl && !m_impl->handles.isEmpty();
+    if (m_pollTimer) {
+        if (active)
+            m_pollTimer->start();
+        else
+            m_pollTimer->stop();
+    }
+    if (m_resumeTimer) {
+        if (active)
+            m_resumeTimer->start();
+        else
+            m_resumeTimer->stop();
+    }
 }
 
 TorrentSession::~TorrentSession()
 {
-    flushResumeData();
+    shutdown();
+}
+
+void TorrentSession::shutdown()
+{
+    if (!m_impl)
+        return;
+
+    if (QCoreApplication::instance())
+        flushResumeData();
+
+    m_impl.reset();
+    m_available = false;
 }
 
 QString TorrentSession::resumeDirectory()
@@ -165,6 +198,8 @@ void TorrentSession::flushResumeData()
     saveAllResumeData();
     for (int i = 0; i < 40; ++i) {
         pollAlerts();
+        if (!QCoreApplication::instance())
+            break;
         QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 25);
     }
 }
@@ -179,8 +214,11 @@ bool TorrentSession::addJob(const QString& jobId, const QString& magnetUri, cons
     if (!m_impl)
         return false;
 
-    if (m_impl->handles.contains(jobId))
+    if (m_impl->handles.contains(jobId)) {
+        torrent_settings::tuneActiveDownloadHandle(m_impl->handles.value(jobId));
+        updateIdleTimers();
         return true;
+    }
 
     QDir().mkpath(savePath);
 
@@ -201,34 +239,33 @@ bool TorrentSession::addJob(const QString& jobId, const QString& magnetUri, cons
 
     if (!usedResume) {
         if (magnetUri.isEmpty()) {
-            emit torrentFailed(jobId, QStringLiteral("Нет magnet-ссылки"));
+            emit torrentFailed(jobId,
+                               QCoreApplication::translate("Core", "No magnet link"));
             return false;
         }
         params = lt::parse_magnet_uri(magnetUri.toStdString(), ec);
         if (ec) {
-            emit torrentFailed(jobId, QString::fromStdString(ec.message()));
+            emit torrentFailed(jobId, libtorrentErrorMessage(ec));
             return false;
         }
     }
 
+    torrent_settings::prepareDownloadParams(params, usedResume);
+
     params.save_path = savePath.toStdString();
-    params.flags |= lt::torrent_flags::auto_managed;
-    params.flags |= lt::torrent_flags::stop_when_ready;
-    params.flags &= ~lt::torrent_flags::paused;
 
     const lt::torrent_handle handle = m_impl->session.add_torrent(params, ec);
     if (ec) {
-        emit torrentFailed(jobId, QString::fromStdString(ec.message()));
+        emit torrentFailed(jobId, libtorrentErrorMessage(ec));
         return false;
     }
 
-    handle.resume();
-    handle.set_flags(lt::torrent_flags::auto_managed);
-    handle.force_reannounce(0, lt::torrent_handle::ignore_min_interval);
+    torrent_settings::tuneActiveDownloadHandle(handle);
     m_impl->metadataStallSinceMs.remove(jobId);
     m_impl->handles.insert(jobId, handle);
     m_impl->savePaths.insert(jobId, savePath);
     m_impl->magnetUris.insert(jobId, magnetUri);
+    updateIdleTimers();
     return true;
 }
 
@@ -242,6 +279,7 @@ void TorrentSession::cancel(const QString& jobId, bool deleteFiles)
     m_impl->magnetUris.remove(jobId);
     m_impl->pausedJobs.remove(jobId);
     m_impl->metadataStallSinceMs.remove(jobId);
+    m_impl->lastPeerRefreshMs.remove(jobId);
 
     removeResumeFile(jobId);
 
@@ -249,6 +287,7 @@ void TorrentSession::cancel(const QString& jobId, bool deleteFiles)
         const auto flags = deleteFiles ? lt::session::delete_files : lt::session::delete_partfile;
         m_impl->session.remove_torrent(handle, flags);
     }
+    updateIdleTimers();
 }
 
 void TorrentSession::setPaused(const QString& jobId, bool paused)
@@ -265,9 +304,7 @@ void TorrentSession::setPaused(const QString& jobId, bool paused)
         handle.pause();
         m_impl->pausedJobs.insert(jobId);
     } else {
-        handle.resume();
-        handle.set_flags(lt::torrent_flags::auto_managed);
-        handle.force_reannounce(0, lt::torrent_handle::ignore_min_interval);
+        torrent_settings::tuneActiveDownloadHandle(handle);
         m_impl->pausedJobs.remove(jobId);
         m_impl->metadataStallSinceMs.remove(jobId);
     }
@@ -310,10 +347,17 @@ void TorrentSession::pollAlerts()
             continue;
         }
 
+        if (auto* meta = lt::alert_cast<lt::metadata_received_alert>(alert)) {
+            const QString jobId = findJobId(meta->handle);
+            if (!jobId.isEmpty() && !m_impl->pausedJobs.contains(jobId))
+                torrent_settings::tuneActiveDownloadHandle(meta->handle);
+            continue;
+        }
+
         if (auto* failed = lt::alert_cast<lt::torrent_error_alert>(alert)) {
             const QString jobId = findJobId(failed->handle);
             if (!jobId.isEmpty()) {
-                emit torrentFailed(jobId, QString::fromStdString(failed->error.message()));
+                emit torrentFailed(jobId, libtorrentErrorMessage(failed->error));
                 m_impl->handles.remove(jobId);
                 m_impl->savePaths.remove(jobId);
                 m_impl->magnetUris.remove(jobId);
@@ -357,8 +401,22 @@ void TorrentSession::pollAlerts()
         emit torrentProgress(jobId, progress, downloaded, total, downloadRate, status.num_peers,
                              state);
 
-        if (!m_impl->pausedJobs.contains(jobId))
+        if (!m_impl->pausedJobs.contains(jobId)) {
             kickStalledMetadata(jobId, handle, m_impl->metadataStallSinceMs);
+
+            if (status.state == lt::torrent_status::downloading_metadata) {
+                torrent_settings::maintainDownloadHandle(handle, status.num_peers,
+                                                         static_cast<int>(status.download_rate));
+            } else if (status.state == lt::torrent_status::downloading) {
+                const qint64 now = QDateTime::currentMSecsSinceEpoch();
+                const qint64 lastRefresh = m_impl->lastPeerRefreshMs.value(jobId, 0);
+                if (now - lastRefresh >= 15000) {
+                    torrent_settings::maintainDownloadHandle(handle, status.num_peers,
+                                                             downloadRate);
+                    m_impl->lastPeerRefreshMs.insert(jobId, now);
+                }
+            }
+        }
     }
 
     QStringList completedJobs;
@@ -392,6 +450,8 @@ void TorrentSession::pollAlerts()
             m_impl->session.remove_torrent(handle, lt::session::delete_partfile);
         emit torrentFinished(jobId, savePath);
     }
+
+    updateIdleTimers();
 }
 
 } // namespace arachnel::core

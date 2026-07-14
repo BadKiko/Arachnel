@@ -39,6 +39,7 @@ Item {
     readonly property bool isTerminal: status === "completed" || status === "failed" || status === "cancelled"
     readonly property bool canRetry: status === "failed" || status === "cancelled"
     readonly property bool canRetryInstall: root.jobId.length > 0 && Core.canRetryJobInstall(root.jobId)
+    readonly property bool canManualInstall: root.jobId.length > 0 && Core.canManualInstallJob(root.jobId)
     readonly property bool installFailed: root.detail.indexOf("Install failed") >= 0
         || root.detail.indexOf("Ошибка установки") >= 0
         || (root.status === "completed" && root.detail.indexOf("Error") === 0)
@@ -153,6 +154,13 @@ Item {
                         mdState.type: MD.Enum.IBtStandard
                         icon.name: MD.Token.icon.install_desktop
                         onClicked: Core.retryInstall(root.jobId)
+                    }
+
+                    MD.IconButton {
+                        visible: root.canManualInstall
+                        mdState.type: MD.Enum.IBtStandard
+                        icon.name: MD.Token.icon.folder_open
+                        onClicked: Core.confirmManualInstall(root.jobId)
                     }
 
                     MD.IconButton {

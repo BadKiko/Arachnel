@@ -1,5 +1,5 @@
 #include "install_kind_probe_service.h"
-#include "plugin_host.h"
+#include "install_analyzer.h"
 #include "torrent_metadata_fetcher.h"
 
 #include <QDir>
@@ -34,11 +34,16 @@ QString pickMagnet(const QStringList& uris)
 
 } // namespace
 
-InstallKindProbeService::InstallKindProbeService(PluginHost* pluginHost, QObject* parent)
+InstallKindProbeService::InstallKindProbeService(InstallAnalyzer* analyzer, QObject* parent)
     : QObject(parent)
-    , m_pluginHost(pluginHost)
+    , m_analyzer(analyzer)
 {
     loadCache();
+
+    m_persistTimer = new QTimer(this);
+    m_persistTimer->setSingleShot(true);
+    m_persistTimer->setInterval(5000);
+    connect(m_persistTimer, &QTimer::timeout, this, &InstallKindProbeService::persistCache);
 }
 
 std::optional<InstallKind> InstallKindProbeService::cachedKindForMagnet(
@@ -66,7 +71,7 @@ void InstallKindProbeService::queueCatalog(const QString& sourceId,
                                            const QVector<CatalogEntry>& entries,
                                            const QString& priorityQuery)
 {
-    if (!m_pluginHost || !m_pluginHost->hasPlugin(sourceId))
+    if (!m_analyzer)
         return;
 
     const QString needle = priorityQuery.trimmed().toLower();
@@ -87,6 +92,8 @@ void InstallKindProbeService::queueCatalog(const QString& sourceId,
                      });
 
     for (const CatalogEntry* entry : ordered) {
+        if (entry->sourceId != sourceId)
+            continue;
         const QString magnet = pickMagnet(entry->magnetUris);
         const QString hashKey = magnetInfoHashKey(magnet);
         if (magnet.isEmpty() || hashKey.isEmpty())
@@ -108,7 +115,7 @@ void InstallKindProbeService::queueCatalog(const QString& sourceId,
 void InstallKindProbeService::prioritizeEntry(const QString& sourceId, const QString& entryId,
                                               const QString& magnetUri)
 {
-    if (!m_pluginHost || !m_pluginHost->hasPlugin(sourceId))
+    if (!m_analyzer)
         return;
 
     const QString hashKey = magnetInfoHashKey(magnetUri);
@@ -130,6 +137,15 @@ void InstallKindProbeService::prioritizeEntry(const QString& sourceId, const QSt
     pumpQueue();
 }
 
+void InstallKindProbeService::setBackgroundProbesEnabled(bool enabled)
+{
+    if (m_probesEnabled == enabled)
+        return;
+    m_probesEnabled = enabled;
+    if (enabled)
+        pumpQueue();
+}
+
 void InstallKindProbeService::enqueueTask(ProbeTask task, bool front)
 {
     if (m_queuedHashes.contains(task.hashKey) || m_inFlightHashes.contains(task.hashKey))
@@ -144,6 +160,9 @@ void InstallKindProbeService::enqueueTask(ProbeTask task, bool front)
 
 void InstallKindProbeService::pumpQueue()
 {
+    if (!m_probesEnabled)
+        return;
+
     while (m_activeTasks < kMaxConcurrent && !m_queue.isEmpty()) {
         const ProbeTask task = m_queue.dequeue();
         m_queuedHashes.remove(task.hashKey);
@@ -155,22 +174,21 @@ void InstallKindProbeService::pumpQueue()
             if (const std::optional<QStringList> fetched = fetchMagnetFileNames(task.magnetUri))
                 fileNames = *fetched;
 
-            InstallKind kind = InstallKind::PortableArchive;
-            bool resolved = false;
-            if (!fileNames.isEmpty()) {
-                if (ISourcePlugin* plugin = m_pluginHost->plugin(task.sourceId)) {
-                    kind = plugin->detectInstallKindFromFileNames(fileNames);
-                    resolved = true;
-                }
-            }
-
-            QTimer::singleShot(0, this, [this, task, kind, resolved]() {
+            QTimer::singleShot(0, this, [this, task, fileNames]() {
                 m_inFlightHashes.remove(task.hashKey);
                 --m_activeTasks;
 
+                InstallKind kind = InstallKind::PortableArchive;
+                bool resolved = false;
+                if (!fileNames.isEmpty() && m_analyzer) {
+                    const InstallPlan plan = m_analyzer->resolveFileNames(task.sourceId, fileNames);
+                    kind = plan.analysis.kind;
+                    resolved = plan.analysis.confidence > 0;
+                }
+
                 if (resolved && !task.hashKey.isEmpty()) {
                     m_cacheByHash.insert(task.hashKey, kind);
-                    persistCache();
+                    m_persistTimer->start();
                     emit installKindResolved(task.entryId, kind);
                 }
 

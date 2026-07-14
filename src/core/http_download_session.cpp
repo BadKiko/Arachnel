@@ -44,14 +44,32 @@ HttpDownloadSession::HttpDownloadSession(QObject* parent)
 
 HttpDownloadSession::~HttpDownloadSession()
 {
-    for (QNetworkReply* reply : m_impl->replies)
-        reply->deleteLater();
+    shutdown();
+}
+
+void HttpDownloadSession::shutdown()
+{
+    if (!m_impl)
+        return;
+
+    for (auto it = m_impl->replies.begin(); it != m_impl->replies.end(); ++it) {
+        QNetworkReply* reply = it.value();
+        if (!reply)
+            continue;
+        reply->disconnect(this);
+        reply->abort();
+        delete reply;
+    }
+    m_impl->replies.clear();
     delete m_impl;
+    m_impl = nullptr;
 }
 
 bool HttpDownloadSession::addJob(const QString& jobId, const QString& url, const QString& referer,
                                  const QString& saveDirectory)
 {
+    if (!m_impl)
+        return false;
     if (jobId.isEmpty() || url.isEmpty() || saveDirectory.isEmpty())
         return false;
     if (m_impl->replies.contains(jobId))
@@ -77,6 +95,10 @@ bool HttpDownloadSession::addJob(const QString& jobId, const QString& url, const
             });
 
     connect(reply, &QNetworkReply::finished, this, [this, jobId, reply, saveDirectory]() {
+        if (!m_impl) {
+            delete reply;
+            return;
+        }
         m_impl->replies.remove(jobId);
 
         if (reply->error() != QNetworkReply::NoError) {
@@ -114,9 +136,11 @@ bool HttpDownloadSession::addJob(const QString& jobId, const QString& url, const
 
 void HttpDownloadSession::cancel(const QString& jobId)
 {
+    if (!m_impl)
+        return;
     if (QNetworkReply* reply = m_impl->replies.take(jobId)) {
         reply->abort();
-        reply->deleteLater();
+        delete reply;
     }
 }
 

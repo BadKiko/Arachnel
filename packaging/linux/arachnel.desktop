@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Arachnel
+GenericName=Game Launcher
+Comment=Game launcher with plugin-based sources
+Exec=arachnel_app
+Icon=arachnel
+Categories=Game;Utility;
+StartupWMClass=arachnel_app
+Terminal=false

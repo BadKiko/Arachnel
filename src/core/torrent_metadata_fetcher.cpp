@@ -25,12 +25,12 @@ namespace {
 void applyProbeSessionDefaults(lt::session& session)
 {
     lt::settings_pack pack;
-    pack.set_int(lt::settings_pack::active_downloads, 4);
+    pack.set_int(lt::settings_pack::active_downloads, 1);
     pack.set_int(lt::settings_pack::active_seeds, 0);
     pack.set_bool(lt::settings_pack::enable_dht, true);
-    pack.set_bool(lt::settings_pack::enable_lsd, true);
-    pack.set_bool(lt::settings_pack::enable_upnp, true);
-    pack.set_bool(lt::settings_pack::enable_natpmp, true);
+    pack.set_bool(lt::settings_pack::enable_lsd, false);
+    pack.set_bool(lt::settings_pack::enable_upnp, false);
+    pack.set_bool(lt::settings_pack::enable_natpmp, false);
     session.apply_settings(pack);
 }
 
