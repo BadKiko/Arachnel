@@ -90,6 +90,16 @@ function Get-BuildArgs {
     }
 
     $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+    if ($env:GITHUB_ACTIONS -eq 'true') {
+        $ninja = Get-Command ninja.exe -ErrorAction SilentlyContinue
+        if ($ninja) {
+            return @{
+                Qt = $qt
+                Cmake = $cmake
+                Configure = $configureArgs + @("-G", "Ninja")
+            }
+        }
+    }
     if (Test-Path -LiteralPath $vswhere) {
         $vsPath = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath 2>$null
         if ($vsPath) {
@@ -172,7 +182,13 @@ function Ensure-BuildDir {
     param([hashtable]$Qt)
 
     if (-not $Qt) { return }
-    $expected = if ($Qt.Kind -eq "mingw_64") { "Ninja" } else { "Visual Studio 17 2022" }
+    $expected = if ($Qt.Kind -eq "mingw_64") {
+        "Ninja"
+    } elseif ($env:GITHUB_ACTIONS -eq 'true') {
+        "Ninja"
+    } else {
+        "Visual Studio 17 2022"
+    }
 
     $cache = Join-Path $BUILD_DIR "CMakeCache.txt"
     $mismatch = $false
