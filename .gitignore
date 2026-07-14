@@ -14,6 +14,10 @@ libs/
 dist-win/
 Arachnel-win64-*.zip
 Arachnel-win64-*/
+Arachnel-Setup.exe
+
+# Windows installer pack staging
+setup/staging/
 
 # Local archives and debug listings
 *.7z

@@ -3,7 +3,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-BUILD="${ROOT}/build"
+BUILD="${BUILD_DIR:-${ROOT}/build}"
 QM_DIR="${BUILD}/_deps/qml_material-src"
 
 if [[ ! -d "${QM_DIR}/.git" ]]; then
