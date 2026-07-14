@@ -203,8 +203,10 @@ function Initialize-QtRuntime {
     if (-not $Qt) { return }
 
     $qtBin = Join-Path $Qt.Prefix "bin"
-    $runtimePaths = @($qtBin, "D:\Qt\Tools\mingw1310_64\bin", "D:\Qt\Tools\Ninja") |
-        Where-Object { Test-Path -LiteralPath $_ }
+    $runtimePaths = @(
+        @($qtBin, "D:\Qt\Tools\mingw1310_64\bin", "D:\Qt\Tools\Ninja") |
+            Where-Object { Test-Path -LiteralPath $_ }
+    )
 
     if ($env:VULKAN_SDK) {
         $vulkanBin = Join-Path $env:VULKAN_SDK "Bin"

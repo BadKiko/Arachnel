@@ -81,7 +81,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-            git git-lfs curl ca-certificates fuse libfuse2 file \
+            git git-lfs curl ca-certificates fuse libfuse2 file ninja-build \
             libgl1 libglib2.0-0 libxkbcommon0 libxcb-cursor0 \
             libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0 \
             libxcb-shape0 libxcb-xfixes0 libxcb-xinerama0 libxcb-xinput0 \
@@ -94,8 +94,6 @@ jobs:
           arch: linux_gcc_64
           modules: qtshadertools qtmultimedia
           cache: true
-          tools: ninja
-          tools-only: false
 
       - name: Build AppImage
         env:
