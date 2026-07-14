@@ -132,7 +132,7 @@ Flickable {
             Layout.rightMargin: contentMargin
             spacing: MD.Token.spacing.medium
             rows: 2
-            columns: 5
+            columns: 6
 
             Repeater {
                 model: AccentColors.palette

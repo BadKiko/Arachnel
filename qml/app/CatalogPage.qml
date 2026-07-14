@@ -40,10 +40,14 @@ Item {
         { mode: 0, label: qsTr("Newest first") },
         { mode: 1, label: qsTr("Oldest first") },
         { mode: 2, label: qsTr("Title A–Z") },
-        { mode: 3, label: qsTr("Title Z–A") }
+        { mode: 3, label: qsTr("Title Z–A") },
+        { mode: 4, label: qsTr("Portable first") },
+        { mode: 5, label: qsTr("Non-portable first") }
     ]
 
     property string searchQuery: ""
+    property real savedGridScrollY: 0
+    property real savedListScrollY: 0
 
     signal openGame(string entryId)
     signal openSettings()
@@ -74,9 +78,43 @@ Item {
         sortPopup.open()
     }
 
+    function openFilterMenu(anchor) {
+        filterPopup.parent = anchor.parent
+        filterPopup.x = anchor.x
+        filterPopup.y = anchor.y + anchor.height + 4
+        filterPopup.open()
+    }
+
     function resetScroll() {
         grid.contentY = 0
         list.contentY = 0
+    }
+
+    function saveAndResetScroll() {
+        // Save current scroll position of the view that's currently visible
+        if (!root.listViewMode) {
+            // Currently in grid mode, save grid scroll
+            root.savedGridScrollY = grid.contentY
+        } else {
+            // Currently in list mode, save list scroll
+            root.savedListScrollY = list.contentY
+        }
+    }
+
+    function restoreScroll() {
+        // Restore scroll position to the view that's now visible
+        // Use a longer delay to ensure the view has fully updated
+        Qt.callLater(function() {
+            Qt.callLater(function() {
+                if (root.listViewMode) {
+                    // Switched to list mode, restore list scroll
+                    list.contentY = root.savedListScrollY
+                } else {
+                    // Switched to grid mode, restore grid scroll
+                    grid.contentY = root.savedGridScrollY
+                }
+            })
+        })
     }
 
     function applyCatalogSearch(query) {
@@ -108,7 +146,10 @@ Item {
         }
     }
 
-    onListViewModeChanged: resetScroll()
+    onListViewModeChanged: {
+        saveAndResetScroll()
+        restoreScroll()
+    }
 
     Popup {
         id: sortPopup
@@ -154,6 +195,82 @@ Item {
                         root.applySortMode(modelData.mode)
                         sortPopup.close()
                     }
+                }
+            }
+
+            Item {
+                Layout.preferredHeight: MD.Token.spacing.extra_small
+            }
+        }
+    }
+
+    Popup {
+        id: filterPopup
+        width: 240
+        padding: 0
+        modal: true
+        focus: true
+        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+
+        background: MD.ElevationRectangle {
+            radius: MD.Token.shape.corner.medium
+            color: MD.Token.color.surface_container_high
+            elevation: MD.Token.elevation.level2
+        }
+
+        contentItem: ColumnLayout {
+            spacing: 0
+
+            MD.Label {
+                Layout.fillWidth: true
+                Layout.leftMargin: MD.Token.spacing.medium
+                Layout.rightMargin: MD.Token.spacing.medium
+                Layout.topMargin: MD.Token.spacing.small
+                Layout.bottomMargin: MD.Token.spacing.extra_small
+                text: qsTr("Filter by type")
+                typescale: MD.Token.typescale.label_large
+                color: MD.Token.color.on_surface_variant
+            }
+
+            MD.Button {
+                Layout.fillWidth: true
+                Layout.leftMargin: MD.Token.spacing.extra_small
+                Layout.rightMargin: MD.Token.spacing.extra_small
+                text: qsTr("All")
+                mdState.type: Core.catalog.installKindFilter === -1
+                             ? MD.Enum.BtFilledTonal
+                             : MD.Enum.BtText
+                onClicked: {
+                    Core.catalog.installKindFilter = -1
+                    filterPopup.close()
+                }
+            }
+
+            MD.Button {
+                Layout.fillWidth: true
+                Layout.leftMargin: MD.Token.spacing.extra_small
+                Layout.rightMargin: MD.Token.spacing.extra_small
+                text: qsTr("Portable")
+                mdState.type: Core.catalog.installKindFilter === 0
+                             ? MD.Enum.BtFilledTonal
+                             : MD.Enum.BtText
+                onClicked: {
+                    Core.catalog.installKindFilter = 0
+                    filterPopup.close()
+                }
+            }
+
+            MD.Button {
+                Layout.fillWidth: true
+                Layout.leftMargin: MD.Token.spacing.extra_small
+                Layout.rightMargin: MD.Token.spacing.extra_small
+                text: qsTr("Non-portable")
+                mdState.type: Core.catalog.installKindFilter === 1
+                             ? MD.Enum.BtFilledTonal
+                             : MD.Enum.BtText
+                onClicked: {
+                    Core.catalog.installKindFilter = 1
+                    filterPopup.close()
                 }
             }
 
@@ -300,6 +417,7 @@ Item {
                         hasSelection: Core.activeCatalogSourceIds.length > 0
                         listViewMode: root.listViewMode
                         onSortRequested: root.openSortMenu
+                        onFilterRequested: root.openFilterMenu
                         onViewModeChangeRequested: function (mode) { catalogPrefs.viewMode = mode }
                         onRefreshRequested: Core.refreshSelectedCatalogs()
                     }
@@ -344,6 +462,7 @@ Item {
                         hasSelection: Core.activeCatalogSourceIds.length > 0
                         listViewMode: root.listViewMode
                         onSortRequested: root.openSortMenu
+                        onFilterRequested: root.openFilterMenu
                         onViewModeChangeRequested: function (mode) { catalogPrefs.viewMode = mode }
                         onRefreshRequested: Core.refreshSelectedCatalogs()
                     }

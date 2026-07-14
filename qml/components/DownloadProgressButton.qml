@@ -72,6 +72,7 @@ Item {
 
     signal activated()
     signal pauseToggleRequested()
+    signal cancelRequested()
 
     component ActionRow : RowLayout {
         id: row
@@ -91,12 +92,13 @@ Item {
         }
     }
 
-    implicitWidth: Math.max(196, labelRow.implicitWidth + 2 * MD.Token.spacing.large)
+    implicitWidth: shell.width + (cancelButton.visible ? cancelButton.implicitWidth + MD.Token.spacing.small : 0)
     implicitHeight: 40
 
     Item {
         id: shell
-        anchors.fill: parent
+        width: Math.max(196, labelRow.implicitWidth + 2 * MD.Token.spacing.large)
+        height: parent.height
         clip: true
 
         layer.enabled: true
@@ -158,5 +160,16 @@ Item {
                     root.activated()
             }
         }
+    }
+
+    MD.IconButton {
+        id: cancelButton
+        anchors.left: shell.right
+        anchors.leftMargin: MD.Token.spacing.small
+        anchors.verticalCenter: parent.verticalCenter
+        visible: root.inProgress && !root.completed
+        mdState.type: MD.Enum.IBtStandard
+        icon.name: MD.Token.icon.close
+        onClicked: root.cancelRequested()
     }
 }

@@ -12,6 +12,7 @@ Item {
     required property bool listViewMode
 
     signal sortRequested(var anchor)
+    signal filterRequested(var anchor)
     signal viewModeChangeRequested(int mode)
     signal refreshRequested()
 
@@ -44,6 +45,13 @@ Item {
                 mdState.type: MD.Enum.IBtStandard
                 icon.name: MD.Token.icon.sort
                 onClicked: root.sortRequested(sortBtn)
+            }
+
+            MD.IconButton {
+                id: filterBtn
+                mdState.type: Core.catalog.installKindFilter === -1 ? MD.Enum.IBtStandard : MD.Enum.IBtFilledTonal
+                icon.name: MD.Token.icon.filter_list
+                onClicked: root.filterRequested(filterBtn)
             }
 
             MD.IconButton {
