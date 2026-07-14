@@ -1,6 +1,6 @@
 #include "job_display.h"
 
-#include "i18n.h"
+#include <QCoreApplication>
 
 namespace arachnel::core {
 
@@ -8,13 +8,13 @@ namespace {
 
 QString trExact(const char* english)
 {
-    return trCore(english);
+    return QCoreApplication::translate("Core", english);
 }
 
 QString fromPrefixed(const QString& value, const QString& legacyPrefix, const char* englishPrefix)
 {
     if (value.startsWith(legacyPrefix))
-        return trCore(englishPrefix).arg(value.mid(legacyPrefix.size()));
+        return QCoreApplication::translate("Core", englishPrefix).arg(value.mid(legacyPrefix.size()));
     return {};
 }
 
@@ -42,12 +42,12 @@ QString displayJobTitle(const QString& title)
     if (title.startsWith(QStringLiteral("Дополнение "))) {
         const int dash = title.indexOf(QStringLiteral(" — "));
         if (dash > 11)
-            return trCore("Add-on %1 — %2").arg(title.mid(11, dash - 11), title.mid(dash + 3));
+            return QCoreApplication::translate("Core", "Add-on %1 — %2").arg(title.mid(11, dash - 11), title.mid(dash + 3));
     }
     if (title.startsWith(QStringLiteral("Add-on "))) {
         const int dash = title.indexOf(QStringLiteral(" — "));
         if (dash > 7)
-            return trCore("Add-on %1 — %2").arg(title.mid(7, dash - 7), title.mid(dash + 3));
+            return QCoreApplication::translate("Core", "Add-on %1 — %2").arg(title.mid(7, dash - 7), title.mid(dash + 3));
     }
 
     return title;
@@ -96,23 +96,23 @@ QString displayJobDetail(const QString& detail)
     }
 
     if (detail.startsWith(QStringLiteral("Ошибка установки: ")))
-        return trCore("Install failed: %1").arg(detail.mid(18));
+        return QCoreApplication::translate("Core", "Install failed: %1").arg(detail.mid(18));
     if (detail.startsWith(QStringLiteral("Install failed: ")))
-        return trCore("Install failed: %1").arg(detail.mid(16));
+        return QCoreApplication::translate("Core", "Install failed: %1").arg(detail.mid(16));
 
     if (detail.startsWith(QStringLiteral("Установка (")))
-        return trCore("Installing (%1/%2)")
+        return QCoreApplication::translate("Core", "Installing (%1/%2)")
             .arg(detail.section(QLatin1Char('('), 1, 1).section(QLatin1Char('/'), 0, 0),
                  detail.section(QLatin1Char('/'), 1, 1).chopped(1));
     if (detail.startsWith(QStringLiteral("Installing (")))
-        return trCore("Installing (%1/%2)")
+        return QCoreApplication::translate("Core", "Installing (%1/%2)")
             .arg(detail.section(QLatin1Char('('), 1, 1).section(QLatin1Char('/'), 0, 0),
                  detail.section(QLatin1Char('/'), 1, 1).chopped(1));
 
     if (detail.startsWith(QStringLiteral("Ошибка:")))
-        return trCore("Error: %1").arg(detail.mid(7));
+        return QCoreApplication::translate("Core", "Error: %1").arg(detail.mid(7));
     if (detail.startsWith(QStringLiteral("Error:")))
-        return trCore("Error: %1").arg(detail.mid(6));
+        return QCoreApplication::translate("Core", "Error: %1").arg(detail.mid(6));
 
     return detail;
 }

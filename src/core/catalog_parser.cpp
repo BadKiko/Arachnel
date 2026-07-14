@@ -7,6 +7,7 @@
 #include <QSet>
 
 #include <algorithm>
+#include <cstring>
 
 namespace arachnel::core {
 
@@ -70,6 +71,7 @@ CatalogEntry parseDownloadObject(const QJsonObject& obj, const QString& sourceId
     if (entry.id.isEmpty())
         entry.id = slugifyCatalogId(title, sourceId);
     entry.sourceId = sourceId;
+    entry.sourcePageUrl = obj.value(QStringLiteral("articleUrl")).toString().trimmed();
     entry.sizeLabel = obj.value(QStringLiteral("fileSize")).toString();
     entry.uploadDate = obj.value(QStringLiteral("uploadDate")).toString();
     entry.version = entry.uploadDate.left(10);
@@ -96,14 +98,48 @@ CatalogEntry parseDownloadObject(const QJsonObject& obj, const QString& sourceId
     return entry;
 }
 
+QString normalizeMagnetBtih(QString btih)
+{
+    btih = btih.trimmed();
+    if (btih.size() == 40)
+        return btih.toLower();
+
+    if (btih.size() != 32)
+        return btih.toLower();
+
+    static const char* alphabet = "abcdefghijklmnopqrstuvwxyz234567";
+    QByteArray out;
+    out.reserve(20);
+
+    quint32 buffer = 0;
+    int bits = 0;
+    for (const QChar ch : btih.toLower()) {
+        const char* pos = std::strchr(alphabet, ch.toLatin1());
+        if (!pos)
+            return {};
+        buffer = (buffer << 5) | static_cast<quint32>(pos - alphabet);
+        bits += 5;
+        if (bits >= 8) {
+            bits -= 8;
+            out.append(static_cast<char>((buffer >> bits) & 0xff));
+        }
+    }
+
+    if (out.size() != 20)
+        return {};
+
+    return QString::fromLatin1(out.toHex());
+}
+
 QString magnetBtih(const QStringList& uris)
 {
     static const QRegularExpression pattern(
-        QStringLiteral("btih:([a-fA-F0-9]{40})"), QRegularExpression::CaseInsensitiveOption);
+        QStringLiteral(R"(btih:([a-fA-F0-9]{40}|[A-Z2-7]{32}))"),
+        QRegularExpression::CaseInsensitiveOption);
     for (const QString& uri : uris) {
         const QRegularExpressionMatch match = pattern.match(uri);
         if (match.hasMatch())
-            return match.captured(1).toLower();
+            return normalizeMagnetBtih(match.captured(1));
     }
     return {};
 }
@@ -277,6 +313,18 @@ QString catalogFeedValidationError(const QByteArray& payload)
         return QStringLiteral("Не удалось разобрать игры из каталога");
 
     return {};
+}
+
+QString catalogMagnetInfoHash(const QString& magnetUri)
+{
+    if (magnetUri.isEmpty())
+        return {};
+    return magnetBtih({magnetUri});
+}
+
+QString catalogMagnetInfoHash(const QStringList& magnetUris)
+{
+    return magnetBtih(magnetUris);
 }
 
 } // namespace arachnel::core
