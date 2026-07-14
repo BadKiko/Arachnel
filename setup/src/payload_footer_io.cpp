@@ -13,11 +13,14 @@ PayloadFooter readPayloadFooterFile(const std::filesystem::path& filePath)
         return footer;
 
     file.seekg(0, std::ios::end);
-    const auto fileSize = file.tellg();
-    if (fileSize < kPayloadFooterSize)
+    const auto endPos = file.tellg();
+    if (endPos < 0)
+        return footer;
+    const auto fileSize = static_cast<std::uint64_t>(endPos);
+    if (fileSize < static_cast<std::uint64_t>(kPayloadFooterSize))
         return footer;
 
-    file.seekg(fileSize - kPayloadFooterSize);
+    file.seekg(static_cast<std::streamoff>(fileSize - static_cast<std::uint64_t>(kPayloadFooterSize)));
 
     char magic[kPayloadMagicSize] = {};
     if (!file.read(magic, kPayloadMagicSize))
