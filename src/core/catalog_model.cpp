@@ -188,6 +188,7 @@ QVariantMap CatalogModel::toMap(const CatalogEntry& entry) const
         {QStringLiteral("sourcePageUrl"), entry.sourcePageUrl},
         {QStringLiteral("steamAppId"), entry.steamAppId},
         {QStringLiteral("trailerUrl"), entry.trailerUrl},
+        {QStringLiteral("trailerThumbnailUrl"), entry.trailerThumbnailUrl},
         {QStringLiteral("screenshotUrls"), QVariant::fromValue(entry.screenshotUrls)},
         {QStringLiteral("version"), entry.version},
         {QStringLiteral("installPath"), QString()},

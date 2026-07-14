@@ -20,6 +20,7 @@ struct GameMetadata {
     QString genres;
     QString steamAppId;
     QString trailerUrl;
+    QString trailerThumbnailUrl;
     QStringList screenshotUrls;
 };
 
@@ -74,18 +75,25 @@ private:
     void requestAppDetails(const QString& entryId, const QString& title, const QString& appId,
                            const QString& coverUrl, MetadataFetchMode mode,
                            const QString& languageCode);
+    void tryDeferredFull(const QString& entryId);
     int indexOfPending(const QString& entryId) const;
+
+    struct DeferredFullRequest {
+        QString title;
+        QString languageCode;
+    };
 
     QNetworkAccessManager* m_network = nullptr;
     QHash<QString, GameMetadata> m_cache;
     QList<PendingRequest> m_pending;
     QSet<QString> m_inFlight;
+    QHash<QString, DeferredFullRequest> m_deferredFull;
     int m_activeRequests = 0;
     QTimer* m_saveTimer = nullptr;
 
-    // Few parallel Steam calls; queue is short and priority-ordered.
+    // Visible cards prepend into the queue; keep enough headroom for prefetch + scrolling.
     static constexpr int kMaxConcurrent = 4;
-    static constexpr int kMaxQueueSize = 16;
+    static constexpr int kMaxQueueSize = 64;
 };
 
 } // namespace arachnel::core

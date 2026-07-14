@@ -42,6 +42,9 @@ QString g_runExePath;
 QString g_runArgsLine;
 bool g_isCrashDialogProcess = false;
 bool g_shuttingDown = false;
+QStringList g_recentLines;
+
+constexpr int kRecentLogLines = 80;
 
 constexpr const char* kGithubIssuesNew =
     "https://github.com/BadKiko/Arachnel/issues/new";
@@ -122,10 +125,18 @@ void removePendingMarker()
     QFile::remove(pendingCrashMarkerPath());
 }
 
+void rememberRecentLine(const QString& line)
+{
+    g_recentLines.append(line);
+    while (g_recentLines.size() > kRecentLogLines)
+        g_recentLines.removeFirst();
+}
+
 void writeLine(const QString& line, bool toStderr = true)
 {
     QMutexLocker lock(&g_logMutex);
     appendToFile(runLogPath(), line);
+    rememberRecentLine(line);
     if (toStderr) {
         fprintf(stderr, "%s\n", qPrintable(line));
         fflush(stderr);
@@ -201,6 +212,19 @@ CrashReportData buildCrashReport(const QString& summary, const QString& extraDet
         body.append(extraDetails);
     if (!stackTrace.isEmpty())
         body.append(stackTrace);
+
+    if (!g_recentLines.isEmpty()) {
+        body.append(QStringLiteral("Recent log (%1 lines):").arg(g_recentLines.size()));
+        body.append(g_recentLines.join(QStringLiteral("\n")));
+    }
+
+    if (summary.contains(QStringLiteral("Access violation"))
+        && extraDetails.contains(QStringLiteral("0x0000000000000001"))) {
+        body.append(QStringLiteral(
+            "Hint: null or invalid pointer read. If this appeared after updating Arachnel, "
+            "rebuild and redeploy source plugins (run.ps1) so plugin DLLs match the app."));
+    }
+
     body.append(QStringLiteral("Report file: %1").arg(latestCrashReportPath()));
     body.append(QStringLiteral("Run log: %1").arg(runLogPath()));
 
@@ -284,6 +308,8 @@ QString describeExceptionCode(DWORD code)
         return QStringLiteral("Integer divide by zero");
     case EXCEPTION_ILLEGAL_INSTRUCTION:
         return QStringLiteral("Illegal instruction");
+    case 0xC0000374:
+        return QStringLiteral("Heap corruption");
     default:
         return QStringLiteral("Windows exception 0x%1").arg(code, 8, 16, QLatin1Char('0'));
     }
@@ -349,6 +375,17 @@ void appendSymbolLine(QStringList& lines, HANDLE process, DWORD64 address)
         line += QStringLiteral(" %1").arg(QString::fromLocal8Bit(symbol->Name));
         if (displacement > 0)
             line += QStringLiteral("+0x%1").arg(displacement, 0, 16);
+    } else {
+        line += QStringLiteral(" (symbol unavailable)");
+    }
+
+    DWORD lineDisplacement = 0;
+    IMAGEHLP_LINE64 lineInfo = {};
+    lineInfo.SizeOfStruct = sizeof(lineInfo);
+    if (SymGetLineFromAddr64(process, address, &lineDisplacement, &lineInfo)) {
+        const QString file = QDir::fromNativeSeparators(
+            QString::fromLocal8Bit(lineInfo.FileName));
+        line += QStringLiteral(" at %1:%2").arg(file).arg(lineInfo.LineNumber);
     }
 
     IMAGEHLP_MODULE64 moduleInfo = {};
@@ -568,8 +605,6 @@ void handleQtFatalMessage(const QString& message)
 
 void qtMessageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg)
 {
-    Q_UNUSED(context);
-
     const char* level = "LOG";
     switch (type) {
     case QtDebugMsg:
@@ -593,7 +628,17 @@ void qtMessageHandler(QtMsgType type, const QMessageLogContext& context, const Q
         QStringLiteral("[%1] %2: %3")
             .arg(QDateTime::currentDateTime().toString(Qt::ISODate), QString::fromLatin1(level),
                  msg);
-    writeLine(line, type != QtDebugMsg);
+
+    QString fullLine = line;
+    if (context.file && context.line > 0) {
+        fullLine += QStringLiteral(" (%1:%2)").arg(QString::fromLocal8Bit(context.file),
+                                                     context.line);
+    }
+    if (context.function && context.function[0] != '\0') {
+        fullLine += QStringLiteral(" in %1()").arg(QString::fromLocal8Bit(context.function));
+    }
+
+    writeLine(fullLine, type != QtDebugMsg);
 
     if (type == QtFatalMsg) {
         handleQtFatalMessage(msg);
@@ -738,6 +783,18 @@ void revealPendingCrashReport()
     if (path.isEmpty())
         return;
     QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(path).absolutePath()));
+}
+
+void logDiagnostic(const QString& line)
+{
+    writeLine(QStringLiteral("[diag] %1").arg(line));
+}
+
+void logQmlWarning(const QUrl& url, int line, int column, const QString& description)
+{
+    const QString location = url.isValid() ? url.toString(QUrl::RemoveQuery | QUrl::RemoveFragment)
+                                           : QStringLiteral("(unknown QML file)");
+    writeLine(QStringLiteral("[QML] %1:%2:%3: %4").arg(location).arg(line).arg(column).arg(description));
 }
 
 } // namespace arachnel
