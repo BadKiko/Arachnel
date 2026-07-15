@@ -93,7 +93,10 @@ int main(int argc, char* argv[])
     QCoreApplication::setOrganizationName(QStringLiteral("PetWork"));
     QCoreApplication::setOrganizationDomain(QStringLiteral("petwork.local"));
     QCoreApplication::setApplicationName(QStringLiteral("Arachnel"));
-    QCoreApplication::setApplicationVersion(QStringLiteral("0.0.1"));
+#ifndef ARACHNEL_VERSION
+#define ARACHNEL_VERSION "dev"
+#endif
+    QCoreApplication::setApplicationVersion(QStringLiteral(ARACHNEL_VERSION));
 
     const bool crashDialogMode = arachnel::isCrashDialogMode(argc, argv);
 

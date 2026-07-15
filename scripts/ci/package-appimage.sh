@@ -16,6 +16,7 @@ cmake -S "${ROOT}" -B "${BUILD}" \
   -G Ninja \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH:-${QT_ROOT_DIR:-}}" \
+  -DARACHNEL_VERSION="${VERSION}" \
   -DARACHNEL_FAST_BUILD=OFF
 
 echo "==> Build arachnel_app"

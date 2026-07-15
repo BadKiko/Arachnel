@@ -150,6 +150,9 @@ EN_TO_RU: dict[str, str] = {
     "Invalid plugin package: expected a ZIP .arach archive":
         "Некорректный пакет плагина: ожидается ZIP-архив .arach",
     "Could not start archive extraction": "Не удалось запустить распаковку архива",
+    "Could not create temporary folder": "Не удалось создать временную папку",
+    "Could not prepare plugin archive for extraction":
+        "Не удалось подготовить архив плагина к распаковке",
     "Archive extraction timed out": "Таймаут распаковки",
     "Archive extraction failed (code %1)": "Ошибка распаковки (код %1)",
     "Plugin files were copied but the library failed to load. Rebuild the plugin for "
@@ -207,6 +210,19 @@ EN_TO_RU: dict[str, str] = {
         "Свой Proton для этой игры. По умолчанию — из Настройки → Запуск.",
     "Для установки Windows-установщика нужен Proton (Настройки → Запуск)":
         "Для установки Windows-установщика нужен Proton (Настройки → Запуск)",
+    "About": "О приложении",
+    "Application name, version, and platform": "Название, версия и платформа",
+    "Game launcher with plugin-based sources and Hydra catalogs.":
+        "Лаунчер игр с плагинами источников и каталогами Hydra.",
+    "Application": "Приложение",
+    "Version": "Версия",
+    "Platform": "Платформа",
+    "Unknown": "Неизвестно",
+    "Windows": "Windows",
+    "Linux": "Linux",
+    "macOS": "macOS",
+    "Appearance": "Оформление",
+    "Theme, palette, accent color, and language": "Тема, палитра, акцент и язык",
 }
 
 

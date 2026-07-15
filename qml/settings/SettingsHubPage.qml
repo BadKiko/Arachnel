@@ -42,6 +42,11 @@ Flickable {
                 id: "appearance",
                 title: qsTr("Appearance"),
                 subtitle: qsTr("Theme, palette, accent color, and language")
+            },
+            {
+                id: "about",
+                title: qsTr("About"),
+                subtitle: qsTr("Application name, version, and platform")
             }
         ]
         if (root.onLinux)
