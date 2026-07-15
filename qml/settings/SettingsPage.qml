@@ -54,6 +54,8 @@ ColumnLayout {
                 stack.navigatePush(launchComponent, {}, true)
             else if (section === "appearance")
                 stack.navigatePush(appearanceComponent, {}, true)
+            else if (section === "about")
+                stack.navigatePush(aboutComponent, {}, true)
             else if (section === "plugins")
                 stack.navigatePush(pluginsComponent, {}, true)
             else
@@ -85,6 +87,8 @@ ColumnLayout {
             stack.navigatePush(launchComponent)
         else if (sectionId === "appearance")
             stack.navigatePush(appearanceComponent)
+        else if (sectionId === "about")
+            stack.navigatePush(aboutComponent)
     }
 
     function openSources() {
@@ -184,6 +188,14 @@ ColumnLayout {
         id: appearanceComponent
         SettingsAppearancePage {
             property string pageTitle: qsTr("Appearance")
+            contentMargin: root.contentMargin
+        }
+    }
+
+    Component {
+        id: aboutComponent
+        SettingsAboutPage {
+            property string pageTitle: qsTr("About")
             contentMargin: root.contentMargin
         }
     }

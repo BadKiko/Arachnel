@@ -50,6 +50,13 @@ bool isZipArchive(const QString& path)
            && magic[2] == '\x03' && magic[3] == '\x04';
 }
 
+QString escapePowerShellSingleQuotedLiteral(const QString& value)
+{
+    QString escaped = value;
+    escaped.replace(QLatin1Char('\''), QStringLiteral("''"));
+    return escaped;
+}
+
 QString g_lastPluginLoadError;
 
 #if defined(Q_OS_WIN)
@@ -439,15 +446,18 @@ bool PluginHost::extractArachArchive(const QString& archivePath, const QString& 
 
     QProcess process;
 #if defined(Q_OS_WIN)
+    // Prefer ZipFile: Expand-Archive rejects non-.zip extensions even when content is ZIP.
     process.setProgram(QStringLiteral("powershell"));
-    const QString escapedArchive = archivePath;
-    const QString escapedDest = destDir;
+    const QString escapedArchive = escapePowerShellSingleQuotedLiteral(archivePath);
+    const QString escapedDest = escapePowerShellSingleQuotedLiteral(destDir);
     process.setArguments({
         QStringLiteral("-NoProfile"),
         QStringLiteral("-ExecutionPolicy"),
         QStringLiteral("Bypass"),
         QStringLiteral("-Command"),
-        QStringLiteral("Expand-Archive -LiteralPath '%1' -DestinationPath '%2' -Force")
+        QStringLiteral(
+            "Add-Type -AssemblyName System.IO.Compression.FileSystem; "
+            "[System.IO.Compression.ZipFile]::ExtractToDirectory('%1', '%2')")
             .arg(escapedArchive, escapedDest),
     });
 #else
@@ -470,7 +480,10 @@ bool PluginHost::extractArachArchive(const QString& archivePath, const QString& 
     }
     if (process.exitStatus() != QProcess::NormalExit || process.exitCode() != 0) {
         if (errorOut) {
-            const QString stderrText = QString::fromLocal8Bit(process.readAllStandardError()).trimmed();
+            const QByteArray stderrBytes = process.readAllStandardError();
+            QString stderrText = QString::fromUtf8(stderrBytes).trimmed();
+            if (stderrText.isEmpty() || stderrText.contains(QChar(0xFFFD)))
+                stderrText = QString::fromLocal8Bit(stderrBytes).trimmed();
             *errorOut = stderrText.isEmpty()
                             ? QCoreApplication::translate("Core",
                                                           "Archive extraction failed (code %1)")
