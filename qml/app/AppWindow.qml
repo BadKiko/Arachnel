@@ -96,6 +96,14 @@ MD.ApplicationWindow {
         }
     }
 
+    Connections {
+        target: Core.appUpdater
+        function onUpdateCheckFinished(available, latestVersion) {
+            if (available && !Core.appUpdater.downloading)
+                appUpdateSheet.openForVersion(latestVersion)
+        }
+    }
+
     Rectangle {
         anchors.fill: parent
         visible: Core.appUpdater && Core.appUpdater.downloading
@@ -407,6 +415,12 @@ MD.ApplicationWindow {
 
     CrashReportDialog {
         id: crashReportDialog
+    }
+
+    AppUpdateSheet {
+        id: appUpdateSheet
+        anchors.fill: parent
+        z: 1900
     }
 
     AppSnackbar {

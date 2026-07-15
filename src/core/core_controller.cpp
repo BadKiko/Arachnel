@@ -190,9 +190,10 @@ void CoreController::initializeServices()
             [this](bool available, const QString& latestVersion) {
                 if (!available)
                     return;
-                showNotice(QCoreApplication::translate("Core", "Arachnel %1 is available")
-                               .arg(latestVersion),
-                           true);
+                // History only — AppUpdateSheet in QML owns the prompt UX.
+                m_notifications.add(
+                    QCoreApplication::translate("Core", "Arachnel %1 is available").arg(latestVersion),
+                    QStringLiteral("info"));
             });
     connect(m_appUpdater, &AppUpdater::installerLaunchRequested, this, [this]() {
         prepareShutdown();
