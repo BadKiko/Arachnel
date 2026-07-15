@@ -327,6 +327,8 @@ function Deploy-QtRuntime {
     if ($LASTEXITCODE -ne 0) {
         throw "windeployqt failed with exit code $LASTEXITCODE"
     }
+
+    Resolve-WindowsTlsRuntime -DestDir $appDir -QtPrefix $Qt.Prefix
 }
 
 function New-ReleasePackage {
@@ -398,6 +400,8 @@ Imports=qml
         Copy-Item -LiteralPath $qtNetworkAccess -Destination (Join-Path $DIST_DIR "networkaccess") -Recurse -Force
     }
 
+    Resolve-WindowsTlsRuntime -DestDir $DIST_DIR -QtPrefix $plan.Qt.Prefix
+
     $libtorrentDll = Resolve-LibtorrentSharedDll $BUILD_DIR
     if ($libtorrentDll) {
         $dllName = Split-Path -Leaf $libtorrentDll
@@ -422,6 +426,63 @@ Imports=qml
 
     Write-Host ""
     Write-Host "Done: $zipPath" -ForegroundColor Green
+}
+
+function Resolve-WindowsTlsRuntime {
+    param(
+        [string]$DestDir,
+        [string]$QtPrefix
+    )
+
+    # windeployqt copies tls/qopensslbackend.dll, but not OpenSSL itself. Loading that
+    # plugin without libssl/libcrypto aborts the process with a Windows system error.
+    $opensslDlls = @('libssl-3-x64.dll', 'libcrypto-3-x64.dll')
+    $searchRoots = New-Object System.Collections.Generic.List[string]
+
+    if ($env:IQTA_TOOLS) { [void]$searchRoots.Add($env:IQTA_TOOLS) }
+    if ($QtPrefix) {
+        [void]$searchRoots.Add((Join-Path $QtPrefix "bin"))
+        $qtVersionRoot = Split-Path -Parent $QtPrefix
+        $qtInstallRoot = Split-Path -Parent $qtVersionRoot
+        [void]$searchRoots.Add((Join-Path $qtInstallRoot "Tools"))
+        [void]$searchRoots.Add((Join-Path $qtVersionRoot "Tools"))
+    }
+    foreach ($pathEntry in ($env:Path -split ';')) {
+        if (-not $pathEntry) { continue }
+        if ($pathEntry -match '(?i)openssl') { [void]$searchRoots.Add($pathEntry) }
+    }
+
+    $missing = @()
+    foreach ($dllName in $opensslDlls) {
+        $dest = Join-Path $DestDir $dllName
+        if (Test-Path -LiteralPath $dest) { continue }
+
+        $found = $null
+        foreach ($root in ($searchRoots | Select-Object -Unique)) {
+            if (-not (Test-Path -LiteralPath $root)) { continue }
+            $match = Get-ChildItem -LiteralPath $root -Filter $dllName -Recurse -File -ErrorAction SilentlyContinue |
+                Select-Object -First 1
+            if ($match) {
+                $found = $match.FullName
+                break
+            }
+        }
+
+        if ($found) {
+            Copy-Item -LiteralPath $found -Destination $dest -Force
+            Write-Host "Bundled OpenSSL: $dllName"
+        } else {
+            $missing += $dllName
+        }
+    }
+
+    if ($missing.Count -eq 0) { return }
+
+    $opensslBackend = Join-Path $DestDir "tls\qopensslbackend.dll"
+    if (Test-Path -LiteralPath $opensslBackend) {
+        Remove-Item -LiteralPath $opensslBackend -Force
+        Write-Host "Removed tls\qopensslbackend.dll (OpenSSL DLLs missing: $($missing -join ', '); using Schannel)" -ForegroundColor Yellow
+    }
 }
 
 function Resolve-LibtorrentSharedDll {
