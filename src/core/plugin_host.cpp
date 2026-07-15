@@ -50,6 +50,8 @@ bool isZipArchive(const QString& path)
            && magic[2] == '\x03' && magic[3] == '\x04';
 }
 
+QString g_lastPluginLoadError;
+
 #if defined(Q_OS_WIN)
 void prependWindowsPathDirectory(const QString& directory)
 {
@@ -103,8 +105,6 @@ struct ScopedAddDllDirectory {
     RemoveDllDirectoryFn removeDllDirectory = nullptr;
     QList<DLL_DIRECTORY_COOKIE> cookies;
 };
-
-QString g_lastPluginLoadError;
 #endif
 
 } // namespace
@@ -615,10 +615,8 @@ bool PluginHost::installFromArach(const QString& archivePath)
             "Core",
             "Plugin files were copied but the library failed to load. Rebuild the plugin for "
             "your Arachnel version and platform (MSVC/MinGW), then reinstall.");
-#if defined(Q_OS_WIN)
         if (!g_lastPluginLoadError.isEmpty())
             m_lastError += QStringLiteral(" (") + g_lastPluginLoadError + QLatin1Char(')');
-#endif
         return false;
     }
 
