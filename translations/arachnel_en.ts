@@ -118,6 +118,40 @@ Build the plugin from the arachnel-plugin-freetp repository (dist/freetp.arach).
 
 </context>
 <context>
+    <name>AppUpdateSheet</name>
+    <message>
+        
+        <location filename="../qml/components/AppUpdateSheet.qml" line="31" />
+        <source>Update available</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/components/AppUpdateSheet.qml" line="39" />
+        <source>Arachnel %1 is ready to install. Update now to get the latest fixes and features.</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/components/AppUpdateSheet.qml" line="52" />
+        <source>Current version: %1</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/components/AppUpdateSheet.qml" line="67" />
+        <source>Later</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/components/AppUpdateSheet.qml" line="75" />
+        <source>Release page</source>
+        </message>
+    <message>
+        
+        <location filename="../qml/components/AppUpdateSheet.qml" line="86" />
+        <source>Update now</source>
+        </message>
+
+</context>
+<context>
     <name>AppWindow</name>
     <message>
         
@@ -126,27 +160,27 @@ Build the plugin from the arachnel-plugin-freetp repository (dist/freetp.arach).
         </message>
     <message>
         
-        <location filename="../qml/app/AppWindow.qml" line="124" />
+        <location filename="../qml/app/AppWindow.qml" line="132" />
         <source>Downloading Arachnel update…</source>
         </message>
     <message>
         
-        <location filename="../qml/app/AppWindow.qml" line="130" />
+        <location filename="../qml/app/AppWindow.qml" line="138" />
         <source>Please wait. The installer will open automatically.</source>
         </message>
     <message>
         
-        <location filename="../qml/app/AppWindow.qml" line="170" />
+        <location filename="../qml/app/AppWindow.qml" line="178" />
         <source>Library</source>
         </message>
     <message>
         
-        <location filename="../qml/app/AppWindow.qml" line="174" />
+        <location filename="../qml/app/AppWindow.qml" line="182" />
         <source>Catalog</source>
         </message>
     <message>
         
-        <location filename="../qml/app/AppWindow.qml" line="178" />
+        <location filename="../qml/app/AppWindow.qml" line="186" />
         <source>Downloads</source>
         </message>
 
@@ -449,376 +483,376 @@ Build the plugin from the arachnel-plugin-freetp repository (dist/freetp.arach).
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="259" />
+        <location filename="../src/core/core_controller.cpp" line="260" />
         <source>Catalog error: %1</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="360" />
+        <location filename="../src/core/core_controller.cpp" line="361" />
         <source>Game not found for add-on</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="365" />
+        <location filename="../src/core/core_controller.cpp" line="366" />
         <source>Add-on not found in catalog</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="376" />
+        <location filename="../src/core/core_controller.cpp" line="377" />
         <source>Could not find game to install: %1</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="412" />
+        <location filename="../src/core/core_controller.cpp" line="413" />
         <source>Download error: %1</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="456" />
+        <location filename="../src/core/core_controller.cpp" line="457" />
         <source>Installation of %1 is already in progress</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="662" />
+        <location filename="../src/core/core_controller.cpp" line="663" />
         <source>Source plugin not found: %1</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="516" />
+        <location filename="../src/core/core_controller.cpp" line="517" />
         <source>Install failed for %1: %2</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="552" />
+        <location filename="../src/core/core_controller.cpp" line="553" />
         <source>Update installed: %1</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="554" />
+        <location filename="../src/core/core_controller.cpp" line="555" />
         <source>Installed: %1</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="650" />
+        <location filename="../src/core/core_controller.cpp" line="651" />
         <source>Add-on installation is already in progress</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="656" />
+        <location filename="../src/core/core_controller.cpp" line="657" />
         <source>Install the game first</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="719" />
+        <location filename="../src/core/core_controller.cpp" line="720" />
         <source>Add-on install failed for %1: %2</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="740" />
+        <location filename="../src/core/core_controller.cpp" line="741" />
         <source>Add-on installed: %1</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="889" />
+        <location filename="../src/core/core_controller.cpp" line="890" />
         
-        <location filename="../src/core/core_controller.cpp" line="3083" />
+        <location filename="../src/core/core_controller.cpp" line="3084" />
         <source>Game not found</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="895" />
+        <location filename="../src/core/core_controller.cpp" line="896" />
         
-        <location filename="../src/core/core_controller.cpp" line="3158" />
+        <location filename="../src/core/core_controller.cpp" line="3159" />
         <source>Add-on not found</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="901" />
+        <location filename="../src/core/core_controller.cpp" line="902" />
         <source>Download the add-on first</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="1585" />
+        <location filename="../src/core/core_controller.cpp" line="1586" />
         
-        <location filename="../src/core/core_controller.cpp" line="1598" />
+        <location filename="../src/core/core_controller.cpp" line="1599" />
         <source>%1 update(s) available</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="1627" />
+        <location filename="../src/core/core_controller.cpp" line="1628" />
         <source>Started %1 update(s)</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="1934" />
+        <location filename="../src/core/core_controller.cpp" line="1935" />
         <source>Install Proton-GE in Settings → Launch before downloading games</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="1937" />
+        <location filename="../src/core/core_controller.cpp" line="1938" />
         <source>Install %1 (Proton-GE) in Settings → Launch before downloading games</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3004" />
+        <location filename="../src/core/core_controller.cpp" line="3005" />
         <source>Choose library folder</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3445" />
+        <location filename="../src/core/core_controller.cpp" line="3446" />
         <source>Choose game install folder</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3474" />
+        <location filename="../src/core/core_controller.cpp" line="3475" />
         <source>No game executable found in %1</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3490" />
+        <location filename="../src/core/core_controller.cpp" line="3491" />
         <source>Installed</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3491" />
+        <location filename="../src/core/core_controller.cpp" line="3492" />
         <source>Manual install complete for %1</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3610" />
+        <location filename="../src/core/core_controller.cpp" line="3611" />
         <source>Install plugin</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3612" />
+        <location filename="../src/core/core_controller.cpp" line="3613" />
         <source>Plugin package (*.arach)</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="1587" />
+        <location filename="../src/core/core_controller.cpp" line="1588" />
         <source>No updates</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="220" />
+        <location filename="../src/core/core_controller.cpp" line="221" />
         <source>Proton-GE installed</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="222" />
+        <location filename="../src/core/core_controller.cpp" line="223" />
         <source>Proton-GE download failed: %1</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="406" />
+        <location filename="../src/core/core_controller.cpp" line="407" />
         <source>Download complete — install manually</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="483" />
+        <location filename="../src/core/core_controller.cpp" line="484" />
         <source>No install handler for %1</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="1772" />
+        <location filename="../src/core/core_controller.cpp" line="1773" />
         <source>Choose game executable</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="1775" />
+        <location filename="../src/core/core_controller.cpp" line="1776" />
         <source>Executables (*.exe *.sh *.x86_64);;All files (*)</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="2384" />
+        <location filename="../src/core/core_controller.cpp" line="2385" />
         <source>%1 · %2 games</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="2386" />
+        <location filename="../src/core/core_controller.cpp" line="2387" />
         <source>%1 sources · %2 games</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="2477" />
+        <location filename="../src/core/core_controller.cpp" line="2478" />
         <source>Catalog empty or unavailable: %1</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="2493" />
+        <location filename="../src/core/core_controller.cpp" line="2494" />
         <source>No catalog URL configured for source %1</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="2589" />
+        <location filename="../src/core/core_controller.cpp" line="2590" />
         
-        <location filename="../src/core/core_controller.cpp" line="3152" />
+        <location filename="../src/core/core_controller.cpp" line="3153" />
         <source>Game not found: %1</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="2593" />
+        <location filename="../src/core/core_controller.cpp" line="2594" />
         <source>%1 is not installed yet</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="2598" />
+        <location filename="../src/core/core_controller.cpp" line="2599" />
         <source>%1 is already running</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="2621" />
+        <location filename="../src/core/core_controller.cpp" line="2622" />
         <source>Proton not found. Install Proton-GE in Settings → Launch.</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="2628" />
+        <location filename="../src/core/core_controller.cpp" line="2629" />
         <source>Executable not found for %1</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="2638" />
+        <location filename="../src/core/core_controller.cpp" line="2639" />
         <source>Failed to launch game</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="2654" />
+        <location filename="../src/core/core_controller.cpp" line="2655" />
         <source>Failed to stop game</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="2679" />
+        <location filename="../src/core/core_controller.cpp" line="2680" />
         <source>Unknown source: %1</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="2683" />
+        <location filename="../src/core/core_controller.cpp" line="2684" />
         <source>Source "%1" is disabled in settings</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="2902" />
+        <location filename="../src/core/core_controller.cpp" line="2903" />
         <source>Enter a catalog URL</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="2910" />
+        <location filename="../src/core/core_controller.cpp" line="2911" />
         <source>Invalid URL — http or https required</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="2929" />
+        <location filename="../src/core/core_controller.cpp" line="2930" />
         <source>Catalog entry not found: %1</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="2936" />
+        <location filename="../src/core/core_controller.cpp" line="2937" />
         <source>No magnet link for %1</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="2945" />
+        <location filename="../src/core/core_controller.cpp" line="2946" />
         <source>Could not start download for %1</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3013" />
+        <location filename="../src/core/core_controller.cpp" line="3014" />
         <source>Game not found in library</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3038" />
+        <location filename="../src/core/core_controller.cpp" line="3039" />
         <source>Game removed: %1</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3069" />
+        <location filename="../src/core/core_controller.cpp" line="3070" />
         <source>No destination library selected</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3090" />
+        <location filename="../src/core/core_controller.cpp" line="3091" />
         <source>Game is already on this library</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3100" />
+        <location filename="../src/core/core_controller.cpp" line="3101" />
         
-        <location filename="../src/core/core_controller.cpp" line="3106" />
+        <location filename="../src/core/core_controller.cpp" line="3107" />
         <source>Could not move: %1</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3122" />
+        <location filename="../src/core/core_controller.cpp" line="3123" />
         <source>Game moved: %1</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3164" />
+        <location filename="../src/core/core_controller.cpp" line="3165" />
         <source>Could not start add-on download</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3173" />
+        <location filename="../src/core/core_controller.cpp" line="3174" />
         <source>Entry not found: %1</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3179" />
+        <location filename="../src/core/core_controller.cpp" line="3180" />
         <source>Could not start update for %1</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3189" />
+        <location filename="../src/core/core_controller.cpp" line="3190" />
         <source>No catalog sources enabled</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3257" />
+        <location filename="../src/core/core_controller.cpp" line="3258" />
         <source>Download not found</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3261" />
+        <location filename="../src/core/core_controller.cpp" line="3262" />
         <source>Installation is only available for completed downloads</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3301" />
+        <location filename="../src/core/core_controller.cpp" line="3302" />
         <source>Add-on file not found</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3313" />
+        <location filename="../src/core/core_controller.cpp" line="3314" />
         
-        <location filename="../src/core/core_controller.cpp" line="3464" />
+        <location filename="../src/core/core_controller.cpp" line="3465" />
         <source>Download files not found</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3319" />
+        <location filename="../src/core/core_controller.cpp" line="3320" />
         
-        <location filename="../src/core/core_controller.cpp" line="3481" />
+        <location filename="../src/core/core_controller.cpp" line="3482" />
         <source>Could not find game to install</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3452" />
+        <location filename="../src/core/core_controller.cpp" line="3453" />
         <source>Automatic install is unavailable. Run setup.exe from the download folder, then use the folder button to point to the game.</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3565" />
+        <location filename="../src/core/core_controller.cpp" line="3566" />
         <source>Plugin installed</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3568" />
+        <location filename="../src/core/core_controller.cpp" line="3569" />
         <source>Plugin install failed: %1</source>
         </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3623" />
+        <location filename="../src/core/core_controller.cpp" line="3624" />
         <source>Could not open plugins folder</source>
         </message>
     <message>
@@ -882,7 +916,7 @@ Build the plugin from the arachnel-plugin-freetp repository (dist/freetp.arach).
         
         <location filename="../src/core/app_updater.cpp" line="189" />
         
-        <location filename="../src/core/core_controller.cpp" line="193" />
+        <location filename="../src/core/core_controller.cpp" line="195" />
         <source>Arachnel %1 is available</source>
         </message>
     <message>
@@ -2233,17 +2267,17 @@ Build the plugin from the arachnel-plugin-freetp repository (dist/freetp.arach).
         </message>
     <message>
         
-        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="227" />
+        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="232" />
         <source>Check for Arachnel updates</source>
         </message>
     <message>
         
-        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="235" />
+        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="241" />
         <source>Download and install</source>
         </message>
     <message>
         
-        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="244" />
+        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="252" />
         <source>Open release page</source>
         </message>
 

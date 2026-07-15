@@ -228,6 +228,12 @@ EN_TO_RU: dict[str, str] = {
     "Update check failed: %1": "Ошибка проверки обновлений: %1",
     "Could not parse GitHub release information": "Не удалось разобрать информацию о релизе GitHub",
     "Arachnel %1 is available": "Доступен Arachnel %1",
+    "Update available": "Доступно обновление",
+    "Arachnel %1 is ready to install. Update now to get the latest fixes and features.":
+        "Arachnel %1 готов к установке. Обновитесь, чтобы получить последние исправления и возможности.",
+    "Later": "Позже",
+    "Release page": "Страница релиза",
+    "Update now": "Обновить",
     "Arachnel is up to date (%1)": "Arachnel актуален (%1)",
     "Update found, but no installer package is available for this platform":
         "Обновление найдено, но для этой платформы нет установщика",
