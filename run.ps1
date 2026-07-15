@@ -398,9 +398,13 @@ Imports=qml
         Copy-Item -LiteralPath $qtNetworkAccess -Destination (Join-Path $DIST_DIR "networkaccess") -Recurse -Force
     }
 
-    $libtorrentDll = Join-Path $BUILD_DIR "libtorrent-rasterbar.dll"
-    if (Test-Path -LiteralPath $libtorrentDll) {
-        Copy-Item -LiteralPath $libtorrentDll -Destination (Join-Path $DIST_DIR "libtorrent-rasterbar.dll") -Force
+    $libtorrentDll = Resolve-LibtorrentSharedDll $BUILD_DIR
+    if ($libtorrentDll) {
+        $dllName = Split-Path -Leaf $libtorrentDll
+        Copy-Item -LiteralPath $libtorrentDll -Destination (Join-Path $DIST_DIR $dllName) -Force
+        Write-Host "Bundled libtorrent: $dllName"
+    } elseif ($env:ARACHNEL_LIBTORRENT_SHARED -ne '0') {
+        throw "libtorrent shared DLL not found (expected torrent-rasterbar.dll or libtorrent-rasterbar.dll). Rebuild with --rebuild."
     }
 
     $qmlMaterialDll = Join-Path $BUILD_DIR "qml_material.dll"
@@ -420,18 +424,34 @@ Imports=qml
     Write-Host "Done: $zipPath" -ForegroundColor Green
 }
 
+function Resolve-LibtorrentSharedDll {
+    param([string]$BuildDir)
+
+    $searchDirs = @(
+        (Split-Path -Parent (Get-AppPath)),
+        $BuildDir,
+        (Join-Path $BuildDir "_deps\libtorrent-build"),
+        (Join-Path $BuildDir "thirdparty\libtorrent")
+    ) | Select-Object -Unique
+
+    foreach ($dir in $searchDirs) {
+        if (-not (Test-Path -LiteralPath $dir)) { continue }
+        $match = Get-ChildItem -LiteralPath $dir -Filter "*torrent-rasterbar*.dll" -File -ErrorAction SilentlyContinue |
+            Select-Object -First 1
+        if ($match) { return $match.FullName }
+
+        $match = Get-ChildItem -Path $dir -Recurse -Filter "*torrent-rasterbar*.dll" -File -ErrorAction SilentlyContinue |
+            Select-Object -First 1
+        if ($match) { return $match.FullName }
+    }
+
+    return $null
+}
+
 function Test-LibtorrentSharedDllPresent {
     param([string]$BuildDir)
 
-    $dllAtRoot = Join-Path $BuildDir "libtorrent-rasterbar.dll"
-    if (Test-Path -LiteralPath $dllAtRoot) { return $true }
-
-    $ltBuild = Join-Path $BuildDir "_deps\libtorrent-build"
-    if (-not (Test-Path -LiteralPath $ltBuild)) { return $false }
-
-    $dllNested = Get-ChildItem -Path $ltBuild -Recurse -Filter "libtorrent-rasterbar*.dll" -ErrorAction SilentlyContinue |
-        Select-Object -First 1
-    return [bool]$dllNested
+    return [bool](Resolve-LibtorrentSharedDll $BuildDir)
 }
 
 function Test-LibtorrentNeedsSharedMigration {

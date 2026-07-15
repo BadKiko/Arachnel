@@ -37,9 +37,18 @@ void TranslationService::applyLanguage(const QString& languageCode)
         if (m_idTranslator->load(QStringLiteral("arachnel_ids"), QStringLiteral(":/i18n")))
             QCoreApplication::installTranslator(m_idTranslator);
     } else {
+        // qsTr() / translate() — context-based catalog from arachnel_<lang>.ts
         const QString resourceName = QStringLiteral("arachnel_%1").arg(effective);
         if (m_appTranslator->load(resourceName, QStringLiteral(":/i18n")))
             QCoreApplication::installTranslator(m_appTranslator);
+
+        // qsTrId() needs a separate catalog released with `lrelease -idbased`.
+        // Plain arachnel_<lang>.qm is not enough — without this, UI shows raw keys.
+        const QString idResourceName = QStringLiteral("arachnel_ids_%1").arg(effective);
+        if (m_idTranslator->load(idResourceName, QStringLiteral(":/i18n"))
+            || m_idTranslator->load(QStringLiteral("arachnel_ids"), QStringLiteral(":/i18n"))) {
+            QCoreApplication::installTranslator(m_idTranslator);
+        }
     }
 
     m_currentLanguage = effective;
