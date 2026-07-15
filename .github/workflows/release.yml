@@ -38,6 +38,7 @@ jobs:
           version: ${{ env.QT_VERSION }}
           arch: win64_msvc2022_64
           modules: qtshadertools qtmultimedia
+          tools: tools_opensslv3_x64
           cache: true
 
       - name: Setup MSVC
