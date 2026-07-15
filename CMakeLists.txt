@@ -141,6 +141,7 @@ qt_add_executable(arachnel_app
     src/core/proton_manager.cpp
     src/core/windows_runner.cpp
     src/core/process_tracker.cpp
+    src/core/app_updater.cpp
     src/core/core_controller.cpp
     src/core/translation_service.cpp
 )

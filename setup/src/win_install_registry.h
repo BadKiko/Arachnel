@@ -9,4 +9,6 @@ bool registerWindowsUninstall(const QString& installPath, const QString& uninsta
 
 bool unregisterWindowsUninstall(QString* errorOut = nullptr);
 
+QString readWindowsInstallLocation();
+
 } // namespace arachnel::setup

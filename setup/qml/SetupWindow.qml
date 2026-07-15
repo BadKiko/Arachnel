@@ -19,7 +19,11 @@ MD.ApplicationWindow {
     MD.MProp.textColor: MD.MProp.color.on_surface
     MD.MProp.backgroundColor: MD.MProp.color.surface
 
-    Component.onCompleted: Appearance.apply()
+    Component.onCompleted: {
+        Appearance.apply()
+        if (Setup.updateMode)
+            Qt.callLater(function () { Setup.beginUpdateIfNeeded() })
+    }
 
     SpiderWebMark {
         width: 300
@@ -107,7 +111,7 @@ MD.ApplicationWindow {
                     MD.Label {
                         Layout.fillWidth: true
                         visible: !Setup.hasPayload
-                        text: qsTr("No embedded app payload found. Build the installer with .\\run.ps1 --installer.")
+                        text: qsTr("No embedded app payload found. Build the installer with run.ps1 --installer.")
                         wrapMode: Text.WordWrap
                         color: MD.Token.color.error
                         typescale: MD.Token.typescale.body_small
@@ -173,8 +177,19 @@ MD.ApplicationWindow {
 
                     MD.Label {
                         Layout.fillWidth: true
-                        text: qsTr("Installing…")
+                        text: Setup.updateMode ? qsTr("Updating Arachnel…") : qsTr("Installing…")
                         typescale: MD.Token.typescale.title_medium
+                    }
+
+                    MD.Label {
+                        Layout.fillWidth: true
+                        text: Setup.updateMode
+                              ? qsTr("Please wait while Arachnel is updated. Do not close this window.")
+                              : qsTr("Arachnel is being installed on your computer.")
+                        visible: Setup.updateMode || Setup.statusText.length === 0
+                        wrapMode: Text.WordWrap
+                        color: MD.Token.color.on_surface_variant
+                        typescale: MD.Token.typescale.body_medium
                     }
 
                     MD.Label {
@@ -228,7 +243,7 @@ MD.ApplicationWindow {
 
                     MD.Label {
                         Layout.fillWidth: true
-                        text: qsTr("Arachnel is ready")
+                        text: Setup.updateMode ? qsTr("Arachnel is up to date") : qsTr("Arachnel is ready")
                         typescale: MD.Token.typescale.headline_small
                     }
 
@@ -250,7 +265,7 @@ MD.ApplicationWindow {
                     Item { Layout.fillWidth: true }
 
                     MD.Button {
-                        visible: Setup.phase > 0 && Setup.phase < 4 && !Setup.busy
+                        visible: Setup.phase > 0 && Setup.phase < 4 && !Setup.busy && !Setup.updateMode
                         text: qsTr("Back")
                         mdState.type: MD.Enum.BtText
                         onClicked: Setup.phase = Math.max(0, Setup.phase - 1)
@@ -280,14 +295,14 @@ MD.ApplicationWindow {
                     }
 
                     MD.Button {
-                        visible: Setup.phase === 4
+                        visible: Setup.phase === 4 && !Setup.updateMode
                         text: qsTr("Open folder")
                         mdState.type: MD.Enum.BtOutlined
                         onClicked: Setup.openInstallFolder()
                     }
 
                     MD.Button {
-                        visible: Setup.phase === 4
+                        visible: Setup.phase === 4 && !Setup.updateMode
                         text: qsTr("Launch")
                         mdState.type: MD.Enum.BtFilledTonal
                         onClicked: {
@@ -297,7 +312,7 @@ MD.ApplicationWindow {
                     }
 
                     MD.Button {
-                        visible: Setup.phase === 4
+                        visible: Setup.phase === 4 && !Setup.updateMode
                         text: qsTr("Finish")
                         mdState.type: MD.Enum.BtFilled
                         onClicked: root.close()

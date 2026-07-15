@@ -69,7 +69,7 @@ bool registerWindowsUninstall(const QString& installPath, const QString& uninsta
 
     const bool ok = writeStringValue(key, L"DisplayName", QStringLiteral("Arachnel"))
                     && writeStringValue(key, L"DisplayVersion", displayVersion)
-                    && writeStringValue(key, L"Publisher", QStringLiteral("PetWork"))
+                    && writeStringValue(key, L"Publisher", QStringLiteral("Arachnel"))
                     && writeStringValue(key, L"InstallLocation", installPath)
                     && writeStringValue(key, L"UninstallString", quotedUninstall)
                     && writeStringValue(key, L"QuietUninstallString", quotedUninstall)
@@ -99,6 +99,31 @@ bool unregisterWindowsUninstall(QString* errorOut)
     if (errorOut)
         *errorOut = QStringLiteral("Could not remove uninstall registry key");
     return false;
+#endif
+}
+
+QString readWindowsInstallLocation()
+{
+#if !defined(Q_OS_WIN)
+    return {};
+#else
+    for (HKEY root : {HKEY_LOCAL_MACHINE, HKEY_CURRENT_USER}) {
+        HKEY key = nullptr;
+        if (RegOpenKeyExW(root, kUninstallKeyName, 0, KEY_READ | KEY_WOW64_64KEY, &key)
+            != ERROR_SUCCESS) {
+            continue;
+        }
+
+        wchar_t buffer[4096] = {};
+        DWORD bufferBytes = sizeof(buffer);
+        DWORD type = 0;
+        const LONG result = RegQueryValueExW(key, L"InstallLocation", nullptr, &type,
+                                             reinterpret_cast<LPBYTE>(buffer), &bufferBytes);
+        RegCloseKey(key);
+        if (result == ERROR_SUCCESS && (type == REG_SZ || type == REG_EXPAND_SZ) && buffer[0] != L'\0')
+            return QString::fromWCharArray(buffer).trimmed();
+    }
+    return {};
 #endif
 }
 

@@ -6,6 +6,7 @@
 #include "win_install_registry.h"
 
 #include <QCoreApplication>
+#include <QDateTime>
 #include <QDesktopServices>
 #include <QDir>
 #include <QFile>
@@ -15,6 +16,8 @@
 #include <QMetaObject>
 #include <QProcess>
 #include <QStandardPaths>
+#include <QThread>
+#include <QTimer>
 #include <QUrl>
 #include <QVariantMap>
 #include <QtConcurrent>
@@ -22,6 +25,7 @@
 #if defined(Q_OS_WIN)
 #include <shlobj.h>
 #include <shobjidl.h>
+#include <tlhelp32.h>
 #endif
 
 namespace arachnel::setup {
@@ -34,6 +38,52 @@ QString SetupBackend::detectDefaultLanguage()
             return QStringLiteral("ru");
     }
     return QStringLiteral("en");
+}
+
+QString SetupBackend::defaultInstallPath()
+{
+#if defined(Q_OS_WIN)
+    PWSTR path = nullptr;
+    if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_ProgramFilesX64, KF_FLAG_DEFAULT, nullptr, &path))
+        || SUCCEEDED(SHGetKnownFolderPath(FOLDERID_ProgramFiles, KF_FLAG_DEFAULT, nullptr, &path))) {
+        const QString result = QString::fromWCharArray(path) + QStringLiteral("/Arachnel");
+        CoTaskMemFree(path);
+        return QDir::fromNativeSeparators(result);
+    }
+#endif
+    return QStringLiteral("C:/Program Files/Arachnel");
+}
+
+bool SetupBackend::waitForArachnelExit(int timeoutMs)
+{
+#if !defined(Q_OS_WIN)
+    Q_UNUSED(timeoutMs);
+    return true;
+#else
+    const qint64 deadline = QDateTime::currentMSecsSinceEpoch() + timeoutMs;
+    while (QDateTime::currentMSecsSinceEpoch() < deadline) {
+        bool running = false;
+        HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+        if (snapshot != INVALID_HANDLE_VALUE) {
+            PROCESSENTRY32W entry{};
+            entry.dwSize = sizeof(entry);
+            if (Process32FirstW(snapshot, &entry)) {
+                do {
+                    const QString name = QString::fromWCharArray(entry.szExeFile);
+                    if (name.compare(QStringLiteral("arachnel_app.exe"), Qt::CaseInsensitive) == 0) {
+                        running = true;
+                        break;
+                    }
+                } while (Process32NextW(snapshot, &entry));
+            }
+            CloseHandle(snapshot);
+        }
+        if (!running)
+            return true;
+        QThread::msleep(400);
+    }
+    return false;
+#endif
 }
 
 SetupBackend::SetupBackend(QObject* parent)
@@ -49,8 +99,18 @@ SetupBackend::SetupBackend(QObject* parent)
     m_appOffset = footer.appOffset;
     m_appSize = footer.appSize;
 
-    m_installPath = QStringLiteral("C:/Program Files/PetWork/Arachnel");
-    m_phase = 0;
+    const QStringList args = QCoreApplication::arguments();
+    m_updateMode = args.contains(QStringLiteral("--update"))
+                   || args.contains(QStringLiteral("/update"))
+                   || qEnvironmentVariableIntValue("ARACHNEL_SETUP_UPDATE") == 1;
+
+    const QString registeredPath = readWindowsInstallLocation();
+    if (!registeredPath.isEmpty())
+        m_installPath = QDir::fromNativeSeparators(registeredPath);
+    else
+        m_installPath = defaultInstallPath();
+
+    m_phase = m_updateMode ? 3 : 0;
 
     m_installPulseTimer.setInterval(250);
     connect(&m_installPulseTimer, &QTimer::timeout, this, [this]() {
@@ -260,6 +320,49 @@ void SetupBackend::stopInstallPulse()
     m_installPulseTimer.stop();
 }
 
+void SetupBackend::beginUpdateIfNeeded()
+{
+    if (!m_updateMode || m_busy || !canInstall())
+        return;
+    startInstall();
+}
+
+void SetupBackend::finishSuccessfulInstall(const QString& installPath)
+{
+    m_installedExe = QDir(installPath).absoluteFilePath(QStringLiteral("arachnel_app.exe"));
+
+    setProgress(90);
+    setStatusText(m_updateMode
+                      ? QCoreApplication::translate("Setup", "Updating uninstaller…")
+                      : QCoreApplication::translate("Setup", "Registering uninstaller…"));
+
+    QString postInstallError;
+    if (!installUninstaller(installPath, &postInstallError)
+        || !registerUninstall(installPath, &postInstallError)) {
+        setBusy(false);
+        setStatusText(postInstallError);
+        emit installFinished(false, postInstallError);
+        return;
+    }
+
+    setProgress(95);
+    setStatusText(m_updateMode ? QCoreApplication::translate("Setup", "Refreshing shortcuts…")
+                               : QCoreApplication::translate("Setup", "Creating shortcuts…"));
+    createShortcuts(&postInstallError);
+
+    setBusy(false);
+    setProgress(100);
+    setStatusText(m_updateMode ? QCoreApplication::translate("Setup", "Update complete")
+                               : QCoreApplication::translate("Setup", "Installation complete"));
+    setPhase(4);
+    emit installFinished(true, {});
+
+    if (m_updateMode) {
+        launchInstalled();
+        QTimer::singleShot(400, qApp, []() { QCoreApplication::quit(); });
+    }
+}
+
 void SetupBackend::startInstall()
 {
     if (!canInstall())
@@ -268,13 +371,15 @@ void SetupBackend::startInstall()
     setBusy(true);
     setPhase(3);
     setProgress(0);
-    setStatusText(QCoreApplication::translate("Setup", "Preparing…"));
+    setStatusText(m_updateMode ? QCoreApplication::translate("Setup", "Please wait — updating Arachnel…")
+                               : QCoreApplication::translate("Setup", "Preparing…"));
     startInstallPulse();
 
     const QString installPath = m_installPath;
     const QString executablePath = m_executablePath;
     const quint64 appOffset = m_appOffset;
     const quint64 appSize = m_appSize;
+    const bool updateMode = m_updateMode;
 
     auto* watcher = new QFutureWatcher<QPair<bool, QString>>(this);
     connect(watcher, &QFutureWatcher<QPair<bool, QString>>::finished, this, [this, watcher, installPath]() {
@@ -289,39 +394,28 @@ void SetupBackend::startInstall()
             return;
         }
 
-        m_installedExe = QDir(installPath).absoluteFilePath(QStringLiteral("arachnel_app.exe"));
-
-        setProgress(90);
-        setStatusText(QCoreApplication::translate("Setup", "Registering uninstaller…"));
-
-        QString postInstallError;
-        if (!installUninstaller(installPath, &postInstallError)
-            || !registerUninstall(installPath, &postInstallError)) {
-            setBusy(false);
-            setStatusText(postInstallError);
-            emit installFinished(false, postInstallError);
-            return;
-        }
-
-        setProgress(95);
-        setStatusText(QCoreApplication::translate("Setup", "Creating shortcuts…"));
-        createShortcuts(&postInstallError);
-
-        setBusy(false);
-        setProgress(100);
-        setStatusText(QCoreApplication::translate("Setup", "Installation complete"));
-        setPhase(4);
-        emit installFinished(true, {});
+        finishSuccessfulInstall(installPath);
     });
 
-    watcher->setFuture(QtConcurrent::run([this, installPath, executablePath, appOffset, appSize]() {
+    watcher->setFuture(QtConcurrent::run([this, installPath, executablePath, appOffset, appSize,
+                                          updateMode]() {
         QPair<bool, QString> result;
 
         const auto report = [this](int progress, const QString& status) {
             reportInstallProgress(progress, status);
         };
 
-        report(5, QCoreApplication::translate("Setup", "Preparing…"));
+        if (updateMode) {
+            report(2, QCoreApplication::translate("Setup", "Waiting for Arachnel to close…"));
+            if (!waitForArachnelExit(90000)) {
+                result.second = QCoreApplication::translate(
+                    "Setup", "Arachnel is still running. Close it and try again.");
+                return result;
+            }
+        }
+
+        report(5, updateMode ? QCoreApplication::translate("Setup", "Please wait — updating Arachnel…")
+                             : QCoreApplication::translate("Setup", "Preparing…"));
 
         QDir target(installPath);
         if (target.exists()) {

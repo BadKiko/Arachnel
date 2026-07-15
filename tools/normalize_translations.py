@@ -223,6 +223,75 @@ EN_TO_RU: dict[str, str] = {
     "macOS": "macOS",
     "Appearance": "Оформление",
     "Theme, palette, accent color, and language": "Тема, палитра, акцент и язык",
+    "Not checked yet": "Еще не проверялось",
+    "Checking for Arachnel updates…": "Проверка обновлений Arachnel…",
+    "Update check failed: %1": "Ошибка проверки обновлений: %1",
+    "Could not parse GitHub release information": "Не удалось разобрать информацию о релизе GitHub",
+    "Arachnel %1 is available": "Доступен Arachnel %1",
+    "Arachnel is up to date (%1)": "Arachnel актуален (%1)",
+    "Update found, but no installer package is available for this platform":
+        "Обновление найдено, но для этой платформы нет установщика",
+    "Open the release page to download the latest package for your platform":
+        "Откройте страницу релиза и скачайте пакет для вашей платформы",
+    "Downloading Arachnel update…": "Скачивание обновления Arachnel…",
+    "Download failed: %1": "Ошибка загрузки: %1",
+    "Could not save the downloaded installer": "Не удалось сохранить скачанный установщик",
+    "Starting updater…": "Запуск обновления…",
+    "Could not start the Arachnel installer": "Не удалось запустить установщик Arachnel",
+    "Automatic installer launch is only available on Windows":
+        "Автозапуск установщика доступен только на Windows",
+    "Please wait — updating Arachnel…": "Подождите — обновление Arachnel…",
+    "Waiting for Arachnel to close…": "Ожидание закрытия Arachnel…",
+    "Arachnel is still running. Close it and try again.":
+        "Arachnel ещё запущен. Закройте его и попробуйте снова.",
+    "Updating uninstaller…": "Обновление деинсталлятора…",
+    "Refreshing shortcuts…": "Обновление ярлыков…",
+    "Update complete": "Обновление завершено",
+    "Please wait. The installer will open automatically.":
+        "Подождите. Установщик откроется автоматически.",
+    "Game catalog updates and Arachnel launcher updates from GitHub.":
+        "Обновления игр в каталоге и обновления лаунчера Arachnel с GitHub.",
+    "Games": "Игры",
+    "Check for game updates": "Проверить обновления игр",
+    "Current version: %1": "Текущая версия: %1",
+    "Check for Arachnel updates on startup":
+        "Проверять обновления Arachnel при запуске",
+    "Looks up the latest GitHub release in the background.":
+        "В фоне смотрит последний релиз на GitHub.",
+    "Check for Arachnel updates": "Проверить обновления Arachnel",
+    "Download and install": "Скачать и установить",
+    "Open release page": "Открыть страницу релиза",
+    "Updating Arachnel…": "Обновление Arachnel…",
+    "Please wait while Arachnel is updated. Do not close this window.":
+        "Подождите, пока Arachnel обновится. Не закрывайте это окно.",
+    "Arachnel is being installed on your computer.":
+        "Arachnel устанавливается на ваш компьютер.",
+    "Arachnel is up to date": "Arachnel обновлён",
+    "Choose language": "Выберите язык",
+    "Select the installer language.": "Выберите язык установщика.",
+    "Install Arachnel": "Установка Arachnel",
+    "Game launcher with plugin-based sources. This wizard unpacks Arachnel to your computer.":
+        "Лаунчер игр с плагинами источников. Мастер распакует Arachnel на компьютер.",
+    "Choose install location": "Выберите папку установки",
+    "Install folder": "Папка установки",
+    "Shortcuts": "Ярлыки",
+    "Create desktop shortcut": "Ярлык на рабочем столе",
+    "Create Start Menu shortcut": "Ярлык в меню Пуск",
+    "Arachnel is ready": "Arachnel готов",
+    "Continue": "Далее",
+    "Finish": "Готово",
+    "Finalizing…": "Завершение…",
+    "No embedded app payload found. Build the installer with run.ps1 --installer.":
+        "Нет встроенного пакета приложения. Соберите установщик через run.ps1 --installer.",
+    "Extracting files…": "Распаковка файлов…",
+    "Preparing…": "Подготовка…",
+    "Registering uninstaller…": "Регистрация деинсталлятора…",
+    "Creating shortcuts…": "Создание ярлыков…",
+    "Installation complete": "Установка завершена",
+    "Clearing install folder…": "Очистка папки установки…",
+    "Could not clear existing install folder": "Не удалось очистить папку установки",
+    "Creating install folder…": "Создание папки установки…",
+    "Could not create install folder": "Не удалось создать папку установки",
 }
 
 
