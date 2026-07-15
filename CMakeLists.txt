@@ -160,8 +160,14 @@ endif()
 qt_add_resources(arachnel_app "arachnel_app_icons"
     PREFIX "/icons"
     FILES
-        resources/icons/png/256.png
+        resources/icons/png/16.png
+        resources/icons/png/24.png
         resources/icons/png/32.png
+        resources/icons/png/48.png
+        resources/icons/png/64.png
+        resources/icons/png/128.png
+        resources/icons/png/256.png
+        resources/icons/png/512.png
 )
 
 file(GLOB_RECURSE ARACHNEL_QML_FILES CONFIGURE_DEPENDS
