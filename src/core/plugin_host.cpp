@@ -469,6 +469,30 @@ bool PluginHost::installFromArach(const QString& archivePath)
         }
     }
 
+    const QStringList subdirs = bundleDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+    for (const QString& subdir : subdirs) {
+        const QString srcSubdir = bundleDir.absoluteFilePath(subdir);
+        const QString dstSubdir = targetRoot + QLatin1Char('/') + subdir;
+        QDirIterator it(srcSubdir, QDir::Files, QDirIterator::Subdirectories);
+        while (it.hasNext()) {
+            it.next();
+            const QString relativePath = QDir(srcSubdir).relativeFilePath(it.filePath());
+            const QString destination = dstSubdir + QLatin1Char('/') + relativePath;
+            if (!QDir().mkpath(QFileInfo(destination).path())) {
+                m_lastError = QStringLiteral("Не удалось создать папку плагина");
+                return false;
+            }
+            if (QFile::exists(destination) && !QFile::remove(destination)) {
+                m_lastError = QStringLiteral("Не удалось заменить %1").arg(relativePath);
+                return false;
+            }
+            if (!QFile::copy(it.filePath(), destination)) {
+                m_lastError = QStringLiteral("Не удалось скопировать %1").arg(relativePath);
+                return false;
+            }
+        }
+    }
+
     scan();
     if (!hasPlugin(id)) {
         m_lastError = QStringLiteral("Плагин скопирован, но не загрузился — проверьте совместимость");
