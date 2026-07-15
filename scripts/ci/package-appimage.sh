@@ -56,14 +56,34 @@ if [[ ! -x "${LINUXDEPLOY_QT}" ]]; then
 fi
 
 export QML_SOURCES_PATHS="${ROOT}/qml:${BUILD}/qml_modules"
-export LINUXDEPLOY_PLUGIN_QT="${LINUXDEPLOY_QT}"
+# Prefer Qt6 qmake — /usr/bin/qmake may be Qt5 and makes plugin-qt fail.
+if [[ -z "${QMAKE:-}" ]]; then
+  if command -v qmake6 >/dev/null 2>&1; then
+    export QMAKE="$(command -v qmake6)"
+  elif [[ -n "${QT_ROOT_DIR:-}" && -x "${QT_ROOT_DIR}/bin/qmake" ]]; then
+    export QMAKE="${QT_ROOT_DIR}/bin/qmake"
+  fi
+fi
+echo "==> Using QMAKE=${QMAKE:-<default>}"
+
+install_apprun_hooks() {
+  # linuxdeploy sources every script in apprun-hooks/ from its generated AppRun.
+  # Never sed the AppRun binary — that corrupts ELF and causes SIGSEGV in ld.so.
+  mkdir -p "${APPDIR}/apprun-hooks"
+  cat >"${APPDIR}/apprun-hooks/90-arachnel-platform.sh" <<'EOF'
+# Prefer xcb when a Wayland QPA plugin is not bundled / breaks on some hosts.
+if [ -z "${QT_QPA_PLATFORM:-}" ]; then
+  export QT_QPA_PLATFORM=xcb
+fi
+EOF
+}
 
 deploy_qml_modules() {
   local bin_dir="${APPDIR}/usr/bin"
   local lib_dir="${APPDIR}/usr/lib"
-  local plugins_dir="${APPDIR}/usr/plugins"
+  local material_dir="${bin_dir}/qml_modules/Qcm/Material"
 
-  mkdir -p "${bin_dir}" "${lib_dir}" "${plugins_dir}"
+  mkdir -p "${bin_dir}" "${lib_dir}"
 
   if [[ -d "${BUILD}/qml_modules" ]]; then
     echo "==> Copy Qcm.Material (qml_modules)"
@@ -74,37 +94,85 @@ deploy_qml_modules() {
     exit 1
   fi
 
-  shopt -s nullglob
-  for lib in "${BUILD}"/libqml_material.so*; do
-    echo "==> Copy ${lib##*/}"
-    cp -a "${lib}" "${lib_dir}/"
-  done
+  local material_lib=""
+  if [[ -f "${BUILD}/_deps/qml_material-build/libqml_material.so" ]]; then
+    material_lib="${BUILD}/_deps/qml_material-build/libqml_material.so"
+  else
+    material_lib="$(find "${BUILD}" -name 'libqml_material.so' -type f | head -n1 || true)"
+  fi
+  if [[ -z "${material_lib}" || ! -f "${material_lib}" ]]; then
+    echo "ERROR: libqml_material.so not found under ${BUILD}" >&2
+    exit 1
+  fi
 
-  while IFS= read -r -d '' plugin; do
-    echo "==> Copy QML plugin ${plugin##*/}"
-    cp -a "${plugin}" "${plugins_dir}/"
-  done < <(find "${BUILD}" -name 'libqml_materialplugin.so' -print0 2>/dev/null)
+  echo "==> Copy libqml_material.so → usr/lib and beside QML plugin"
+  cp -a "${material_lib}" "${lib_dir}/"
+  # Plugin RUNPATH in the build tree points at an absolute path; put a copy next
+  # to the plugin and rewrite RPATH to $ORIGIN so dlopen works in the AppImage.
+  cp -a "${material_lib}" "${material_dir}/"
+
+  local plugin="${material_dir}/libqml_materialplugin.so"
+  if [[ -f "${plugin}" ]]; then
+    local patchelf_bin=""
+    if command -v patchelf >/dev/null 2>&1; then
+      patchelf_bin="$(command -v patchelf)"
+    elif [[ -x /tmp/patchelf-bin/bin/patchelf ]]; then
+      patchelf_bin=/tmp/patchelf-bin/bin/patchelf
+    else
+      echo "==> Fetch portable patchelf"
+      mkdir -p /tmp/patchelf-bin
+      curl -fsSL -o /tmp/patchelf-bin/patchelf.tar.gz \
+        https://github.com/NixOS/patchelf/releases/download/0.18.0/patchelf-0.18.0-x86_64.tar.gz
+      tar -xzf /tmp/patchelf-bin/patchelf.tar.gz -C /tmp/patchelf-bin
+      patchelf_bin=/tmp/patchelf-bin/bin/patchelf
+    fi
+    echo "==> patchelf QML plugin RPATH → \$ORIGIN"
+    "${patchelf_bin}" --set-rpath '$ORIGIN:$ORIGIN/../../../../lib' "${plugin}"
+  fi
+
+  # Belt-and-suspenders: help dlopen find material + Qt libs even if RPATH is wrong.
+  mkdir -p "${APPDIR}/apprun-hooks"
+  cat >"${APPDIR}/apprun-hooks/80-arachnel-libs.sh" <<'EOF'
+# Ensure bundled Qcm.Material resolves when the QML plugin is dlopened.
+# When sourced from AppRun, $0 is AppRun → AppDir root.
+HERE="$(dirname "$(readlink -f "$0")")"
+export LD_LIBRARY_PATH="$HERE/usr/lib:$HERE/usr/bin/qml_modules/Qcm/Material${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+export QML2_IMPORT_PATH="$HERE/usr/qml:$HERE/usr/bin/qml_modules${QML2_IMPORT_PATH:+:$QML2_IMPORT_PATH}"
+EOF
 
   cat >"${bin_dir}/qt.conf" <<'EOF'
 [Paths]
 Prefix = ..
 Plugins = plugins
-Qml2Imports = qml_modules:../qml
-Imports = qml_modules
+# Qt built-in modules (QtQuick, Layouts, Shapes, …) live in usr/qml.
+# App QML modules (Qcm.Material) are loaded via engine.addImportPath(…/qml_modules).
+Qml2Imports = qml
+Imports = qml
 EOF
 }
 
-patch_apprun() {
+ensure_apprun_not_sed_patched() {
   local apprun="${APPDIR}/AppRun"
   [[ -f "${apprun}" ]] || return 0
-  if ! grep -q 'QT_QPA_PLATFORM' "${apprun}"; then
-    echo "==> Patch AppRun (default to xcb when wayland plugin is absent)"
-    sed -i '2i export QT_QPA_PLATFORM="${QT_QPA_PLATFORM:-xcb}"' "${apprun}"
+
+  # If someone (or an old CI step) corrupted an ELF AppRun with a text insert,
+  # refuse to package it.
+  if file "${apprun}" | grep -q 'ELF'; then
+    if grep -aq 'QT_QPA_PLATFORM' "${apprun}" 2>/dev/null; then
+      echo "ERROR: AppRun ELF looks sed-patched (contains QT_QPA_PLATFORM text)." >&2
+      echo "Use apprun-hooks instead of sed -i on AppRun." >&2
+      exit 1
+    fi
   fi
 }
 
+echo "==> Install AppRun hooks"
+install_apprun_hooks
+
 echo "==> linuxdeploy (Qt plugin)"
 cd "${ROOT}"
+# Explicit --plugin path; do not leave LINUXDEPLOY_PLUGIN_QT exported for the
+# second pass — it would re-run qt deploy and may pick the wrong qmake.
 "${LINUXDEPLOY}" --appdir "${APPDIR}" \
   --plugin qt \
   --executable "${APPDIR}/usr/bin/arachnel_app" \
@@ -112,10 +180,12 @@ cd "${ROOT}"
   --icon-file "${APPDIR}/arachnel.png"
 
 deploy_qml_modules
-patch_apprun
+ensure_apprun_not_sed_patched
 
 echo "==> AppImage"
-"${LINUXDEPLOY}" --appdir "${APPDIR}" --output appimage
+# Package only — Qt libs/QML already deployed above.
+env -u LINUXDEPLOY_PLUGIN_QT \
+  "${LINUXDEPLOY}" --appdir "${APPDIR}" --output appimage
 
 APPIMAGE="$(find "${DIST}" -maxdepth 1 -name '*.AppImage' -type f | head -n1)"
 if [[ -z "${APPIMAGE}" ]]; then
