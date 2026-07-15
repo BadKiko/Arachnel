@@ -39,6 +39,52 @@ QString platformLibraryName(const QString& base)
 #endif
 }
 
+bool isZipArchive(const QString& path)
+{
+    QFile file(path);
+    if (!file.open(QIODevice::ReadOnly))
+        return false;
+    char magic[4] = {};
+    return file.read(magic, 4) == 4 && magic[0] == 'P' && magic[1] == 'K'
+           && magic[2] == '\x03' && magic[3] == '\x04';
+}
+
+#if defined(Q_OS_WIN)
+struct ScopedDllDirectory {
+    explicit ScopedDllDirectory(const QString& directory)
+    {
+        const auto setDllDirectory = reinterpret_cast<BOOL(WINAPI*)(LPCWSTR)>(
+            GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "SetDllDirectoryW"));
+        if (!setDllDirectory)
+            return;
+
+        wchar_t buffer[MAX_PATH] = {};
+        const DWORD length = GetDllDirectoryW(MAX_PATH, buffer);
+        if (length > 0 && length < MAX_PATH)
+            previous = QString::fromWCharArray(buffer);
+
+        active = setDllDirectory(reinterpret_cast<LPCWSTR>(directory.utf16())) != FALSE;
+    }
+
+    ~ScopedDllDirectory()
+    {
+        if (!active)
+            return;
+        const auto setDllDirectory = reinterpret_cast<BOOL(WINAPI*)(LPCWSTR)>(
+            GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "SetDllDirectoryW"));
+        if (!setDllDirectory)
+            return;
+        if (previous.isEmpty())
+            setDllDirectory(nullptr);
+        else
+            setDllDirectory(reinterpret_cast<LPCWSTR>(previous.utf16()));
+    }
+
+    bool active = false;
+    QString previous;
+};
+#endif
+
 } // namespace
 
 PluginHost::PluginHost(QObject* parent)
@@ -150,7 +196,25 @@ bool PluginHost::loadPluginDir(const QString& dirPath)
     auto* loaded = new LoadedPlugin();
     loaded->rootPath = dirPath;
     loaded->library.setFileName(libraryPath);
+#if defined(Q_OS_WIN)
+    ScopedDllDirectory dllDirectory(QCoreApplication::applicationDirPath());
+#else
+    const QString appDir = QCoreApplication::applicationDirPath();
+    const QByteArray ldKey("LD_LIBRARY_PATH");
+    const QByteArray previousLd = qgetenv(ldKey);
+    const QByteArray appDirUtf8 = appDir.toUtf8();
+    if (!previousLd.contains(appDirUtf8)) {
+        QByteArray merged = appDirUtf8;
+        if (!previousLd.isEmpty()) {
+            merged += ':';
+            merged += previousLd;
+        }
+        qputenv(ldKey, merged);
+    }
+#endif
     if (!loaded->library.load()) {
+        logDiagnostic(QStringLiteral("Plugin library load failed for %1: %2")
+                          .arg(libraryPath, loaded->library.errorString()));
         delete loaded;
         return false;
     }
@@ -337,28 +401,52 @@ bool PluginHost::extractArachArchive(const QString& archivePath, const QString& 
 {
     QDir().mkpath(destDir);
 
+    if (!isZipArchive(archivePath)) {
+        if (errorOut) {
+            *errorOut = QCoreApplication::translate(
+                "Core", "Invalid plugin package: expected a ZIP .arach archive");
+        }
+        return false;
+    }
+
     QProcess process;
-    process.setProgram(QStringLiteral("tar"));
-    process.setArguments({QStringLiteral("-xf"), archivePath, QStringLiteral("-C"), destDir});
+#if defined(Q_OS_WIN)
+    process.setProgram(QStringLiteral("powershell"));
+    const QString escapedArchive = archivePath;
+    const QString escapedDest = destDir;
+    process.setArguments({
+        QStringLiteral("-NoProfile"),
+        QStringLiteral("-ExecutionPolicy"),
+        QStringLiteral("Bypass"),
+        QStringLiteral("-Command"),
+        QStringLiteral("Expand-Archive -LiteralPath '%1' -DestinationPath '%2' -Force")
+            .arg(escapedArchive, escapedDest),
+    });
+#else
+    process.setProgram(QStringLiteral("unzip"));
+    process.setArguments({QStringLiteral("-q"), archivePath, QStringLiteral("-d"), destDir});
+#endif
 
     process.start();
     if (!process.waitForStarted(15000)) {
         if (errorOut) {
-            *errorOut = QStringLiteral("Не удалось запустить распаковку архива");
+            *errorOut = QCoreApplication::translate("Core", "Could not start archive extraction");
         }
         return false;
     }
     if (!process.waitForFinished(300000)) {
         process.kill();
         if (errorOut)
-            *errorOut = QStringLiteral("Таймаут распаковки");
+            *errorOut = QCoreApplication::translate("Core", "Archive extraction timed out");
         return false;
     }
     if (process.exitStatus() != QProcess::NormalExit || process.exitCode() != 0) {
         if (errorOut) {
             const QString stderrText = QString::fromLocal8Bit(process.readAllStandardError()).trimmed();
             *errorOut = stderrText.isEmpty()
-                            ? QStringLiteral("Ошибка распаковки (код %1)").arg(process.exitCode())
+                            ? QCoreApplication::translate("Core",
+                                                          "Archive extraction failed (code %1)")
+                                  .arg(process.exitCode())
                             : stderrText;
         }
         return false;
@@ -495,7 +583,10 @@ bool PluginHost::installFromArach(const QString& archivePath)
 
     scan();
     if (!hasPlugin(id)) {
-        m_lastError = QStringLiteral("Плагин скопирован, но не загрузился — проверьте совместимость");
+        m_lastError = QCoreApplication::translate(
+            "Core",
+            "Plugin files were copied but the library failed to load. Rebuild the plugin for "
+            "your Arachnel version and platform (MSVC/MinGW), then reinstall.");
         return false;
     }
 
