@@ -147,6 +147,15 @@ EN_TO_RU: dict[str, str] = {
     "Source plugin not found": "Плагин источника не найден",
     "Could not find game to install": "Не удалось найти игру для установки",
     "Plugin installed": "Плагин установлен",
+    "Invalid plugin package: expected a ZIP .arach archive":
+        "Некорректный пакет плагина: ожидается ZIP-архив .arach",
+    "Could not start archive extraction": "Не удалось запустить распаковку архива",
+    "Archive extraction timed out": "Таймаут распаковки",
+    "Archive extraction failed (code %1)": "Ошибка распаковки (код %1)",
+    "Plugin files were copied but the library failed to load. Rebuild the plugin for "
+    "your Arachnel version and platform (MSVC/MinGW), then reinstall.":
+        "Плагин скопирован, но библиотека не загрузилась. Пересоберите плагин под вашу "
+        "версию Arachnel и платформу (MSVC/MinGW) и установите снова.",
     "Plugin install failed: %1": "Ошибка установки плагина: %1",
     "File picker is only available on Windows": "Выбор файла пока доступен только в Windows",
     "Could not open plugins folder": "Не удалось открыть папку плагинов",
