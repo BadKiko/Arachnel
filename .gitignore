@@ -16,6 +16,9 @@ Arachnel-win64-*.zip
 Arachnel-win64-*/
 Arachnel-Setup.exe
 
+build-linux/
+dist-linux/
+
 # Windows installer pack staging
 setup/staging/
 
