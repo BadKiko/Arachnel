@@ -1,5 +1,7 @@
 #include "stub_extractor.h"
 
+#include "win_container_io.h"
+
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
@@ -111,39 +113,7 @@ bool writeSliceToTempZip(const std::filesystem::path& containerPath, std::uint64
                          std::uint64_t size, const std::filesystem::path& tempZipPath,
                          std::wstring* errorOut)
 {
-    std::ifstream input(containerPath, std::ios::binary);
-    if (!input) {
-        if (errorOut)
-            *errorOut = L"Could not open installer payload";
-        return false;
-    }
-
-    input.seekg(static_cast<std::streamoff>(offset));
-    std::ofstream output(tempZipPath, std::ios::binary | std::ios::trunc);
-    if (!output) {
-        if (errorOut)
-            *errorOut = L"Could not create temporary archive";
-        return false;
-    }
-
-    constexpr std::size_t kChunk = 1024 * 1024;
-    std::array<char, kChunk> buffer{};
-    std::uint64_t remaining = size;
-
-    while (remaining > 0) {
-        const auto toRead = static_cast<std::streamsize>(
-            std::min<std::uint64_t>(kChunk, remaining));
-        input.read(buffer.data(), toRead);
-        const auto read = input.gcount();
-        if (read <= 0) {
-            if (errorOut)
-                *errorOut = L"Unexpected end of installer payload";
-            return false;
-        }
-        output.write(buffer.data(), read);
-        remaining -= static_cast<std::uint64_t>(read);
-    }
-    return true;
+    return copyContainerSlice(containerPath, offset, size, tempZipPath, errorOut);
 }
 
 } // namespace

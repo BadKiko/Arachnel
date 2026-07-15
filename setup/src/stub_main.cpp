@@ -14,16 +14,14 @@ namespace {
 
 std::filesystem::path modulePath()
 {
-    std::wstring buffer(MAX_PATH, L'\0');
+    std::vector<wchar_t> buffer(static_cast<std::size_t>(MAX_PATH));
     while (true) {
-        const DWORD length = GetModuleFileNameW(nullptr, buffer.data(),
-                                                static_cast<DWORD>(buffer.size()));
+        const DWORD capacity = static_cast<DWORD>(buffer.size());
+        const DWORD length = GetModuleFileNameW(nullptr, buffer.data(), capacity);
         if (length == 0)
             return {};
-        if (length < buffer.size()) {
-            buffer.resize(length);
-            return std::filesystem::path(buffer);
-        }
+        if (length < capacity - 1)
+            return std::filesystem::path(buffer.data(), buffer.data() + length);
         buffer.resize(buffer.size() * 2);
     }
 }
