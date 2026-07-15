@@ -543,7 +543,7 @@ function Ensure-DevBuild {
 }
 
 function Get-ArachnelDataDir {
-    Join-Path $env:LOCALAPPDATA "PetWork\Arachnel"
+    Join-Path $env:APPDATA "PetWork\Arachnel"
 }
 
 function Get-FreetpPluginBundleDir {
