@@ -72,7 +72,8 @@ function Get-BuildArgs {
         "-DCMAKE_BUILD_TYPE=$BUILD_TYPE",
         "-DCMAKE_PREFIX_PATH=$($qt.Prefix)",
         "-DARACHNEL_FAST_BUILD=$(if ($env:ARACHNEL_FAST_BUILD -eq '0') { 'OFF' } else { 'ON' })",
-        "-DARACHNEL_LIBTORRENT_SHARED=$(if ($env:ARACHNEL_LIBTORRENT_SHARED -eq '0') { 'OFF' } else { 'ON' })"
+        "-DARACHNEL_LIBTORRENT_SHARED=$(if ($env:ARACHNEL_LIBTORRENT_SHARED -eq '0') { 'OFF' } else { 'ON' })",
+        "-DARACHNEL_VERSION=$(if ($env:ARACHNEL_VERSION) { $env:ARACHNEL_VERSION } else { 'dev' })"
     )
 
     if ($qt.Kind -eq "mingw_64") {
@@ -599,48 +600,11 @@ function Ensure-DevBuild {
     $appPath = Get-AppPath
     if (Test-Path -LiteralPath $appPath) {
         Deploy-QtRuntime $plan.Qt $appPath
-        Deploy-DevPlugins
     }
 }
 
 function Get-ArachnelDataDir {
     Join-Path $env:APPDATA "PetWork\Arachnel"
-}
-
-function Get-FreetpPluginBundleDir {
-    if ($env:ARACHNEL_FREETP_PLUGIN_BUILD_DIR) {
-        return $env:ARACHNEL_FREETP_PLUGIN_BUILD_DIR
-    }
-    $candidates = @(
-        (Join-Path $PSScriptRoot "..\arachnel-plugin-freetp\build-win\plugin-bundle"),
-        "D:\PetWork\arachnel-plugin-freetp\build-win\plugin-bundle"
-    )
-    foreach ($path in $candidates) {
-        $resolved = $path
-        if (Test-Path -LiteralPath $resolved) { return $resolved }
-    }
-    return $null
-}
-
-function Deploy-DevPlugins {
-    $bundleDir = Get-FreetpPluginBundleDir
-    if (-not $bundleDir) { return }
-
-    $builtDll = Join-Path $bundleDir "freetp_plugin.dll"
-    if (-not (Test-Path -LiteralPath $builtDll)) { return }
-
-    $pluginName = "freetp"
-    $destDir = Join-Path (Get-ArachnelDataDir) "plugins\$pluginName"
-    New-Item -ItemType Directory -Force -Path $destDir | Out-Null
-
-    $builtTime = (Get-Item -LiteralPath $builtDll).LastWriteTimeUtc
-    $destDll = Join-Path $destDir "freetp_plugin.dll"
-    if ((Test-Path -LiteralPath $destDll) -and ((Get-Item -LiteralPath $destDll).LastWriteTimeUtc -ge $builtTime)) {
-        return
-    }
-
-    Write-Host "Deploy dev plugin: $pluginName -> $destDir" -ForegroundColor Yellow
-    Copy-Item -Path (Join-Path $bundleDir "*") -Destination $destDir -Recurse -Force
 }
 
 function Format-ExitCode {
