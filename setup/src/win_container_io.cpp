@@ -1,7 +1,7 @@
 #include "win_container_io.h"
 
-#include <array>
 #include <fstream>
+#include <vector>
 
 namespace arachnel::setup {
 
@@ -76,8 +76,8 @@ bool copyContainerSlice(const std::filesystem::path& containerPath, std::uint64_
         return false;
     }
 
-    constexpr std::size_t kChunk = 1024 * 1024;
-    std::array<char, kChunk> buffer{};
+    constexpr std::size_t kChunk = 256 * 1024;
+    std::vector<char> buffer(kChunk);
     std::uint64_t remaining = size;
 
     while (remaining > 0) {
