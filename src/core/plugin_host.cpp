@@ -10,6 +10,7 @@
 #include <QDir>
 #include <QDirIterator>
 #include <QFile>
+#include <QFileInfo>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QProcess>
@@ -50,39 +51,60 @@ bool isZipArchive(const QString& path)
 }
 
 #if defined(Q_OS_WIN)
-struct ScopedDllDirectory {
-    explicit ScopedDllDirectory(const QString& directory)
+void prependWindowsPathDirectory(const QString& directory)
+{
+    if (directory.isEmpty())
+        return;
+
+    const QByteArray pathKey = "PATH";
+    const QByteArray entry = QDir::toNativeSeparators(directory).toUtf8();
+    const QByteArray current = qgetenv(pathKey);
+    if (current.split(';').contains(entry))
+        return;
+
+    qputenv(pathKey, entry + ";" + current);
+}
+
+struct ScopedAddDllDirectory {
+    using AddDllDirectoryFn = DLL_DIRECTORY_COOKIE(WINAPI*)(PCWSTR);
+    using RemoveDllDirectoryFn = BOOL(WINAPI*)(DLL_DIRECTORY_COOKIE);
+
+    explicit ScopedAddDllDirectory(const QStringList& directories)
     {
-        const auto setDllDirectory = reinterpret_cast<BOOL(WINAPI*)(LPCWSTR)>(
-            GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "SetDllDirectoryW"));
-        if (!setDllDirectory)
+        HMODULE kernel = GetModuleHandleW(L"kernel32.dll");
+        if (!kernel)
             return;
 
-        wchar_t buffer[MAX_PATH] = {};
-        const DWORD length = GetDllDirectoryW(MAX_PATH, buffer);
-        if (length > 0 && length < MAX_PATH)
-            previous = QString::fromWCharArray(buffer);
+        const auto addDllDirectory = reinterpret_cast<AddDllDirectoryFn>(
+            GetProcAddress(kernel, "AddDllDirectory"));
+        removeDllDirectory = reinterpret_cast<RemoveDllDirectoryFn>(
+            GetProcAddress(kernel, "RemoveDllDirectory"));
+        if (!addDllDirectory || !removeDllDirectory)
+            return;
 
-        active = setDllDirectory(reinterpret_cast<LPCWSTR>(directory.utf16())) != FALSE;
+        for (const QString& directory : directories) {
+            if (directory.isEmpty())
+                continue;
+            const DLL_DIRECTORY_COOKIE cookie =
+                addDllDirectory(reinterpret_cast<LPCWSTR>(directory.utf16()));
+            if (cookie)
+                cookies.append(cookie);
+        }
     }
 
-    ~ScopedDllDirectory()
+    ~ScopedAddDllDirectory()
     {
-        if (!active)
+        if (!removeDllDirectory)
             return;
-        const auto setDllDirectory = reinterpret_cast<BOOL(WINAPI*)(LPCWSTR)>(
-            GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "SetDllDirectoryW"));
-        if (!setDllDirectory)
-            return;
-        if (previous.isEmpty())
-            setDllDirectory(nullptr);
-        else
-            setDllDirectory(reinterpret_cast<LPCWSTR>(previous.utf16()));
+        for (const DLL_DIRECTORY_COOKIE cookie : cookies)
+            removeDllDirectory(cookie);
     }
 
-    bool active = false;
-    QString previous;
+    RemoveDllDirectoryFn removeDllDirectory = nullptr;
+    QList<DLL_DIRECTORY_COOKIE> cookies;
 };
+
+QString g_lastPluginLoadError;
 #endif
 
 } // namespace
@@ -90,6 +112,9 @@ struct ScopedDllDirectory {
 PluginHost::PluginHost(QObject* parent)
     : QObject(parent)
 {
+#if defined(Q_OS_WIN)
+    prependWindowsPathDirectory(QCoreApplication::applicationDirPath());
+#endif
 }
 
 PluginHost::~PluginHost()
@@ -197,7 +222,8 @@ bool PluginHost::loadPluginDir(const QString& dirPath)
     loaded->rootPath = dirPath;
     loaded->library.setFileName(libraryPath);
 #if defined(Q_OS_WIN)
-    ScopedDllDirectory dllDirectory(QCoreApplication::applicationDirPath());
+    ScopedAddDllDirectory dllDirectories(
+        {QCoreApplication::applicationDirPath(), QFileInfo(libraryPath).absolutePath()});
 #else
     const QString appDir = QCoreApplication::applicationDirPath();
     const QByteArray ldKey("LD_LIBRARY_PATH");
@@ -213,11 +239,13 @@ bool PluginHost::loadPluginDir(const QString& dirPath)
     }
 #endif
     if (!loaded->library.load()) {
+        g_lastPluginLoadError = loaded->library.errorString();
         logDiagnostic(QStringLiteral("Plugin library load failed for %1: %2")
-                          .arg(libraryPath, loaded->library.errorString()));
+                          .arg(libraryPath, g_lastPluginLoadError));
         delete loaded;
         return false;
     }
+    g_lastPluginLoadError.clear();
 
     auto resolvePluginFn = [&](const char* name) -> QFunctionPointer {
         QFunctionPointer symbol = loaded->library.resolve(name);
@@ -587,6 +615,10 @@ bool PluginHost::installFromArach(const QString& archivePath)
             "Core",
             "Plugin files were copied but the library failed to load. Rebuild the plugin for "
             "your Arachnel version and platform (MSVC/MinGW), then reinstall.");
+#if defined(Q_OS_WIN)
+        if (!g_lastPluginLoadError.isEmpty())
+            m_lastError += QStringLiteral(" (") + g_lastPluginLoadError + QLatin1Char(')');
+#endif
         return false;
     }
 
