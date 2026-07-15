@@ -1,54 +1,64 @@
 #include "payload_footer_io.h"
 
+#include "win_container_io.h"
+
 #include <cstring>
-#include <fstream>
 
 namespace arachnel::setup {
 
 PayloadFooter readPayloadFooterFile(const std::filesystem::path& filePath)
 {
     PayloadFooter footer;
-    std::ifstream file(filePath, std::ios::binary);
-    if (!file)
+
+    const HANDLE file = openContainerForRead(filePath);
+    if (file == INVALID_HANDLE_VALUE)
         return footer;
 
-    file.seekg(0, std::ios::end);
-    const auto endPos = file.tellg();
-    if (endPos < 0)
+    std::uint64_t fileSize = 0;
+    if (!queryContainerSize(file, &fileSize)
+        || fileSize < static_cast<std::uint64_t>(kPayloadFooterSize)) {
+        CloseHandle(file);
         return footer;
-    const auto fileSize = static_cast<std::uint64_t>(endPos);
-    if (fileSize < static_cast<std::uint64_t>(kPayloadFooterSize))
-        return footer;
+    }
 
-    file.seekg(static_cast<std::streamoff>(fileSize - static_cast<std::uint64_t>(kPayloadFooterSize)));
+    const std::uint64_t footerOffset =
+        fileSize - static_cast<std::uint64_t>(kPayloadFooterSize);
 
     char magic[kPayloadMagicSize] = {};
-    if (!file.read(magic, kPayloadMagicSize))
+    if (!readContainerAt(file, footerOffset, magic, kPayloadMagicSize)) {
+        CloseHandle(file);
         return footer;
-    if (std::strncmp(magic, kPayloadMagic, kPayloadMagicSize) != 0)
+    }
+    if (std::strncmp(magic, kPayloadMagic, kPayloadMagicSize) != 0) {
+        CloseHandle(file);
         return footer;
+    }
 
-    auto readU64 = [&file]() -> std::uint64_t {
-        unsigned char buf[8] = {};
-        if (!file.read(reinterpret_cast<char*>(buf), 8))
-            return 0;
+    unsigned char fields[32] = {};
+    if (!readContainerAt(file, footerOffset + kPayloadMagicSize, fields, sizeof(fields))) {
+        CloseHandle(file);
+        return footer;
+    }
+    CloseHandle(file);
+
+    auto readU64 = [&](int index) -> std::uint64_t {
         std::uint64_t value = 0;
+        const int offset = index * 8;
         for (int i = 0; i < 8; ++i)
-            value |= static_cast<std::uint64_t>(buf[i]) << (8 * i);
+            value |= static_cast<std::uint64_t>(fields[offset + i]) << (8 * i);
         return value;
     };
 
-    footer.runtimeOffset = readU64();
-    footer.runtimeSize = readU64();
-    footer.appOffset = readU64();
-    footer.appSize = readU64();
+    footer.runtimeOffset = readU64(0);
+    footer.runtimeSize = readU64(1);
+    footer.appOffset = readU64(2);
+    footer.appSize = readU64(3);
 
-    const auto size = static_cast<std::uint64_t>(fileSize);
     footer.valid = footer.appSize > 0 && footer.appOffset > 0
-                   && footer.appOffset + footer.appSize <= size;
+                   && footer.appOffset + footer.appSize <= fileSize;
     if (footer.runtimeSize > 0) {
         footer.valid = footer.valid && footer.runtimeOffset > 0
-                       && footer.runtimeOffset + footer.runtimeSize <= size;
+                       && footer.runtimeOffset + footer.runtimeSize <= fileSize;
     }
     return footer;
 }
