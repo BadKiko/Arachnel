@@ -115,7 +115,7 @@ int main(int argc, char* argv[])
 
     if (!crashDialogMode) {
         if (auto* guiApp = qobject_cast<QGuiApplication*>(&app))
-            guiApp->setQuitOnLastWindowClosed(false);
+            guiApp->setQuitOnLastWindowClosed(true);
         QObject::connect(&app, &QCoreApplication::aboutToQuit, &app, []() {
             arachnel::markApplicationShuttingDown();
             arachnel::core::CoreController::instance().prepareShutdown();

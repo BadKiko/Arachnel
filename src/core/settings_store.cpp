@@ -247,6 +247,15 @@ void SettingsStore::setAutoInstallUpdates(bool enabled)
     save();
 }
 
+void SettingsStore::setAutoCheckAppUpdates(bool enabled)
+{
+    if (m_autoCheckAppUpdates == enabled)
+        return;
+    m_autoCheckAppUpdates = enabled;
+    emit autoCheckAppUpdatesChanged();
+    save();
+}
+
 void SettingsStore::setUiLanguage(const QString& languageCode)
 {
     const QString normalized = languageCode.trimmed().toLower();
@@ -331,6 +340,7 @@ void SettingsStore::load()
         emit maxConcurrentDownloadsChanged();
         emit autoCheckUpdatesChanged();
         emit autoInstallUpdatesChanged();
+        emit autoCheckAppUpdatesChanged();
         emit uiLanguageChanged();
         emit globalLaunchArgsChanged();
         emit defaultProtonIdChanged();
@@ -344,6 +354,7 @@ void SettingsStore::load()
         m_maxConcurrentDownloads = qBound(1, obj.value(QStringLiteral("maxConcurrentDownloads")).toInt(2), 8);
     m_autoCheckUpdates = obj.value(QStringLiteral("autoCheckUpdates")).toBool(true);
     m_autoInstallUpdates = obj.value(QStringLiteral("autoInstallUpdates")).toBool(false);
+    m_autoCheckAppUpdates = obj.value(QStringLiteral("autoCheckAppUpdates")).toBool(true);
     m_uiLanguage = obj.value(QStringLiteral("uiLanguage")).toString(QStringLiteral("en")).toLower();
     m_globalLaunchArgs = obj.value(QStringLiteral("globalLaunchArgs")).toString();
     m_defaultProtonId = obj.value(QStringLiteral("defaultProtonId")).toString();
@@ -431,6 +442,7 @@ void SettingsStore::load()
     emit maxConcurrentDownloadsChanged();
     emit autoCheckUpdatesChanged();
     emit autoInstallUpdatesChanged();
+    emit autoCheckAppUpdatesChanged();
     emit uiLanguageChanged();
     emit globalLaunchArgsChanged();
     emit defaultProtonIdChanged();
@@ -446,6 +458,7 @@ void SettingsStore::save()
     obj.insert(QStringLiteral("maxConcurrentDownloads"), m_maxConcurrentDownloads);
     obj.insert(QStringLiteral("autoCheckUpdates"), m_autoCheckUpdates);
     obj.insert(QStringLiteral("autoInstallUpdates"), m_autoInstallUpdates);
+    obj.insert(QStringLiteral("autoCheckAppUpdates"), m_autoCheckAppUpdates);
     obj.insert(QStringLiteral("uiLanguage"), m_uiLanguage);
     obj.insert(QStringLiteral("globalLaunchArgs"), m_globalLaunchArgs);
     obj.insert(QStringLiteral("defaultProtonId"), m_defaultProtonId);

@@ -60,7 +60,8 @@ std::wstring buildEnvironmentBlock(const std::wstring& containerPath)
 }
 
 bool launchSetupUi(const std::filesystem::path& runtimeDir,
-                   const std::filesystem::path& containerPath, std::wstring* errorOut)
+                   const std::filesystem::path& containerPath,
+                   const std::wstring& extraArgs, std::wstring* errorOut)
 {
     const std::filesystem::path targetExe = runtimeDir / L"arachnel_setup.exe";
     if (!std::filesystem::exists(targetExe)) {
@@ -81,6 +82,10 @@ bool launchSetupUi(const std::filesystem::path& runtimeDir,
     PROCESS_INFORMATION processInfo{};
 
     std::wstring command = L"\"" + targetExe.wstring() + L"\"";
+    if (!extraArgs.empty()) {
+        command.push_back(L' ');
+        command.append(extraArgs);
+    }
 
     if (!CreateProcessW(targetExe.c_str(), command.data(), nullptr, nullptr, FALSE, CREATE_UNICODE_ENVIRONMENT,
                         const_cast<wchar_t*>(environment.c_str()), runtimeDir.c_str(), &startupInfo,
@@ -93,6 +98,30 @@ bool launchSetupUi(const std::filesystem::path& runtimeDir,
     CloseHandle(processInfo.hThread);
     CloseHandle(processInfo.hProcess);
     return true;
+}
+
+std::wstring forwardedArgs()
+{
+    int argc = 0;
+    LPWSTR* argv = CommandLineToArgvW(GetCommandLineW(), &argc);
+    if (!argv || argc <= 1)
+        return {};
+
+    std::wstring result;
+    for (int i = 1; i < argc; ++i) {
+        if (!result.empty())
+            result.push_back(L' ');
+        const std::wstring arg = argv[i];
+        if (arg.find(L' ') != std::wstring::npos) {
+            result.push_back(L'"');
+            result.append(arg);
+            result.push_back(L'"');
+        } else {
+            result.append(arg);
+        }
+    }
+    LocalFree(argv);
+    return result;
 }
 
 } // namespace
@@ -143,7 +172,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     }
 
     std::wstring launchError;
-    if (!launchSetupUi(runtimeDir, containerPath, &launchError)) {
+    if (!launchSetupUi(runtimeDir, containerPath, forwardedArgs(), &launchError)) {
         showError(launchError.empty() ? L"Could not launch installer." : launchError.c_str());
         return 1;
     }
