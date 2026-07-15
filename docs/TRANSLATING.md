@@ -71,6 +71,7 @@ Commit updated `translations/*.ts` files.
 
 ## Runtime
 
-- Default UI language: **English** (no `.qm` loaded)
+- Default UI language: **English** — loads `arachnel_ids.qm` so `qsTrId()` resolves (no inline English fallback)
+- Other languages load `arachnel_<lang>.qm` (`qsTr` / `translate`) **and** `arachnel_ids_<lang>.qm` (`qsTrId`); missing id catalog falls back to English ids
 - Users change language in **Settings → Appearance → Language**
 - Choice is stored in `settings.json` as `uiLanguage`
