@@ -75,6 +75,7 @@ add_dependencies(arachnel_setup qml_materialplugin)
 
 target_compile_definitions(arachnel_setup PRIVATE
     "QT_QML_MATERIAL_IMPORT_PATH=\"qml_modules\""
+    "ARACHNEL_VERSION=\"${ARACHNEL_VERSION}\""
 )
 
 target_link_libraries(arachnel_setup
@@ -113,6 +114,11 @@ endif()
 _arachnel_setup_admin_manifest(arachnel_setup_launcher)
 
 target_link_libraries(arachnel_setup_launcher PRIVATE shell32 ole32)
+
+# Ensure UNICODE for wWinMain + wide Process APIs.
+if(MSVC)
+    target_compile_definitions(arachnel_setup_launcher PRIVATE UNICODE _UNICODE)
+endif()
 
 add_executable(arachnel_uninstall WIN32
     src/uninstall_main.cpp

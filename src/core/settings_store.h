@@ -25,6 +25,8 @@ class SettingsStore : public QObject
                    autoCheckUpdatesChanged)
     Q_PROPERTY(bool autoInstallUpdates READ autoInstallUpdates WRITE setAutoInstallUpdates NOTIFY
                    autoInstallUpdatesChanged)
+    Q_PROPERTY(bool autoCheckAppUpdates READ autoCheckAppUpdates WRITE setAutoCheckAppUpdates NOTIFY
+                   autoCheckAppUpdatesChanged)
     Q_PROPERTY(QString uiLanguage READ uiLanguage WRITE setUiLanguage NOTIFY uiLanguageChanged)
     Q_PROPERTY(QString globalLaunchArgs READ globalLaunchArgs WRITE setGlobalLaunchArgs NOTIFY
                    globalLaunchArgsChanged)
@@ -41,6 +43,7 @@ public:
     int maxConcurrentDownloads() const { return m_maxConcurrentDownloads; }
     bool autoCheckUpdates() const { return m_autoCheckUpdates; }
     bool autoInstallUpdates() const { return m_autoInstallUpdates; }
+    bool autoCheckAppUpdates() const { return m_autoCheckAppUpdates; }
     QString uiLanguage() const { return m_uiLanguage; }
     QString globalLaunchArgs() const { return m_globalLaunchArgs; }
     QString defaultProtonId() const { return m_defaultProtonId; }
@@ -72,6 +75,7 @@ public:
     void setMaxConcurrentDownloads(int count);
     void setAutoCheckUpdates(bool enabled);
     void setAutoInstallUpdates(bool enabled);
+    void setAutoCheckAppUpdates(bool enabled);
     void setUiLanguage(const QString& languageCode);
     void setGlobalLaunchArgs(const QString& args);
     void setDefaultProtonId(const QString& id);
@@ -91,6 +95,7 @@ signals:
     void maxConcurrentDownloadsChanged();
     void autoCheckUpdatesChanged();
     void autoInstallUpdatesChanged();
+    void autoCheckAppUpdatesChanged();
     void uiLanguageChanged();
     void globalLaunchArgsChanged();
     void defaultProtonIdChanged();
@@ -105,6 +110,7 @@ private:
     int m_maxConcurrentDownloads = 2;
     bool m_autoCheckUpdates = true;
     bool m_autoInstallUpdates = false;
+    bool m_autoCheckAppUpdates = true;
     QString m_uiLanguage = QStringLiteral("en");
     QString m_globalLaunchArgs;
     QString m_defaultProtonId;

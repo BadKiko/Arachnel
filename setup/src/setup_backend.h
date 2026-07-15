@@ -22,6 +22,7 @@ class SetupBackend : public QObject
     Q_PROPERTY(bool busy READ busy NOTIFY busyChanged)
     Q_PROPERTY(bool hasPayload READ hasPayload CONSTANT)
     Q_PROPERTY(bool canInstall READ canInstall NOTIFY installPathChanged)
+    Q_PROPERTY(bool updateMode READ updateMode CONSTANT)
 
 public:
     explicit SetupBackend(QObject* parent = nullptr);
@@ -45,12 +46,14 @@ public:
     bool busy() const { return m_busy; }
     bool hasPayload() const { return m_hasPayload; }
     bool canInstall() const;
+    bool updateMode() const { return m_updateMode; }
 
     Q_INVOKABLE QString browseInstallFolder();
     Q_INVOKABLE QVariantList availableLanguages() const;
     Q_INVOKABLE void startInstall();
     Q_INVOKABLE void launchInstalled();
     Q_INVOKABLE void openInstallFolder();
+    Q_INVOKABLE void beginUpdateIfNeeded();
 
 signals:
     void installPathChanged();
@@ -74,6 +77,9 @@ private:
     bool installUninstaller(const QString& installPath, QString* errorOut);
     bool registerUninstall(const QString& installPath, QString* errorOut);
     static QString detectDefaultLanguage();
+    static QString defaultInstallPath();
+    static bool waitForArachnelExit(int timeoutMs);
+    void finishSuccessfulInstall(const QString& installPath);
 
     QString m_executablePath;
     QString m_installPath;
@@ -86,6 +92,7 @@ private:
     QString m_statusText;
     bool m_busy = false;
     bool m_hasPayload = false;
+    bool m_updateMode = false;
     quint64 m_appOffset = 0;
     quint64 m_appSize = 0;
     QTimer m_installPulseTimer;
