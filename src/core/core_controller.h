@@ -8,6 +8,7 @@
 #include "notification_model.h"
 #include "settings_store.h"
 #include "source_plugin_model.h"
+#include "app_updater.h"
 
 #include <QObject>
 #include <QHash>
@@ -69,6 +70,7 @@ class CoreController : public QObject
     Q_PROPERTY(bool protonReady READ protonReady NOTIFY protonStateChanged)
     Q_PROPERTY(QString protonVersion READ protonVersion NOTIFY protonStateChanged)
     Q_PROPERTY(QVariantList availableProtons READ availableProtons NOTIFY availableProtonsChanged)
+    Q_PROPERTY(AppUpdater* appUpdater READ appUpdater CONSTANT)
 
 public:
     static CoreController* create(QQmlEngine* engine, QJSEngine* scriptEngine);
@@ -102,6 +104,7 @@ public:
     bool protonReady() const;
     QString protonVersion() const;
     QVariantList availableProtons() const;
+    AppUpdater* appUpdater() { return m_appUpdater; }
 
     Q_INVOKABLE QVariantList pluginEntries() const;
     Q_INVOKABLE void browsePluginArach();
@@ -307,6 +310,7 @@ private:
     InstallAnalyzer* m_installAnalyzer = nullptr;
     InstallKindProbeService* m_installKindProbe = nullptr;
     ProtonManager* m_protonManager = nullptr;
+    AppUpdater* m_appUpdater = nullptr;
 
     QVector<CatalogEntry> m_catalogCache;
     QHash<QString, QVector<CatalogEntry>> m_catalogBySource;

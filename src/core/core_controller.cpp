@@ -25,6 +25,7 @@
 #include "process_tracker.h"
 #include "proton_manager.h"
 #include "windows_runner.h"
+#include "app_updater.h"
 #include "settings_store.h"
 #include "storage_library_model.h"
 #include "torrent_session.h"
@@ -162,6 +163,13 @@ CoreController::CoreController(QObject* parent)
         emit activeCatalogSourceIdChanged();
         requestCatalogLoad(firstSource);
     }
+
+    if (m_settings.autoCheckAppUpdates() && m_appUpdater) {
+        QTimer::singleShot(4000, this, [this]() {
+            if (m_appUpdater)
+                m_appUpdater->checkForUpdates(false);
+        });
+    }
 }
 
 void CoreController::initializeServices()
@@ -177,6 +185,19 @@ void CoreController::initializeServices()
     connect(&m_jobs, &JobModel::jobsChanged, this, &CoreController::syncInstallKindProbeSuspension);
     syncInstallKindProbeSuspension();
     m_protonManager = new ProtonManager(this);
+    m_appUpdater = new AppUpdater(this);
+    connect(m_appUpdater, &AppUpdater::updateCheckFinished, this,
+            [this](bool available, const QString& latestVersion) {
+                if (!available)
+                    return;
+                showNotice(QCoreApplication::translate("Core", "Arachnel %1 is available")
+                               .arg(latestVersion),
+                           true);
+            });
+    connect(m_appUpdater, &AppUpdater::installerLaunchRequested, this, [this]() {
+        prepareShutdown();
+        QTimer::singleShot(300, qApp, []() { QCoreApplication::quit(); });
+    });
     connect(m_protonManager, &ProtonManager::downloadStateChanged, this,
             &CoreController::protonDownloadChanged);
     connect(m_protonManager, &ProtonManager::downloadFinished, this,
@@ -3667,6 +3688,8 @@ void registerCoreTypes()
                                                   QStringLiteral("Use Core.notifications"));
     qmlRegisterUncreatableType<SettingsStore>("Arachnel.Core", 1, 0, "SettingsStore",
                                               QStringLiteral("Use Core.settings"));
+    qmlRegisterUncreatableType<AppUpdater>("Arachnel.Core", 1, 0, "AppUpdater",
+                                           QStringLiteral("Use Core.appUpdater"));
     qmlRegisterUncreatableType<StorageLibraryModel>("Arachnel.Core", 1, 0, "StorageLibraryModel",
                                                     QStringLiteral("Use Core.settings.storageLibraries"));
 }
