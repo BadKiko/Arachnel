@@ -2,6 +2,7 @@ qt_add_executable(arachnel_setup
     src/main.cpp
     src/payload_footer.cpp
     src/payload_footer_io.cpp
+    src/win_container_io.cpp
     src/self_extractor.cpp
     src/setup_backend.cpp
     src/setup_translation.cpp
@@ -95,6 +96,7 @@ add_executable(arachnel_setup_launcher WIN32
     src/stub_main.cpp
     src/stub_extractor.cpp
     src/payload_footer_io.cpp
+    src/win_container_io.cpp
 )
 
 set_target_properties(arachnel_setup_launcher PROPERTIES
