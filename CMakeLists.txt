@@ -4,6 +4,13 @@ project(arachnel LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+if(DEFINED ENV{ARACHNEL_VERSION} AND NOT "$ENV{ARACHNEL_VERSION}" STREQUAL "")
+    set(ARACHNEL_VERSION "$ENV{ARACHNEL_VERSION}" CACHE STRING "Application version" FORCE)
+elseif(NOT DEFINED ARACHNEL_VERSION)
+    set(ARACHNEL_VERSION "dev" CACHE STRING "Application version")
+endif()
+message(STATUS "Arachnel version: ${ARACHNEL_VERSION}")
+
 option(ARACHNEL_FAST_BUILD "Faster dev builds: skip QML cachegen" ON)
 if(WIN32)
     option(ARACHNEL_LIBTORRENT_SHARED "Build libtorrent as DLL (much faster incremental links)" ON)
@@ -186,6 +193,7 @@ add_dependencies(arachnel_app qml_materialplugin)
 
 target_compile_definitions(arachnel_app PRIVATE
     "QT_QML_MATERIAL_IMPORT_PATH=\"qml_modules\""
+    "ARACHNEL_VERSION=\"${ARACHNEL_VERSION}\""
 )
 
 target_link_libraries(arachnel_app
