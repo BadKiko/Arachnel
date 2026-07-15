@@ -103,7 +103,13 @@ int main(int argc, char* argv[])
     arachnel::installCrashLogging();
     arachnel::logRunStarted(argc, argv);
 
-    const QIcon windowIcon(QStringLiteral(":/icons/256.png"));
+    const QIcon windowIcon = []() {
+        QIcon icon;
+        for (const int size : {16, 24, 32, 48, 64, 128, 256, 512}) {
+            icon.addFile(QStringLiteral(":/icons/%1.png").arg(size), QSize(size, size));
+        }
+        return icon;
+    }();
     if (!windowIcon.isNull())
         app.setWindowIcon(windowIcon);
 
