@@ -18,6 +18,7 @@ struct LoadedPlugin {
     QLibrary library;
     ISourcePlugin* instance = nullptr;
     void (*destroyFn)(ISourcePlugin*) = nullptr;
+    int apiVersion = 0;
 };
 
 class PluginHost : public QObject
@@ -44,11 +45,18 @@ public:
     bool uninstallPlugin(const QString& pluginId);
 
     using InstallCallback = std::function<void(const InstallResult&)>;
+    using OwnedProgressCallback = std::function<void(const OwnedDownloadProgress&)>;
     void runInstallAsync(ISourcePlugin* plugin, const InstallContext& ctx, InstallCallback callback);
     void runAddonInstallAsync(ISourcePlugin* plugin, const AddonInstallContext& ctx,
                               InstallCallback callback);
+    void runOwnedDownloadAsync(ISourcePlugin* plugin, const InstallContext& ctx,
+                               OwnedProgressCallback onProgress, InstallCallback onFinished);
+    void cancelOwnedDownload(const QString& pluginId, const QString& jobId);
 
     static QStringList pluginSearchRoots();
+
+    bool pluginOwnsDownload(const QString& pluginId) const;
+    int pluginApiVersion(const QString& pluginId) const;
 
 signals:
     void pluginsChanged();

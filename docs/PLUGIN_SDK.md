@@ -2,7 +2,10 @@
 
 Source plugins are **separate repositories**. Arachnel ships only the host (`PluginHost`) and a small **Plugin SDK** so third-party plugins can link against the same ABI as the app.
 
-Reference implementation: [arachnel-plugin-freetp](https://github.com/PetWork/arachnel-plugin-freetp).
+Reference implementations:
+
+- [arachnel-plugin-freetp](https://github.com/PetWork/arachnel-plugin-freetp) — torrent download (API v2+)
+- [arachnel-plugin-steamidra](https://github.com/PetWork/arachnel-plugin-steamidra) — plugin-owned download (API v3, `owns_download`)
 
 ---
 
@@ -142,7 +145,7 @@ arachnel-plugin-<source-id>/
   "id": "my-source",
   "name": "My Source",
   "version": "1.0.0",
-  "apiVersion": 2,
+  "apiVersion": 3,
   "library": "my_source_plugin",
   "iconName": "storefront",
   "catalogUrl": "https://example.com/games-arachnel.json",
@@ -151,7 +154,7 @@ arachnel-plugin-<source-id>/
 ```
 
 - **`id`** — folder name under `plugins/` and `sourceId` in the library.
-- **`apiVersion`** — must match `ARACHNEL_PLUGIN_API_VERSION` in Arachnel (`src/core/plugin_api.h`, currently **2**).
+- **`apiVersion`** — host accepts **2..3** (`ARACHNEL_PLUGIN_API_VERSION` / `ARACHNEL_PLUGIN_API_VERSION_MIN` in `src/core/plugin_api.h`). New plugins should ship **3**.
 - **`library`** — base name of the shared library (`my_source_plugin` → `my_source_plugin.dll`).
 
 ### 3. `plugin_entry.cpp`
@@ -167,7 +170,19 @@ Export the C ABI (see `arachnel-plugin-freetp/src/plugin_entry.cpp`):
 
 Header: `Arachnel/src/core/plugin_interface.h`
 
-Required methods include `catalog()`, `analyzeDownload()`, `analyzeFileNames()`, `installFromDownload()`, `launchInfo()`, etc. Copy the FreeTP plugin as a template and replace source-specific logic.
+Required methods include `catalog()`, `analyzeDownload()`, `analyzeFileNames()`, `installFromDownload()`, `launchInfo()`, etc. Copy FreeTP or SteaMidra as a template.
+
+### Plugin-owned download (API v3)
+
+When the plugin must fetch content itself (Steam depots, HTTP, custom CDN) instead of receiving a finished torrent path:
+
+1. Return capability **`owns_download`** from `capabilities()`.
+2. Set `plugin.json` → `apiVersion`: **3**.
+3. Override `startOwnedDownload(InstallContext, progressCb)` and optionally `cancelOwnedDownload(jobId)`.
+4. Catalog entries should carry **`steamAppId`** (or another id the plugin understands). The host skips the magnet gate and creates a `pluginDownload` job.
+5. Report progress via the callback (`OwnedDownloadProgress`); on success return `InstallResult` with `installPath`.
+
+Default implementations of the new methods are no-ops so API v2 plugins keep working.
 
 ### 5. `CMakeLists.txt`
 
@@ -230,7 +245,7 @@ The SDK static library compiles shared helpers from Arachnel core (catalog parse
 
 ## ABI rules (important)
 
-1. **`plugin.json` → `apiVersion`** must equal the app's `ARACHNEL_PLUGIN_API_VERSION`.
+1. **`plugin.json` → `apiVersion`** must be in the host’s allowed range (**2..3**). Prefer **3** for new plugins; use **3** if you implement `owns_download`.
 2. **`arachnel_plugin_catalog_entry_size()`** must return the same `sizeof(CatalogEntry)` as the app — otherwise the host logs `Plugin rejected (CatalogEntry size mismatch)` and skips the plugin.
 3. After updating Arachnel, **rebuild all plugins** against the same SDK revision.
 4. Match **Qt major version** and **compiler** (MinGW vs MSVC) with the Arachnel build you test against.

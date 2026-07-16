@@ -378,6 +378,21 @@ void CoreController::initializeServices()
             [this](const QString& jobId, const QString& entryId, const QString& sourceId,
                    const QString& artifactPath, JobKind kind, const QString& libraryId) {
                 const JobEntry* job = m_jobStore.jobById(jobId);
+                if (job && job->pluginDownload) {
+                    const auto entry = resolveCatalogEntry(entryId, sourceId, job);
+                    if (!entry) {
+                        showNotice(QCoreApplication::translate(
+                                       "Core", "Could not find game to install: %1")
+                                       .arg(entryId));
+                        return;
+                    }
+                    commitInstalledCatalogGame(*entry, sourceId, job->savePath, libraryId,
+                                               artifactPath, entry->installKind);
+                    m_jobOrchestrator->setJobPhase(jobId, QStringLiteral("completed"),
+                                                   QStringLiteral("Installed"));
+                    return;
+                }
+
                 if (job && !job->parentEntryId.isEmpty()) {
                     const CatalogEntry* parent = findCatalogEntry(job->parentEntryId);
                     if (!parent) {
@@ -3022,13 +3037,67 @@ void CoreController::installCatalogEntry(const QString& entryId, const QString& 
 
     const CatalogEntry& entry = *entryOpt;
 
-    if (entry.magnetUris.isEmpty()) {
+    const bool ownsDownload =
+        m_pluginHost && m_pluginHost->pluginOwnsDownload(entry.sourceId);
+
+    if (!ownsDownload && entry.magnetUris.isEmpty()) {
         showNotice(QCoreApplication::translate("Core", "No download link for %1").arg(entry.title));
+        return;
+    }
+
+    if (ownsDownload && entry.steamAppId.isEmpty() && entry.magnetUris.isEmpty()) {
+        showNotice(QCoreApplication::translate("Core", "No Steam App ID for %1").arg(entry.title));
         return;
     }
 
     const QStringList addonIds = variantListToStringList(addonIdsVariant);
     const QString libId = libraryId.isEmpty() ? m_settings.defaultLibraryId() : libraryId;
+
+    if (ownsDownload) {
+        ISourcePlugin* plugin = m_pluginHost->plugin(entry.sourceId);
+        if (!plugin) {
+            showNotice(QCoreApplication::translate("Core", "Plugin not loaded: %1").arg(entry.sourceId));
+            return;
+        }
+
+        const QString jobId =
+            m_jobOrchestrator->startPluginOwnedDownload(entry, JobKind::Download, libId);
+        if (jobId.isEmpty()) {
+            showNotice(
+                QCoreApplication::translate("Core", "Could not start download for %1").arg(entry.title));
+            return;
+        }
+
+        ensureLibraryPlaceholder(entry, libId, addonIds);
+
+        InstallContext ctx;
+        ctx.jobId = jobId;
+        ctx.entryId = entry.id;
+        ctx.sourceId = entry.sourceId;
+        ctx.title = entry.title;
+        ctx.targetPath = m_settings.resolvedLibraryRoot(libId) + QLatin1Char('/') + entry.id;
+        ctx.downloadsPath = m_settings.resolvedDownloadsRoot(libId);
+        ctx.downloadPath = ctx.downloadsPath + QLatin1Char('/') + QStringLiteral("install/") + entry.id;
+        ctx.magnetUri = entry.steamAppId;
+        ctx.uploadDate = entry.uploadDate;
+        ctx.installKind = entry.installKind;
+
+        m_pluginHost->runOwnedDownloadAsync(
+            plugin, ctx,
+            [this, jobId](const OwnedDownloadProgress& progress) {
+                m_jobOrchestrator->reportPluginProgress(jobId, progress);
+            },
+            [this, jobId](const InstallResult& result) {
+                if (result.success)
+                    m_jobOrchestrator->completePluginDownload(jobId, result.installPath);
+                else
+                    m_jobOrchestrator->failPluginDownload(
+                        jobId, result.error.isEmpty()
+                                   ? QCoreApplication::translate("Core", "Install failed")
+                                   : result.error);
+            });
+        return;
+    }
 
     const QString jobId = m_jobOrchestrator->startCatalogDownload(entry, JobKind::Download, libId);
     if (jobId.isEmpty()) {
@@ -3264,6 +3333,14 @@ void CoreController::updateCatalogEntry(const QString& entryId)
         return;
     }
 
+    if (m_pluginHost && m_pluginHost->pluginOwnsDownload(entry->sourceId)) {
+        const LibraryGame* game = m_libraryStore.gameById(entryId);
+        const QString libId = game && !game->libraryId.isEmpty() ? game->libraryId
+                                                                : m_settings.defaultLibraryId();
+        installCatalogEntry(entryId, libId, {});
+        return;
+    }
+
     const QString jobId = m_jobOrchestrator->startCatalogDownload(*entry, JobKind::Update);
     if (jobId.isEmpty()) {
         showNotice(QCoreApplication::translate("Core", "Could not start update for %1").arg(entry->title));
@@ -3293,6 +3370,9 @@ void CoreController::cancelJob(const QString& jobId)
         m_jobOrchestrator->removeJob(jobId);
         return;
     }
+
+    if (job && job->pluginDownload && m_pluginHost)
+        m_pluginHost->cancelOwnedDownload(job->sourceId, jobId);
 
     const QString entryId = job ? job->entryId : QString();
     m_jobOrchestrator->cancelJob(jobId);

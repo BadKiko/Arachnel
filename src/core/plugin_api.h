@@ -12,7 +12,9 @@
 #  define ARACHNEL_PLUGIN_EXPORT __attribute__((visibility("default")))
 #endif
 
-#define ARACHNEL_PLUGIN_API_VERSION 2
+/** Host speaks API 3. Plugins with apiVersion 2 still load (vtable prefix only). */
+#define ARACHNEL_PLUGIN_API_VERSION 3
+#define ARACHNEL_PLUGIN_API_VERSION_MIN 2
 
 extern "C" {
 

@@ -375,6 +375,8 @@ Item {
                         DownloadProgressButton {
                             visible: root.canManageDownload
                             progress: root.downloadJob.progress ?? 0
+                            bytesDownloaded: root.downloadJob.bytesDownloaded ?? 0
+                            totalBytes: root.downloadJob.totalBytes ?? 0
                             downloading: root.downloadActive
                             paused: root.downloadPaused
                             completed: false

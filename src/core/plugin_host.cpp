@@ -211,9 +211,10 @@ bool PluginHost::loadPluginDir(const QString& dirPath)
 
     if (id.isEmpty() || libraryBase.isEmpty())
         return false;
-    if (apiVersion != ARACHNEL_PLUGIN_API_VERSION) {
-        logDiagnostic(QStringLiteral("Plugin rejected (apiVersion %1, expected %2): %3")
+    if (apiVersion < ARACHNEL_PLUGIN_API_VERSION_MIN || apiVersion > ARACHNEL_PLUGIN_API_VERSION) {
+        logDiagnostic(QStringLiteral("Plugin rejected (apiVersion %1, allowed %2..%3): %4")
                           .arg(apiVersion)
+                          .arg(ARACHNEL_PLUGIN_API_VERSION_MIN)
                           .arg(ARACHNEL_PLUGIN_API_VERSION)
                           .arg(dirPath));
         return false;
@@ -280,7 +281,9 @@ bool PluginHost::loadPluginDir(const QString& dirPath)
         delete loaded;
         return false;
     }
-    if (apiVersionFn() != ARACHNEL_PLUGIN_API_VERSION) {
+    const int exportedApi = apiVersionFn();
+    if (exportedApi < ARACHNEL_PLUGIN_API_VERSION_MIN
+        || exportedApi > ARACHNEL_PLUGIN_API_VERSION) {
         loaded->library.unload();
         delete loaded;
         return false;
@@ -331,7 +334,9 @@ bool PluginHost::loadPluginDir(const QString& dirPath)
     info.pluginVersion = loaded->instance->version();
     info.pluginRootPath = dirPath;
     info.capabilities = loaded->instance->capabilities();
+    info.apiVersion = exportedApi;
     loaded->info = info;
+    loaded->apiVersion = exportedApi;
 
     m_plugins.insert(id, loaded);
     logDiagnostic(QStringLiteral("Plugin loaded: %1 v%2 from %3 (CatalogEntry=%4 bytes)")
@@ -411,6 +416,69 @@ void PluginHost::runAddonInstallAsync(ISourcePlugin* plugin, const AddonInstallC
         }
         QTimer::singleShot(0, app, [callback, result]() { callback(result); });
     });
+}
+
+void PluginHost::runOwnedDownloadAsync(ISourcePlugin* plugin, const InstallContext& ctx,
+                                       OwnedProgressCallback onProgress, InstallCallback onFinished)
+{
+    if (!plugin) {
+        InstallResult result;
+        result.success = false;
+        result.error = QStringLiteral("Плагин не найден");
+        if (onFinished)
+            onFinished(result);
+        return;
+    }
+
+    (void)QtConcurrent::run([plugin, ctx, onProgress, onFinished]() {
+        auto progressBridge = [onProgress](const OwnedDownloadProgress& p) {
+            if (!onProgress)
+                return;
+            QObject* app = QCoreApplication::instance();
+            if (!app) {
+                onProgress(p);
+                return;
+            }
+            QTimer::singleShot(0, app, [onProgress, p]() { onProgress(p); });
+        };
+        const InstallResult result = plugin->startOwnedDownload(ctx, progressBridge);
+        QObject* app = QCoreApplication::instance();
+        if (!app) {
+            if (onFinished)
+                onFinished(result);
+            return;
+        }
+        QTimer::singleShot(0, app, [onFinished, result]() {
+            if (onFinished)
+                onFinished(result);
+        });
+    });
+}
+
+void PluginHost::cancelOwnedDownload(const QString& pluginId, const QString& jobId)
+{
+    ISourcePlugin* instance = plugin(pluginId);
+    if (!instance)
+        return;
+    instance->cancelOwnedDownload(jobId);
+}
+
+bool PluginHost::pluginOwnsDownload(const QString& pluginId) const
+{
+    const auto it = m_plugins.constFind(pluginId);
+    if (it == m_plugins.constEnd() || !it.value())
+        return false;
+    if (it.value()->apiVersion < 3)
+        return false;
+    return it.value()->info.capabilities.contains(QStringLiteral("owns_download"));
+}
+
+int PluginHost::pluginApiVersion(const QString& pluginId) const
+{
+    const auto it = m_plugins.constFind(pluginId);
+    if (it == m_plugins.constEnd() || !it.value())
+        return 0;
+    return it.value()->apiVersion;
 }
 
 QString PluginHost::writablePluginsDir()
