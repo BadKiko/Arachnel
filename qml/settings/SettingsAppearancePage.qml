@@ -43,7 +43,7 @@ Flickable {
             Layout.leftMargin: contentMargin
             Layout.rightMargin: contentMargin
             Layout.topMargin: MD.Token.spacing.small
-            text: qsTr("Material 3 theme and palette apply across the app.")
+            text: qsTr("Theme and colors apply across the app.")
             color: MD.Token.color.on_surface_variant
             wrapMode: Text.WordWrap
             typescale: MD.Token.typescale.body_medium

@@ -149,7 +149,7 @@ Flickable {
             Layout.fillWidth: true
             Layout.leftMargin: contentMargin
             Layout.rightMargin: contentMargin
-            placeholderText: qsTr("URL games.json")
+            placeholderText: qsTr("Catalog URL")
             onTextChanged: errorLabel.text = ""
         }
 

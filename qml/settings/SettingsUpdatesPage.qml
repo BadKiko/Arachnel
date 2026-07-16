@@ -25,7 +25,7 @@ Flickable {
             Layout.leftMargin: contentMargin
             Layout.rightMargin: contentMargin
             Layout.topMargin: MD.Token.spacing.small
-            text: qsTr("Game catalog updates and Arachnel launcher updates from GitHub.")
+            text: qsTr("Check for game updates and new Arachnel versions.")
             color: MD.Token.color.on_surface_variant
             wrapMode: Text.WordWrap
             typescale: MD.Token.typescale.body_medium
@@ -57,7 +57,7 @@ Flickable {
 
                 MD.Label {
                     Layout.fillWidth: true
-                    text: qsTr("Compares build dates in the catalog with installed games.")
+                    text: qsTr("Shows when a newer build is available in the catalog.")
                     color: MD.Token.color.on_surface_variant
                     typescale: MD.Token.typescale.body_small
                     wrapMode: Text.WordWrap
@@ -88,7 +88,7 @@ Flickable {
 
                 MD.Label {
                     Layout.fillWidth: true
-                    text: qsTr("Starts downloads for games with updates when the catalog finishes loading. Per-game opt-out is available in game details.")
+                    text: qsTr("Downloads updates when you open the catalog. You can turn this off per game.")
                     color: MD.Token.color.on_surface_variant
                     typescale: MD.Token.typescale.body_small
                     wrapMode: Text.WordWrap
@@ -203,7 +203,7 @@ Flickable {
 
                 MD.Label {
                     Layout.fillWidth: true
-                    text: qsTr("Looks up the latest GitHub release in the background.")
+                    text: qsTr("Checks for new versions in the background.")
                     color: MD.Token.color.on_surface_variant
                     typescale: MD.Token.typescale.body_small
                     wrapMode: Text.WordWrap

@@ -14,7 +14,7 @@ Item {
     property bool readyToInstall: false
     property bool installFailed: false
     property bool installing: false
-    property string idleText: qsTr("Download torrent")
+    property string idleText: qsTr("Download")
 
     readonly property bool inProgress: root.downloading || root.paused
     readonly property real fillRatio: Math.max(0, Math.min(1, root.progress / 100))

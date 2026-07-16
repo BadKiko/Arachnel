@@ -16,12 +16,12 @@ Flickable {
             {
                 id: "plugins",
                 title: qsTr("Plugins"),
-                subtitle: qsTr("FreeTP and others — install, launch, add-ons (.arach)")
+                subtitle: qsTr("FreeTP and others — install, launch, and add-ons")
             },
             {
                 id: "sources",
                 title: qsTr("Hydra catalogs"),
-                subtitle: qsTr("games.json by URL — migrate from Hydra Launcher")
+                subtitle: qsTr("Catalog links — import from Hydra or elsewhere")
             },
             {
                 id: "storage",
@@ -31,22 +31,22 @@ Flickable {
             {
                 id: "updates",
                 title: qsTr("Updates"),
-                subtitle: qsTr("Auto-check updates and portable integrity")
+                subtitle: qsTr("Game and launcher updates")
             },
             {
                 id: "launch",
                 title: qsTr("Launch"),
-                subtitle: qsTr("Global arguments and Proton-GE on Linux")
+                subtitle: qsTr("Launch options and Proton on Linux")
             },
             {
                 id: "appearance",
                 title: qsTr("Appearance"),
-                subtitle: qsTr("Theme, palette, accent color, and language")
+                subtitle: qsTr("Theme, colors, and language")
             },
             {
                 id: "about",
                 title: qsTr("About"),
-                subtitle: qsTr("Application name, version, and platform")
+                subtitle: qsTr("Version and app data")
             }
         ]
         if (root.onLinux)
@@ -64,17 +64,6 @@ Flickable {
         id: body
         width: root.width
         spacing: MD.Token.spacing.small
-
-        MD.Label {
-            Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            Layout.topMargin: MD.Token.spacing.small
-            text: qsTr("Choose a section — each screen covers part of your setup.")
-            wrapMode: Text.WordWrap
-            color: MD.Token.color.on_surface_variant
-            typescale: MD.Token.typescale.body_medium
-        }
 
         ColumnLayout {
             Layout.fillWidth: true
