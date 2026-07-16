@@ -439,7 +439,7 @@ bool PluginHost::extractArachArchive(const QString& archivePath, const QString& 
     if (!isZipArchive(archivePath)) {
         if (errorOut) {
             *errorOut = QCoreApplication::translate(
-                "Core", "Invalid plugin package: expected a ZIP .arach archive");
+                "Core", "Invalid plugin file. Choose a plugin package (.arach)");
         }
         return false;
     }

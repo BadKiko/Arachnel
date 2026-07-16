@@ -79,7 +79,9 @@ MD.ApplicationWindow {
         Appearance.apply()
         if (Qt.platform.os === "linux")
             Core.refreshProtonLatestRelease()
-        if (Core.hasPendingCrashReport())
+        if (!Core.settings.onboardingCompleted)
+            Qt.callLater(function () { onboardingSheet.openWizard() })
+        else if (Core.hasPendingCrashReport())
             Qt.callLater(function () { crashReportDialog.open() })
     }
 
@@ -389,6 +391,15 @@ MD.ApplicationWindow {
     SettingsSheet {
         id: settingsSheet
         anchors.fill: parent
+    }
+
+    OnboardingSheet {
+        id: onboardingSheet
+        anchors.fill: parent
+        onFinished: {
+            if (Core.hasPendingCrashReport())
+                Qt.callLater(function () { crashReportDialog.open() })
+        }
     }
 
     InstallLocationSheet {
