@@ -37,6 +37,10 @@
 #include <QGuiApplication>
 #include <QClipboard>
 #include <QDir>
+#include <QFile>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QSettings>
 #include <QFileInfo>
 #include <QFutureWatcher>
 #include <QJSEngine>
@@ -481,7 +485,8 @@ void CoreController::startPluginInstall(const CatalogEntry& entry, const QString
             if (const JobEntry* job = m_jobStore.jobById(jobId))
                 offerManualInstallForJob(*job);
         } else {
-            showNotice(QCoreApplication::translate("Core", "No install handler for %1").arg(entry.title));
+            showNotice(QCoreApplication::translate("Core", "Can't install %1 — install a plugin for this source")
+                           .arg(entry.title));
         }
         return;
     }
@@ -660,7 +665,8 @@ void CoreController::startPluginAddonInstall(const CatalogEntry& parent,
 
     ISourcePlugin* plugin = m_pluginHost ? m_pluginHost->plugin(sourceId) : nullptr;
     if (!plugin) {
-        showNotice(QCoreApplication::translate("Core", "Source plugin not found: %1").arg(sourceId));
+        showNotice(QCoreApplication::translate("Core", "Plugin not found for %1 — install it in Settings → Plugins")
+                       .arg(sourceId));
         return;
     }
 
@@ -2825,6 +2831,70 @@ void CoreController::openExternalUrl(const QString& url)
         QDesktopServices::openUrl(parsed);
 }
 
+QString CoreController::applicationDataPath() const
+{
+    return QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+}
+
+bool CoreController::clearApplicationData()
+{
+    if (m_applicationDataCleared)
+        return true;
+
+    const QString dataDir = applicationDataPath();
+    if (dataDir.isEmpty()
+        || !dataDir.contains(QStringLiteral("Arachnel"), Qt::CaseInsensitive)) {
+        showNotice(QCoreApplication::translate("Core", "Could not resolve application data folder"));
+        return false;
+    }
+
+    // Stop I/O without rewriting jobs/settings into AppData.
+    if (m_runningGameTimer)
+        m_runningGameTimer->stop();
+    clearRunningGame();
+
+    if (m_catalogLoader)
+        m_catalogLoader->cancelActive();
+    if (m_catalogProbeLoader)
+        m_catalogProbeLoader->cancelActive();
+    if (m_catalogValidateLoader)
+        m_catalogValidateLoader->cancelActive();
+    if (m_httpSession)
+        m_httpSession->shutdown();
+    if (m_torrentSession)
+        m_torrentSession->shutdown();
+    if (m_pluginHost)
+        m_pluginHost->shutdownPlugins();
+
+    QSettings appearanceSettings;
+    appearanceSettings.clear();
+    appearanceSettings.sync();
+
+    if (QDir(dataDir).exists() && !QDir(dataDir).removeRecursively()) {
+        showNotice(QCoreApplication::translate("Core", "Failed to delete application data"));
+        return false;
+    }
+
+    // Seed a minimal settings file so the next launch shows first-run onboarding.
+    if (!QDir().mkpath(dataDir)) {
+        showNotice(QCoreApplication::translate("Core", "Failed to reset application data"));
+        return false;
+    }
+    QFile settingsFile(dataDir + QStringLiteral("/settings.json"));
+    if (settingsFile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        QJsonObject obj;
+        obj.insert(QStringLiteral("onboardingCompleted"), false);
+        settingsFile.write(QJsonDocument(obj).toJson(QJsonDocument::Compact));
+        settingsFile.close();
+    }
+
+    m_applicationDataCleared = true;
+    showNotice(QCoreApplication::translate(
+        "Core", "Application data deleted. Arachnel will quit now."));
+    QTimer::singleShot(400, qApp, []() { QCoreApplication::quit(); });
+    return true;
+}
+
 void CoreController::prefetchCatalogCounts()
 {
     m_catalogPrefetchQueue.clear();
@@ -2934,7 +3004,7 @@ void CoreController::installCatalogEntry(const QString& entryId, const QString& 
     const CatalogEntry& entry = *entryOpt;
 
     if (entry.magnetUris.isEmpty()) {
-        showNotice(QCoreApplication::translate("Core", "No magnet link for %1").arg(entry.title));
+        showNotice(QCoreApplication::translate("Core", "No download link for %1").arg(entry.title));
         return;
     }
 
@@ -3499,6 +3569,9 @@ void CoreController::clearFinishedJobs()
 
 void CoreController::prepareShutdown()
 {
+    if (m_applicationDataCleared)
+        return;
+
     if (m_runningGameTimer)
         m_runningGameTimer->stop();
     clearRunningGame();
@@ -3610,7 +3683,7 @@ void CoreController::browsePluginArach()
         nullptr,
         QCoreApplication::translate("Core", "Install plugin"),
         QStandardPaths::writableLocation(QStandardPaths::HomeLocation),
-        QCoreApplication::translate("Core", "Plugin package (*.arach)"));
+        QCoreApplication::translate("Core", "Plugin files (*.arach)"));
     if (!path.isEmpty())
         installPluginArach(QUrl::fromLocalFile(path));
 #endif

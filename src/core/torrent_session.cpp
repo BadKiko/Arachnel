@@ -240,7 +240,7 @@ bool TorrentSession::addJob(const QString& jobId, const QString& magnetUri, cons
     if (!usedResume) {
         if (magnetUri.isEmpty()) {
             emit torrentFailed(jobId,
-                               QCoreApplication::translate("Core", "No magnet link"));
+                               QCoreApplication::translate("Core", "No download link"));
             return false;
         }
         params = lt::parse_magnet_uri(magnetUri.toStdString(), ec);

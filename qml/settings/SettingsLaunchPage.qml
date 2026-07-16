@@ -35,7 +35,7 @@ Flickable {
             Layout.leftMargin: contentMargin
             Layout.rightMargin: contentMargin
             Layout.topMargin: MD.Token.spacing.small
-            text: qsTr("Extra command-line arguments appended to every game launch.")
+            text: qsTr("Extra options added to every game launch.")
             color: MD.Token.color.on_surface_variant
             wrapMode: Text.WordWrap
             typescale: MD.Token.typescale.body_medium
@@ -46,7 +46,7 @@ Flickable {
             Layout.fillWidth: true
             Layout.leftMargin: contentMargin
             Layout.rightMargin: contentMargin
-            placeholderText: qsTr("Global launch arguments")
+            placeholderText: qsTr("Launch options")
             text: Core.settings.globalLaunchArgs
             onEditingFinished: Core.settings.globalLaunchArgs = text
         }

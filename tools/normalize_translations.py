@@ -298,6 +298,111 @@ EN_TO_RU: dict[str, str] = {
     "Could not clear existing install folder": "Не удалось очистить папку установки",
     "Creating install folder…": "Создание папки установки…",
     "Could not create install folder": "Не удалось создать папку установки",
+    "Could not resolve application data folder": "Не удалось определить папку данных приложения",
+    "Failed to delete application data": "Не удалось удалить данные приложения",
+    "Failed to reset application data": "Не удалось сбросить данные приложения",
+    "Application data deleted. Arachnel will quit now.": "Данные приложения удалены. Arachnel сейчас закроется.",
+    "Danger zone": "Опасная зона",
+    "Delete application data": "Удалить данные приложения",
+    "Removes settings, library metadata, download jobs, cover cache, installed plugins, and Proton builds from the app data folder. Installed game files in your library folders are not deleted. Arachnel will quit afterward.": "Удаляет настройки, метаданные библиотеки, задачи загрузок, кэш обложек, установленные плагины и сборки Proton из папки данных приложения. Файлы игр в папках библиотек не трогаются. После этого Arachnel закроется.",
+    "Deletes settings, download history, caches, plugins, and Proton from the app folder. Game files on your disks stay. Arachnel will quit afterward.": "Удаляет настройки, историю загрузок, кэши, плагины и Proton из папки приложения. Файлы игр на дисках остаются. После этого Arachnel закроется.",
+    "FreeTP and others — install, launch, and add-ons": "FreeTP и другие — установка, запуск и дополнения",
+    "Catalog links — import from Hydra or elsewhere": "Ссылки на каталоги — из Hydra или других источников",
+    "Game and launcher updates": "Обновления игр и лаунчера",
+    "Launch options and Proton on Linux": "Параметры запуска и Proton на Linux",
+    "Theme, colors, and language": "Тема, цвета и язык",
+    "Version and app data": "Версия и данные приложения",
+    "Browse catalogs, download games, and launch from your library.": "Каталоги, загрузка игр и запуск из библиотеки.",
+    "Theme and colors apply across the app.": "Тема и цвета применяются ко всему приложению.",
+    "Install plugin…": "Установить плагин…",
+    "Catalog URL": "URL каталога",
+    "Check for game updates and new Arachnel versions.": "Проверка обновлений игр и новых версий Arachnel.",
+    "Checks for new versions in the background.": "Проверяет новые версии в фоне.",
+    "A quick setup: language, storage, plugins, and a few defaults. Change anything later in Settings.": "Короткая настройка: язык, хранилище, плагины и несколько значений по умолчанию. Всё можно изменить потом в Настройках.",
+    "Pick light or dark theme, palette, and accent color. Change later in Settings.": "Светлая или тёмная тема, палитра и акцентный цвет. Потом можно изменить в Настройках.",
+    "Choose where games are installed. Downloads go to a subfolder on the same drive.": "Выберите, куда ставить игры. Загрузки попадают в подпапку на том же диске.",
+    "Plugins enable automatic install and Play (e.g. FreeTP). Without one, you can still browse catalogs and install manually.": "Плагины включают автоустановку и «Играть» (например FreeTP). Без плагина можно смотреть каталоги и ставить игры вручную.",
+    "Official plugins are coming soon. For now, install a plugin file you already have (e.g. FreeTP).": "Официальные плагины скоро появятся. Пока установите файл плагина, если он уже есть (например FreeTP).",
+    "Notify you when a newer build is available.": "Сообщать, когда доступна более новая сборка.",
+    "Check for new Arachnel versions automatically.": "Автоматически проверять новые версии Arachnel.",
+    "Windows games need Proton on Linux. Install it now or later in Settings → Launch.": "Windows-играм на Linux нужен Proton. Установите сейчас или позже в Настройки → Запуск.",
+    "Open Catalog to browse games. Change language, storage, and plugins anytime in Settings.": "Откройте Каталог, чтобы выбрать игры. Язык, хранилище и плагины — в Настройках.",
+    "Tip: with a plugin installed, Install runs automatically after download. Catalog-only setups need a manual Install step.": "Подсказка: с плагином установка идёт автоматически после загрузки. Только каталог — нужна ручная установка.",
+    "Shows when a newer build is available in the catalog.": "Показывает, когда в каталоге есть более новая сборка.",
+    "Downloads updates when you open the catalog. You can turn this off per game.": "Скачивает обновления при открытии каталога. Можно отключить для отдельной игры.",
+    "Extra options added to every game launch.": "Дополнительные параметры для каждого запуска игры.",
+    "Launch options": "Параметры запуска",
+    "Can't install %1 — install a plugin for this source": "Нельзя установить %1 — установите плагин для этого источника",
+    "Plugin not found for %1 — install it in Settings → Plugins": "Плагин для %1 не найден — установите в Настройки → Плагины",
+    "No download link for %1": "Нет ссылки для загрузки: %1",
+    "Plugin files (*.arach)": "Файлы плагинов (*.arach)",
+    "Invalid plugin file. Choose a plugin package (.arach)": "Неверный файл плагина. Выберите пакет плагина (.arach)",
+    "No download link": "Нет ссылки для загрузки",
+    "Add a catalog to browse games, or install a plugin for download, install, and play.": "Добавьте каталог, чтобы смотреть игры, или установите плагин для загрузки, установки и запуска.",
+    "Paste a catalog link in Settings → Hydra catalogs. Games show up in Catalog.": "Вставьте ссылку на каталог в Настройки → Каталоги Hydra. Игры появятся в Каталоге.",
+    "Pick a game in Catalog to start a download.": "Выберите игру в Каталоге, чтобы начать загрузку.",
+    "Add a catalog URL from Hydra or another community list. Install a plugin (e.g. FreeTP) to install and play.": "Добавьте URL каталога из Hydra или другого списка. Установите плагин (например FreeTP), чтобы ставить и запускать игры.",
+    "Tap Add catalog and paste the catalog link.": "Нажмите «Добавить каталог» и вставьте ссылку.",
+    "Paste a catalog URL. Arachnel loads the game list; a plugin handles install and launch.": "Вставьте URL каталога. Arachnel загрузит список игр; плагин отвечает за установку и запуск.",
+    "Missing your language? Help translate Arachnel on <a href=\"%1\">Weblate</a>.": "Нет вашего языка? Помогите перевести Arachnel на <a href=\"%1\">Weblate</a>.",
+    "Use Install plugin below and pick a plugin file (e.g. FreeTP).": "Нажмите «Установить плагин» ниже и выберите файл плагина (например FreeTP).",
+    "Plugins add catalogs and handle install, updates, and launch (e.g. FreeTP).": "Плагины добавляют каталоги и отвечают за установку, обновления и запуск (например FreeTP).",
+    "Your library is empty. Install a plugin, pick a game in Catalog, and it will appear here.": "Библиотека пуста. Установите плагин, выберите игру в Каталоге — и она появится здесь.",
+    "Install a plugin (e.g. FreeTP) in Settings → Plugins.": "Установите плагин (например FreeTP) в Настройки → Плагины.",
+    "Download finished. Click Install to set up the game.": "Загрузка завершена. Нажмите «Установить», чтобы поставить игру.",
+    "Browse games from your catalogs and sources.": "Игры из ваших каталогов и источников.",
+    "Add a catalog or install a plugin in Settings.": "Добавьте каталог или установите плагин в Настройках.",
+    "Turn on one or more sources above — or leave them all off.": "Включите один или несколько источников выше — или оставьте все выключенными.",
+    "Libraries on disks — like Steam. You can add other drives.": "Библиотеки на дисках — как в Steam. Можно добавить другие диски.",
+    "Delete application data…": "Удалить данные приложения…",
+    "Delete application data?": "Удалить данные приложения?",
+    "This cannot be undone. Settings, plugins, caches, and library records will be removed. Game files on disk stay in place.": "Это нельзя отменить. Настройки, плагины, кэши и записи библиотеки будут удалены. Файлы игр на диске останутся.",
+    "Delete and quit": "Удалить и выйти",
+    # Onboarding
+    "Welcome to Arachnel": "Добро пожаловать в Arachnel",
+    "Step %1 of %2": "Шаг %1 из %2",
+    "Skip": "Пропустить",
+    "A quick setup before you start": "Короткая настройка перед стартом",
+    "We'll pick your language, where games are stored, optional source plugins, and a few defaults. You can change everything later in Settings.": "Выберем язык, папку для игр, при желании плагины источников и несколько настроек по умолчанию. Всё можно изменить потом в Настройках.",
+    "Language": "Язык",
+    "Choose the interface language.": "Выберите язык интерфейса.",
+    "Appearance": "Оформление",
+    "Dark or light theme. Accents and palettes are in Settings → Appearance.": "Тёмная или светлая тема. Акценты и палитры — в Настройки → Оформление.",
+    "Theme, Material palette, and accent color. You can change these later in Settings.": "Тема, палитра Material и акцентный цвет. Потом можно изменить в Настройках.",
+    "Palette": "Палитра",
+    "Primary": "Основной",
+    "Dark": "Тёмная",
+    "Light": "Светлая",
+    "Game library folder": "Папка библиотеки игр",
+    "Pick the drive or folder where games will be installed. Downloads go into a downloads subfolder. You can add more drives later in Settings → Storage.": "Выберите диск или папку, куда ставить игры. Загрузки попадут в подпапку downloads. Другие диски можно добавить позже в Настройки → Хранилище.",
+    "Choose folder…": "Выбрать папку…",
+    "Or keep the default path already listed above.": "Или оставьте путь по умолчанию из списка выше.",
+    "Source plugins": "Плагины источников",
+    "Plugins unlock automatic install and Play for a catalog (for example FreeTP). Without a plugin you can still browse Hydra-compatible JSON feeds and install games manually.": "Плагины включают автоустановку и «Играть» для каталога (например FreeTP). Без плагина можно смотреть JSON-фиды как у Hydra и ставить игры вручную.",
+    "Official plugins": "Официальные плагины",
+    "A curated list will appear here soon. For now, install a .arach package you already have (e.g. FreeTP).": "Скоро здесь появится список официальных плагинов. Пока установите пакет .arach, если он уже есть (например FreeTP).",
+    "Install .arach…": "Установить .arach…",
+    "Skip for now": "Пока пропустить",
+    "Updates": "Обновления",
+    "Recommended defaults — change anytime in Settings → Updates.": "Рекомендуемые значения — потом можно изменить в Настройки → Обновления.",
+    "Check for game updates": "Проверять обновления игр",
+    "When the catalog loads, compare build dates with your library.": "При загрузке каталога сравнивать даты сборок с вашей библиотекой.",
+    "Check for Arachnel updates": "Проверять обновления Arachnel",
+    "Look for new launcher builds on GitHub Releases.": "Искать новые сборки лаунчера на GitHub Releases.",
+    "Proton (Linux)": "Proton (Linux)",
+    "Most catalog builds are Windows executables. Proton-GE runs them on Linux. You can install it now or later in Settings → Launch.": "Большинство сборок в каталоге — Windows .exe. Proton-GE запускает их на Linux. Можно установить сейчас или позже в Настройки → Запуск.",
+    "Proton ready: %1": "Proton готов: %1",
+    "Downloading Proton… %1%": "Загрузка Proton… %1%",
+    "Proton already installed": "Proton уже установлен",
+    "Download Proton-GE %1": "Скачать Proton-GE %1",
+    "Download Proton-GE": "Скачать Proton-GE",
+    "I'll do this later": "Сделаю позже",
+    "You're all set": "Готово",
+    "Open Catalog to browse games, or Settings anytime to change language, storage, plugins, and more.": "Откройте Каталог, чтобы выбрать игры, или зайдите в Настройки — язык, хранилище, плагины и другое.",
+    "Tip: with a source plugin installed, Install runs automatically after the download. Hydra JSON catalogs use manual install, like Hydra.": "Подсказка: с плагином источника установка идёт автоматически после загрузки. Для JSON-каталогов Hydra — ручная установка, как в Hydra.",
+    "Back": "Назад",
+    "Get started": "Начать",
+    "Next": "Далее",
 }
 
 
@@ -329,6 +434,19 @@ def fill_ru_translations(tree: ET.ElementTree) -> tuple[int, list[str]]:
 
         existing = translation_el.text or ""
         is_unfinished = translation_el.attrib.get("type") == "unfinished"
+        ru = EN_TO_RU.get(source)
+
+        # Known mapping wins — keep Weblate/manual strings in sync when we rewrite English copy.
+        if ru is not None:
+            oldsource = message.find("oldsource")
+            if oldsource is not None:
+                message.remove(oldsource)
+            if existing != ru or is_unfinished:
+                translation_el.text = ru
+                translation_el.attrib.pop("type", None)
+                filled += 1
+            continue
+
         if existing.strip() and not is_unfinished:
             continue
 
@@ -338,15 +456,8 @@ def fill_ru_translations(tree: ET.ElementTree) -> tuple[int, list[str]]:
             filled += 1
             continue
 
-        ru = EN_TO_RU.get(source)
-        if ru is None:
-            if is_unfinished or not existing.strip():
-                missing.append(source)
-            continue
-
-        translation_el.text = ru
-        translation_el.attrib.pop("type", None)
-        filled += 1
+        if is_unfinished or not existing.strip():
+            missing.append(source)
     return filled, missing
 
 
