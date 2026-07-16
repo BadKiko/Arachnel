@@ -284,7 +284,7 @@ QString JobOrchestrator::startPluginOwnedDownload(const CatalogEntry& entry, Job
     const QString saveSubdir = QStringLiteral("%1/%2").arg(prefix, entry.id);
     const QString title = kind == JobKind::Update
                               ? QStringLiteral("Updating %1").arg(entry.title)
-                              : QStringLiteral("Installing %1").arg(entry.title);
+                              : QStringLiteral("Downloading %1").arg(entry.title);
     const QString libId = libraryId.isEmpty() ? m_settings->defaultLibraryId() : libraryId;
     const QString downloadsRoot = m_settings->resolvedDownloadsRoot(libId);
     const QString savePath = downloadsRoot + QLatin1Char('/') + saveSubdir;
@@ -328,14 +328,36 @@ void JobOrchestrator::reportPluginProgress(const QString& jobId,
         job.status = QStringLiteral("downloading");
     job.progress = qBound(0, progress.percent, 100);
     job.bytesDownloaded = progress.bytesDownloaded;
-    job.totalBytes = progress.totalBytes;
-    if (!progress.detail.isEmpty())
-        job.detail = progress.detail;
-    if ((job.bytesDownloaded > 0 || job.totalBytes > 0) && !job.detail.contains(QStringLiteral(" / "))) {
-        const QString sizes = buildHttpDetail(job.bytesDownloaded, job.totalBytes);
-        job.detail = job.detail.isEmpty() ? sizes
-                                          : sizes + QStringLiteral(" · ") + job.detail;
+    // Ignore absurd totals from bad percent-based estimates (e.g. 70 GB for a 3 GB game).
+    qint64 total = progress.totalBytes;
+    if (total > 0 && progress.bytesDownloaded > 0 && total > progress.bytesDownloaded * 8)
+        total = 0;
+    job.totalBytes = total;
+
+    int rate = progress.downloadRateBps;
+    const qint64 nowMs = QDateTime::currentMSecsSinceEpoch();
+    if (progress.bytesDownloaded > 0) {
+        const auto it = m_pluginSpeed.constFind(jobId);
+        if (it != m_pluginSpeed.cend() && nowMs > it->ms) {
+            const qint64 dBytes = progress.bytesDownloaded - it->bytes;
+            const qint64 dt = nowMs - it->ms;
+            if (rate <= 0 && dBytes > 0 && dBytes < 80LL * 1024 * 1024 && dt >= 200)
+                rate = static_cast<int>(dBytes * 1000 / dt);
+            if (rate <= 0 && dBytes == 0 && it->rate > 0 && dt < 5000)
+                rate = it->rate;
+        }
+        SpeedSample sample;
+        sample.bytes = progress.bytesDownloaded;
+        sample.ms = nowMs;
+        sample.rate = rate > 0 ? rate : m_pluginSpeed.value(jobId).rate;
+        m_pluginSpeed.insert(jobId, sample);
     }
+
+    if (progress.bytesDownloaded > 0 || total > 0)
+        job.detail = buildTransferDetail(progress.bytesDownloaded, total, rate);
+    else if (!progress.detail.isEmpty())
+        job.detail = progress.detail;
+
     updateJobInModel(job);
     persistJob(job);
 }
@@ -348,13 +370,14 @@ void JobOrchestrator::completePluginDownload(const QString& jobId, const QString
     JobEntry job = jobFromModelRow(row);
     job.status = QStringLiteral("completed");
     job.progress = 100;
-    job.detail = QStringLiteral("Completed");
+    job.detail = QStringLiteral("Installed");
     job.artifactPath = installPath;
     job.completedAt = isoNow();
     updateJobInModel(job);
     persistJob(job);
     const JobKind kind = m_jobKinds.value(jobId, job.kind);
     m_jobKinds.remove(jobId);
+    m_pluginSpeed.remove(jobId);
     emit downloadCompleted(jobId, job.entryId, job.sourceId, installPath, kind, job.libraryId);
 }
 
@@ -370,6 +393,7 @@ void JobOrchestrator::failPluginDownload(const QString& jobId, const QString& er
     updateJobInModel(job);
     persistJob(job);
     m_jobKinds.remove(jobId);
+    m_pluginSpeed.remove(jobId);
     emit downloadFailed(jobId, job.detail);
 }
 
@@ -440,6 +464,7 @@ void JobOrchestrator::cancelJob(const QString& jobId)
     updateJobInModel(job);
     persistJob(job);
     m_jobKinds.remove(jobId);
+    m_pluginSpeed.remove(jobId);
 }
 
 void JobOrchestrator::toggleJobPause(const QString& jobId)
@@ -601,11 +626,23 @@ QString JobOrchestrator::buildDetail(qint64 downloaded, qint64 total, int downlo
 
 QString JobOrchestrator::buildHttpDetail(qint64 downloaded, qint64 total) const
 {
+    return buildTransferDetail(downloaded, total, 0);
+}
+
+QString JobOrchestrator::buildTransferDetail(qint64 downloaded, qint64 total, int downloadRate) const
+{
+    const qint64 remaining = total > 0 ? qMax<qint64>(0, total - downloaded) : 0;
     if (total > 0) {
-        const qint64 remaining = qMax<qint64>(0, total - downloaded);
-        return QStringLiteral("%1 / %2").arg(formatBytes(downloaded), formatBytes(total));
+        return QStringLiteral("%1 / %2 · %3 · ETA %4")
+            .arg(formatBytes(downloaded), formatBytes(total), formatSpeed(downloadRate),
+                 formatEta(remaining, downloadRate));
     }
-    return QStringLiteral("%1").arg(formatBytes(downloaded));
+    if (downloaded > 0) {
+        if (downloadRate > 0)
+            return QStringLiteral("%1 · %2").arg(formatBytes(downloaded), formatSpeed(downloadRate));
+        return formatBytes(downloaded);
+    }
+    return QStringLiteral("Downloading…");
 }
 
 void JobOrchestrator::onTorrentProgress(const QString& jobId, int progress, qint64 downloaded,
@@ -681,7 +718,18 @@ void JobOrchestrator::onHttpProgress(const QString& jobId, int progress, qint64 
     job.bytesDownloaded = downloaded;
     job.totalBytes = total;
     job.status = QStringLiteral("downloading");
-    job.detail = buildHttpDetail(downloaded, total);
+
+    int rate = 0;
+    const qint64 nowMs = QDateTime::currentMSecsSinceEpoch();
+    const auto it = m_pluginSpeed.constFind(jobId);
+    if (it != m_pluginSpeed.cend() && nowMs > it->ms && downloaded >= it->bytes) {
+        const qint64 dt = nowMs - it->ms;
+        if (dt >= 200)
+            rate = static_cast<int>((downloaded - it->bytes) * 1000 / dt);
+    }
+    m_pluginSpeed.insert(jobId, {downloaded, nowMs});
+
+    job.detail = buildTransferDetail(downloaded, total, rate);
     updateJobInModel(job);
     persistJob(job);
 }

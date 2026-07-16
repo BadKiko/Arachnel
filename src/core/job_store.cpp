@@ -104,14 +104,12 @@ void JobStore::upsertJob(const JobEntry& job)
     for (auto& existing : m_jobs) {
         if (existing.id == job.id) {
             existing = job;
-            emit jobsChanged();
-            save();
+            // Disk flush is deferred by JobOrchestrator (progress ticks are frequent).
             return;
         }
     }
     m_jobs.append(job);
     emit jobsChanged();
-    save();
 }
 
 void JobStore::removeJob(const QString& id)
