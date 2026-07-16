@@ -19,18 +19,6 @@ Item {
     property string idleText: qsTr("Download")
 
     readonly property bool inProgress: root.downloading || root.paused
-    function formatByteCount(n) {
-        if (!n || n <= 0)
-            return "0 B"
-        const units = ["B", "KB", "MB", "GB", "TB"]
-        let v = n
-        let u = 0
-        while (v >= 1024 && u < units.length - 1) {
-            v /= 1024
-            u++
-        }
-        return (u === 0 ? Math.round(v) : v.toFixed(1)) + " " + units[u]
-    }
 
     readonly property real fillRatio: Math.max(0, Math.min(1, root.progress / 100))
     readonly property bool showProgressFill: root.inProgress && !root.completed && !root.readyToInstall
@@ -60,13 +48,9 @@ Item {
           : root.completed
             ? qsTr("Downloaded")
             : root.paused
-              ? qsTr("Paused · %1%").arg(root.totalBytes > 0
-                    ? formatByteCount(root.bytesDownloaded) + " / " + formatByteCount(root.totalBytes)
-                    : root.progress)
+              ? qsTr("Paused · %1%").arg(root.progress)
               : root.inProgress
-                ? qsTr("Downloading · %1%").arg(root.totalBytes > 0
-                    ? formatByteCount(root.bytesDownloaded) + " / " + formatByteCount(root.totalBytes)
-                    : root.progress)
+                ? qsTr("Downloading · %1%").arg(root.progress)
                 : root.idleText
 
     readonly property color shellColor: root.installing

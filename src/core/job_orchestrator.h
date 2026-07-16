@@ -68,6 +68,7 @@ private:
     QString buildDetail(qint64 downloaded, qint64 total, int downloadRate, int numPeers,
                         const QString& state) const;
     QString buildHttpDetail(qint64 downloaded, qint64 total) const;
+    QString buildTransferDetail(qint64 downloaded, qint64 total, int downloadRate) const;
 
     void onTorrentProgress(const QString& jobId, int progress, qint64 downloaded, qint64 total,
                            int downloadRate, int numPeers, const QString& state);
@@ -77,12 +78,19 @@ private:
     void onHttpFinished(const QString& jobId, const QString& filePath);
     void onHttpFailed(const QString& jobId, const QString& error);
 
+    struct SpeedSample {
+        qint64 bytes = 0;
+        qint64 ms = 0;
+        int rate = 0;
+    };
+
     SettingsStore* m_settings = nullptr;
     JobStore* m_jobStore = nullptr;
     TorrentSession* m_torrent = nullptr;
     HttpDownloadSession* m_http = nullptr;
     JobModel* m_jobs = nullptr;
     QHash<QString, JobKind> m_jobKinds;
+    QHash<QString, SpeedSample> m_pluginSpeed;
     QTimer m_persistTimer;
     bool m_dirty = false;
 };

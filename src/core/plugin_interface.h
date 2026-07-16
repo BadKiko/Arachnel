@@ -50,6 +50,7 @@ struct OwnedDownloadProgress {
     int percent = 0;
     qint64 bytesDownloaded = 0;
     qint64 totalBytes = 0;
+    int downloadRateBps = 0; // bytes/sec; 0 = unknown
     QString detail;
     QString status; // downloading | installing | paused | …
 };
