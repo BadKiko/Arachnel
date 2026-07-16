@@ -41,6 +41,7 @@ public:
     QString lastError() const { return m_lastError; }
 
     bool installFromArach(const QString& archivePath);
+    bool uninstallPlugin(const QString& pluginId);
 
     using InstallCallback = std::function<void(const InstallResult&)>;
     void runInstallAsync(ISourcePlugin* plugin, const InstallContext& ctx, InstallCallback callback);

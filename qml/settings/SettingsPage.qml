@@ -95,6 +95,10 @@ ColumnLayout {
         stack.navigatePush(sourcesComponent)
     }
 
+    function openPluginStore() {
+        stack.navigatePush(pluginStoreComponent)
+    }
+
     function openSourceCreate() {
         const page = stack.navigatePush(sourceFormComponent)
         if (page)
@@ -134,6 +138,15 @@ ColumnLayout {
         id: pluginsComponent
         SettingsPluginsPage {
             property string pageTitle: qsTr("Plugins")
+            contentMargin: root.contentMargin
+            onOpenStoreRequested: root.openPluginStore()
+        }
+    }
+
+    Component {
+        id: pluginStoreComponent
+        SettingsPluginStorePage {
+            property string pageTitle: qsTr("Plugin store")
             contentMargin: root.contentMargin
         }
     }
