@@ -20,6 +20,7 @@
 #include "launch_resolver.h"
 #include "library_store.h"
 #include "plugin_host.h"
+#include "plugin_catalog_service.h"
 #include "plugin_interface.h"
 #include "process_launcher.h"
 #include "process_tracker.h"
@@ -190,6 +191,24 @@ void CoreController::initializeServices()
     syncInstallKindProbeSuspension();
     m_protonManager = new ProtonManager(this);
     m_appUpdater = new AppUpdater(this);
+    m_pluginCatalog = new PluginCatalogService(this);
+    connect(m_pluginCatalog, &PluginCatalogService::installFinished, this,
+            [this](const QString& pluginId, bool ok, const QString& detail) {
+                if (!ok) {
+                    showNotice(detail.isEmpty()
+                                   ? QCoreApplication::translate("Core", "Plugin install failed")
+                                   : detail);
+                    return;
+                }
+                // detail is temp .arach path on success from catalog service
+                if (detail.endsWith(QStringLiteral(".arach"), Qt::CaseInsensitive)
+                    || QFileInfo::exists(detail)) {
+                    if (installPluginArach(QUrl::fromLocalFile(detail)))
+                        QFile::remove(detail);
+                } else {
+                    showNotice(QCoreApplication::translate("Core", "Plugin installed: %1").arg(pluginId));
+                }
+            });
     connect(m_appUpdater, &AppUpdater::updateCheckFinished, this,
             [this](bool available, const QString& latestVersion) {
                 if (!available)
@@ -3644,6 +3663,36 @@ bool CoreController::installPluginArach(const QUrl& fileUrl)
     return ok;
 }
 
+bool CoreController::uninstallPlugin(const QString& pluginId)
+{
+    if (!m_pluginHost)
+        return false;
+
+    const bool ok = m_pluginHost->uninstallPlugin(pluginId);
+    m_lastPluginError = ok ? QString() : m_pluginHost->lastError();
+    emit lastPluginErrorChanged();
+    if (ok) {
+        showNotice(QCoreApplication::translate("Core", "Plugin removed"));
+        // PluginHost::scan() already emits pluginsChanged → syncSourcesFromPlugins.
+    } else {
+        showNotice(QCoreApplication::translate("Core", "Could not remove plugin: %1")
+                       .arg(m_lastPluginError));
+    }
+    return ok;
+}
+
+void CoreController::refreshOfficialPlugins()
+{
+    if (m_pluginCatalog)
+        m_pluginCatalog->refresh();
+}
+
+void CoreController::installOfficialPlugin(const QString& pluginId)
+{
+    if (m_pluginCatalog)
+        m_pluginCatalog->installPlugin(pluginId);
+}
+
 void CoreController::browsePluginArach()
 {
 #if defined(Q_OS_WIN)
@@ -3764,6 +3813,8 @@ void registerCoreTypes()
                                               QStringLiteral("Use Core.settings"));
     qmlRegisterUncreatableType<AppUpdater>("Arachnel.Core", 1, 0, "AppUpdater",
                                            QStringLiteral("Use Core.appUpdater"));
+    qmlRegisterUncreatableType<PluginCatalogService>("Arachnel.Core", 1, 0, "PluginCatalogService",
+                                                     QStringLiteral("Use Core.pluginCatalog"));
     qmlRegisterUncreatableType<StorageLibraryModel>("Arachnel.Core", 1, 0, "StorageLibraryModel",
                                                     QStringLiteral("Use Core.settings.storageLibraries"));
 }

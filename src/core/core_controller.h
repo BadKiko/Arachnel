@@ -9,6 +9,7 @@
 #include "settings_store.h"
 #include "source_plugin_model.h"
 #include "app_updater.h"
+#include "plugin_catalog_service.h"
 
 #include <QObject>
 #include <QHash>
@@ -71,6 +72,7 @@ class CoreController : public QObject
     Q_PROPERTY(QString protonVersion READ protonVersion NOTIFY protonStateChanged)
     Q_PROPERTY(QVariantList availableProtons READ availableProtons NOTIFY availableProtonsChanged)
     Q_PROPERTY(AppUpdater* appUpdater READ appUpdater CONSTANT)
+    Q_PROPERTY(PluginCatalogService* pluginCatalog READ pluginCatalog CONSTANT)
 
 public:
     static CoreController* create(QQmlEngine* engine, QJSEngine* scriptEngine);
@@ -105,10 +107,14 @@ public:
     QString protonVersion() const;
     QVariantList availableProtons() const;
     AppUpdater* appUpdater() { return m_appUpdater; }
+    PluginCatalogService* pluginCatalog() { return m_pluginCatalog; }
 
     Q_INVOKABLE QVariantList pluginEntries() const;
     Q_INVOKABLE void browsePluginArach();
     Q_INVOKABLE bool installPluginArach(const QUrl& fileUrl);
+    Q_INVOKABLE bool uninstallPlugin(const QString& pluginId);
+    Q_INVOKABLE void refreshOfficialPlugins();
+    Q_INVOKABLE void installOfficialPlugin(const QString& pluginId);
     Q_INVOKABLE void openPluginsFolder();
     Q_INVOKABLE void rescanPlugins();
 
@@ -313,6 +319,7 @@ private:
     InstallKindProbeService* m_installKindProbe = nullptr;
     ProtonManager* m_protonManager = nullptr;
     AppUpdater* m_appUpdater = nullptr;
+    PluginCatalogService* m_pluginCatalog = nullptr;
 
     QVector<CatalogEntry> m_catalogCache;
     QHash<QString, QVector<CatalogEntry>> m_catalogBySource;
