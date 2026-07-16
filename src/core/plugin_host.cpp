@@ -636,4 +636,35 @@ bool PluginHost::installFromArach(const QString& archivePath)
     return true;
 }
 
+bool PluginHost::uninstallPlugin(const QString& pluginId)
+{
+    m_lastError.clear();
+
+    const QString id = pluginId.trimmed();
+    if (id.isEmpty() || id.contains(QLatin1Char('/')) || id.contains(QLatin1Char('\\'))
+        || id == QLatin1String(".") || id == QLatin1String("..")) {
+        m_lastError = QCoreApplication::translate("Core", "Invalid plugin id");
+        return false;
+    }
+
+    const QString targetRoot = writablePluginsDir() + QLatin1Char('/') + id;
+    QDir targetDir(targetRoot);
+    if (!targetDir.exists()) {
+        m_lastError = QCoreApplication::translate("Core", "Plugin is not installed");
+        return false;
+    }
+
+    // Drop loaded libraries before deleting files (DLL/.so stay locked otherwise).
+    unloadAll();
+
+    if (!targetDir.removeRecursively()) {
+        m_lastError = QCoreApplication::translate("Core", "Could not delete plugin files");
+        scan();
+        return false;
+    }
+
+    scan();
+    return true;
+}
+
 } // namespace arachnel::core
