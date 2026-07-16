@@ -13,6 +13,8 @@ Item {
     property string status: ""
     property string statusLabel: ""
     property int progress: 0
+    property real bytesDownloaded: 0
+    property real totalBytes: 0
     property string detail: ""
     property string coverUrl: ""
     property string entryId: ""
@@ -41,6 +43,25 @@ Item {
     readonly property bool canRetryInstall: root.jobId.length > 0 && Core.canRetryJobInstall(root.jobId)
     readonly property bool canManualInstall: root.jobId.length > 0 && Core.canManualInstallJob(root.jobId)
     readonly property bool installFailed: root.detail.indexOf("Install failed") >= 0
+
+    function formatByteCount(n) {
+        if (!n || n <= 0)
+            return "0 B"
+        const units = ["B", "KB", "MB", "GB", "TB"]
+        let v = n
+        let u = 0
+        while (v >= 1024 && u < units.length - 1) {
+            v /= 1024
+            u++
+        }
+        return (u === 0 ? Math.round(v) : v.toFixed(1)) + " " + units[u]
+    }
+
+    readonly property string progressLabel: (root.inProgress || status === "completed")
+            && root.totalBytes > 0
+        ? formatByteCount(root.bytesDownloaded) + " / " + formatByteCount(root.totalBytes)
+        : root.progress + "%"
+
         || root.detail.indexOf("Ошибка установки") >= 0
         || (root.status === "completed" && root.detail.indexOf("Error") === 0)
         || (root.status === "completed" && root.detail.indexOf("Ошибка") === 0)
@@ -123,7 +144,7 @@ Item {
 
                     MD.Label {
                         visible: (root.inProgress || status === "completed") && !root.isInstalling
-                        text: root.progress + "%"
+                        text: root.progressLabel
                         typescale: MD.Token.typescale.label_large
                         color: MD.Token.color.primary
                     }

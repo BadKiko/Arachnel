@@ -140,6 +140,8 @@ MD.ElevationRectangle {
                     status: root.group.status ?? ""
                     statusLabel: root.group.statusLabel ?? ""
                     progress: root.group.progress ?? 0
+                    bytesDownloaded: root.group.bytesDownloaded ?? 0
+                    totalBytes: root.group.totalBytes ?? 0
                     detail: root.group.detail ?? ""
                     coverUrl: root.group.coverUrl ?? ""
                     entryId: root.group.entryId ?? ""
@@ -227,6 +229,8 @@ MD.ElevationRectangle {
                             status: modelData.status ?? ""
                             statusLabel: modelData.statusLabel ?? ""
                             progress: modelData.progress ?? 0
+                            bytesDownloaded: modelData.bytesDownloaded ?? 0
+                            totalBytes: modelData.totalBytes ?? 0
                             detail: modelData.detail ?? ""
                             coverUrl: modelData.coverUrl ?? ""
                             entryId: modelData.entryId ?? ""

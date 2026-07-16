@@ -4,6 +4,7 @@
 #include "job_kind.h"
 #include "job_model.h"
 #include "job_store.h"
+#include "plugin_interface.h"
 #include "settings_store.h"
 
 #include <QObject>
@@ -28,6 +29,12 @@ public:
     QString startCatalogDownload(const CatalogEntry& entry, JobKind kind,
                                  const QString& libraryId = {});
     QString startAddonDownload(const CatalogEntry& parent, const CatalogComponent& addon);
+    /** Create a job slot for plugin-owned downloads (no torrent/HTTP session). */
+    QString startPluginOwnedDownload(const CatalogEntry& entry, JobKind kind,
+                                     const QString& libraryId = {});
+    void reportPluginProgress(const QString& jobId, const OwnedDownloadProgress& progress);
+    void completePluginDownload(const QString& jobId, const QString& installPath);
+    void failPluginDownload(const QString& jobId, const QString& error);
     void cancelJob(const QString& jobId);
     void toggleJobPause(const QString& jobId);
     void removeJob(const QString& jobId);

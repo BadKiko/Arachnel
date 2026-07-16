@@ -28,6 +28,7 @@ QVariantMap jobToMap(const JobEntry& job)
         {QStringLiteral("parentEntryId"), job.parentEntryId},
         {QStringLiteral("referer"), job.referer},
         {QStringLiteral("httpDownload"), job.httpDownload},
+        {QStringLiteral("pluginDownload"), job.pluginDownload},
         {QStringLiteral("artifactPath"), job.artifactPath},
         {QStringLiteral("savePath"), job.savePath},
         {QStringLiteral("createdAt"), job.createdAt},
@@ -96,6 +97,8 @@ QVariant JobModel::data(const QModelIndex& index, int role) const
         return job.referer;
     case HttpDownloadRole:
         return job.httpDownload;
+    case PluginDownloadRole:
+        return job.pluginDownload;
     case ArtifactPathRole:
         return job.artifactPath;
     case CreatedAtRole:
@@ -129,6 +132,7 @@ QHash<int, QByteArray> JobModel::roleNames() const
         {ParentEntryIdRole, "parentEntryId"},
         {RefererRole, "referer"},
         {HttpDownloadRole, "httpDownload"},
+        {PluginDownloadRole, "pluginDownload"},
         {ArtifactPathRole, "artifactPath"},
         {CreatedAtRole, "createdAt"},
         {CompletedAtRole, "completedAt"},

@@ -237,6 +237,7 @@ JobEntry JobOrchestrator::jobFromModelRow(int row) const
     job.parentEntryId = m_jobs->data(idx, JobModel::ParentEntryIdRole).toString();
     job.referer = m_jobs->data(idx, JobModel::RefererRole).toString();
     job.httpDownload = m_jobs->data(idx, JobModel::HttpDownloadRole).toBool();
+    job.pluginDownload = m_jobs->data(idx, JobModel::PluginDownloadRole).toBool();
     job.artifactPath = m_jobs->data(idx, JobModel::ArtifactPathRole).toString();
     job.createdAt = m_jobs->data(idx, JobModel::CreatedAtRole).toString();
     job.completedAt = m_jobs->data(idx, JobModel::CompletedAtRole).toString();
@@ -269,6 +270,107 @@ QString JobOrchestrator::startCatalogDownload(const CatalogEntry& entry, JobKind
     const QString libId = libraryId.isEmpty() ? m_settings->defaultLibraryId() : libraryId;
     return createJob(title, kind, entry.id, entry.sourceId, magnet, saveSubdir, entry.coverUrl,
                      libId);
+}
+
+QString JobOrchestrator::startPluginOwnedDownload(const CatalogEntry& entry, JobKind kind,
+                                                    const QString& libraryId)
+{
+    const QString existing = findActiveJobId(entry.id, {});
+    if (!existing.isEmpty())
+        return existing;
+
+    const QString prefix =
+        kind == JobKind::Update ? QStringLiteral("update") : QStringLiteral("install");
+    const QString saveSubdir = QStringLiteral("%1/%2").arg(prefix, entry.id);
+    const QString title = kind == JobKind::Update
+                              ? QStringLiteral("Updating %1").arg(entry.title)
+                              : QStringLiteral("Installing %1").arg(entry.title);
+    const QString libId = libraryId.isEmpty() ? m_settings->defaultLibraryId() : libraryId;
+    const QString downloadsRoot = m_settings->resolvedDownloadsRoot(libId);
+    const QString savePath = downloadsRoot + QLatin1Char('/') + saveSubdir;
+
+    const QString jobId = QUuid::createUuid().toString(QUuid::WithoutBraces);
+    JobEntry job;
+    job.id = jobId;
+    job.title = title;
+    job.kind = kind;
+    job.status = QStringLiteral("starting");
+    job.progress = 0;
+    job.detail = QStringLiteral("Preparing…");
+    job.entryId = entry.id;
+    job.sourceId = entry.sourceId;
+    job.magnetUri = entry.steamAppId.isEmpty()
+                        ? QString()
+                        : QStringLiteral("steam://app/%1").arg(entry.steamAppId);
+    job.savePath = savePath;
+    job.coverUrl = entry.coverUrl;
+    job.libraryId = libId;
+    job.pluginDownload = true;
+    job.createdAt = isoNow();
+    m_jobKinds.insert(jobId, kind);
+    m_jobs->addJob(job);
+    m_jobStore->upsertJob(job);
+    return jobId;
+}
+
+void JobOrchestrator::reportPluginProgress(const QString& jobId,
+                                           const OwnedDownloadProgress& progress)
+{
+    const int row = m_jobs->indexOfJob(jobId);
+    if (row < 0)
+        return;
+    JobEntry job = jobFromModelRow(row);
+    if (isJobTerminal(job.status))
+        return;
+    if (!progress.status.isEmpty())
+        job.status = progress.status;
+    else if (job.status == QStringLiteral("starting"))
+        job.status = QStringLiteral("downloading");
+    job.progress = qBound(0, progress.percent, 100);
+    job.bytesDownloaded = progress.bytesDownloaded;
+    job.totalBytes = progress.totalBytes;
+    if (!progress.detail.isEmpty())
+        job.detail = progress.detail;
+    if ((job.bytesDownloaded > 0 || job.totalBytes > 0) && !job.detail.contains(QStringLiteral(" / "))) {
+        const QString sizes = buildHttpDetail(job.bytesDownloaded, job.totalBytes);
+        job.detail = job.detail.isEmpty() ? sizes
+                                          : sizes + QStringLiteral(" · ") + job.detail;
+    }
+    updateJobInModel(job);
+    persistJob(job);
+}
+
+void JobOrchestrator::completePluginDownload(const QString& jobId, const QString& installPath)
+{
+    const int row = m_jobs->indexOfJob(jobId);
+    if (row < 0)
+        return;
+    JobEntry job = jobFromModelRow(row);
+    job.status = QStringLiteral("completed");
+    job.progress = 100;
+    job.detail = QStringLiteral("Completed");
+    job.artifactPath = installPath;
+    job.completedAt = isoNow();
+    updateJobInModel(job);
+    persistJob(job);
+    const JobKind kind = m_jobKinds.value(jobId, job.kind);
+    m_jobKinds.remove(jobId);
+    emit downloadCompleted(jobId, job.entryId, job.sourceId, installPath, kind, job.libraryId);
+}
+
+void JobOrchestrator::failPluginDownload(const QString& jobId, const QString& error)
+{
+    const int row = m_jobs->indexOfJob(jobId);
+    if (row < 0)
+        return;
+    JobEntry job = jobFromModelRow(row);
+    job.status = QStringLiteral("failed");
+    job.detail = error.isEmpty() ? QStringLiteral("Failed") : error;
+    job.completedAt = isoNow();
+    updateJobInModel(job);
+    persistJob(job);
+    m_jobKinds.remove(jobId);
+    emit downloadFailed(jobId, job.detail);
 }
 
 QString JobOrchestrator::startAddonDownload(const CatalogEntry& parent,
@@ -321,7 +423,9 @@ void JobOrchestrator::cancelJob(const QString& jobId)
     if (isJobTerminal(job.status))
         return;
 
-    if (job.httpDownload) {
+    if (job.pluginDownload) {
+        // CoreController/PluginHost cancel the plugin work; mark job here.
+    } else if (job.httpDownload) {
         if (isJobRunning(job.status) || job.status == QStringLiteral("starting"))
             m_http->cancel(jobId);
     } else if (isJobRunning(job.status) || job.status == QStringLiteral("starting")) {
@@ -345,7 +449,7 @@ void JobOrchestrator::toggleJobPause(const QString& jobId)
         return;
 
     JobEntry job = jobFromModelRow(row);
-    if (isJobTerminal(job.status) || job.httpDownload)
+    if (isJobTerminal(job.status) || job.httpDownload || job.pluginDownload)
         return;
 
     if (job.status == QStringLiteral("paused")) {
@@ -372,7 +476,9 @@ void JobOrchestrator::removeJob(const QString& jobId)
 
     JobEntry job = jobFromModelRow(row);
     if (!isJobTerminal(job.status)) {
-        if (job.httpDownload) {
+        if (job.pluginDownload) {
+            // cancelled via cancelJob path when user cancels first
+        } else if (job.httpDownload) {
             if (isJobRunning(job.status) || job.status == QStringLiteral("starting"))
                 m_http->cancel(jobId);
         } else if (isJobRunning(job.status) || job.status == QStringLiteral("starting")) {
@@ -380,7 +486,7 @@ void JobOrchestrator::removeJob(const QString& jobId)
         } else {
             m_torrent->removeResumeFile(jobId);
         }
-    } else if (!job.httpDownload) {
+    } else if (!job.httpDownload && !job.pluginDownload) {
         m_torrent->removeResumeFile(jobId);
     }
 
@@ -398,6 +504,8 @@ void JobOrchestrator::retryJob(const QString& jobId)
     JobEntry job = jobFromModelRow(row);
     if (job.status != QStringLiteral("failed") && job.status != QStringLiteral("cancelled"))
         return;
+    if (job.pluginDownload)
+        return; // Plugin-owned retry is started again from UI install
     if (job.magnetUri.isEmpty())
         return;
 
