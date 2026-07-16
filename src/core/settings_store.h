@@ -28,6 +28,8 @@ class SettingsStore : public QObject
     Q_PROPERTY(bool autoCheckAppUpdates READ autoCheckAppUpdates WRITE setAutoCheckAppUpdates NOTIFY
                    autoCheckAppUpdatesChanged)
     Q_PROPERTY(QString uiLanguage READ uiLanguage WRITE setUiLanguage NOTIFY uiLanguageChanged)
+    Q_PROPERTY(bool onboardingCompleted READ onboardingCompleted WRITE setOnboardingCompleted NOTIFY
+                   onboardingCompletedChanged)
     Q_PROPERTY(QString globalLaunchArgs READ globalLaunchArgs WRITE setGlobalLaunchArgs NOTIFY
                    globalLaunchArgsChanged)
     Q_PROPERTY(QString defaultProtonId READ defaultProtonId WRITE setDefaultProtonId NOTIFY
@@ -45,6 +47,7 @@ public:
     bool autoInstallUpdates() const { return m_autoInstallUpdates; }
     bool autoCheckAppUpdates() const { return m_autoCheckAppUpdates; }
     QString uiLanguage() const { return m_uiLanguage; }
+    bool onboardingCompleted() const { return m_onboardingCompleted; }
     QString globalLaunchArgs() const { return m_globalLaunchArgs; }
     QString defaultProtonId() const { return m_defaultProtonId; }
     QStringList protonPriority() const { return m_protonPriority; }
@@ -77,6 +80,7 @@ public:
     void setAutoInstallUpdates(bool enabled);
     void setAutoCheckAppUpdates(bool enabled);
     void setUiLanguage(const QString& languageCode);
+    void setOnboardingCompleted(bool completed);
     void setGlobalLaunchArgs(const QString& args);
     void setDefaultProtonId(const QString& id);
     void setProtonPriority(const QStringList& ids);
@@ -97,6 +101,7 @@ signals:
     void autoInstallUpdatesChanged();
     void autoCheckAppUpdatesChanged();
     void uiLanguageChanged();
+    void onboardingCompletedChanged();
     void globalLaunchArgsChanged();
     void defaultProtonIdChanged();
     void protonPriorityChanged();
@@ -112,6 +117,7 @@ private:
     bool m_autoInstallUpdates = false;
     bool m_autoCheckAppUpdates = true;
     QString m_uiLanguage = QStringLiteral("en");
+    bool m_onboardingCompleted = false;
     QString m_globalLaunchArgs;
     QString m_defaultProtonId;
     QStringList m_protonPriority;

@@ -171,6 +171,8 @@ public:
     Q_INVOKABLE void validateHydraCatalogUrl(const QString& requestId, const QString& url);
     Q_INVOKABLE void invalidateSourceCatalog(const QString& sourceId);
     Q_INVOKABLE void openExternalUrl(const QString& url);
+    Q_INVOKABLE QString applicationDataPath() const;
+    Q_INVOKABLE bool clearApplicationData();
     Q_INVOKABLE bool hasPendingCrashReport() const;
     Q_INVOKABLE QString pendingCrashSummary() const;
     Q_INVOKABLE QString pendingCrashDetails() const;
@@ -332,6 +334,7 @@ private:
     qint64 m_runningProcessId = 0;
     QTimer* m_runningGameTimer = nullptr;
     bool m_catalogLoading = false;
+    bool m_applicationDataCleared = false;
     QSet<QString> m_installingEntries;
     QSet<QString> m_installingAddons;
     QHash<QString, QStringList> m_installSelectedAddons;

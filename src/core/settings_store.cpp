@@ -267,6 +267,15 @@ void SettingsStore::setUiLanguage(const QString& languageCode)
     save();
 }
 
+void SettingsStore::setOnboardingCompleted(bool completed)
+{
+    if (m_onboardingCompleted == completed)
+        return;
+    m_onboardingCompleted = completed;
+    emit onboardingCompletedChanged();
+    save();
+}
+
 void SettingsStore::setGlobalLaunchArgs(const QString& args)
 {
     if (m_globalLaunchArgs == args)
@@ -335,6 +344,7 @@ void SettingsStore::load()
     QFile file(settingsFilePath());
     if (!file.open(QIODevice::ReadOnly)) {
         m_sources.clear();
+        m_onboardingCompleted = false;
         emit libraryRootChanged();
         emit downloadsRootChanged();
         emit maxConcurrentDownloadsChanged();
@@ -342,6 +352,7 @@ void SettingsStore::load()
         emit autoInstallUpdatesChanged();
         emit autoCheckAppUpdatesChanged();
         emit uiLanguageChanged();
+        emit onboardingCompletedChanged();
         emit globalLaunchArgsChanged();
         emit defaultProtonIdChanged();
         emit protonPriorityChanged();
@@ -356,6 +367,10 @@ void SettingsStore::load()
     m_autoInstallUpdates = obj.value(QStringLiteral("autoInstallUpdates")).toBool(false);
     m_autoCheckAppUpdates = obj.value(QStringLiteral("autoCheckAppUpdates")).toBool(true);
     m_uiLanguage = obj.value(QStringLiteral("uiLanguage")).toString(QStringLiteral("en")).toLower();
+    // Existing installs without the key skip the wizard; only true first launch shows it.
+    m_onboardingCompleted = obj.contains(QStringLiteral("onboardingCompleted"))
+                                ? obj.value(QStringLiteral("onboardingCompleted")).toBool(false)
+                                : true;
     m_globalLaunchArgs = obj.value(QStringLiteral("globalLaunchArgs")).toString();
     m_defaultProtonId = obj.value(QStringLiteral("defaultProtonId")).toString();
     m_legacyProtonPath = obj.value(QStringLiteral("protonPath")).toString();
@@ -444,6 +459,7 @@ void SettingsStore::load()
     emit autoInstallUpdatesChanged();
     emit autoCheckAppUpdatesChanged();
     emit uiLanguageChanged();
+    emit onboardingCompletedChanged();
     emit globalLaunchArgsChanged();
     emit defaultProtonIdChanged();
     emit protonPriorityChanged();
@@ -460,6 +476,7 @@ void SettingsStore::save()
     obj.insert(QStringLiteral("autoInstallUpdates"), m_autoInstallUpdates);
     obj.insert(QStringLiteral("autoCheckAppUpdates"), m_autoCheckAppUpdates);
     obj.insert(QStringLiteral("uiLanguage"), m_uiLanguage);
+    obj.insert(QStringLiteral("onboardingCompleted"), m_onboardingCompleted);
     obj.insert(QStringLiteral("globalLaunchArgs"), m_globalLaunchArgs);
     obj.insert(QStringLiteral("defaultProtonId"), m_defaultProtonId);
     QJsonArray priority;

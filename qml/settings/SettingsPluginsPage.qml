@@ -184,7 +184,7 @@ Flickable {
             MD.Button {
                 Layout.fillWidth: true
                 mdState.type: MD.Enum.BtFilled
-                text: qsTr("Install .arach…")
+                text: qsTr("Install plugin…")
                 onClicked: Core.browsePluginArach()
             }
 
