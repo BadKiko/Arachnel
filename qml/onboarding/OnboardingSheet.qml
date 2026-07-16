@@ -40,6 +40,7 @@ Item {
     function openWizard() {
         stepIndex = 0
         reloadPlugins()
+        Core.refreshOfficialPlugins()
         if (root.onLinux) {
             Core.refreshProtonLatestRelease()
             Core.refreshAvailableProtons()
@@ -53,6 +54,14 @@ Item {
 
     function reloadPlugins() {
         pluginRows = Core.pluginEntries()
+    }
+
+    function isPluginInstalled(pluginId) {
+        for (let i = 0; i < pluginRows.length; ++i) {
+            if (pluginRows[i].pluginId === pluginId)
+                return true
+        }
+        return false
     }
 
     function goNext() {
@@ -512,17 +521,109 @@ Item {
                                 anchors.right: parent.right
                                 anchors.top: parent.top
                                 anchors.margins: MD.Token.spacing.medium
-                                spacing: MD.Token.spacing.extra_small
+                                spacing: MD.Token.spacing.small
 
-                                MD.Label {
+                                RowLayout {
                                     Layout.fillWidth: true
-                                    text: qsTr("Official plugins")
-                                    typescale: MD.Token.typescale.title_small
+                                    spacing: MD.Token.spacing.small
+
+                                    MD.Label {
+                                        Layout.fillWidth: true
+                                        text: qsTr("Official plugins")
+                                        typescale: MD.Token.typescale.title_small
+                                    }
+
+                                    MD.Button {
+                                        mdState.type: MD.Enum.BtText
+                                        text: qsTr("Refresh list")
+                                        enabled: !(Core.pluginCatalog && Core.pluginCatalog.loading)
+                                        onClicked: Core.refreshOfficialPlugins()
+                                    }
                                 }
 
                                 MD.Label {
                                     Layout.fillWidth: true
-                                    text: qsTr("Official plugins are coming soon. For now, install a plugin file you already have (e.g. FreeTP).")
+                                    visible: Core.pluginCatalog && Core.pluginCatalog.loading
+                                    text: qsTr("Loading official plugins…")
+                                    color: MD.Token.color.on_surface_variant
+                                    typescale: MD.Token.typescale.body_small
+                                }
+
+                                MD.Label {
+                                    Layout.fillWidth: true
+                                    visible: Core.pluginCatalog && Core.pluginCatalog.error.length > 0
+                                    text: Core.pluginCatalog ? Core.pluginCatalog.error : ""
+                                    color: MD.Token.color.error
+                                    wrapMode: Text.WordWrap
+                                    typescale: MD.Token.typescale.body_small
+                                }
+
+                                MD.Label {
+                                    Layout.fillWidth: true
+                                    visible: Core.pluginCatalog && !Core.pluginCatalog.loading
+                                             && Core.pluginCatalog.error.length === 0
+                                             && Core.pluginCatalog.plugins.length === 0
+                                    text: qsTr("No official plugins available for this platform.")
+                                    color: MD.Token.color.on_surface_variant
+                                    wrapMode: Text.WordWrap
+                                    typescale: MD.Token.typescale.body_small
+                                }
+
+                                Repeater {
+                                    model: Core.pluginCatalog ? Core.pluginCatalog.plugins : []
+
+                                    RowLayout {
+                                        required property var modelData
+                                        Layout.fillWidth: true
+                                        spacing: MD.Token.spacing.small
+
+                                        readonly property bool installed: root.isPluginInstalled(modelData.id)
+                                        readonly property bool thisInstalling: Core.pluginCatalog
+                                                                              && Core.pluginCatalog.installing
+                                                                              && Core.pluginCatalog.installingPluginId === modelData.id
+
+                                        ColumnLayout {
+                                            Layout.fillWidth: true
+                                            spacing: 2
+
+                                            MD.Label {
+                                                Layout.fillWidth: true
+                                                text: modelData.name
+                                                typescale: MD.Token.typescale.title_small
+                                                elide: Text.ElideRight
+                                            }
+
+                                            MD.Label {
+                                                Layout.fillWidth: true
+                                                text: modelData.description
+                                                color: MD.Token.color.on_surface_variant
+                                                typescale: MD.Token.typescale.body_small
+                                                wrapMode: Text.WordWrap
+                                                maximumLineCount: 2
+                                                elide: Text.ElideRight
+                                            }
+
+                                            MD.Label {
+                                                Layout.fillWidth: true
+                                                text: qsTr("v%1").arg(modelData.version)
+                                                color: MD.Token.color.primary
+                                                typescale: MD.Token.typescale.label_small
+                                            }
+                                        }
+
+                                        MD.Button {
+                                            mdState.type: installed ? MD.Enum.BtText : MD.Enum.BtFilledTonal
+                                            text: installed ? qsTr("Installed")
+                                                  : (thisInstalling ? qsTr("Installing…") : qsTr("Install"))
+                                            enabled: !installed && !(Core.pluginCatalog && Core.pluginCatalog.installing)
+                                            onClicked: Core.installOfficialPlugin(modelData.id)
+                                        }
+                                    }
+                                }
+
+                                MD.Label {
+                                    Layout.fillWidth: true
+                                    text: qsTr("Or install a plugin file you already have.")
                                     wrapMode: Text.WordWrap
                                     color: MD.Token.color.on_surface_variant
                                     typescale: MD.Token.typescale.body_small

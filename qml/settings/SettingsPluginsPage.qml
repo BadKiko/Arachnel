@@ -9,8 +9,9 @@ Flickable {
     id: root
 
     property int contentMargin: MD.Token.spacing.large
-
     property var pluginRows: []
+
+    signal openStoreRequested
 
     function reloadPlugins() {
         pluginRows = Core.pluginEntries()
@@ -47,6 +48,16 @@ Flickable {
             typescale: MD.Token.typescale.body_medium
         }
 
+        MD.Button {
+            Layout.fillWidth: true
+            Layout.leftMargin: contentMargin
+            Layout.rightMargin: contentMargin
+            mdState.type: MD.Enum.BtFilled
+            text: qsTr("Plugin store")
+            icon.name: MD.Token.icon.storefront
+            onClicked: root.openStoreRequested()
+        }
+
         Rectangle {
             Layout.fillWidth: true
             Layout.leftMargin: contentMargin
@@ -68,14 +79,14 @@ Flickable {
 
                 MD.Label {
                     Layout.fillWidth: true
-                    text: qsTr("No plugins found")
+                    text: qsTr("No plugins installed")
                     typescale: MD.Token.typescale.title_small
                 }
 
                 MD.Label {
                     Layout.fillWidth: true
                     wrapMode: Text.WordWrap
-                    text: Messages.settingsPluginsInstallHint
+                    text: qsTr("Open the plugin store or install a plugin file you already have.")
                     color: MD.Token.color.on_surface_variant
                     typescale: MD.Token.typescale.body_small
                 }
@@ -88,6 +99,12 @@ Flickable {
             Layout.rightMargin: contentMargin
             spacing: MD.Token.spacing.small
             visible: root.pluginRows.length > 0
+
+            MD.Label {
+                Layout.fillWidth: true
+                text: qsTr("Installed plugins")
+                typescale: MD.Token.typescale.title_small
+            }
 
             Repeater {
                 model: root.pluginRows
@@ -158,6 +175,18 @@ Flickable {
                             maximumLineCount: 2
                             wrapMode: Text.WordWrap
                         }
+
+                        MD.Button {
+                            Layout.alignment: Qt.AlignLeft
+                            mdState.type: MD.Enum.BtText
+                            text: qsTr("Delete")
+                            icon.name: MD.Token.icon.delete
+                            onClicked: {
+                                removeDialog.pluginId = modelData.pluginId
+                                removeDialog.pluginName = modelData.name
+                                removeDialog.open()
+                            }
+                        }
                     }
                 }
             }
@@ -183,8 +212,8 @@ Flickable {
 
             MD.Button {
                 Layout.fillWidth: true
-                mdState.type: MD.Enum.BtFilled
-                text: qsTr("Install plugin…")
+                mdState.type: MD.Enum.BtFilledTonal
+                text: qsTr("Install from file…")
                 onClicked: Core.browsePluginArach()
             }
 
@@ -194,7 +223,7 @@ Flickable {
 
                 MD.Button {
                     Layout.fillWidth: true
-                    mdState.type: MD.Enum.BtFilledTonal
+                    mdState.type: MD.Enum.BtText
                     text: qsTr("Open folder")
                     onClicked: Core.openPluginsFolder()
                 }
@@ -216,6 +245,57 @@ Flickable {
                 color: MD.Token.color.on_surface_variant
                 typescale: MD.Token.typescale.label_small
                 wrapMode: Text.WordWrap
+            }
+        }
+    }
+
+    MD.Dialog {
+        id: removeDialog
+        parent: Overlay.overlay
+        modal: true
+        property string pluginId: ""
+        property string pluginName: ""
+        title: qsTr("Remove plugin?")
+
+        contentItem: ColumnLayout {
+            spacing: MD.Token.spacing.medium
+            width: parent ? parent.width : implicitWidth
+
+            MD.Label {
+                Layout.fillWidth: true
+                text: qsTr("Remove \"%1\"? Catalogs from this plugin will stop working until you install it again.")
+                      .arg(removeDialog.pluginName)
+                wrapMode: Text.WordWrap
+                typescale: MD.Token.typescale.body_medium
+            }
+        }
+
+        footer: Item {
+            implicitHeight: footerRow.implicitHeight + MD.Token.spacing.medium
+
+            MD.DialogButtonBox {
+                id: footerRow
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+
+                MD.Button {
+                    mdState.type: MD.Enum.BtText
+                    text: qsTr("Cancel")
+                    DialogButtonBox.buttonRole: DialogButtonBox.RejectRole
+                    onClicked: removeDialog.close()
+                }
+
+                MD.Button {
+                    mdState.type: MD.Enum.BtFilled
+                    text: qsTr("Delete")
+                    DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole
+                    onClicked: {
+                        const id = removeDialog.pluginId
+                        removeDialog.close()
+                        Core.uninstallPlugin(id)
+                    }
+                }
             }
         }
     }
