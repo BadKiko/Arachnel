@@ -91,6 +91,7 @@ private:
     JobModel* m_jobs = nullptr;
     QHash<QString, JobKind> m_jobKinds;
     QHash<QString, SpeedSample> m_pluginSpeed;
+    QHash<QString, qint64> m_pluginEstimatedTotal;
     QTimer m_persistTimer;
     bool m_dirty = false;
 };
