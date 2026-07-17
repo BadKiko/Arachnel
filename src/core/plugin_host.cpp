@@ -331,7 +331,9 @@ bool PluginHost::loadPluginDir(const QString& dirPath)
     info.iconName = manifest.value(QStringLiteral("iconName")).toString(QStringLiteral("storefront"));
     info.enabled = true;
     info.isPlugin = true;
-    info.pluginVersion = loaded->instance->version();
+    // Prefer plugin.json version (CI bumps this); fall back to DLL if missing.
+    const QString manifestVersion = manifest.value(QStringLiteral("version")).toString().trimmed();
+    info.pluginVersion = !manifestVersion.isEmpty() ? manifestVersion : loaded->instance->version();
     info.pluginRootPath = dirPath;
     info.capabilities = loaded->instance->capabilities();
     info.apiVersion = exportedApi;

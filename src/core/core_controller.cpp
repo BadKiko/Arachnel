@@ -2512,11 +2512,23 @@ void CoreController::loadCatalogSourceNow(const QString& sourceId)
                     [this, watcher, sourceId]() {
                         const QVector<CatalogEntry> entries = watcher->result();
                         watcher->deleteLater();
-                        m_loadingSourceIds.remove(sourceId);
                         logDiagnostic(QStringLiteral("Plugin catalog ready: %1 entries=%2")
                                           .arg(sourceId)
                                           .arg(entries.size()));
                         if (entries.isEmpty()) {
+                            // DLL may ship without a bundled JSON; use catalogUrl when set.
+                            const QString catalogUrl = m_sources.catalogUrlFor(sourceId);
+                            if (!catalogUrl.isEmpty()) {
+                                logDiagnostic(
+                                    QStringLiteral(
+                                        "Plugin catalog empty; falling back to feed: %1 url=%2")
+                                        .arg(sourceId, catalogUrl));
+                                m_catalogHttpLoadActive = true;
+                                updateCatalogLoadingState();
+                                m_catalogLoader->loadFeed(QUrl(catalogUrl), sourceId);
+                                return;
+                            }
+                            m_loadingSourceIds.remove(sourceId);
                             if (m_activeSourceIds.contains(sourceId)) {
                                 showNotice(QCoreApplication::translate(
                                                "Core", "Catalog empty or unavailable: %1")
