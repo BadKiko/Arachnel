@@ -9,6 +9,7 @@
 #include <QStringList>
 #include <QHash>
 #include <QVector>
+#include <functional>
 #include <optional>
 
 namespace arachnel::core {
@@ -42,6 +43,16 @@ struct InstallResult {
     bool success = false;
     QString installPath;
     QString error;
+};
+
+/** Progress for plugins with capability `owns_download` (API v3). */
+struct OwnedDownloadProgress {
+    int percent = 0;
+    qint64 bytesDownloaded = 0;
+    qint64 totalBytes = 0;
+    int downloadRateBps = 0; // bytes/sec; 0 = unknown
+    QString detail;
+    QString status; // downloading | installing | paused | …
 };
 
 struct AddonInstallContext {
@@ -92,6 +103,28 @@ public:
     virtual LaunchInfo launchInfo(const LibraryGame& local) const = 0;
 
     virtual void resetCatalogCache() {}
+
+    /**
+     * Plugin-owned download+install (API v3). Default: not supported.
+     * Only called when capabilities() contains "owns_download" and apiVersion >= 3.
+     * Report progress via onProgress; return final InstallResult when finished.
+     */
+    virtual InstallResult startOwnedDownload(
+        const InstallContext& ctx,
+        const std::function<void(const OwnedDownloadProgress&)>& onProgress) const
+    {
+        (void)ctx;
+        (void)onProgress;
+        InstallResult result;
+        result.success = false;
+        result.error = QStringLiteral("Plugin-owned download is not supported");
+        return result;
+    }
+
+    virtual void cancelOwnedDownload(const QString& jobId) const
+    {
+        (void)jobId;
+    }
 };
 
 } // namespace arachnel::core

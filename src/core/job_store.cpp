@@ -42,6 +42,7 @@ JobEntry jobFromJson(const QJsonObject& obj)
     job.parentEntryId = obj.value(QStringLiteral("parentEntryId")).toString();
     job.referer = obj.value(QStringLiteral("referer")).toString();
     job.httpDownload = obj.value(QStringLiteral("httpDownload")).toBool(false);
+    job.pluginDownload = obj.value(QStringLiteral("pluginDownload")).toBool(false);
     job.artifactPath = obj.value(QStringLiteral("artifactPath")).toString();
     job.createdAt = obj.value(QStringLiteral("createdAt")).toString();
     job.completedAt = obj.value(QStringLiteral("completedAt")).toString();
@@ -68,6 +69,7 @@ QJsonObject jobToJson(const JobEntry& job)
     obj.insert(QStringLiteral("parentEntryId"), job.parentEntryId);
     obj.insert(QStringLiteral("referer"), job.referer);
     obj.insert(QStringLiteral("httpDownload"), job.httpDownload);
+    obj.insert(QStringLiteral("pluginDownload"), job.pluginDownload);
     obj.insert(QStringLiteral("artifactPath"), job.artifactPath);
     obj.insert(QStringLiteral("createdAt"), job.createdAt);
     obj.insert(QStringLiteral("completedAt"), job.completedAt);
@@ -102,14 +104,12 @@ void JobStore::upsertJob(const JobEntry& job)
     for (auto& existing : m_jobs) {
         if (existing.id == job.id) {
             existing = job;
-            emit jobsChanged();
-            save();
+            // Disk flush is deferred by JobOrchestrator (progress ticks are frequent).
             return;
         }
     }
     m_jobs.append(job);
     emit jobsChanged();
-    save();
 }
 
 void JobStore::removeJob(const QString& id)

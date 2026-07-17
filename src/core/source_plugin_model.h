@@ -18,6 +18,7 @@ struct SourcePluginInfo {
     QString pluginVersion;
     QString pluginRootPath;
     QStringList capabilities;
+    int apiVersion = 0;
 };
 
 QString slugifySourceId(const QString& name);

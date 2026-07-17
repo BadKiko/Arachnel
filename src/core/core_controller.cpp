@@ -378,6 +378,30 @@ void CoreController::initializeServices()
             [this](const QString& jobId, const QString& entryId, const QString& sourceId,
                    const QString& artifactPath, JobKind kind, const QString& libraryId) {
                 const JobEntry* job = m_jobStore.jobById(jobId);
+                if (job && job->pluginDownload) {
+                    const auto entry = resolveCatalogEntry(entryId, sourceId, job);
+                    if (!entry) {
+                        showNotice(QCoreApplication::translate(
+                                       "Core", "Could not find game to install: %1")
+                                       .arg(entryId));
+                        return;
+                    }
+                    commitInstalledCatalogGame(*entry, sourceId, job->savePath, libraryId,
+                                               artifactPath, entry->installKind);
+                    if (GameInstallSession* session = m_installSessions.contains(entryId)
+                                                          ? &m_installSessions[entryId]
+                                                          : nullptr) {
+                        session->gameInstallDone = true;
+                        session->installStep = 1;
+                        syncInstallSessionPhase(entryId);
+                        advanceInstallSession(entryId);
+                    } else {
+                        m_jobOrchestrator->setJobPhase(jobId, QStringLiteral("completed"),
+                                                       QStringLiteral("Installed"));
+                    }
+                    return;
+                }
+
                 if (job && !job->parentEntryId.isEmpty()) {
                     const CatalogEntry* parent = findCatalogEntry(job->parentEntryId);
                     if (!parent) {
@@ -1556,9 +1580,10 @@ bool CoreController::gameHasUpdate(const LibraryGame& game, const CatalogEntry& 
         if (ISourcePlugin* plugin = m_pluginHost ? m_pluginHost->plugin(game.sourceId) : nullptr) {
             if (plugin->detectUpdate(game, remote))
                 return true;
-        } else if (isRemoteUploadDateNewer(remote.uploadDate, game.uploadDate)) {
-            return true;
         }
+        // Fallback for plugins that omit detectUpdate: compare uploadDate.
+        if (isRemoteUploadDateNewer(remote.uploadDate, game.uploadDate))
+            return true;
     }
 
     for (const auto& component : game.components) {
@@ -2478,40 +2503,45 @@ void CoreController::processCatalogLoadQueue()
 
 void CoreController::loadCatalogSourceNow(const QString& sourceId)
 {
+    // DLL plugins own their catalog (catalogUrl is for the plugin's own sync, not Hydra feeds).
+    if (m_pluginHost) {
+        if (ISourcePlugin* plugin = m_pluginHost->plugin(sourceId)) {
+            logDiagnostic(QStringLiteral("Loading catalog via plugin DLL: %1").arg(sourceId));
+            auto* watcher = new QFutureWatcher<QVector<CatalogEntry>>(this);
+            connect(watcher, &QFutureWatcher<QVector<CatalogEntry>>::finished, this,
+                    [this, watcher, sourceId]() {
+                        const QVector<CatalogEntry> entries = watcher->result();
+                        watcher->deleteLater();
+                        m_loadingSourceIds.remove(sourceId);
+                        logDiagnostic(QStringLiteral("Plugin catalog ready: %1 entries=%2")
+                                          .arg(sourceId)
+                                          .arg(entries.size()));
+                        if (entries.isEmpty()) {
+                            if (m_activeSourceIds.contains(sourceId)) {
+                                showNotice(QCoreApplication::translate(
+                                               "Core", "Catalog empty or unavailable: %1")
+                                               .arg(m_sources.nameForId(sourceId)));
+                            }
+                            rebuildMergedCatalog();
+                            return;
+                        }
+                        storeCatalogForSource(sourceId, entries);
+                    });
+
+            ISourcePlugin* pluginRef = plugin;
+            // Only force a cold re-seed on explicit refreshCatalog(); normal loads reuse
+            // the plugin's in-memory/local cache (55k-entry parse is expensive).
+            watcher->setFuture(QtConcurrent::run([pluginRef]() { return pluginRef->catalog(); }));
+            return;
+        }
+    }
+
     const QString catalogUrl = m_sources.catalogUrlFor(sourceId);
     if (!catalogUrl.isEmpty()) {
         logDiagnostic(QStringLiteral("Loading catalog via feed: %1 url=%2").arg(sourceId, catalogUrl));
         m_catalogHttpLoadActive = true;
         updateCatalogLoadingState();
         m_catalogLoader->loadFeed(QUrl(catalogUrl), sourceId);
-        return;
-    }
-
-    if (ISourcePlugin* plugin = m_pluginHost->plugin(sourceId)) {
-        logDiagnostic(QStringLiteral("Loading catalog via plugin DLL: %1").arg(sourceId));
-        auto* watcher = new QFutureWatcher<QVector<CatalogEntry>>(this);
-        connect(watcher, &QFutureWatcher<QVector<CatalogEntry>>::finished, this,
-                [this, watcher, sourceId]() {
-                    const QVector<CatalogEntry> entries = watcher->result();
-                    watcher->deleteLater();
-                    m_loadingSourceIds.remove(sourceId);
-                    logDiagnostic(QStringLiteral("Plugin catalog ready: %1 entries=%2")
-                                      .arg(sourceId)
-                                      .arg(entries.size()));
-                    if (entries.isEmpty()) {
-                        if (m_activeSourceIds.contains(sourceId)) {
-                            showNotice(QCoreApplication::translate("Core", "Catalog empty or unavailable: %1")
-                                               .arg(m_sources.nameForId(sourceId)));
-                        }
-                        rebuildMergedCatalog();
-                        return;
-                    }
-                    storeCatalogForSource(sourceId, entries);
-                });
-
-        ISourcePlugin* pluginRef = plugin;
-        plugin->resetCatalogCache();
-        watcher->setFuture(QtConcurrent::run([pluginRef]() { return pluginRef->catalog(); }));
         return;
     }
 
@@ -2687,6 +2717,11 @@ void CoreController::refreshCatalog(const QString& sourceId)
     emit catalogCountsChanged();
     m_loadingSourceIds.remove(sourceId);
     m_catalogLoadQueue.removeAll(sourceId);
+
+    if (m_pluginHost) {
+        if (ISourcePlugin* plugin = m_pluginHost->plugin(sourceId))
+            plugin->resetCatalogCache();
+    }
 
     if (m_activeSourceIds.contains(sourceId))
         requestCatalogLoad(sourceId);
@@ -3022,13 +3057,77 @@ void CoreController::installCatalogEntry(const QString& entryId, const QString& 
 
     const CatalogEntry& entry = *entryOpt;
 
-    if (entry.magnetUris.isEmpty()) {
+    const bool ownsDownload =
+        m_pluginHost && m_pluginHost->pluginOwnsDownload(entry.sourceId);
+
+    if (!ownsDownload && entry.magnetUris.isEmpty()) {
         showNotice(QCoreApplication::translate("Core", "No download link for %1").arg(entry.title));
+        return;
+    }
+
+    if (ownsDownload && entry.steamAppId.isEmpty() && entry.magnetUris.isEmpty()) {
+        showNotice(QCoreApplication::translate("Core", "No Steam App ID for %1").arg(entry.title));
         return;
     }
 
     const QStringList addonIds = variantListToStringList(addonIdsVariant);
     const QString libId = libraryId.isEmpty() ? m_settings.defaultLibraryId() : libraryId;
+
+    if (ownsDownload) {
+        ISourcePlugin* plugin = m_pluginHost->plugin(entry.sourceId);
+        if (!plugin) {
+            showNotice(QCoreApplication::translate("Core", "Plugin not loaded: %1").arg(entry.sourceId));
+            return;
+        }
+
+        const QString jobId =
+            m_jobOrchestrator->startPluginOwnedDownload(entry, JobKind::Download, libId);
+        if (jobId.isEmpty()) {
+            showNotice(
+                QCoreApplication::translate("Core", "Could not start download for %1").arg(entry.title));
+            return;
+        }
+
+        ensureLibraryPlaceholder(entry, libId, addonIds);
+
+        pruneUnselectedAddonJobs(entryId, addonIds);
+        if (!addonIds.isEmpty())
+            beginInstallSession(entryId, jobId, entry.sourceId, addonIds);
+        for (const QString& addonId : addonIds) {
+            const CatalogComponent* addon = findCatalogAddon(entry, addonId);
+            if (!addon)
+                continue;
+            m_jobOrchestrator->startAddonDownload(entry, *addon);
+        }
+
+        InstallContext ctx;
+        ctx.jobId = jobId;
+        ctx.entryId = entry.id;
+        ctx.sourceId = entry.sourceId;
+        ctx.title = entry.title;
+        ctx.targetPath = m_settings.resolvedLibraryRoot(libId) + QLatin1Char('/') + entry.id;
+        ctx.downloadsPath = m_settings.resolvedDownloadsRoot(libId);
+        ctx.downloadPath = ctx.downloadsPath + QLatin1Char('/') + QStringLiteral("install/") + entry.id;
+        ctx.magnetUri = entry.steamAppId;
+        ctx.uploadDate = entry.uploadDate;
+        ctx.installKind = entry.installKind;
+
+        m_pluginHost->runOwnedDownloadAsync(
+            plugin, ctx,
+            [this, jobId](const OwnedDownloadProgress& progress) {
+                m_jobOrchestrator->reportPluginProgress(jobId, progress);
+            },
+            [this, jobId](const InstallResult& result) {
+                if (result.success)
+                    m_jobOrchestrator->completePluginDownload(jobId, result.installPath);
+                else
+                    m_jobOrchestrator->failPluginDownload(
+                        jobId, result.error.isEmpty()
+                                   ? QCoreApplication::translate("Core", "Install failed")
+                                   : result.error);
+            });
+        return;
+    }
 
     const QString jobId = m_jobOrchestrator->startCatalogDownload(entry, JobKind::Download, libId);
     if (jobId.isEmpty()) {
@@ -3264,6 +3363,14 @@ void CoreController::updateCatalogEntry(const QString& entryId)
         return;
     }
 
+    if (m_pluginHost && m_pluginHost->pluginOwnsDownload(entry->sourceId)) {
+        const LibraryGame* game = m_libraryStore.gameById(entryId);
+        const QString libId = game && !game->libraryId.isEmpty() ? game->libraryId
+                                                                : m_settings.defaultLibraryId();
+        installCatalogEntry(entryId, libId, {});
+        return;
+    }
+
     const QString jobId = m_jobOrchestrator->startCatalogDownload(*entry, JobKind::Update);
     if (jobId.isEmpty()) {
         showNotice(QCoreApplication::translate("Core", "Could not start update for %1").arg(entry->title));
@@ -3293,6 +3400,9 @@ void CoreController::cancelJob(const QString& jobId)
         m_jobOrchestrator->removeJob(jobId);
         return;
     }
+
+    if (job && job->pluginDownload && m_pluginHost)
+        m_pluginHost->cancelOwnedDownload(job->sourceId, jobId);
 
     const QString entryId = job ? job->entryId : QString();
     m_jobOrchestrator->cancelJob(jobId);
