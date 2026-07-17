@@ -26,6 +26,7 @@ struct JobEntry {
     QString parentEntryId;
     QString referer;
     bool httpDownload = false;
+    bool pluginDownload = false;
     QString artifactPath;
     QString createdAt;
     QString completedAt;
@@ -58,6 +59,7 @@ public:
         ParentEntryIdRole,
         RefererRole,
         HttpDownloadRole,
+        PluginDownloadRole,
         ArtifactPathRole,
         CreatedAtRole,
         CompletedAtRole,

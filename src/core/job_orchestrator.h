@@ -4,6 +4,7 @@
 #include "job_kind.h"
 #include "job_model.h"
 #include "job_store.h"
+#include "plugin_interface.h"
 #include "settings_store.h"
 
 #include <QObject>
@@ -28,6 +29,12 @@ public:
     QString startCatalogDownload(const CatalogEntry& entry, JobKind kind,
                                  const QString& libraryId = {});
     QString startAddonDownload(const CatalogEntry& parent, const CatalogComponent& addon);
+    /** Create a job slot for plugin-owned downloads (no torrent/HTTP session). */
+    QString startPluginOwnedDownload(const CatalogEntry& entry, JobKind kind,
+                                     const QString& libraryId = {});
+    void reportPluginProgress(const QString& jobId, const OwnedDownloadProgress& progress);
+    void completePluginDownload(const QString& jobId, const QString& installPath);
+    void failPluginDownload(const QString& jobId, const QString& error);
     void cancelJob(const QString& jobId);
     void toggleJobPause(const QString& jobId);
     void removeJob(const QString& jobId);
@@ -61,6 +68,7 @@ private:
     QString buildDetail(qint64 downloaded, qint64 total, int downloadRate, int numPeers,
                         const QString& state) const;
     QString buildHttpDetail(qint64 downloaded, qint64 total) const;
+    QString buildTransferDetail(qint64 downloaded, qint64 total, int downloadRate) const;
 
     void onTorrentProgress(const QString& jobId, int progress, qint64 downloaded, qint64 total,
                            int downloadRate, int numPeers, const QString& state);
@@ -70,12 +78,20 @@ private:
     void onHttpFinished(const QString& jobId, const QString& filePath);
     void onHttpFailed(const QString& jobId, const QString& error);
 
+    struct SpeedSample {
+        qint64 bytes = 0;
+        qint64 ms = 0;
+        int rate = 0;
+    };
+
     SettingsStore* m_settings = nullptr;
     JobStore* m_jobStore = nullptr;
     TorrentSession* m_torrent = nullptr;
     HttpDownloadSession* m_http = nullptr;
     JobModel* m_jobs = nullptr;
     QHash<QString, JobKind> m_jobKinds;
+    QHash<QString, SpeedSample> m_pluginSpeed;
+    QHash<QString, qint64> m_pluginEstimatedTotal;
     QTimer m_persistTimer;
     bool m_dirty = false;
 };

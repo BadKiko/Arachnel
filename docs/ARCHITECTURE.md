@@ -75,28 +75,13 @@ UI вызывает `Core` (`Arachnel.Core`); Core оркестрирует stor
 
 ## Контракт плагина источника
 
-Черновик в `src/core/plugin_interface.h`:
+Актуально: `src/core/plugin_interface.h`, ABI в `src/core/plugin_api.h` (**v3**; хост принимает **2..3**).
 
-```cpp
-class ISourcePlugin {
-    virtual QString id() const = 0;
-    virtual QString name() const = 0;
-    virtual QStringList capabilities() const = 0;
+Типичный torrent-пайплайн (FreeTP): ядро качает magnet → `installFromDownload(downloadPath)`.
 
-    virtual QVector<CatalogEntry> search(...) const = 0;
-    virtual std::optional<CatalogEntry> metadata(...) const = 0;
+**Plugin-owned download** (SteaMidra и аналоги): capability `owns_download` → ядро создаёт job `pluginDownload` и вызывает `startOwnedDownload` / `cancelOwnedDownload` без magnet. Каталог обязан отдавать идентификатор установки (часто `steamAppId`).
 
-    virtual void install(const InstallContext& ctx) = 0;
-    virtual void cancelInstall(const QString& jobId) = 0;
-
-    virtual std::optional<QString> detectUpdate(...) const = 0;
-    virtual void update(const InstallContext& ctx, const LibraryGame& local) = 0;
-
-    virtual LaunchInfo launchInfo(const LibraryGame& local) const = 0;
-};
-```
-
-`InstallContext` передаёт `magnetUri`, `targetPath`, `downloadsPath`, `installKind` — плагин выполняет установку после того, как ядро скачало торрент.
+`InstallContext` передаёт пути библиотеки/загрузок и (для torrent) `magnetUri`; для owns_download в `magnetUri` хост может прокинуть `steamAppId`.
 
 Тип установки (`installKind`) — для UX в UI; **логику выполняет плагин**:
 
@@ -105,7 +90,7 @@ class ISourcePlugin {
 - `bundled_fix` — готовая сборка;
 - `fix_download` — игра + отдельный патч.
 
-## Примеры плагинов (целевые)
+## Примеры плагинов
 
 ### online-fix
 
@@ -119,6 +104,13 @@ class ISourcePlugin {
 - каталог: JSON-фид (см. [CATALOG_FORMAT.md](CATALOG_FORMAT.md));
 - установка: ветвление внутри плагина (installer / portable / fix overlay);
 - обновление: по `uploadDate` и компонентам DLC.
+
+### steamidra
+
+- отдельный GPL-3 репозиторий; **не** линкуется статически в закрытое ядро;
+- каталог: Hubcap API (+ Steam Store fallback) / локальный `games.json`;
+- загрузка: `owns_download` — LumaCore/SLSsteam + Steam, fallback DepotDownloaderMod;
+- launch: `steam://rungameid/{appid}`.
 
 ## Сборка и зависимости
 

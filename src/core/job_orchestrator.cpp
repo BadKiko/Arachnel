@@ -7,6 +7,7 @@
 
 #include <QDateTime>
 #include <QFileInfo>
+#include <QRegularExpression>
 #include <QUuid>
 
 namespace arachnel::core {
@@ -16,6 +17,27 @@ namespace {
 QString isoNow()
 {
     return QDateTime::currentDateTimeUtc().toString(Qt::ISODate);
+}
+
+qint64 parseSizeLabelBytes(const QString& label)
+{
+    static const QRegularExpression re(
+        QStringLiteral(R"(^(\d+(?:\.\d+)?)\s*(B|KB|MB|GB|TB))"),
+        QRegularExpression::CaseInsensitiveOption);
+    const QRegularExpressionMatch match = re.match(label.trimmed());
+    if (!match.hasMatch())
+        return 0;
+    double value = match.captured(1).toDouble();
+    const QString unit = match.captured(2).toUpper();
+    if (unit == QLatin1String("KB"))
+        value *= 1024.0;
+    else if (unit == QLatin1String("MB"))
+        value *= 1024.0 * 1024.0;
+    else if (unit == QLatin1String("GB"))
+        value *= 1024.0 * 1024.0 * 1024.0;
+    else if (unit == QLatin1String("TB"))
+        value *= 1024.0 * 1024.0 * 1024.0 * 1024.0;
+    return static_cast<qint64>(value);
 }
 
 } // namespace
@@ -237,6 +259,7 @@ JobEntry JobOrchestrator::jobFromModelRow(int row) const
     job.parentEntryId = m_jobs->data(idx, JobModel::ParentEntryIdRole).toString();
     job.referer = m_jobs->data(idx, JobModel::RefererRole).toString();
     job.httpDownload = m_jobs->data(idx, JobModel::HttpDownloadRole).toBool();
+    job.pluginDownload = m_jobs->data(idx, JobModel::PluginDownloadRole).toBool();
     job.artifactPath = m_jobs->data(idx, JobModel::ArtifactPathRole).toString();
     job.createdAt = m_jobs->data(idx, JobModel::CreatedAtRole).toString();
     job.completedAt = m_jobs->data(idx, JobModel::CompletedAtRole).toString();
@@ -269,6 +292,166 @@ QString JobOrchestrator::startCatalogDownload(const CatalogEntry& entry, JobKind
     const QString libId = libraryId.isEmpty() ? m_settings->defaultLibraryId() : libraryId;
     return createJob(title, kind, entry.id, entry.sourceId, magnet, saveSubdir, entry.coverUrl,
                      libId);
+}
+
+QString JobOrchestrator::startPluginOwnedDownload(const CatalogEntry& entry, JobKind kind,
+                                                    const QString& libraryId)
+{
+    const QString existing = findActiveJobId(entry.id, {});
+    if (!existing.isEmpty())
+        return existing;
+
+    const QString prefix =
+        kind == JobKind::Update ? QStringLiteral("update") : QStringLiteral("install");
+    const QString saveSubdir = QStringLiteral("%1/%2").arg(prefix, entry.id);
+    const QString title = kind == JobKind::Update
+                              ? QStringLiteral("Updating %1").arg(entry.title)
+                              : QStringLiteral("Downloading %1").arg(entry.title);
+    const QString libId = libraryId.isEmpty() ? m_settings->defaultLibraryId() : libraryId;
+    const QString downloadsRoot = m_settings->resolvedDownloadsRoot(libId);
+    const QString savePath = downloadsRoot + QLatin1Char('/') + saveSubdir;
+
+    const QString jobId = QUuid::createUuid().toString(QUuid::WithoutBraces);
+    JobEntry job;
+    job.id = jobId;
+    job.title = title;
+    job.kind = kind;
+    job.status = QStringLiteral("starting");
+    job.progress = 0;
+    job.detail = QStringLiteral("Preparing…");
+    job.entryId = entry.id;
+    job.sourceId = entry.sourceId;
+    job.magnetUri = entry.steamAppId.isEmpty()
+                        ? QString()
+                        : QStringLiteral("steam://app/%1").arg(entry.steamAppId);
+    job.savePath = savePath;
+    job.coverUrl = entry.coverUrl;
+    job.libraryId = libId;
+    job.pluginDownload = true;
+    job.createdAt = isoNow();
+    const qint64 estimatedTotal = parseSizeLabelBytes(entry.sizeLabel);
+    if (estimatedTotal > 0) {
+        m_pluginEstimatedTotal.insert(jobId, estimatedTotal);
+        job.totalBytes = estimatedTotal;
+    }
+    m_jobKinds.insert(jobId, kind);
+    m_jobs->addJob(job);
+    m_jobStore->upsertJob(job);
+    return jobId;
+}
+
+void JobOrchestrator::reportPluginProgress(const QString& jobId,
+                                           const OwnedDownloadProgress& progress)
+{
+    const int row = m_jobs->indexOfJob(jobId);
+    if (row < 0)
+        return;
+    JobEntry job = jobFromModelRow(row);
+    if (isJobTerminal(job.status))
+        return;
+    if (!progress.status.isEmpty())
+        job.status = progress.status;
+    else if (job.status == QStringLiteral("starting"))
+        job.status = QStringLiteral("downloading");
+    job.progress = qBound(0, progress.percent, 100);
+    qint64 downloaded = progress.bytesDownloaded;
+    qint64 total = progress.totalBytes;
+    if (total <= 0) {
+        // Plugin sent an explicit "unknown total" with bytes — drop stale cache
+        // (old fake totals like "19.5 GB" from percent invention).
+        if (downloaded > 0)
+            m_pluginEstimatedTotal.remove(jobId);
+        else {
+            const auto estimated = m_pluginEstimatedTotal.constFind(jobId);
+            if (estimated != m_pluginEstimatedTotal.cend())
+                total = estimated.value();
+        }
+    }
+    if (downloaded <= 0 && total > 0 && progress.percent > 0)
+        downloaded = total * progress.percent / 100;
+    // Do NOT invent total from percent (e.g. 2.7 GB at 9% → fake 30 GB / "19.5 GB").
+    // Only trust totals reported by the plugin worker.
+    if (total > 0 && downloaded > 0 && total > downloaded * 2)
+        total = 0;
+    job.bytesDownloaded = downloaded;
+    job.totalBytes = total;
+
+    if (total > 0 && downloaded > 0) {
+        const int bytePercent =
+            static_cast<int>(qMin<qint64>(99, downloaded * 100 / total));
+        if (bytePercent > job.progress)
+            job.progress = bytePercent;
+    }
+
+    if (total > 0)
+        m_pluginEstimatedTotal.insert(jobId, total);
+
+    int rate = progress.downloadRateBps;
+    const qint64 nowMs = QDateTime::currentMSecsSinceEpoch();
+    if (downloaded > 0) {
+        const auto it = m_pluginSpeed.constFind(jobId);
+        if (it != m_pluginSpeed.cend() && nowMs > it->ms) {
+            const qint64 dBytes = downloaded - it->bytes;
+            const qint64 dt = nowMs - it->ms;
+            // Allow large folder-size jumps (depot downloads often land in chunks).
+            if (rate <= 0 && dBytes > 8 * 1024 && dt >= 400)
+                rate = static_cast<int>(dBytes * 1000 / dt);
+            if (rate > 0 && rate < 8 * 1024)
+                rate = 0;
+            if (rate <= 0 && dBytes == 0 && it->rate >= 8 * 1024 && dt < 5000)
+                rate = it->rate;
+        }
+        SpeedSample sample;
+        sample.bytes = downloaded;
+        sample.ms = nowMs;
+        sample.rate = rate > 0 ? rate : m_pluginSpeed.value(jobId).rate;
+        m_pluginSpeed.insert(jobId, sample);
+    }
+
+    if (downloaded > 0 || total > 0)
+        job.detail = buildTransferDetail(downloaded, total, rate);
+    else if (!progress.detail.isEmpty())
+        job.detail = progress.detail;
+
+    updateJobInModel(job);
+    persistJob(job);
+}
+
+void JobOrchestrator::completePluginDownload(const QString& jobId, const QString& installPath)
+{
+    const int row = m_jobs->indexOfJob(jobId);
+    if (row < 0)
+        return;
+    JobEntry job = jobFromModelRow(row);
+    job.status = QStringLiteral("completed");
+    job.progress = 100;
+    job.detail = QStringLiteral("Installed");
+    job.artifactPath = installPath;
+    job.completedAt = isoNow();
+    updateJobInModel(job);
+    persistJob(job);
+    const JobKind kind = m_jobKinds.value(jobId, job.kind);
+    m_jobKinds.remove(jobId);
+    m_pluginSpeed.remove(jobId);
+    m_pluginEstimatedTotal.remove(jobId);
+    emit downloadCompleted(jobId, job.entryId, job.sourceId, installPath, kind, job.libraryId);
+}
+
+void JobOrchestrator::failPluginDownload(const QString& jobId, const QString& error)
+{
+    const int row = m_jobs->indexOfJob(jobId);
+    if (row < 0)
+        return;
+    JobEntry job = jobFromModelRow(row);
+    job.status = QStringLiteral("failed");
+    job.detail = error.isEmpty() ? QStringLiteral("Failed") : error;
+    job.completedAt = isoNow();
+    updateJobInModel(job);
+    persistJob(job);
+    m_jobKinds.remove(jobId);
+    m_pluginSpeed.remove(jobId);
+    m_pluginEstimatedTotal.remove(jobId);
+    emit downloadFailed(jobId, job.detail);
 }
 
 QString JobOrchestrator::startAddonDownload(const CatalogEntry& parent,
@@ -321,7 +504,9 @@ void JobOrchestrator::cancelJob(const QString& jobId)
     if (isJobTerminal(job.status))
         return;
 
-    if (job.httpDownload) {
+    if (job.pluginDownload) {
+        // CoreController/PluginHost cancel the plugin work; mark job here.
+    } else if (job.httpDownload) {
         if (isJobRunning(job.status) || job.status == QStringLiteral("starting"))
             m_http->cancel(jobId);
     } else if (isJobRunning(job.status) || job.status == QStringLiteral("starting")) {
@@ -336,6 +521,7 @@ void JobOrchestrator::cancelJob(const QString& jobId)
     updateJobInModel(job);
     persistJob(job);
     m_jobKinds.remove(jobId);
+    m_pluginSpeed.remove(jobId);
 }
 
 void JobOrchestrator::toggleJobPause(const QString& jobId)
@@ -345,7 +531,7 @@ void JobOrchestrator::toggleJobPause(const QString& jobId)
         return;
 
     JobEntry job = jobFromModelRow(row);
-    if (isJobTerminal(job.status) || job.httpDownload)
+    if (isJobTerminal(job.status) || job.httpDownload || job.pluginDownload)
         return;
 
     if (job.status == QStringLiteral("paused")) {
@@ -372,7 +558,9 @@ void JobOrchestrator::removeJob(const QString& jobId)
 
     JobEntry job = jobFromModelRow(row);
     if (!isJobTerminal(job.status)) {
-        if (job.httpDownload) {
+        if (job.pluginDownload) {
+            // cancelled via cancelJob path when user cancels first
+        } else if (job.httpDownload) {
             if (isJobRunning(job.status) || job.status == QStringLiteral("starting"))
                 m_http->cancel(jobId);
         } else if (isJobRunning(job.status) || job.status == QStringLiteral("starting")) {
@@ -380,7 +568,7 @@ void JobOrchestrator::removeJob(const QString& jobId)
         } else {
             m_torrent->removeResumeFile(jobId);
         }
-    } else if (!job.httpDownload) {
+    } else if (!job.httpDownload && !job.pluginDownload) {
         m_torrent->removeResumeFile(jobId);
     }
 
@@ -398,6 +586,8 @@ void JobOrchestrator::retryJob(const QString& jobId)
     JobEntry job = jobFromModelRow(row);
     if (job.status != QStringLiteral("failed") && job.status != QStringLiteral("cancelled"))
         return;
+    if (job.pluginDownload)
+        return; // Plugin-owned retry is started again from UI install
     if (job.magnetUri.isEmpty())
         return;
 
@@ -464,7 +654,8 @@ QString JobOrchestrator::formatBytes(qint64 bytes) const
 
 QString JobOrchestrator::formatSpeed(int bytesPerSec) const
 {
-    if (bytesPerSec <= 0)
+    // Match plugin: hide crumb rates (EMA decay used to show "1 B/s").
+    if (bytesPerSec < 8 * 1024)
         return QStringLiteral("—");
     return QStringLiteral("%1/s").arg(formatBytes(bytesPerSec));
 }
@@ -493,11 +684,27 @@ QString JobOrchestrator::buildDetail(qint64 downloaded, qint64 total, int downlo
 
 QString JobOrchestrator::buildHttpDetail(qint64 downloaded, qint64 total) const
 {
+    return buildTransferDetail(downloaded, total, 0);
+}
+
+QString JobOrchestrator::buildTransferDetail(qint64 downloaded, qint64 total, int downloadRate) const
+{
+    const qint64 remaining = total > 0 ? qMax<qint64>(0, total - downloaded) : 0;
+    const bool showSpeed = downloadRate >= 8 * 1024;
     if (total > 0) {
-        const qint64 remaining = qMax<qint64>(0, total - downloaded);
+        if (showSpeed) {
+            return QStringLiteral("%1 / %2 · %3 · ETA %4")
+                .arg(formatBytes(downloaded), formatBytes(total), formatSpeed(downloadRate),
+                     formatEta(remaining, downloadRate));
+        }
         return QStringLiteral("%1 / %2").arg(formatBytes(downloaded), formatBytes(total));
     }
-    return QStringLiteral("%1").arg(formatBytes(downloaded));
+    if (downloaded > 0) {
+        if (showSpeed)
+            return QStringLiteral("%1 · %2").arg(formatBytes(downloaded), formatSpeed(downloadRate));
+        return formatBytes(downloaded);
+    }
+    return QStringLiteral("Downloading…");
 }
 
 void JobOrchestrator::onTorrentProgress(const QString& jobId, int progress, qint64 downloaded,
@@ -573,7 +780,18 @@ void JobOrchestrator::onHttpProgress(const QString& jobId, int progress, qint64 
     job.bytesDownloaded = downloaded;
     job.totalBytes = total;
     job.status = QStringLiteral("downloading");
-    job.detail = buildHttpDetail(downloaded, total);
+
+    int rate = 0;
+    const qint64 nowMs = QDateTime::currentMSecsSinceEpoch();
+    const auto it = m_pluginSpeed.constFind(jobId);
+    if (it != m_pluginSpeed.cend() && nowMs > it->ms && downloaded >= it->bytes) {
+        const qint64 dt = nowMs - it->ms;
+        if (dt >= 200)
+            rate = static_cast<int>((downloaded - it->bytes) * 1000 / dt);
+    }
+    m_pluginSpeed.insert(jobId, {downloaded, nowMs});
+
+    job.detail = buildTransferDetail(downloaded, total, rate);
     updateJobInModel(job);
     persistJob(job);
 }

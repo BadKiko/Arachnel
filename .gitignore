@@ -28,4 +28,11 @@ build_dlls.txt
 dist_dlls.txt
 qml-test-err.txt
 
+# Local agent / download progress dumps (repo root)
+/_*.log
+/_*.out
+/_mcp_*
+/_meccha_*
+/_progress_*
+
 translations/generated/*.qm

@@ -111,6 +111,44 @@ Item {
         downloadJob = Core.jobs.jobForEntry(root.gameId)
     }
 
+    function parseSizeLabelBytes(label) {
+        if (!label || !label.length)
+            return 0
+        const m = /^(\d+(?:\.\d+)?)\s*(B|KB|MB|GB|TB)/i.exec(label.trim())
+        if (!m)
+            return 0
+        let v = parseFloat(m[1])
+        const unit = m[2].toUpperCase()
+        if (unit === "KB")
+            v *= 1024
+        else if (unit === "MB")
+            v *= 1024 * 1024
+        else if (unit === "GB")
+            v *= 1024 * 1024 * 1024
+        else if (unit === "TB")
+            v *= 1024 * 1024 * 1024 * 1024
+        return v
+    }
+
+    readonly property real effectiveTotalBytes: {
+        const jobTotal = root.downloadJob.totalBytes ?? 0
+        if (jobTotal > 0)
+            return jobTotal
+        return root.parseSizeLabelBytes(root.info.sizeLabel ?? "")
+    }
+
+    readonly property real effectiveDownloaded: {
+        const raw = root.downloadJob.bytesDownloaded ?? 0
+        const total = root.effectiveTotalBytes
+        if (raw > 0)
+            return raw
+        if (total > 0 && (root.downloadJob.progress ?? 0) > 0)
+            return total * root.downloadJob.progress / 100
+        return 0
+    }
+
+    readonly property real downloadTotalBytes: root.effectiveTotalBytes
+
     Connections {
         target: Core.jobs
         function onJobsChanged() {
@@ -375,6 +413,9 @@ Item {
                         DownloadProgressButton {
                             visible: root.canManageDownload
                             progress: root.downloadJob.progress ?? 0
+                            bytesDownloaded: Number(root.effectiveDownloaded) || 0
+                            totalBytes: Number(root.downloadTotalBytes) || 0
+                            detail: root.downloadJob.detail ?? ""
                             downloading: root.downloadActive
                             paused: root.downloadPaused
                             completed: false
@@ -417,16 +458,6 @@ Item {
                             mdState.type: MD.Enum.BtFilledTonal
                             onClicked: Core.updateCatalogEntry(root.gameId)
                         }
-                    }
-
-                    MD.Label {
-                        Layout.fillWidth: true
-                        visible: root.showDownloadProgress && !root.downloadCompleted && !!(root.downloadJob.detail)
-                        text: root.downloadJob.detail ?? ""
-                        color: MD.Token.color.on_surface_variant
-                        typescale: MD.Token.typescale.label_medium
-                        elide: Text.ElideRight
-                        maximumLineCount: 1
                     }
                 }
             }

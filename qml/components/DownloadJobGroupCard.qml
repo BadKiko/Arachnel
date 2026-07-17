@@ -69,6 +69,32 @@ MD.ElevationRectangle {
         return qsTr("%1 add-ons").arg(addons.length)
     }
 
+    function parseSizeLabelBytes(label) {
+        if (!label || !label.length)
+            return 0
+        const m = /^(\d+(?:\.\d+)?)\s*(B|KB|MB|GB|TB)/i.exec(label.trim())
+        if (!m)
+            return 0
+        let v = parseFloat(m[1])
+        const unit = m[2].toUpperCase()
+        if (unit === "KB")
+            v *= 1024
+        else if (unit === "MB")
+            v *= 1024 * 1024
+        else if (unit === "GB")
+            v *= 1024 * 1024 * 1024
+        else if (unit === "TB")
+            v *= 1024 * 1024 * 1024 * 1024
+        return v
+    }
+
+    readonly property var entryInfo: {
+        const id = root.group.entryId ?? ""
+        return id.length ? Core.entryDetails(id) : ({})
+    }
+
+    readonly property real catalogTotalBytes: root.parseSizeLabelBytes(root.entryInfo.sizeLabel ?? "")
+
     function groupAllTerminal() {
         if (!["completed", "failed", "cancelled"].includes(group.status ?? ""))
             return false
@@ -140,6 +166,11 @@ MD.ElevationRectangle {
                     status: root.group.status ?? ""
                     statusLabel: root.group.statusLabel ?? ""
                     progress: root.group.progress ?? 0
+                    bytesDownloaded: root.group.bytesDownloaded ?? 0
+                    totalBytes: (root.group.totalBytes ?? 0) > 0
+                                  ? root.group.totalBytes
+                                  : root.catalogTotalBytes
+                    catalogTotalBytes: root.catalogTotalBytes
                     detail: root.group.detail ?? ""
                     coverUrl: root.group.coverUrl ?? ""
                     entryId: root.group.entryId ?? ""
@@ -227,6 +258,8 @@ MD.ElevationRectangle {
                             status: modelData.status ?? ""
                             statusLabel: modelData.statusLabel ?? ""
                             progress: modelData.progress ?? 0
+                            bytesDownloaded: modelData.bytesDownloaded ?? 0
+                            totalBytes: modelData.totalBytes ?? 0
                             detail: modelData.detail ?? ""
                             coverUrl: modelData.coverUrl ?? ""
                             entryId: modelData.entryId ?? ""
