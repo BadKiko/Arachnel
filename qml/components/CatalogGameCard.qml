@@ -11,6 +11,7 @@ Item {
     required property string title
     required property string coverUrl
     required property string version
+    required property string uploadDate
     required property string sizeLabel
     required property string installKindLabel
     required property bool metadataPending
@@ -18,6 +19,17 @@ Item {
     property bool compactRow: false
 
     signal openDetails(string entryId)
+
+    readonly property string metaLine: {
+        const parts = []
+        if ((root.version || "").length > 0)
+            parts.push("v" + root.version)
+        else if ((root.uploadDate || "").length >= 10)
+            parts.push(root.uploadDate.substring(0, 10))
+        if ((root.sizeLabel || "").length > 0)
+            parts.push(root.sizeLabel)
+        return parts.join(" · ")
+    }
 
     readonly property bool hasLibraryCover: coverUrl.startsWith("file:")
                                             || coverUrl.indexOf("library_capsule") >= 0
@@ -94,7 +106,7 @@ Item {
 
             MD.Label {
                 Layout.fillWidth: true
-                text: "v" + root.version + " · " + root.sizeLabel
+                text: root.metaLine
                 color: MD.Token.color.on_surface_variant
                 typescale: MD.Token.typescale.label_medium
                 elide: Text.ElideRight
@@ -146,7 +158,7 @@ Item {
 
         MD.Label {
             Layout.fillWidth: true
-            text: "v" + root.version + " · " + root.sizeLabel
+            text: root.metaLine
             color: MD.Token.color.on_surface_variant
             typescale: MD.Token.typescale.label_medium
             elide: Text.ElideRight

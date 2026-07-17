@@ -388,8 +388,17 @@ void CoreController::initializeServices()
                     }
                     commitInstalledCatalogGame(*entry, sourceId, job->savePath, libraryId,
                                                artifactPath, entry->installKind);
-                    m_jobOrchestrator->setJobPhase(jobId, QStringLiteral("completed"),
-                                                   QStringLiteral("Installed"));
+                    if (GameInstallSession* session = m_installSessions.contains(entryId)
+                                                          ? &m_installSessions[entryId]
+                                                          : nullptr) {
+                        session->gameInstallDone = true;
+                        session->installStep = 1;
+                        syncInstallSessionPhase(entryId);
+                        advanceInstallSession(entryId);
+                    } else {
+                        m_jobOrchestrator->setJobPhase(jobId, QStringLiteral("completed"),
+                                                       QStringLiteral("Installed"));
+                    }
                     return;
                 }
 
@@ -1571,9 +1580,10 @@ bool CoreController::gameHasUpdate(const LibraryGame& game, const CatalogEntry& 
         if (ISourcePlugin* plugin = m_pluginHost ? m_pluginHost->plugin(game.sourceId) : nullptr) {
             if (plugin->detectUpdate(game, remote))
                 return true;
-        } else if (isRemoteUploadDateNewer(remote.uploadDate, game.uploadDate)) {
-            return true;
         }
+        // Fallback for plugins that omit detectUpdate: compare uploadDate.
+        if (isRemoteUploadDateNewer(remote.uploadDate, game.uploadDate))
+            return true;
     }
 
     for (const auto& component : game.components) {
@@ -2493,40 +2503,45 @@ void CoreController::processCatalogLoadQueue()
 
 void CoreController::loadCatalogSourceNow(const QString& sourceId)
 {
+    // DLL plugins own their catalog (catalogUrl is for the plugin's own sync, not Hydra feeds).
+    if (m_pluginHost) {
+        if (ISourcePlugin* plugin = m_pluginHost->plugin(sourceId)) {
+            logDiagnostic(QStringLiteral("Loading catalog via plugin DLL: %1").arg(sourceId));
+            auto* watcher = new QFutureWatcher<QVector<CatalogEntry>>(this);
+            connect(watcher, &QFutureWatcher<QVector<CatalogEntry>>::finished, this,
+                    [this, watcher, sourceId]() {
+                        const QVector<CatalogEntry> entries = watcher->result();
+                        watcher->deleteLater();
+                        m_loadingSourceIds.remove(sourceId);
+                        logDiagnostic(QStringLiteral("Plugin catalog ready: %1 entries=%2")
+                                          .arg(sourceId)
+                                          .arg(entries.size()));
+                        if (entries.isEmpty()) {
+                            if (m_activeSourceIds.contains(sourceId)) {
+                                showNotice(QCoreApplication::translate(
+                                               "Core", "Catalog empty or unavailable: %1")
+                                               .arg(m_sources.nameForId(sourceId)));
+                            }
+                            rebuildMergedCatalog();
+                            return;
+                        }
+                        storeCatalogForSource(sourceId, entries);
+                    });
+
+            ISourcePlugin* pluginRef = plugin;
+            // Only force a cold re-seed on explicit refreshCatalog(); normal loads reuse
+            // the plugin's in-memory/local cache (55k-entry parse is expensive).
+            watcher->setFuture(QtConcurrent::run([pluginRef]() { return pluginRef->catalog(); }));
+            return;
+        }
+    }
+
     const QString catalogUrl = m_sources.catalogUrlFor(sourceId);
     if (!catalogUrl.isEmpty()) {
         logDiagnostic(QStringLiteral("Loading catalog via feed: %1 url=%2").arg(sourceId, catalogUrl));
         m_catalogHttpLoadActive = true;
         updateCatalogLoadingState();
         m_catalogLoader->loadFeed(QUrl(catalogUrl), sourceId);
-        return;
-    }
-
-    if (ISourcePlugin* plugin = m_pluginHost->plugin(sourceId)) {
-        logDiagnostic(QStringLiteral("Loading catalog via plugin DLL: %1").arg(sourceId));
-        auto* watcher = new QFutureWatcher<QVector<CatalogEntry>>(this);
-        connect(watcher, &QFutureWatcher<QVector<CatalogEntry>>::finished, this,
-                [this, watcher, sourceId]() {
-                    const QVector<CatalogEntry> entries = watcher->result();
-                    watcher->deleteLater();
-                    m_loadingSourceIds.remove(sourceId);
-                    logDiagnostic(QStringLiteral("Plugin catalog ready: %1 entries=%2")
-                                      .arg(sourceId)
-                                      .arg(entries.size()));
-                    if (entries.isEmpty()) {
-                        if (m_activeSourceIds.contains(sourceId)) {
-                            showNotice(QCoreApplication::translate("Core", "Catalog empty or unavailable: %1")
-                                               .arg(m_sources.nameForId(sourceId)));
-                        }
-                        rebuildMergedCatalog();
-                        return;
-                    }
-                    storeCatalogForSource(sourceId, entries);
-                });
-
-        ISourcePlugin* pluginRef = plugin;
-        plugin->resetCatalogCache();
-        watcher->setFuture(QtConcurrent::run([pluginRef]() { return pluginRef->catalog(); }));
         return;
     }
 
@@ -2702,6 +2717,11 @@ void CoreController::refreshCatalog(const QString& sourceId)
     emit catalogCountsChanged();
     m_loadingSourceIds.remove(sourceId);
     m_catalogLoadQueue.removeAll(sourceId);
+
+    if (m_pluginHost) {
+        if (ISourcePlugin* plugin = m_pluginHost->plugin(sourceId))
+            plugin->resetCatalogCache();
+    }
 
     if (m_activeSourceIds.contains(sourceId))
         requestCatalogLoad(sourceId);
@@ -3069,6 +3089,16 @@ void CoreController::installCatalogEntry(const QString& entryId, const QString& 
         }
 
         ensureLibraryPlaceholder(entry, libId, addonIds);
+
+        pruneUnselectedAddonJobs(entryId, addonIds);
+        if (!addonIds.isEmpty())
+            beginInstallSession(entryId, jobId, entry.sourceId, addonIds);
+        for (const QString& addonId : addonIds) {
+            const CatalogComponent* addon = findCatalogAddon(entry, addonId);
+            if (!addon)
+                continue;
+            m_jobOrchestrator->startAddonDownload(entry, *addon);
+        }
 
         InstallContext ctx;
         ctx.jobId = jobId;

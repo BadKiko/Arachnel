@@ -24,6 +24,7 @@ Item {
     property bool addonRow: false
     property bool showExternalRemove: false
     property real fillProgress: -1
+    property real catalogTotalBytes: 0
 
     signal removeRequested()
 
@@ -44,6 +45,27 @@ Item {
     readonly property bool canManualInstall: root.jobId.length > 0 && Core.canManualInstallJob(root.jobId)
     readonly property bool installFailed: root.detail.indexOf("Install failed") >= 0
 
+    property real _lastBytesSample: 0
+    property real _lastBytesAtMs: 0
+    property real estimatedRateBps: 0
+
+    readonly property real effectiveTotalBytes: {
+        const jobTotal = root.totalBytes || 0
+        if (jobTotal > 0)
+            return jobTotal
+        return root.catalogTotalBytes || 0
+    }
+
+    readonly property real effectiveDownloaded: {
+        const raw = root.bytesDownloaded || 0
+        const total = root.effectiveTotalBytes
+        if (raw > 0)
+            return raw
+        if (total > 0 && root.progress > 0)
+            return total * root.progress / 100
+        return 0
+    }
+
     function formatByteCount(n) {
         if (!n || n <= 0)
             return "0 B"
@@ -57,14 +79,105 @@ Item {
         return (u === 0 ? Math.round(v) : v.toFixed(1)) + " " + units[u]
     }
 
-    readonly property string progressLabel: (root.inProgress || status === "completed")
-            && root.totalBytes > 0
-        ? formatByteCount(root.bytesDownloaded) + " / " + formatByteCount(root.totalBytes)
-        : root.progress + "%"
+    function formatSpeed(bps) {
+        if (!bps || bps < 8 * 1024)
+            return ""
+        return formatByteCount(bps) + "/s"
+    }
 
-        || root.detail.indexOf("Ошибка установки") >= 0
-        || (root.status === "completed" && root.detail.indexOf("Error") === 0)
-        || (root.status === "completed" && root.detail.indexOf("Ошибка") === 0)
+    function formatEta(remaining, bps) {
+        if (!bps || bps <= 0 || !remaining || remaining <= 0)
+            return ""
+        const seconds = Math.floor(remaining / bps)
+        if (seconds < 60)
+            return seconds + " s"
+        if (seconds < 3600)
+            return Math.floor(seconds / 60) + " min"
+        return Math.floor(seconds / 3600) + " h"
+    }
+
+    function isStatusDetail(d) {
+        if (!d || d.length === 0)
+            return true
+        return d === "Downloading…"
+                || d === "Загрузка…"
+                || d.indexOf("Preparing") >= 0
+                || d.indexOf("Подготовка") >= 0
+                || d.indexOf("Getting game info") >= 0
+                || d.indexOf("Installed") >= 0
+                || d.indexOf("Установлено") >= 0
+    }
+
+    readonly property string transferLine: {
+        const d = (root.detail || "").trim()
+        // Core already builds "2.7 GB · 12 MB/s" — use it when it's not a status phrase.
+        if (d.length > 0 && !isStatusDetail(d))
+            return d
+        if (d.length > 0 && isStatusDetail(d)
+                && d !== "Downloading…"
+                && d !== "Загрузка…")
+            return d
+
+        const downloaded = root.effectiveDownloaded
+        const total = root.effectiveTotalBytes
+        const speed = formatSpeed(root.estimatedRateBps)
+        if (total > 0) {
+            const base = formatByteCount(downloaded) + " / " + formatByteCount(total)
+            const eta = formatEta(Math.max(0, total - downloaded), root.estimatedRateBps)
+            if (speed && eta)
+                return base + " · " + speed + " · ETA " + eta
+            if (speed)
+                return base + " · " + speed
+            return base
+        }
+        if (downloaded > 0 && speed)
+            return formatByteCount(downloaded) + " · " + speed
+        if (downloaded > 0)
+            return formatByteCount(downloaded)
+        return ""
+    }
+
+    onBytesDownloadedChanged: {
+        const now = Date.now()
+        const sample = root.effectiveDownloaded
+        if (_lastBytesAtMs > 0 && sample > _lastBytesSample) {
+            const dt = (now - _lastBytesAtMs) / 1000
+            const delta = sample - _lastBytesSample
+            if (dt > 0.4 && delta > 0)
+                root.estimatedRateBps = delta / dt
+        }
+        _lastBytesSample = sample
+        _lastBytesAtMs = now
+    }
+
+    onProgressChanged: {
+        if ((root.bytesDownloaded || 0) <= 0)
+            _lastBytesSample = root.effectiveDownloaded
+    }
+
+    Timer {
+        id: rateTimer
+        interval: 250
+        running: root.inProgress && !root.isPaused && !root.isInstalling
+        repeat: true
+        onTriggered: {
+            const sample = root.effectiveDownloaded
+            const now = Date.now()
+            if (_lastBytesAtMs > 0 && sample > _lastBytesSample) {
+                const dt = (now - _lastBytesAtMs) / 1000
+                const delta = sample - _lastBytesSample
+                if (dt > 0.1 && delta > 0 && delta < 80 * 1024 * 1024)
+                    root.estimatedRateBps = delta / dt
+            }
+            _lastBytesSample = sample
+            _lastBytesAtMs = now
+        }
+    }
+
+    readonly property string progressLabel: (root.inProgress || status === "completed")
+            && root.effectiveTotalBytes > 0
+        ? formatByteCount(root.effectiveDownloaded) + " / " + formatByteCount(root.effectiveTotalBytes)
+        : root.progress + "%"
 
     implicitWidth: embedded ? parent ? parent.width : implicitWidth : implicitWidth
     implicitHeight: content.implicitHeight + (embedded ? 0 : 2 * MD.Token.spacing.medium)
@@ -257,6 +370,20 @@ Item {
 
                     MD.Label {
                         Layout.fillWidth: true
+                        visible: root.transferLine.length > 0
+                        text: root.transferLine
+                        color: root.isFailed || root.installFailed
+                               ? MD.Token.color.error
+                               : MD.Token.color.primary
+                        typescale: MD.Token.typescale.label_large
+                        elide: Text.ElideRight
+                        maximumLineCount: 1
+                    }
+
+                    MD.Label {
+                        Layout.fillWidth: true
+                        visible: root.transferLine.length === 0
+                                 && ((root.detail.length ? root.detail : root.statusLabel).length > 0)
                         text: root.detail.length ? root.detail : root.statusLabel
                         color: (root.isFailed || root.installFailed) ? MD.Token.color.error
                                                                        : MD.Token.color.on_surface_variant

@@ -10,7 +10,7 @@
 | Плагин | Репозиторий | Статус |
 |--------|-------------|--------|
 | `freetp` | [arachnel-plugin-freetp](https://github.com/PetWork/arachnel-plugin-freetp) | реализован (torrent → install) |
-| `steamidra` | [arachnel-plugin-steamidra](https://github.com/PetWork/arachnel-plugin-steamidra) | реализован (API v3, `owns_download`, GPL-3) |
+| `steamidra` | [arachnel-plugin-steamidra](https://gitlab.com/BadKiko/arachnel-plugin-steamidra) | реализован (API v3, `owns_download`, GPL-3) |
 | `online-fix` | — | не начат |
 
 Hydra-каталоги (только JSON по URL, без своего install-пайплайна) настраиваются в UI: **Настройки → Каталоги Hydra**.
