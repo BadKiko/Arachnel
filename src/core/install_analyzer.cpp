@@ -89,8 +89,10 @@ InstallPlan InstallAnalyzer::pickBestPlan(const QVector<Candidate>& candidates,
 
     for (const Candidate& candidate : candidates) {
         int score = candidate.analysis.confidence;
-        if (candidate.pluginId == sourceId)
-            score += 5;
+        // Prefer the catalog source plugin strongly so owns_download plugins
+        // (e.g. Steam) cannot steal FreeTP/torrent installs via a high confidence.
+        if (!sourceId.isEmpty() && candidate.pluginId == sourceId)
+            score += 50;
         if (!candidate.analysis.canInstall)
             score -= 100;
 
