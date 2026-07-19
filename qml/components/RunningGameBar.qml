@@ -16,18 +16,14 @@ MD.Pane {
     backgroundColor: MD.Token.color.primary_container
     clip: true
 
-    implicitHeight: row.implicitHeight + 2 * padding
-
-    RowLayout {
-        id: row
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.verticalCenter: parent.verticalCenter
+    contentItem: RowLayout {
+        id: content
         spacing: MD.Token.spacing.small
 
         Rectangle {
             Layout.preferredWidth: 10
             Layout.preferredHeight: 10
+            Layout.alignment: Qt.AlignVCenter
             radius: 5
             color: MD.Token.color.primary
 
@@ -52,6 +48,7 @@ MD.Pane {
         GamePoster {
             Layout.preferredWidth: 40
             Layout.preferredHeight: 54
+            Layout.alignment: Qt.AlignVCenter
             source: root.coverUrl
             seed: root.title
             fallbackText: root.title.charAt(0)
@@ -60,6 +57,7 @@ MD.Pane {
 
         ColumnLayout {
             Layout.fillWidth: true
+            Layout.alignment: Qt.AlignVCenter
             spacing: 0
 
             MD.Label {
@@ -81,6 +79,7 @@ MD.Pane {
         }
 
         MD.Button {
+            Layout.alignment: Qt.AlignVCenter
             text: qsTr("Stop")
             mdState.type: MD.Enum.BtFilled
             mdState.backgroundColor: MD.Token.color.error
