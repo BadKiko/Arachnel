@@ -78,6 +78,8 @@ public:
     int count() const { return m_games.size(); }
 
     void setGames(QVector<LibraryGame> games);
+    // Surgical update — avoids beginResetModel() which can crash QML mid-click.
+    bool replaceGame(const LibraryGame& game);
     const LibraryGame* gameById(const QString& id) const;
     Q_INVOKABLE QVariantMap gameAt(int row) const;
     Q_INVOKABLE QVariantMap mostRecentGame() const;

@@ -2591,7 +2591,10 @@ void CoreController::touchLastPlayed(const QString& gameId)
     LibraryGame game = *existing;
     game.lastPlayedAt = QDateTime::currentDateTime().toString(Qt::ISODate);
     m_libraryStore.upsertGame(game);
-    syncLibraryFromStore();
+    enrichLibraryGameCover(game);
+    // Do not beginResetModel() here — launch/stop run from QML Button onClicked.
+    if (!m_library.replaceGame(game))
+        syncLibraryFromStore();
 }
 
 void CoreController::markGameRunning(const LibraryGame& game, const qint64 processId)
@@ -2700,7 +2703,12 @@ void CoreController::launchGame(const QString& gameId)
     QString error;
     qint64 processId = 0;
     if (ProcessLauncher::launch(resolved, &error, &processId)) {
-        markGameRunning(*game, processId);
+        // Defer RunningGameBar Loader + library bindings so we do not re-enter QML
+        // layout from inside Button onClicked (intermittent AV in Qt6Core on Windows).
+        const LibraryGame launched = *game;
+        QTimer::singleShot(0, this, [this, launched, processId]() {
+            markGameRunning(launched, processId);
+        });
         return;
     }
     showNotice(error.isEmpty() ? QCoreApplication::translate("Core", "Failed to launch game") : error);
@@ -2712,12 +2720,12 @@ void CoreController::stopRunningGame()
         return;
 
     if (m_runningProcessId <= 0) {
-        clearRunningGame();
+        QTimer::singleShot(0, this, [this]() { clearRunningGame(); });
         return;
     }
 
     if (ProcessTracker::terminateProcess(m_runningProcessId))
-        clearRunningGame();
+        QTimer::singleShot(0, this, [this]() { clearRunningGame(); });
     else
         showNotice(QCoreApplication::translate("Core", "Failed to stop game"));
 }
