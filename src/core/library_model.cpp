@@ -111,6 +111,20 @@ void LibraryModel::setGames(QVector<LibraryGame> games)
     emit libraryChanged();
 }
 
+bool LibraryModel::replaceGame(const LibraryGame& game)
+{
+    for (int row = 0; row < m_games.size(); ++row) {
+        if (m_games.at(row).id != game.id)
+            continue;
+        m_games[row] = game;
+        const QModelIndex idx = index(row);
+        emit dataChanged(idx, idx);
+        emit libraryChanged();
+        return true;
+    }
+    return false;
+}
+
 const LibraryGame* LibraryModel::gameById(const QString& id) const
 {
     const QString resolved = repairCatalogEntryId(id);
