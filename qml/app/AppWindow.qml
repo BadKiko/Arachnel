@@ -352,14 +352,20 @@ MD.ApplicationWindow {
                             spacing: 0
 
                             Loader {
+                                id: runningGameBarLoader
                                 Layout.fillWidth: true
+                                Layout.fillHeight: false
+                                // ColumnLayout otherwise stretches the Loader and leaves a huge
+                                // empty gap under the running-game chip.
+                                readonly property real barHeight: active && item ? item.implicitHeight : 0
+                                Layout.preferredHeight: barHeight
+                                Layout.maximumHeight: barHeight
                                 Layout.leftMargin: MD.Token.spacing.medium
                                 Layout.rightMargin: MD.Token.spacing.medium
-                                Layout.topMargin: root.detailsOpen && Core.gameRunning
-                                                    ? MD.Token.spacing.medium
-                                                    : 0
-                                Layout.bottomMargin: Core.gameRunning ? MD.Token.spacing.small : 0
+                                Layout.topMargin: active ? MD.Token.spacing.medium : 0
+                                Layout.bottomMargin: active ? MD.Token.spacing.small : 0
                                 active: Core.gameRunning
+                                visible: active
                                 sourceComponent: RunningGameBar {
                                     gameId: Core.runningGameId
                                     title: Core.runningGameTitle
