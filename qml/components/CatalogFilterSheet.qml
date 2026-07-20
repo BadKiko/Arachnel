@@ -55,8 +55,9 @@ MD.BottomSheet {
     }
 
     function applyAndClose() {
+        Core.applyCatalogPresentation(draftSortMode, draftType, draftSize, draftRecency,
+                                      draftHasAddons, draftGenre)
         root.sortApplied(draftSortMode)
-        Core.setCatalogFilters(draftType, draftSize, draftRecency, draftHasAddons, draftGenre)
         close()
     }
 

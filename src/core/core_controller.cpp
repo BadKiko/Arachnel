@@ -36,6 +36,7 @@
 #include <QFileInfo>
 #include <QDate>
 #include <QDateTime>
+#include <QElapsedTimer>
 #include <QGuiApplication>
 #include <QClipboard>
 #include <QDir>
@@ -162,6 +163,15 @@ CoreController::CoreController(QObject* parent)
     m_runningGameTimer = new QTimer(this);
     m_runningGameTimer->setInterval(1500);
     connect(m_runningGameTimer, &QTimer::timeout, this, &CoreController::pollRunningGame);
+
+    m_catalogRefilterTimer = new QTimer(this);
+    m_catalogRefilterTimer->setSingleShot(true);
+    m_catalogRefilterTimer->setInterval(50);
+    connect(m_catalogRefilterTimer, &QTimer::timeout, this, [this]() {
+        applyCatalogFilter(m_activeQuery);
+    });
+
+    m_catalog.bindSource(&m_catalogCache);
 
     const QString firstSource = m_sources.firstEnabledId();
     if (!firstSource.isEmpty()) {
@@ -346,10 +356,9 @@ void CoreController::initializeServices()
                     if (entry.id != entryId)
                         continue;
                     applyMetadataToEntry(entry, metadata);
+                    syncEntryToCatalogModel(entryId);
                     if (!m_catalogGenreFilter.isEmpty())
-                        applyCatalogFilter(m_activeQuery);
-                    else
-                        syncEntryToCatalogModel(entryId);
+                        scheduleCatalogRefilter();
                     break;
                 }
                 if (!metadata.coverUrl.isEmpty())
@@ -358,7 +367,7 @@ void CoreController::initializeServices()
                     applyCoverToEntry(entryId, QString());
                 emit entryMetadataChanged(entryId);
                 if (!metadata.genres.isEmpty())
-                    emit availableCatalogGenresChanged();
+                    rebuildAvailableCatalogGenres();
             });
 
     connect(m_coverCache, &CoverImageCache::ready, this,
@@ -1500,7 +1509,7 @@ void CoreController::syncLibraryFromStore()
     QVector<LibraryGame> games = m_libraryStore.games();
     for (auto& game : games)
         enrichLibraryGameCover(game);
-    m_library.setGames(games);
+    m_library.setGamesIncremental(std::move(games));
 }
 
 void CoreController::enrichLibraryGameCover(LibraryGame& game) const
@@ -1596,10 +1605,8 @@ void CoreController::warmCatalogCovers(const QString& sourceId, const QString& q
     for (auto& entry : m_catalogCache) {
         if (entry.sourceId != sourceId)
             continue;
-        if (!needle.isEmpty() && !entry.title.toLower().contains(needle))
+        if (!needle.isEmpty() && !entry.titleLower.contains(needle))
             continue;
-
-        applyCachedMetadata(entry);
 
         if (entry.coverUrl.startsWith(QStringLiteral("file:"))) {
             syncEntryToCatalogModel(entry.id);
@@ -2172,9 +2179,11 @@ QString CoreController::protonDownloadStatus() const
 const CatalogEntry* CoreController::findCatalogEntry(const QString& entryId) const
 {
     const QString resolved = repairCatalogEntryId(entryId);
-    for (const auto& entry : m_catalogCache) {
-        if (entry.id == resolved)
-            return &entry;
+    const auto cacheIt = m_catalogIdToCacheIndex.constFind(resolved);
+    if (cacheIt != m_catalogIdToCacheIndex.cend()) {
+        const int idx = cacheIt.value();
+        if (idx >= 0 && idx < m_catalogCache.size())
+            return &m_catalogCache.at(idx);
     }
     for (auto it = m_catalogBySource.cbegin(); it != m_catalogBySource.cend(); ++it) {
         for (const auto& entry : it.value()) {
@@ -2264,6 +2273,7 @@ void CoreController::applyMetadataToEntry(CatalogEntry& entry,
         entry.trailerThumbnailUrl = metadata.trailerThumbnailUrl;
     if (!metadata.screenshotUrls.isEmpty())
         entry.screenshotUrls = metadata.screenshotUrls;
+    prepareCatalogEntry(entry);
 }
 
 bool CoreController::isRemoteLibraryCover(const QString& url)
@@ -2274,13 +2284,15 @@ bool CoreController::isRemoteLibraryCover(const QString& url)
 
 void CoreController::applyCoverToEntry(const QString& entryId, const QString& coverUrl)
 {
-    for (auto& entry : m_catalogCache) {
-        if (entry.id != entryId)
-            continue;
-        entry.coverUrl = coverUrl;
-        entry.metadataPending = false;
-        syncEntryToCatalogModel(entryId);
-        break;
+    const auto it = m_catalogIdToCacheIndex.constFind(entryId);
+    if (it != m_catalogIdToCacheIndex.cend()) {
+        const int idx = it.value();
+        if (idx >= 0 && idx < m_catalogCache.size()) {
+            CatalogEntry& entry = m_catalogCache[idx];
+            entry.coverUrl = coverUrl;
+            entry.metadataPending = false;
+            syncEntryToCatalogModel(entryId);
+        }
     }
 
     const LibraryGame* existing = m_libraryStore.gameById(entryId);
@@ -2290,7 +2302,8 @@ void CoreController::applyCoverToEntry(const QString& entryId, const QString& co
     LibraryGame game = *existing;
     game.coverUrl = coverUrl;
     m_libraryStore.upsertGame(game);
-    syncLibraryFromStore();
+    if (!m_library.replaceGame(game))
+        syncLibraryFromStore();
 }
 
 void CoreController::ensureDiskCover(const QString& entryId, const QString& remoteUrl)
@@ -2312,13 +2325,7 @@ void CoreController::ensureDiskCover(const QString& entryId, const QString& remo
 
 void CoreController::syncEntryToCatalogModel(const QString& entryId)
 {
-    for (const auto& entry : m_catalogCache) {
-        if (entry.id != entryId)
-            continue;
-        if (!m_catalog.updateEntry(entry))
-            applyCatalogFilter(m_activeQuery);
-        return;
-    }
+    m_catalog.notifyEntryChanged(entryId);
 }
 
 InstallKind CoreController::detectInstallKindForEntry(const QString& sourceId,
@@ -2349,33 +2356,22 @@ void CoreController::syncInstallKindProbeSuspension()
 {
     if (!m_installKindProbe)
         return;
-
-    bool hasActiveTorrent = false;
-    for (int i = 0; i < m_jobs.rowCount(); ++i) {
-        const QModelIndex idx = m_jobs.index(i, 0);
-        if (m_jobs.data(idx, JobModel::HttpDownloadRole).toBool())
-            continue;
-        const QString status = m_jobs.data(idx, JobModel::StatusRole).toString();
-        if (isJobActive(status) || isJobQueued(status) || isJobPaused(status)) {
-            hasActiveTorrent = true;
-            break;
-        }
-    }
-
-    m_installKindProbe->setBackgroundProbesEnabled(!hasActiveTorrent);
+    m_installKindProbe->setBackgroundProbesEnabled(m_jobs.activeCount() == 0);
 }
 
 void CoreController::syncCatalogInstallKind(const QString& entryId, InstallKind kind)
 {
-    for (auto& entry : m_catalogCache) {
-        if (entry.id != entryId)
-            continue;
-        if (entry.installKind == kind)
-            return;
-        entry.installKind = kind;
-        syncEntryToCatalogModel(entryId);
+    const auto it = m_catalogIdToCacheIndex.constFind(entryId);
+    if (it == m_catalogIdToCacheIndex.cend())
         return;
-    }
+    const int idx = it.value();
+    if (idx < 0 || idx >= m_catalogCache.size())
+        return;
+    CatalogEntry& entry = m_catalogCache[idx];
+    if (entry.installKind == kind)
+        return;
+    entry.installKind = kind;
+    syncEntryToCatalogModel(entryId);
 }
 
 void CoreController::requestCatalogCover(const QString& entryId)
@@ -2511,7 +2507,7 @@ bool CoreController::entryMatchesCatalogFilters(const CatalogEntry& entry) const
     }
 
     if (m_catalogSizeFilter > 0) {
-        const qint64 bytes = parseSizeLabelBytes(entry.sizeLabel);
+        const qint64 bytes = entry.sizeBytes;
         if (bytes <= 0)
             return false;
         constexpr qint64 kGb = 1024LL * 1024 * 1024;
@@ -2538,14 +2534,7 @@ bool CoreController::entryMatchesCatalogFilters(const CatalogEntry& entry) const
     }
 
     if (m_catalogRecencyFilter > 0) {
-        const QDate day = QDate::fromString(entry.uploadDate.left(10), Qt::ISODate);
-        if (!day.isValid())
-            return false;
-        const int days = m_catalogRecencyFilter == 1   ? 7
-                         : m_catalogRecencyFilter == 2 ? 30
-                         : m_catalogRecencyFilter == 3 ? 90
-                                                       : 365;
-        if (day < QDate::currentDate().addDays(-days))
+        if (entry.uploadDay <= 0 || entry.uploadDay < m_filterCutoffDay)
             return false;
     }
 
@@ -2553,11 +2542,9 @@ bool CoreController::entryMatchesCatalogFilters(const CatalogEntry& entry) const
         return false;
 
     if (!m_catalogGenreFilter.isEmpty()) {
-        const QStringList tokens =
-            entry.genres.split(QLatin1Char(','), Qt::SkipEmptyParts);
         bool matched = false;
-        for (QString token : tokens) {
-            if (token.trimmed().compare(m_catalogGenreFilter, Qt::CaseInsensitive) == 0) {
+        for (const QString& token : entry.genreTokens) {
+            if (token.compare(m_catalogGenreFilter, Qt::CaseInsensitive) == 0) {
                 matched = true;
                 break;
             }
@@ -2571,29 +2558,82 @@ bool CoreController::entryMatchesCatalogFilters(const CatalogEntry& entry) const
 
 void CoreController::applyCatalogFilter(const QString& query)
 {
-    const QString needle = query.trimmed().toLower();
-    QVector<CatalogEntry> filtered;
-    filtered.reserve(m_catalogCache.size());
+    QElapsedTimer timer;
+    timer.start();
 
-    for (const auto& entry : m_catalogCache) {
-        if (!needle.isEmpty() && !entry.title.toLower().contains(needle))
+    m_filterNeedle = query.trimmed().toLower();
+    m_filterCutoffDay = 0;
+    if (m_catalogRecencyFilter > 0) {
+        const int days = m_catalogRecencyFilter == 1   ? 7
+                         : m_catalogRecencyFilter == 2 ? 30
+                         : m_catalogRecencyFilter == 3 ? 90
+                                                       : 365;
+        m_filterCutoffDay = QDate::currentDate().addDays(-days).toJulianDay();
+    }
+
+    m_catalog.bindSource(&m_catalogCache);
+    QVector<int> indices;
+    indices.reserve(m_catalogCache.size());
+    for (int i = 0; i < m_catalogCache.size(); ++i) {
+        const CatalogEntry& entry = m_catalogCache.at(i);
+        if (!m_filterNeedle.isEmpty() && !entry.titleLower.contains(m_filterNeedle))
             continue;
         if (!entryMatchesCatalogFilters(entry))
             continue;
-        filtered.append(entry);
+        indices.append(i);
     }
+    m_catalog.setVisibleIndices(std::move(indices));
 
-    m_catalog.setEntries(std::move(filtered));
+    const qint64 ms = timer.elapsed();
+    if (ms >= 16) {
+        logDiagnostic(QStringLiteral("applyCatalogFilter: %1ms cache=%2 visible=%3")
+                          .arg(ms)
+                          .arg(m_catalogCache.size())
+                          .arg(m_catalog.count()));
+    }
+}
 
+void CoreController::warmActiveCatalogCovers()
+{
     const int warmLimit =
         qMax(32, 80 / qMax(1, static_cast<int>(m_activeSourceIds.size())));
     for (const QString& sourceId : m_activeSourceIds)
-        warmCatalogCovers(sourceId, query, warmLimit);
+        warmCatalogCovers(sourceId, m_activeQuery, warmLimit);
+}
 
-    if (m_installKindProbe) {
-        for (const QString& sourceId : m_activeSourceIds)
-            m_installKindProbe->queueCatalog(sourceId, m_catalogCache, query);
+void CoreController::scheduleCatalogRefilter()
+{
+    if (m_catalogRefilterTimer)
+        m_catalogRefilterTimer->start();
+}
+
+void CoreController::rebuildCatalogIdIndex()
+{
+    m_catalogIdToCacheIndex.clear();
+    m_catalogIdToCacheIndex.reserve(m_catalogCache.size());
+    for (int i = 0; i < m_catalogCache.size(); ++i)
+        m_catalogIdToCacheIndex.insert(m_catalogCache.at(i).id, i);
+}
+
+void CoreController::rebuildAvailableCatalogGenres()
+{
+    QHash<QString, int> counts;
+    for (const auto& entry : m_catalogCache) {
+        for (const QString& token : entry.genreTokens)
+            ++counts[token];
     }
+
+    QStringList genres;
+    genres.reserve(counts.size());
+    for (auto it = counts.constBegin(); it != counts.constEnd(); ++it) {
+        if (it.value() > 0)
+            genres.append(it.key());
+    }
+    genres.sort(Qt::CaseInsensitive);
+    if (genres == m_availableCatalogGenres)
+        return;
+    m_availableCatalogGenres = std::move(genres);
+    emit availableCatalogGenresChanged();
 }
 
 void CoreController::notifyCatalogFiltersChanged()
@@ -2664,26 +2704,7 @@ int CoreController::catalogActiveFilterCount() const
 
 QStringList CoreController::availableCatalogGenres() const
 {
-    QHash<QString, int> counts;
-    for (const auto& entry : m_catalogCache) {
-        const QStringList tokens =
-            entry.genres.split(QLatin1Char(','), Qt::SkipEmptyParts);
-        for (QString token : tokens) {
-            token = token.trimmed();
-            if (token.isEmpty())
-                continue;
-            ++counts[token];
-        }
-    }
-
-    QStringList genres;
-    genres.reserve(counts.size());
-    for (auto it = counts.constBegin(); it != counts.constEnd(); ++it) {
-        if (it.value() > 0)
-            genres.append(it.key());
-    }
-    genres.sort(Qt::CaseInsensitive);
-    return genres;
+    return m_availableCatalogGenres;
 }
 
 void CoreController::clearCatalogFilters()
@@ -2712,10 +2733,39 @@ void CoreController::setCatalogFilters(int typeFilter, int sizeFilter, int recen
     notifyCatalogFiltersChanged();
 }
 
+void CoreController::applyCatalogPresentation(int sortMode, int typeFilter, int sizeFilter,
+                                              int recencyFilter, bool hasAddonsFilter,
+                                              const QString& genreFilter)
+{
+    m_catalog.setSortModeQuiet(sortMode);
+
+    const int nextType = (typeFilter < -1 || typeFilter > 2) ? -1 : typeFilter;
+    const int nextSize = qBound(0, sizeFilter, 4);
+    const int nextRecency = qBound(0, recencyFilter, 4);
+    const QString nextGenre = genreFilter.trimmed();
+    const bool filtersChanged =
+        m_catalogTypeFilter != nextType || m_catalogSizeFilter != nextSize
+        || m_catalogRecencyFilter != nextRecency
+        || m_catalogHasAddonsFilter != hasAddonsFilter
+        || m_catalogGenreFilter != nextGenre;
+
+    m_catalogTypeFilter = nextType;
+    m_catalogSizeFilter = nextSize;
+    m_catalogRecencyFilter = nextRecency;
+    m_catalogHasAddonsFilter = hasAddonsFilter;
+    m_catalogGenreFilter = nextGenre;
+
+    if (filtersChanged)
+        emit catalogFiltersChanged();
+    applyCatalogFilter(m_activeQuery);
+}
+
 void CoreController::storeCatalogForSource(const QString& sourceId,
                                            QVector<CatalogEntry> entries)
 {
     normalizeCatalogSourceIds(entries, sourceId);
+    for (auto& entry : entries)
+        prepareCatalogEntry(entry);
     m_catalogBySource.insert(sourceId, entries);
     m_catalogCounts.insert(sourceId, entries.size());
     emit catalogCountsChanged();
@@ -2731,7 +2781,10 @@ void CoreController::rebuildMergedCatalog()
 {
     if (m_activeSourceIds.isEmpty()) {
         m_catalogCache.clear();
+        m_catalogIdToCacheIndex.clear();
+        m_availableCatalogGenres.clear();
         m_catalog.clear();
+        emit availableCatalogGenresChanged();
         setCatalogStatus({});
         updateCatalogLoadingState();
         return;
@@ -2766,6 +2819,7 @@ void CoreController::rebuildMergedCatalog()
     m_catalogCache = std::move(merged);
     for (auto& entry : m_catalogCache)
         applyCachedMetadata(entry);
+    rebuildCatalogIdIndex();
 
     logDiagnostic(QStringLiteral("rebuildMergedCatalog: metadata applied"));
 
@@ -2778,7 +2832,8 @@ void CoreController::rebuildMergedCatalog()
     logDiagnostic(QStringLiteral("rebuildMergedCatalog: install kinds queued"));
 
     applyCatalogFilter(m_activeQuery);
-    emit availableCatalogGenresChanged();
+    rebuildAvailableCatalogGenres();
+    warmActiveCatalogCovers();
 
     logDiagnostic(QStringLiteral("rebuildMergedCatalog: filter applied, visible=%1").arg(m_catalog.count()));
 
@@ -3217,7 +3272,7 @@ void CoreController::toggleCatalogSource(const QString& sourceId)
 void CoreController::applyCatalogSearch(const QString& query)
 {
     m_activeQuery = query;
-    rebuildMergedCatalog();
+    applyCatalogFilter(query);
 }
 
 void CoreController::pruneDisabledCatalogSources()

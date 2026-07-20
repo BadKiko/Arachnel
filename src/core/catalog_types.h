@@ -5,6 +5,7 @@
 #include <QString>
 #include <QStringList>
 #include <QVector>
+#include <QtGlobal>
 
 namespace arachnel::core {
 
@@ -56,6 +57,12 @@ struct CatalogEntry {
     CatalogItemKind itemKind = CatalogItemKind::Game;
     QVector<CatalogComponent> addons;
     bool metadataPending = false;
+
+    // Precomputed for filter/sort hot paths (filled by prepareCatalogEntry).
+    QString titleLower;
+    qint64 sizeBytes = 0;
+    qint64 uploadDay = 0; // Julian day; 0 if unknown
+    QStringList genreTokens;
 };
 
 QString catalogItemKindLabel(CatalogItemKind kind);
@@ -64,5 +71,8 @@ QString slugifyCatalogId(const QString& title, const QString& sourceId);
 
 /** Parse FreeTP-style size labels ("2.71 GB", "512 MB") into bytes; 0 if unknown. */
 qint64 parseSizeLabelBytes(const QString& label);
+
+/** Fill titleLower / sizeBytes / uploadDay / genreTokens from primary fields. */
+void prepareCatalogEntry(CatalogEntry& entry);
 
 } // namespace arachnel::core

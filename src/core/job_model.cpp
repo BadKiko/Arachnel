@@ -210,6 +210,23 @@ QVariantMap JobModel::primaryActiveJob() const
 
 void JobModel::setJobs(QVector<JobEntry> jobs)
 {
+    if (m_jobs.size() == jobs.size()) {
+        bool sameIds = true;
+        for (int i = 0; i < m_jobs.size(); ++i) {
+            if (m_jobs.at(i).id != jobs.at(i).id) {
+                sameIds = false;
+                break;
+            }
+        }
+        if (sameIds) {
+            m_jobs = std::move(jobs);
+            if (!m_jobs.isEmpty())
+                emit dataChanged(index(0), index(m_jobs.size() - 1));
+            emit jobsChanged();
+            return;
+        }
+    }
+
     beginResetModel();
     m_jobs = std::move(jobs);
     endResetModel();

@@ -79,6 +79,8 @@ public:
     int count() const { return m_games.size(); }
 
     void setGames(QVector<LibraryGame> games);
+    /** Prefer dataChanged over reset when ids/order match; falls back to setGames. */
+    void setGamesIncremental(QVector<LibraryGame> games);
     // Surgical update — avoids beginResetModel() which can crash QML mid-click.
     bool replaceGame(const LibraryGame& game);
     const LibraryGame* gameById(const QString& id) const;
