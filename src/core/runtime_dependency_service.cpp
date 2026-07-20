@@ -622,6 +622,15 @@ RuntimeEnsureResult RuntimeDependencyService::ensureInstalled(
 {
     RuntimeEnsureResult result;
 
+#if !defined(Q_OS_LINUX)
+    // Native Windows: no Proton prefix / Wine redist container to prepare.
+    Q_UNUSED(request);
+    Q_UNUSED(protonManager);
+    Q_UNUSED(settings);
+    Q_UNUSED(onStatus);
+    result.success = true;
+    return result;
+#else
     QString steamAppId = request.steamAppId.trimmed();
     if (steamAppId.isEmpty())
         steamAppId = resolveSteamAppIdFromTitle(network(), request.title);
@@ -648,12 +657,10 @@ RuntimeEnsureResult RuntimeDependencyService::ensureInstalled(
     effectiveRequest.steamAppId = steamAppId;
 
     for (const RuntimeDepotRef& depot : deps) {
-#if defined(Q_OS_LINUX)
         if (!isWindowsRuntimeDepot(depot)) {
             result.skippedLabels.append(depot.label);
             continue;
         }
-#endif
         if (isDepotSatisfied(depot, request.gameId)) {
             result.skippedLabels.append(depot.label);
             continue;
@@ -671,6 +678,7 @@ RuntimeEnsureResult RuntimeDependencyService::ensureInstalled(
 
     result.success = true;
     return result;
+#endif
 }
 
 QVariantMap RuntimeDependencyService::containerInfoForGame(const RuntimeEnsureRequest& request) const

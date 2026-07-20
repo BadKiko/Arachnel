@@ -515,7 +515,15 @@ void CoreController::startPluginInstall(const CatalogEntry& entry, const QString
     ctx.entryId = entry.id;
     ctx.sourceId = sourceId;
     ctx.title = entry.title;
-    ctx.targetPath = m_settings.gameDirFor(libId, entry.id);
+    {
+        const LibraryGame* existing = m_libraryStore.gameById(entry.id);
+        if (existing && !existing->installPath.isEmpty()
+            && QDir(existing->installPath).exists()) {
+            ctx.targetPath = existing->installPath;
+        } else {
+            ctx.targetPath = m_settings.gameDirFor(libId, entry.id);
+        }
+    }
     ctx.downloadsPath = m_settings.resolvedDownloadsRoot(libId);
     ctx.downloadPath = savePath;
     ctx.magnetUri = entry.magnetUris.value(0);
@@ -826,12 +834,31 @@ void CoreController::commitInstalledCatalogGame(const CatalogEntry& entryHint,
     game.downloadPath = savePath;
     game.libraryId = libId;
     game.hasUpdate = false;
-    if (!installPath.isEmpty())
+    if (!installPath.isEmpty()) {
+        const QString previousInstall = game.installPath;
         game.installPath = installPath;
-    if (!installPath.isEmpty() && game.executableOverride.trimmed().isEmpty()) {
-        const QString executable = findGameExecutableInTree(installPath);
-        if (!executable.isEmpty())
-            game.executableOverride = executable;
+
+        // Keep a user override only if it still lives under the installed tree.
+        // After update/reinstall to another library root, the old path must not win Play.
+        const QString override = game.executableOverride.trimmed();
+        const QString cleanInstall = QDir::cleanPath(installPath);
+        const QString cleanOverride = QDir::cleanPath(override);
+        const bool overrideInsideInstall =
+            !override.isEmpty()
+            && cleanOverride.startsWith(cleanInstall, Qt::CaseInsensitive)
+            && (cleanOverride.size() == cleanInstall.size()
+                || cleanOverride.at(cleanInstall.size()) == QLatin1Char('/')
+                || cleanOverride.at(cleanInstall.size()) == QLatin1Char('\\'));
+        const bool installChanged =
+            previousInstall.isEmpty()
+            || QDir::cleanPath(previousInstall).compare(cleanInstall, Qt::CaseInsensitive) != 0;
+        if (override.isEmpty() || !overrideInsideInstall || installChanged) {
+            const QString executable = findGameExecutableInTree(installPath);
+            if (!executable.isEmpty())
+                game.executableOverride = executable;
+            else if (!overrideInsideInstall)
+                game.executableOverride.clear();
+        }
     }
 
     QHash<QString, InstalledComponent> previousComponents;
@@ -864,6 +891,7 @@ void CoreController::commitInstalledCatalogGame(const CatalogEntry& entryHint,
     if (!m_catalogCache.isEmpty())
         recalculateLibraryUpdates(false);
 
+#if defined(Q_OS_LINUX)
     setRuntimeSetupActive(
         game,
         QCoreApplication::translate("Core", "Preparing runtime environment…"));
@@ -871,6 +899,7 @@ void CoreController::commitInstalledCatalogGame(const CatalogEntry& entryHint,
         ensureRuntimeDependenciesForGame(game);
         clearRuntimeSetup();
     });
+#endif
 }
 
 void CoreController::markCatalogAddonInstalled(const QString& parentEntryId,
@@ -1491,6 +1520,12 @@ void CoreController::enrichLibraryGameCover(LibraryGame& game) const
 
 bool CoreController::ensureRuntimeDependenciesForGame(const LibraryGame& game)
 {
+#if !defined(Q_OS_LINUX)
+    // Proton prefix / Wine redistributables are a Linux concern. On Windows the OS
+    // already hosts native .exe games — do not block Play on runtime container setup.
+    Q_UNUSED(game);
+    return true;
+#else
     if (!m_runtimeDependencyService)
         return true;
 
@@ -1524,6 +1559,7 @@ bool CoreController::ensureRuntimeDependenciesForGame(const LibraryGame& game)
         return false;
     }
     return true;
+#endif
 }
 
 void CoreController::setRuntimeSetupActive(const LibraryGame& game, const QString& status)
@@ -1749,7 +1785,10 @@ void CoreController::runAutoInstallUpdates()
         if (!entry)
             continue;
 
-        const QString jobId = m_jobOrchestrator->startCatalogDownload(*entry, JobKind::Update);
+        const QString libId =
+            game.libraryId.isEmpty() ? m_settings.defaultLibraryId() : game.libraryId;
+        const QString jobId =
+            m_jobOrchestrator->startCatalogDownload(*entry, JobKind::Update, libId);
         if (!jobId.isEmpty())
             ++started;
     }
@@ -2788,6 +2827,7 @@ void CoreController::launchGame(const QString& gameId)
         return;
     }
 
+#if defined(Q_OS_LINUX)
     if (m_runtimeSetupInProgress) {
         showNotice(QCoreApplication::translate("Core", "Runtime setup is already in progress"));
         return;
@@ -2805,6 +2845,9 @@ void CoreController::launchGame(const QString& gameId)
             return;
         launchGameAfterRuntimeSetup(gameId);
     });
+#else
+    launchGameAfterRuntimeSetup(gameId);
+#endif
 }
 
 void CoreController::launchGameAfterRuntimeSetup(const QString& gameId)
@@ -3487,6 +3530,8 @@ void CoreController::moveGame(const QString& gameId, const QString& targetLibrar
     game.libraryId = targetLibraryId;
     if (!game.installPath.isEmpty())
         game.installPath = relocatePathPrefix(game.installPath, srcDir, dstDir);
+    if (!game.executableOverride.isEmpty())
+        game.executableOverride = relocatePathPrefix(game.executableOverride, srcDir, dstDir);
     if (!game.downloadPath.isEmpty()) {
         const QString oldDownloads = m_settings.resolvedDownloadsRoot(sourceLibId);
         const QString newDownloads = m_settings.resolvedDownloadsRoot(targetLibraryId);
@@ -3550,15 +3595,16 @@ void CoreController::updateCatalogEntry(const QString& entryId)
         return;
     }
 
+    const LibraryGame* game = m_libraryStore.gameById(entryId);
+    const QString libId = game && !game->libraryId.isEmpty() ? game->libraryId
+                                                            : m_settings.defaultLibraryId();
+
     if (m_pluginHost && m_pluginHost->pluginOwnsDownload(entry->sourceId)) {
-        const LibraryGame* game = m_libraryStore.gameById(entryId);
-        const QString libId = game && !game->libraryId.isEmpty() ? game->libraryId
-                                                                : m_settings.defaultLibraryId();
         installCatalogEntry(entryId, libId, {});
         return;
     }
 
-    const QString jobId = m_jobOrchestrator->startCatalogDownload(*entry, JobKind::Update);
+    const QString jobId = m_jobOrchestrator->startCatalogDownload(*entry, JobKind::Update, libId);
     if (jobId.isEmpty()) {
         showNotice(QCoreApplication::translate("Core", "Could not start update for %1").arg(entry->title));
         return;
