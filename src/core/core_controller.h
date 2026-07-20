@@ -38,6 +38,7 @@ class InstallKindProbeService;
 class InstallAnalyzer;
 class PluginHost;
 class ProtonManager;
+class RuntimeDependencyService;
 class TorrentSession;
 
 class CoreController : public QObject
@@ -64,6 +65,11 @@ class CoreController : public QObject
     Q_PROPERTY(QString runningGameId READ runningGameId NOTIFY runningGameChanged)
     Q_PROPERTY(QString runningGameTitle READ runningGameTitle NOTIFY runningGameChanged)
     Q_PROPERTY(QString runningGameCoverUrl READ runningGameCoverUrl NOTIFY runningGameChanged)
+    Q_PROPERTY(bool runtimeSetupInProgress READ runtimeSetupInProgress NOTIFY runtimeSetupChanged)
+    Q_PROPERTY(QString runtimeSetupGameId READ runtimeSetupGameId NOTIFY runtimeSetupChanged)
+    Q_PROPERTY(QString runtimeSetupTitle READ runtimeSetupTitle NOTIFY runtimeSetupChanged)
+    Q_PROPERTY(QString runtimeSetupCoverUrl READ runtimeSetupCoverUrl NOTIFY runtimeSetupChanged)
+    Q_PROPERTY(QString runtimeSetupStatus READ runtimeSetupStatus NOTIFY runtimeSetupChanged)
     Q_PROPERTY(bool protonDownloadInProgress READ protonDownloadInProgress NOTIFY protonDownloadChanged)
     Q_PROPERTY(int protonDownloadProgress READ protonDownloadProgress NOTIFY protonDownloadChanged)
     Q_PROPERTY(QString protonDownloadStatus READ protonDownloadStatus NOTIFY protonDownloadChanged)
@@ -99,6 +105,11 @@ public:
     QString runningGameId() const { return m_runningGameId; }
     QString runningGameTitle() const { return m_runningGameTitle; }
     QString runningGameCoverUrl() const { return m_runningGameCoverUrl; }
+    bool runtimeSetupInProgress() const { return m_runtimeSetupInProgress; }
+    QString runtimeSetupGameId() const { return m_runtimeSetupGameId; }
+    QString runtimeSetupTitle() const { return m_runtimeSetupTitle; }
+    QString runtimeSetupCoverUrl() const { return m_runtimeSetupCoverUrl; }
+    QString runtimeSetupStatus() const { return m_runtimeSetupStatus; }
     bool protonDownloadInProgress() const;
     int protonDownloadProgress() const;
     QString protonDownloadStatus() const;
@@ -141,6 +152,8 @@ public:
     Q_INVOKABLE bool needsInstallLocationChoice() const;
     Q_INVOKABLE QString browseGameExecutable(const QString& currentPath = {});
     Q_INVOKABLE QString browseStorageFolder();
+    Q_INVOKABLE QVariantMap gameRuntimeContainerInfo(const QString& gameId) const;
+    Q_INVOKABLE void openGameRuntimeContainer(const QString& gameId);
     Q_INVOKABLE void removeGame(const QString& gameId, bool deleteFiles = true);
     Q_INVOKABLE void removeEntry(const QString& entryId, bool deleteFiles = true);
     Q_INVOKABLE void moveGame(const QString& gameId, const QString& targetLibraryId);
@@ -205,6 +218,7 @@ signals:
     void pluginsChanged();
     void lastPluginErrorChanged();
     void runningGameChanged();
+    void runtimeSetupChanged();
     void protonDownloadChanged();
     void protonLatestReleaseChanged();
     void protonStateChanged();
@@ -293,6 +307,10 @@ private:
     void syncInstallKindProbeSuspension();
     void applyCachedMetadata(CatalogEntry& entry) const;
     void enrichLibraryGameCover(LibraryGame& game) const;
+    bool ensureRuntimeDependenciesForGame(const LibraryGame& game);
+    void setRuntimeSetupActive(const LibraryGame& game, const QString& status);
+    void clearRuntimeSetup();
+    void launchGameAfterRuntimeSetup(const QString& gameId);
     void warmCatalogCovers(const QString& sourceId, const QString& query, int limit);
     void applyCoverToEntry(const QString& entryId, const QString& coverUrl);
     void ensureDiskCover(const QString& entryId, const QString& remoteUrl);
@@ -317,6 +335,7 @@ private:
     PluginHost* m_pluginHost = nullptr;
     InstallAnalyzer* m_installAnalyzer = nullptr;
     InstallKindProbeService* m_installKindProbe = nullptr;
+    RuntimeDependencyService* m_runtimeDependencyService = nullptr;
     ProtonManager* m_protonManager = nullptr;
     AppUpdater* m_appUpdater = nullptr;
     PluginCatalogService* m_pluginCatalog = nullptr;
@@ -339,6 +358,11 @@ private:
     QString m_runningGameTitle;
     QString m_runningGameCoverUrl;
     qint64 m_runningProcessId = 0;
+    bool m_runtimeSetupInProgress = false;
+    QString m_runtimeSetupGameId;
+    QString m_runtimeSetupTitle;
+    QString m_runtimeSetupCoverUrl;
+    QString m_runtimeSetupStatus;
     QTimer* m_runningGameTimer = nullptr;
     bool m_catalogLoading = false;
     bool m_applicationDataCleared = false;

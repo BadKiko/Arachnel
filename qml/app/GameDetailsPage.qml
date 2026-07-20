@@ -76,6 +76,8 @@ Item {
         return (lib.gameId ?? "").length > 0
     }
     readonly property bool isRunning: Core.gameRunning && Core.runningGameId === root.gameId
+    readonly property bool runtimeSetupActive: Core.runtimeSetupInProgress
+        && Core.runtimeSetupGameId === root.gameId
     readonly property bool onLinux: Qt.platform.os === "linux"
     readonly property bool downloadFilesExist: {
         const _rev = root.detailsRevision
@@ -396,8 +398,18 @@ Item {
 
                         MD.Button {
                             visible: root.playable
-                            text: root.isRunning ? qsTr("Stop") : qsTr("Play")
-                            icon.name: root.isRunning ? "" : MD.Token.icon.play_arrow
+                            enabled: !root.runtimeSetupActive
+                            text: {
+                                if (root.isRunning)
+                                    return qsTr("Stop")
+                                if (root.runtimeSetupActive)
+                                    return Core.runtimeSetupStatus.length > 0
+                                           ? Core.runtimeSetupStatus
+                                           : qsTr("Preparing…")
+                                return qsTr("Play")
+                            }
+                            icon.name: root.isRunning || root.runtimeSetupActive
+                                     ? "" : MD.Token.icon.play_arrow
                             mdState.type: MD.Enum.BtFilled
                             mdState.backgroundColor: root.isRunning
                                                  ? MD.Token.color.error

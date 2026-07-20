@@ -20,9 +20,9 @@ Hydra-каталоги (только JSON по URL, без своего install-
 Плагин **не** использует magnet/торрент ядра: Hubcap/Steam search → lua + keys → LumaCore (Windows) / SLSsteam (Linux) → Steam download, с fallback на DepotDownloaderMod (.NET 9).
 
 ```bash
-export ARACHNEL_SDK_DIR=~/PetWork/Arachnel
-cd ~/PetWork/arachnel-plugin-steamidra
-./run.sh   # → ~/.local/share/PetWork/Arachnel/plugins/steamidra/
+export ARACHNEL_SDK_DIR=~/path/to/Arachnel
+cd ~/path/to/arachnel-plugin-steamidra
+./run.sh   # → ~/.local/share/Arachnel/plugins/steamidra/
 ```
 
 Third-party notices: в репозитории плагина `NOTICE.md` / `LICENSE` (GPL-3).
@@ -39,7 +39,7 @@ cd ..\Arachnel
 .\run.ps1
 ```
 
-Плагин окажется в `%LOCALAPPDATA%\PetWork\Arachnel\plugins\freetp\`.  
+Плагин окажется в `%APPDATA%\Arachnel\plugins\freetp\`.  
 Либо установите `arachnel-plugin-freetp/build-win/dist/freetp.arach` через **Настройки → Плагины**.
 
 ## Контракт

@@ -24,6 +24,7 @@
 #include "plugin_interface.h"
 #include "process_launcher.h"
 #include "process_tracker.h"
+#include "runtime_dependency_service.h"
 #include "proton_manager.h"
 #include "windows_runner.h"
 #include "app_updater.h"
@@ -142,6 +143,7 @@ CoreController::CoreController(QObject* parent)
     initializeServices();
     connect(m_pluginHost, &PluginHost::pluginsChanged, this, [this]() {
         syncSourcesFromPlugins();
+        pruneDisabledCatalogSources();
         reconcileJobInstallState();
         emit pluginsChanged();
     });
@@ -190,6 +192,7 @@ void CoreController::initializeServices()
     connect(&m_jobs, &JobModel::jobsChanged, this, &CoreController::syncInstallKindProbeSuspension);
     syncInstallKindProbeSuspension();
     m_protonManager = new ProtonManager(this);
+    m_runtimeDependencyService = new RuntimeDependencyService(this);
     m_appUpdater = new AppUpdater(this);
     m_pluginCatalog = new PluginCatalogService(this);
     connect(m_pluginCatalog, &PluginCatalogService::installFinished, this,
@@ -848,10 +851,26 @@ void CoreController::commitInstalledCatalogGame(const CatalogEntry& entryHint,
     }
     game.components = components;
 
+    if (game.steamAppId.isEmpty() && !catalog.steamAppId.isEmpty())
+        game.steamAppId = catalog.steamAppId;
+    if (game.steamAppId.isEmpty() && m_metadataService) {
+        const GameMetadata cached = m_metadataService->metadataForTitle(catalog.title);
+        if (!cached.steamAppId.isEmpty())
+            game.steamAppId = cached.steamAppId;
+    }
+
     m_libraryStore.upsertGame(game);
     syncLibraryFromStore();
     if (!m_catalogCache.isEmpty())
         recalculateLibraryUpdates(false);
+
+    setRuntimeSetupActive(
+        game,
+        QCoreApplication::translate("Core", "Preparing runtime environment…"));
+    QTimer::singleShot(0, this, [this, game]() {
+        ensureRuntimeDependenciesForGame(game);
+        clearRuntimeSetup();
+    });
 }
 
 void CoreController::markCatalogAddonInstalled(const QString& parentEntryId,
@@ -1260,6 +1279,8 @@ void CoreController::ensureLibraryPlaceholder(const CatalogEntry& entry, const Q
     game.libraryId = libId;
     game.hasUpdate = false;
     game.installPath = QString();
+    if (!entry.steamAppId.isEmpty())
+        game.steamAppId = entry.steamAppId;
 
     QSet<QString> selectedAddons(selectedAddonIds.cbegin(), selectedAddonIds.cend());
     QVector<InstalledComponent> components;
@@ -1466,6 +1487,65 @@ void CoreController::enrichLibraryGameCover(LibraryGame& game) const
 
     const QString local = m_coverCache->localUrlFor(metadata.coverUrl);
     game.coverUrl = !local.isEmpty() ? local : metadata.coverUrl;
+}
+
+bool CoreController::ensureRuntimeDependenciesForGame(const LibraryGame& game)
+{
+    if (!m_runtimeDependencyService)
+        return true;
+
+    QString steamAppId = game.steamAppId;
+    if (steamAppId.isEmpty()) {
+        if (const CatalogEntry* entry = findCatalogEntry(game.id))
+            steamAppId = entry->steamAppId;
+    }
+    if (steamAppId.isEmpty() && m_metadataService) {
+        const GameMetadata metadata = m_metadataService->metadataForTitle(game.title);
+        steamAppId = metadata.steamAppId;
+    }
+
+    RuntimeEnsureRequest request;
+    request.gameId = game.id;
+    request.steamAppId = steamAppId;
+    request.title = game.title;
+    request.installPath = game.installPath;
+
+    const RuntimeEnsureResult result = m_runtimeDependencyService->ensureInstalled(
+        request, m_protonManager, &m_settings, [this](const QString& status) {
+            if (status.isEmpty())
+                return;
+            m_runtimeSetupStatus = status;
+            emit runtimeSetupChanged();
+            QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+        });
+
+    if (!result.success && !result.error.isEmpty()) {
+        showNotice(result.error);
+        return false;
+    }
+    return true;
+}
+
+void CoreController::setRuntimeSetupActive(const LibraryGame& game, const QString& status)
+{
+    m_runtimeSetupInProgress = true;
+    m_runtimeSetupGameId = game.id;
+    m_runtimeSetupTitle = game.title;
+    m_runtimeSetupCoverUrl = game.coverUrl;
+    m_runtimeSetupStatus = status;
+    emit runtimeSetupChanged();
+}
+
+void CoreController::clearRuntimeSetup()
+{
+    if (!m_runtimeSetupInProgress && m_runtimeSetupGameId.isEmpty())
+        return;
+    m_runtimeSetupInProgress = false;
+    m_runtimeSetupGameId.clear();
+    m_runtimeSetupTitle.clear();
+    m_runtimeSetupCoverUrl.clear();
+    m_runtimeSetupStatus.clear();
+    emit runtimeSetupChanged();
 }
 
 void CoreController::warmCatalogCovers(const QString& sourceId, const QString& query, int limit)
@@ -1824,6 +1904,44 @@ QString CoreController::browseGameExecutable(const QString& currentPath)
         currentPath.isEmpty() ? QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
                               : QFileInfo(currentPath).absolutePath(),
         QCoreApplication::translate("Core", "Executables (*.exe *.sh *.x86_64);;All files (*)"));
+#endif
+}
+
+QVariantMap CoreController::gameRuntimeContainerInfo(const QString& gameId) const
+{
+#if !defined(Q_OS_LINUX)
+    (void)gameId;
+    return {};
+#else
+    if (gameId.trimmed().isEmpty() || !m_runtimeDependencyService)
+        return {};
+
+    RuntimeEnsureRequest request;
+    request.gameId = gameId;
+    if (const LibraryGame* game = m_library.gameById(gameId)) {
+        request.steamAppId = game->steamAppId;
+        request.title = game->title;
+        request.installPath = game->installPath;
+    }
+    if (request.steamAppId.isEmpty()) {
+        if (const CatalogEntry* entry = findCatalogEntry(gameId))
+            request.steamAppId = entry->steamAppId;
+    }
+    return m_runtimeDependencyService->containerInfoForGame(request);
+#endif
+}
+
+void CoreController::openGameRuntimeContainer(const QString& gameId)
+{
+#if !defined(Q_OS_LINUX)
+    (void)gameId;
+#else
+    const QVariantMap info = gameRuntimeContainerInfo(gameId);
+    const QString path = info.value(QStringLiteral("containerPath")).toString();
+    if (path.isEmpty())
+        return;
+    QDir().mkpath(path);
+    QDesktopServices::openUrl(QUrl::fromLocalFile(path));
 #endif
 }
 
@@ -2670,6 +2788,31 @@ void CoreController::launchGame(const QString& gameId)
         return;
     }
 
+    if (m_runtimeSetupInProgress) {
+        showNotice(QCoreApplication::translate("Core", "Runtime setup is already in progress"));
+        return;
+    }
+
+    const LibraryGame gameCopy = *game;
+    setRuntimeSetupActive(
+        gameCopy,
+        QCoreApplication::translate("Core", "Preparing runtime environment…"));
+
+    QTimer::singleShot(0, this, [this, gameId, gameCopy]() {
+        const bool ok = ensureRuntimeDependenciesForGame(gameCopy);
+        clearRuntimeSetup();
+        if (!ok)
+            return;
+        launchGameAfterRuntimeSetup(gameId);
+    });
+}
+
+void CoreController::launchGameAfterRuntimeSetup(const QString& gameId)
+{
+    const LibraryGame* game = m_library.gameById(gameId);
+    if (!game)
+        return;
+
     LaunchInfo info;
     if (ISourcePlugin* plugin = m_pluginHost->plugin(game->sourceId))
         info = plugin->launchInfo(*game);
@@ -2810,6 +2953,9 @@ void CoreController::toggleCatalogSource(const QString& sourceId)
         return;
 
     if (m_activeSourceIds.contains(sourceId)) {
+        // Keep at least one enabled source selected so the catalog is never blank.
+        if (m_activeSourceIds.size() <= 1)
+            return;
         m_activeSourceIds.removeAll(sourceId);
         syncActiveSourceSignals();
         rebuildMergedCatalog();
@@ -2842,6 +2988,27 @@ void CoreController::pruneDisabledCatalogSources()
     for (const QString& sourceId : m_activeSourceIds) {
         if (m_sources.isSourceEnabled(sourceId))
             valid.append(sourceId);
+    }
+
+    if (valid.isEmpty()) {
+        const QString first = m_sources.firstEnabledId();
+        if (first.isEmpty()) {
+            if (m_activeSourceIds.isEmpty())
+                return;
+            m_activeSourceIds.clear();
+            syncActiveSourceSignals();
+            rebuildMergedCatalog();
+            return;
+        }
+        if (m_activeSourceIds.size() == 1 && m_activeSourceIds.first() == first)
+            return;
+        m_activeSourceIds = {first};
+        syncActiveSourceSignals();
+        if (!m_catalogBySource.contains(first))
+            requestCatalogLoad(first);
+        else
+            rebuildMergedCatalog();
+        return;
     }
 
     if (valid == m_activeSourceIds)

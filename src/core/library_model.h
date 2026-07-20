@@ -38,6 +38,7 @@ struct LibraryGame {
     QString launchArgs;
     QString executableOverride;
     QString protonId;
+    QString steamAppId;
     QVector<InstalledComponent> components;
 };
 

@@ -40,8 +40,6 @@ void configureQmlEngine(QQmlApplicationEngine& engine)
 int main(int argc, char* argv[])
 {
     QGuiApplication app(argc, argv);
-    QCoreApplication::setOrganizationName(QStringLiteral("PetWork"));
-    QCoreApplication::setOrganizationDomain(QStringLiteral("petwork.local"));
     QCoreApplication::setApplicationName(QStringLiteral("Arachnel Setup"));
 #ifndef ARACHNEL_VERSION
 #define ARACHNEL_VERSION "dev"

@@ -160,6 +160,7 @@ QVariantMap LibraryModel::toMap(const LibraryGame& game) const
         {QStringLiteral("launchArgs"), game.launchArgs},
         {QStringLiteral("executableOverride"), game.executableOverride},
         {QStringLiteral("protonId"), game.protonId},
+        {QStringLiteral("steamAppId"), game.steamAppId},
         {QStringLiteral("componentCount"), game.components.size()},
         {QStringLiteral("installedComponentCount"), installedComponentCount(game.components)},
         {QStringLiteral("installed"), true},

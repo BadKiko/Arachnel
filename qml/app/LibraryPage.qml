@@ -480,6 +480,8 @@ Item {
                                     mdState.type: MD.Enum.BtFilled
                                     enabled: !!(root.heroGameId)
                                              && Core.isEntryPlayable(root.heroGameId)
+                                             && !(Core.runtimeSetupInProgress
+                                                  && Core.runtimeSetupGameId === root.heroGameId)
                                     onClicked: Core.launchGame(root.heroGameId)
                                 }
 

@@ -604,7 +604,7 @@ function Ensure-DevBuild {
 }
 
 function Get-ArachnelDataDir {
-    Join-Path $env:APPDATA "PetWork\Arachnel"
+    Join-Path $env:APPDATA "Arachnel"
 }
 
 function Format-ExitCode {

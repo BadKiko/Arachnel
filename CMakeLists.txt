@@ -137,6 +137,10 @@ qt_add_executable(arachnel_app
     src/core/plugin_api.cpp
     src/core/plugin_host.cpp
     src/core/plugin_catalog_service.cpp
+    src/core/runtime_manifest_probe.cpp
+    src/core/runtime_depot_catalog.cpp
+    src/core/runtime_container_manager.cpp
+    src/core/runtime_dependency_service.cpp
     src/core/process_launcher.cpp
     src/core/launch_resolver.cpp
     src/core/proton_manager.cpp
