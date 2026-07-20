@@ -75,39 +75,34 @@ void InstallKindProbeService::queueCatalog(const QString& sourceId,
         return;
 
     const QString needle = priorityQuery.trimmed().toLower();
-    QVector<const CatalogEntry*> ordered;
-    ordered.reserve(entries.size());
-    for (const CatalogEntry& entry : entries)
-        ordered.append(&entry);
 
-    std::stable_sort(ordered.begin(), ordered.end(),
-                     [&needle](const CatalogEntry* a, const CatalogEntry* b) {
-                         if (needle.isEmpty())
-                             return false;
-                         const bool aMatch = a->title.toLower().contains(needle);
-                         const bool bMatch = b->title.toLower().contains(needle);
-                         if (aMatch == bMatch)
-                             return false;
-                         return aMatch && !bMatch;
-                     });
-
-    for (const CatalogEntry* entry : ordered) {
-        if (entry->sourceId != sourceId)
-            continue;
-        const QString magnet = pickMagnet(entry->magnetUris);
+    // Priority pass: matching search titles first (no full-cache sort).
+    auto enqueueEntry = [this, &sourceId](const CatalogEntry& entry, bool front) {
+        if (entry.sourceId != sourceId)
+            return;
+        const QString magnet = pickMagnet(entry.magnetUris);
         const QString hashKey = magnetInfoHashKey(magnet);
         if (magnet.isEmpty() || hashKey.isEmpty())
-            continue;
+            return;
         if (m_cacheByHash.contains(hashKey))
-            continue;
+            return;
 
         ProbeTask task;
-        task.entryId = entry->id;
+        task.entryId = entry.id;
         task.sourceId = sourceId;
         task.magnetUri = magnet;
         task.hashKey = hashKey;
-        enqueueTask(task, false);
+        enqueueTask(task, front);
+    };
+
+    if (!needle.isEmpty()) {
+        for (const CatalogEntry& entry : entries) {
+            if (entry.titleLower.contains(needle))
+                enqueueEntry(entry, true);
+        }
     }
+    for (const CatalogEntry& entry : entries)
+        enqueueEntry(entry, false);
 
     pumpQueue();
 }

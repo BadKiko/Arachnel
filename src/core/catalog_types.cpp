@@ -1,9 +1,27 @@
 #include "catalog_types.h"
 
 #include <QCoreApplication>
+#include <QDate>
 #include <QRegularExpression>
 
 namespace arachnel::core {
+
+void prepareCatalogEntry(CatalogEntry& entry)
+{
+    entry.titleLower = entry.title.trimmed().toLower();
+    entry.sizeBytes = parseSizeLabelBytes(entry.sizeLabel);
+    const QDate day = QDate::fromString(entry.uploadDate.left(10), Qt::ISODate);
+    entry.uploadDay = day.isValid() ? day.toJulianDay() : 0;
+
+    entry.genreTokens.clear();
+    const QStringList raw = entry.genres.split(QLatin1Char(','), Qt::SkipEmptyParts);
+    entry.genreTokens.reserve(raw.size());
+    for (QString token : raw) {
+        token = token.trimmed();
+        if (!token.isEmpty())
+            entry.genreTokens.append(token);
+    }
+}
 
 qint64 parseSizeLabelBytes(const QString& label)
 {

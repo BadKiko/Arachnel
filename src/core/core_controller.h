@@ -150,6 +150,10 @@ public:
     Q_INVOKABLE void clearCatalogFilters();
     Q_INVOKABLE void setCatalogFilters(int typeFilter, int sizeFilter, int recencyFilter,
                                        bool hasAddonsFilter, const QString& genreFilter);
+    /** One model update: quiet sort + filters + applyCatalogFilter. */
+    Q_INVOKABLE void applyCatalogPresentation(int sortMode, int typeFilter, int sizeFilter,
+                                              int recencyFilter, bool hasAddonsFilter,
+                                              const QString& genreFilter);
 
     Q_INVOKABLE QVariantList pluginEntries() const;
     Q_INVOKABLE void browsePluginArach();
@@ -274,6 +278,10 @@ private:
     void applyCatalogFilter(const QString& query);
     void notifyCatalogFiltersChanged();
     bool entryMatchesCatalogFilters(const CatalogEntry& entry) const;
+    void rebuildCatalogIdIndex();
+    void rebuildAvailableCatalogGenres();
+    void scheduleCatalogRefilter();
+    void warmActiveCatalogCovers();
     void commitCatalogLoad(const QString& sourceId, QVector<CatalogEntry> entries);
     void storeCatalogForSource(const QString& sourceId, QVector<CatalogEntry> entries);
     void rebuildMergedCatalog();
@@ -376,6 +384,7 @@ private:
     PluginCatalogService* m_pluginCatalog = nullptr;
 
     QVector<CatalogEntry> m_catalogCache;
+    QHash<QString, int> m_catalogIdToCacheIndex;
     QHash<QString, QVector<CatalogEntry>> m_catalogBySource;
     QHash<QString, int> m_catalogCounts;
     QStringList m_catalogPrefetchQueue;
@@ -385,6 +394,10 @@ private:
     bool m_catalogHttpLoadActive = false;
     QHash<QString, QSet<QString>> m_coverWaiters;
     QString m_activeQuery;
+    QString m_filterNeedle;
+    qint64 m_filterCutoffDay = 0;
+    QStringList m_availableCatalogGenres;
+    QTimer* m_catalogRefilterTimer = nullptr;
     // Type: -1 all, 0 portable, 1 installer, 2 online fix. Size/recency: 0 = any.
     int m_catalogTypeFilter = -1;
     int m_catalogSizeFilter = 0;

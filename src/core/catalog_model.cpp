@@ -9,22 +9,19 @@ namespace arachnel::core {
 
 namespace {
 
-QString normalizedTitle(const CatalogEntry& entry)
-{
-    return entry.title.trimmed();
-}
-
-bool catalogEntryLess(const CatalogEntry& a, const CatalogEntry& b, CatalogModel::SortMode mode)
+bool catalogIndexLess(const CatalogEntry& a, const CatalogEntry& b, CatalogModel::SortMode mode)
 {
     switch (mode) {
     case CatalogModel::SortOldest:
+        if (a.uploadDay != b.uploadDay)
+            return a.uploadDay > 0 && (b.uploadDay == 0 || a.uploadDay < b.uploadDay);
         if (a.uploadDate != b.uploadDate)
             return a.uploadDate < b.uploadDate;
         break;
     case CatalogModel::SortTitleAsc:
-        return normalizedTitle(a).compare(normalizedTitle(b), Qt::CaseInsensitive) < 0;
+        return a.titleLower < b.titleLower;
     case CatalogModel::SortTitleDesc:
-        return normalizedTitle(a).compare(normalizedTitle(b), Qt::CaseInsensitive) > 0;
+        return a.titleLower > b.titleLower;
     case CatalogModel::SortPortableFirst:
         if (a.installKind != b.installKind) {
             const bool aPortable = (a.installKind == InstallKind::PortableArchive);
@@ -47,14 +44,13 @@ bool catalogEntryLess(const CatalogEntry& a, const CatalogEntry& b, CatalogModel
         break;
     case CatalogModel::SortSizeLargest:
     case CatalogModel::SortSizeSmallest: {
-        const qint64 aBytes = parseSizeLabelBytes(a.sizeLabel);
-        const qint64 bBytes = parseSizeLabelBytes(b.sizeLabel);
-        if (aBytes != bBytes) {
-            if (aBytes == 0)
+        if (a.sizeBytes != b.sizeBytes) {
+            if (a.sizeBytes == 0)
                 return false;
-            if (bBytes == 0)
+            if (b.sizeBytes == 0)
                 return true;
-            return mode == CatalogModel::SortSizeLargest ? (aBytes > bBytes) : (aBytes < bBytes);
+            return mode == CatalogModel::SortSizeLargest ? (a.sizeBytes > b.sizeBytes)
+                                                        : (a.sizeBytes < b.sizeBytes);
         }
         if (a.uploadDate != b.uploadDate)
             return a.uploadDate > b.uploadDate;
@@ -62,11 +58,13 @@ bool catalogEntryLess(const CatalogEntry& a, const CatalogEntry& b, CatalogModel
     }
     case CatalogModel::SortNewest:
     default:
+        if (a.uploadDay != b.uploadDay)
+            return a.uploadDay > b.uploadDay;
         if (a.uploadDate != b.uploadDate)
             return a.uploadDate > b.uploadDate;
         break;
     }
-    return normalizedTitle(a).compare(normalizedTitle(b), Qt::CaseInsensitive) < 0;
+    return a.titleLower < b.titleLower;
 }
 
 } // namespace
@@ -80,48 +78,58 @@ int CatalogModel::rowCount(const QModelIndex& parent) const
 {
     if (parent.isValid())
         return 0;
-    return m_entries.size();
+    return m_indices.size();
+}
+
+const CatalogEntry* CatalogModel::entryAtRow(int row) const
+{
+    if (!m_source || row < 0 || row >= m_indices.size())
+        return nullptr;
+    const int cacheIndex = m_indices.at(row);
+    if (cacheIndex < 0 || cacheIndex >= m_source->size())
+        return nullptr;
+    return &m_source->at(cacheIndex);
 }
 
 QVariant CatalogModel::data(const QModelIndex& index, int role) const
 {
-    if (!index.isValid() || index.row() < 0 || index.row() >= m_entries.size())
+    const CatalogEntry* entry = entryAtRow(index.row());
+    if (!entry)
         return {};
 
-    const auto& entry = m_entries.at(index.row());
     switch (role) {
     case EntryIdRole:
-        return entry.id;
+        return entry->id;
     case TitleRole:
-        return entry.title;
+        return entry->title;
     case CoverUrlRole:
-        return entry.coverUrl;
+        return entry->coverUrl;
     case SourceIdRole:
-        return entry.sourceId;
+        return entry->sourceId;
     case VersionRole:
-        return entry.version;
+        return entry->version;
     case SizeLabelRole:
-        return entry.sizeLabel;
+        return entry->sizeLabel;
     case DescriptionRole:
-        return entry.description;
+        return entry->description;
     case GenresRole:
-        return entry.genres;
+        return entry->genres;
     case InstallKindRole:
-        return static_cast<int>(entry.installKind);
+        return static_cast<int>(entry->installKind);
     case InstallKindLabelRole:
-        return installKindLabel(entry.installKind);
+        return installKindLabel(entry->installKind);
     case UploadDateRole:
-        return entry.uploadDate;
+        return entry->uploadDate;
     case ItemKindRole:
-        return static_cast<int>(entry.itemKind);
+        return static_cast<int>(entry->itemKind);
     case ItemKindLabelRole:
-        return catalogItemKindLabel(entry.itemKind);
+        return catalogItemKindLabel(entry->itemKind);
     case AddonCountRole:
-        return entry.addons.size();
+        return entry->addons.size();
     case HasAddonsRole:
-        return !entry.addons.isEmpty();
+        return !entry->addons.isEmpty();
     case MetadataPendingRole:
-        return entry.metadataPending;
+        return entry->metadataPending;
     default:
         return {};
     }
@@ -149,6 +157,16 @@ QHash<int, QByteArray> CatalogModel::roleNames() const
     };
 }
 
+void CatalogModel::setSortModeQuiet(int mode)
+{
+    const auto next = static_cast<SortMode>(
+        qBound(static_cast<int>(SortNewest), mode, static_cast<int>(SortSizeSmallest)));
+    if (m_sortMode == next)
+        return;
+    m_sortMode = next;
+    emit sortModeChanged();
+}
+
 void CatalogModel::setSortMode(int mode)
 {
     const auto next = static_cast<SortMode>(
@@ -157,55 +175,77 @@ void CatalogModel::setSortMode(int mode)
         return;
 
     m_sortMode = next;
-    if (!m_entries.isEmpty()) {
+    if (!m_indices.isEmpty() && m_source) {
         beginResetModel();
-        sortEntries();
+        sortIndices();
+        rebuildIdMap();
         endResetModel();
     }
     emit sortModeChanged();
 }
 
-void CatalogModel::sortEntries()
+void CatalogModel::bindSource(const QVector<CatalogEntry>* source)
 {
-    std::stable_sort(m_entries.begin(), m_entries.end(),
-                     [this](const CatalogEntry& a, const CatalogEntry& b) {
-                         return catalogEntryLess(a, b, m_sortMode);
-                     });
+    m_source = source;
 }
 
-void CatalogModel::setEntries(QVector<CatalogEntry> entries)
+void CatalogModel::sortIndices()
+{
+    if (!m_source)
+        return;
+    std::stable_sort(m_indices.begin(), m_indices.end(), [this](int ai, int bi) {
+        return catalogIndexLess(m_source->at(ai), m_source->at(bi), m_sortMode);
+    });
+}
+
+void CatalogModel::rebuildIdMap()
+{
+    m_idToRow.clear();
+    m_idToRow.reserve(m_indices.size());
+    if (!m_source)
+        return;
+    for (int row = 0; row < m_indices.size(); ++row) {
+        const int cacheIndex = m_indices.at(row);
+        if (cacheIndex < 0 || cacheIndex >= m_source->size())
+            continue;
+        m_idToRow.insert(m_source->at(cacheIndex).id, row);
+    }
+}
+
+void CatalogModel::setVisibleIndices(QVector<int> indices)
 {
     beginResetModel();
-    m_entries = std::move(entries);
-    sortEntries();
+    m_indices = std::move(indices);
+    sortIndices();
+    rebuildIdMap();
     endResetModel();
     emit countChanged();
 }
 
-bool CatalogModel::updateEntry(const CatalogEntry& entry)
+bool CatalogModel::notifyEntryChanged(const QString& id)
 {
-    const int row = indexOfEntry(entry.id);
-    if (row < 0)
+    const auto it = m_idToRow.constFind(id);
+    if (it == m_idToRow.cend())
         return false;
-    m_entries[row] = entry;
-    const QModelIndex idx = index(row);
+    const QModelIndex idx = index(it.value());
     emit dataChanged(idx, idx);
     return true;
 }
 
 int CatalogModel::indexOfEntry(const QString& id) const
 {
-    for (int i = 0; i < m_entries.size(); ++i) {
-        if (m_entries.at(i).id == id)
-            return i;
-    }
-    return -1;
+    return m_idToRow.value(id, -1);
 }
 
 const CatalogEntry* CatalogModel::entryById(const QString& id) const
 {
+    const int row = indexOfEntry(id);
+    if (row >= 0)
+        return entryAtRow(row);
+    if (!m_source)
+        return nullptr;
     const QString resolved = repairCatalogEntryId(id);
-    for (const auto& entry : m_entries) {
+    for (const auto& entry : *m_source) {
         if (entry.id == resolved || entry.id == id)
             return &entry;
     }
@@ -278,10 +318,14 @@ QVariantList CatalogModel::addonsFor(const QString& entryId) const
 
 void CatalogModel::clear()
 {
-    if (m_entries.isEmpty())
+    if (m_indices.isEmpty()) {
+        m_source = nullptr;
         return;
+    }
     beginResetModel();
-    m_entries.clear();
+    m_indices.clear();
+    m_idToRow.clear();
+    m_source = nullptr;
     endResetModel();
     emit countChanged();
 }

@@ -4,8 +4,10 @@
 #include "install_kind.h"
 
 #include <QAbstractListModel>
+#include <QHash>
 #include <QString>
 #include <QVariantMap>
+#include <QVector>
 
 namespace arachnel::core {
 
@@ -54,12 +56,18 @@ public:
     QVariant data(const QModelIndex& index, int role) const override;
     QHash<int, QByteArray> roleNames() const override;
 
-    int count() const { return m_entries.size(); }
+    int count() const { return m_indices.size(); }
     int sortMode() const { return static_cast<int>(m_sortMode); }
     void setSortMode(int mode);
+    /** Update sort mode without resorting (caller will setVisibleIndices next). */
+    void setSortModeQuiet(int mode);
 
-    void setEntries(QVector<CatalogEntry> entries);
-    bool updateEntry(const CatalogEntry& entry);
+    /** Bind to cache storage; must outlive visible indices. */
+    void bindSource(const QVector<CatalogEntry>* source);
+    /** Show cache rows by index (sorted in-place by current sortMode). No deep copy. */
+    void setVisibleIndices(QVector<int> indices);
+    /** Notify a visible row that its cache entry changed. Returns false if not visible. */
+    bool notifyEntryChanged(const QString& id);
     int indexOfEntry(const QString& id) const;
     const CatalogEntry* entryById(const QString& id) const;
     Q_INVOKABLE QVariantMap entryInfo(const QString& id) const;
@@ -71,10 +79,14 @@ signals:
     void sortModeChanged();
 
 private:
-    void sortEntries();
+    void sortIndices();
+    void rebuildIdMap();
+    const CatalogEntry* entryAtRow(int row) const;
     QVariantMap toMap(const CatalogEntry& entry) const;
 
-    QVector<CatalogEntry> m_entries;
+    const QVector<CatalogEntry>* m_source = nullptr;
+    QVector<int> m_indices;
+    QHash<QString, int> m_idToRow;
     SortMode m_sortMode = SortNewest;
 };
 

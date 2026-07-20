@@ -90,10 +90,10 @@ Item {
     }
 
     function applySortMode(mode) {
-        if (Core.catalog.sortMode === mode)
-            return
+        // Persist only — Core.applyCatalogPresentation already applied sort quietly.
         catalogPrefs.sortMode = mode
-        Core.catalog.sortMode = mode
+        if (Core.catalog.sortMode !== mode)
+            Core.catalog.sortMode = mode
     }
 
     function persistCatalogFilters() {
@@ -202,7 +202,7 @@ Item {
     CatalogFilterSheet {
         id: catalogFilterSheet
         sortOptions: root.sortOptions
-        onSortApplied: function (mode) { root.applySortMode(mode) }
+        onSortApplied: function (mode) { catalogPrefs.sortMode = mode }
     }
 
     Component {
@@ -368,7 +368,7 @@ Item {
                 cellWidth: root.cellWidth
                 cellHeight: root.cellHeight
                 cacheBuffer: root.cellHeight * 2
-                reuseItems: false
+                reuseItems: true
                 boundsBehavior: Flickable.StopAtBounds
                 pixelAligned: true
 

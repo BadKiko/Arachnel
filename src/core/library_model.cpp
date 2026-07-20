@@ -111,6 +111,27 @@ void LibraryModel::setGames(QVector<LibraryGame> games)
     emit libraryChanged();
 }
 
+void LibraryModel::setGamesIncremental(QVector<LibraryGame> games)
+{
+    if (m_games.size() == games.size()) {
+        bool sameIds = true;
+        for (int i = 0; i < m_games.size(); ++i) {
+            if (m_games.at(i).id != games.at(i).id) {
+                sameIds = false;
+                break;
+            }
+        }
+        if (sameIds) {
+            m_games = std::move(games);
+            if (!m_games.isEmpty())
+                emit dataChanged(index(0), index(m_games.size() - 1));
+            emit libraryChanged();
+            return;
+        }
+    }
+    setGames(std::move(games));
+}
+
 bool LibraryModel::replaceGame(const LibraryGame& game)
 {
     for (int row = 0; row < m_games.size(); ++row) {
