@@ -68,6 +68,7 @@ Item {
     }
 
     function ensureValidSource() {
+        // Drops disabled chips and auto-selects the first enabled source if none left.
         Core.pruneDisabledCatalogSources()
     }
 
@@ -128,6 +129,12 @@ Item {
     Component.onCompleted: {
         Core.catalog.sortMode = catalogPrefs.sortMode
         Core.prefetchCatalogCounts()
+        root.ensureValidSource()
+    }
+
+    onEnabledChanged: {
+        if (enabled)
+            root.ensureValidSource()
     }
 
     Connections {

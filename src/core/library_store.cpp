@@ -137,6 +137,7 @@ void LibraryStore::load()
         game.launchArgs = obj.value(QStringLiteral("launchArgs")).toString();
         game.executableOverride = obj.value(QStringLiteral("executableOverride")).toString();
         game.protonId = obj.value(QStringLiteral("protonId")).toString();
+        game.steamAppId = obj.value(QStringLiteral("steamAppId")).toString();
         game.components = componentsFromJson(obj.value(QStringLiteral("components")).toArray());
         games.append(game);
     }
@@ -170,6 +171,7 @@ void LibraryStore::save()
         obj.insert(QStringLiteral("launchArgs"), game.launchArgs);
         obj.insert(QStringLiteral("executableOverride"), game.executableOverride);
         obj.insert(QStringLiteral("protonId"), game.protonId);
+        obj.insert(QStringLiteral("steamAppId"), game.steamAppId);
         obj.insert(QStringLiteral("components"), componentsToJson(game.components));
         array.append(obj);
     }

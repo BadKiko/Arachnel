@@ -75,8 +75,8 @@ Arachnel loads plugins from **`plugins/<id>/`** under the app data directory (`P
 
 | OS | Plugins directory |
 |----|-------------------|
-| **Windows** | `%LOCALAPPDATA%\PetWork\Arachnel\plugins\<id>\` |
-| **Linux** | `~/.local/share/PetWork/Arachnel/plugins/<id>/` |
+| **Windows** | `%APPDATA%\Arachnel\plugins\<id>\` |
+| **Linux** | `~/.local/share/Arachnel/plugins/<id>/` |
 
 Each folder must contain at least:
 
@@ -116,7 +116,7 @@ cd Arachnel
 ./run.sh
 ```
 
-Install the plugin manually into `~/.local/share/PetWork/Arachnel/plugins/<id>/` (no auto-deploy yet).
+Install the plugin manually into `~/.local/share/Arachnel/plugins/<id>/` (no auto-deploy yet).
 
 Check **`run.log`** in the app data folder for lines like `Plugin loaded: freetp`.
 

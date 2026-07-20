@@ -150,7 +150,7 @@ std::filesystem::path runtimeCacheDirNative()
 
     const std::filesystem::path base(localAppData);
     CoTaskMemFree(localAppData);
-    return base / L"PetWork" / L"Arachnel Setup" / L"cache" / L"runtime";
+    return base / L"Arachnel Setup" / L"cache" / L"runtime";
 }
 
 bool isRuntimeReadyNative(const std::filesystem::path& dir)

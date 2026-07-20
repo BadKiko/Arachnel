@@ -90,8 +90,6 @@ int main(int argc, char* argv[])
     QGuiApplication app(argc, argv);
 #endif
 
-    QCoreApplication::setOrganizationName(QStringLiteral("PetWork"));
-    QCoreApplication::setOrganizationDomain(QStringLiteral("petwork.local"));
     QCoreApplication::setApplicationName(QStringLiteral("Arachnel"));
 #ifndef ARACHNEL_VERSION
 #define ARACHNEL_VERSION "dev"
