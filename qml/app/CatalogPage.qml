@@ -42,12 +42,36 @@ Item {
         { mode: 2, label: qsTr("Title A–Z") },
         { mode: 3, label: qsTr("Title Z–A") },
         { mode: 4, label: qsTr("Portable first") },
-        { mode: 5, label: qsTr("Non-portable first") }
+        { mode: 5, label: qsTr("Non-portable first") },
+        { mode: 6, label: qsTr("Largest first") },
+        { mode: 7, label: qsTr("Smallest first") }
     ]
+
+    readonly property var typeFilterLabels: ({
+        "-1": qsTr("All"),
+        "0": qsTr("Portable"),
+        "1": qsTr("Installer"),
+        "2": qsTr("Online fix")
+    })
+    readonly property var sizeFilterLabels: ({
+        "0": qsTr("Any size"),
+        "1": qsTr("< 1 GB"),
+        "2": qsTr("1–5 GB"),
+        "3": qsTr("5–20 GB"),
+        "4": qsTr("20+ GB")
+    })
+    readonly property var recencyFilterLabels: ({
+        "0": qsTr("Any time"),
+        "1": qsTr("Last 7 days"),
+        "2": qsTr("Last 30 days"),
+        "3": qsTr("Last 90 days"),
+        "4": qsTr("Last year")
+    })
 
     property string searchQuery: ""
     property real savedGridScrollY: 0
     property real savedListScrollY: 0
+    property bool restoringFilters: false
 
     signal openGame(string entryId)
     signal openSettings()
@@ -58,6 +82,11 @@ Item {
         category: "catalog"
         property int sortMode: 0
         property int viewMode: 0
+        property int typeFilter: -1
+        property int sizeFilter: 0
+        property int recencyFilter: 0
+        property bool hasAddonsFilter: false
+        property string genreFilter: ""
     }
 
     function applySortMode(mode) {
@@ -67,23 +96,31 @@ Item {
         Core.catalog.sortMode = mode
     }
 
+    function persistCatalogFilters() {
+        if (root.restoringFilters)
+            return
+        catalogPrefs.typeFilter = Core.catalogTypeFilter
+        catalogPrefs.sizeFilter = Core.catalogSizeFilter
+        catalogPrefs.recencyFilter = Core.catalogRecencyFilter
+        catalogPrefs.hasAddonsFilter = Core.catalogHasAddonsFilter
+        catalogPrefs.genreFilter = Core.catalogGenreFilter
+    }
+
+    function restoreCatalogFilters() {
+        root.restoringFilters = true
+        Core.setCatalogFilters(catalogPrefs.typeFilter, catalogPrefs.sizeFilter,
+                               catalogPrefs.recencyFilter, catalogPrefs.hasAddonsFilter,
+                               catalogPrefs.genreFilter)
+        root.restoringFilters = false
+    }
+
     function ensureValidSource() {
         // Drops disabled chips and auto-selects the first enabled source if none left.
         Core.pruneDisabledCatalogSources()
     }
 
-    function openSortMenu(anchor) {
-        sortPopup.parent = anchor.parent
-        sortPopup.x = anchor.x
-        sortPopup.y = anchor.y + anchor.height + 4
-        sortPopup.open()
-    }
-
-    function openFilterMenu(anchor) {
-        filterPopup.parent = anchor.parent
-        filterPopup.x = anchor.x
-        filterPopup.y = anchor.y + anchor.height + 4
-        filterPopup.open()
+    function openFilterSheet() {
+        catalogFilterSheet.openSheet()
     }
 
     function resetScroll() {
@@ -128,6 +165,7 @@ Item {
 
     Component.onCompleted: {
         Core.catalog.sortMode = catalogPrefs.sortMode
+        root.restoreCatalogFilters()
         Core.prefetchCatalogCounts()
         root.ensureValidSource()
     }
@@ -144,6 +182,9 @@ Item {
             catalogSearch.searchText = ""
             root.resetScroll()
         }
+        function onCatalogFiltersChanged() {
+            root.persistCatalogFilters()
+        }
     }
 
     Connections {
@@ -158,133 +199,10 @@ Item {
         restoreScroll()
     }
 
-    Popup {
-        id: sortPopup
-        width: 240
-        padding: 0
-        modal: true
-        focus: true
-        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
-
-        background: MD.ElevationRectangle {
-            radius: MD.Token.shape.corner.medium
-            color: MD.Token.color.surface_container_high
-            elevation: MD.Token.elevation.level2
-        }
-
-        contentItem: ColumnLayout {
-            spacing: 0
-
-            MD.Label {
-                Layout.fillWidth: true
-                Layout.leftMargin: MD.Token.spacing.medium
-                Layout.rightMargin: MD.Token.spacing.medium
-                Layout.topMargin: MD.Token.spacing.small
-                Layout.bottomMargin: MD.Token.spacing.extra_small
-                text: qsTr("Sort")
-                typescale: MD.Token.typescale.label_large
-                color: MD.Token.color.on_surface_variant
-            }
-
-            Repeater {
-                model: root.sortOptions
-
-                MD.Button {
-                    required property var modelData
-                    Layout.fillWidth: true
-                    Layout.leftMargin: MD.Token.spacing.extra_small
-                    Layout.rightMargin: MD.Token.spacing.extra_small
-                    text: modelData.label
-                    mdState.type: catalogPrefs.sortMode === modelData.mode
-                                 ? MD.Enum.BtFilledTonal
-                                 : MD.Enum.BtText
-                    onClicked: {
-                        root.applySortMode(modelData.mode)
-                        sortPopup.close()
-                    }
-                }
-            }
-
-            Item {
-                Layout.preferredHeight: MD.Token.spacing.extra_small
-            }
-        }
-    }
-
-    Popup {
-        id: filterPopup
-        width: 240
-        padding: 0
-        modal: true
-        focus: true
-        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
-
-        background: MD.ElevationRectangle {
-            radius: MD.Token.shape.corner.medium
-            color: MD.Token.color.surface_container_high
-            elevation: MD.Token.elevation.level2
-        }
-
-        contentItem: ColumnLayout {
-            spacing: 0
-
-            MD.Label {
-                Layout.fillWidth: true
-                Layout.leftMargin: MD.Token.spacing.medium
-                Layout.rightMargin: MD.Token.spacing.medium
-                Layout.topMargin: MD.Token.spacing.small
-                Layout.bottomMargin: MD.Token.spacing.extra_small
-                text: qsTr("Filter by type")
-                typescale: MD.Token.typescale.label_large
-                color: MD.Token.color.on_surface_variant
-            }
-
-            MD.Button {
-                Layout.fillWidth: true
-                Layout.leftMargin: MD.Token.spacing.extra_small
-                Layout.rightMargin: MD.Token.spacing.extra_small
-                text: qsTr("All")
-                mdState.type: Core.catalog.installKindFilter === -1
-                             ? MD.Enum.BtFilledTonal
-                             : MD.Enum.BtText
-                onClicked: {
-                    Core.catalog.installKindFilter = -1
-                    filterPopup.close()
-                }
-            }
-
-            MD.Button {
-                Layout.fillWidth: true
-                Layout.leftMargin: MD.Token.spacing.extra_small
-                Layout.rightMargin: MD.Token.spacing.extra_small
-                text: qsTr("Portable")
-                mdState.type: Core.catalog.installKindFilter === 0
-                             ? MD.Enum.BtFilledTonal
-                             : MD.Enum.BtText
-                onClicked: {
-                    Core.catalog.installKindFilter = 0
-                    filterPopup.close()
-                }
-            }
-
-            MD.Button {
-                Layout.fillWidth: true
-                Layout.leftMargin: MD.Token.spacing.extra_small
-                Layout.rightMargin: MD.Token.spacing.extra_small
-                text: qsTr("Non-portable")
-                mdState.type: Core.catalog.installKindFilter === 1
-                             ? MD.Enum.BtFilledTonal
-                             : MD.Enum.BtText
-                onClicked: {
-                    Core.catalog.installKindFilter = 1
-                    filterPopup.close()
-                }
-            }
-
-            Item {
-                Layout.preferredHeight: MD.Token.spacing.extra_small
-            }
-        }
+    CatalogFilterSheet {
+        id: catalogFilterSheet
+        sortOptions: root.sortOptions
+        onSortApplied: function (mode) { root.applySortMode(mode) }
     }
 
     Component {
@@ -382,6 +300,50 @@ Item {
                         }
                     }
                 }
+
+                Flow {
+                    Layout.fillWidth: true
+                    spacing: MD.Token.spacing.small
+                    visible: Core.catalogActiveFilterCount > 0
+
+                    MD.FilterChip {
+                        visible: Core.catalogTypeFilter >= 0
+                        text: (root.typeFilterLabels[String(Core.catalogTypeFilter)] || qsTr("Type"))
+                              + " ×"
+                        checked: true
+                        onClicked: Core.catalogTypeFilter = -1
+                    }
+
+                    MD.FilterChip {
+                        visible: Core.catalogSizeFilter > 0
+                        text: (root.sizeFilterLabels[String(Core.catalogSizeFilter)] || qsTr("Size"))
+                              + " ×"
+                        checked: true
+                        onClicked: Core.catalogSizeFilter = 0
+                    }
+
+                    MD.FilterChip {
+                        visible: Core.catalogRecencyFilter > 0
+                        text: (root.recencyFilterLabels[String(Core.catalogRecencyFilter)] || qsTr("Added"))
+                              + " ×"
+                        checked: true
+                        onClicked: Core.catalogRecencyFilter = 0
+                    }
+
+                    MD.FilterChip {
+                        visible: Core.catalogHasAddonsFilter
+                        text: qsTr("Has add-ons") + " ×"
+                        checked: true
+                        onClicked: Core.catalogHasAddonsFilter = false
+                    }
+
+                    MD.FilterChip {
+                        visible: Core.catalogGenreFilter.length > 0
+                        text: Core.catalogGenreFilter + " ×"
+                        checked: true
+                        onClicked: Core.catalogGenreFilter = ""
+                    }
+                }
             }
         }
 
@@ -423,8 +385,7 @@ Item {
                         contentWidth: grid.width
                         hasSelection: Core.activeCatalogSourceIds.length > 0
                         listViewMode: root.listViewMode
-                        onSortRequested: root.openSortMenu
-                        onFilterRequested: root.openFilterMenu
+                        onFilterRequested: root.openFilterSheet()
                         onViewModeChangeRequested: function (mode) { catalogPrefs.viewMode = mode }
                         onRefreshRequested: Core.refreshSelectedCatalogs()
                     }
@@ -468,8 +429,7 @@ Item {
                         contentWidth: list.width
                         hasSelection: Core.activeCatalogSourceIds.length > 0
                         listViewMode: root.listViewMode
-                        onSortRequested: root.openSortMenu
-                        onFilterRequested: root.openFilterMenu
+                        onFilterRequested: root.openFilterSheet()
                         onViewModeChangeRequested: function (mode) { catalogPrefs.viewMode = mode }
                         onRefreshRequested: Core.refreshSelectedCatalogs()
                     }
@@ -541,11 +501,40 @@ Item {
                     maximumLineCount: 1
                 }
 
-                MD.IconButton {
-                    id: compactSortBtn
-                    mdState.type: MD.Enum.IBtStandard
-                    icon.name: MD.Token.icon.sort
-                    onClicked: root.openSortMenu(compactSortBtn)
+                Item {
+                    Layout.preferredWidth: compactFilterBtn.implicitWidth
+                    Layout.preferredHeight: compactFilterBtn.implicitHeight
+
+                    MD.IconButton {
+                        id: compactFilterBtn
+                        anchors.centerIn: parent
+                        mdState.type: Core.catalogActiveFilterCount > 0
+                                      ? MD.Enum.IBtFilledTonal
+                                      : MD.Enum.IBtStandard
+                        icon.name: MD.Token.icon.filter_list
+                        onClicked: root.openFilterSheet()
+                    }
+
+                    Rectangle {
+                        visible: Core.catalogActiveFilterCount > 0
+                        anchors.right: parent.right
+                        anchors.top: parent.top
+                        anchors.rightMargin: 2
+                        anchors.topMargin: 2
+                        width: Math.max(18, compactBadgeLabel.implicitWidth + 6)
+                        height: 18
+                        radius: 9
+                        color: MD.Token.color.error
+                        z: 2
+
+                        MD.Label {
+                            id: compactBadgeLabel
+                            anchors.centerIn: parent
+                            text: Core.catalogActiveFilterCount
+                            color: MD.Token.color.on_error
+                            typescale: MD.Token.typescale.label_small
+                        }
+                    }
                 }
 
                 MD.IconButton {

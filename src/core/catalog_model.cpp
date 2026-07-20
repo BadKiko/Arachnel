@@ -45,6 +45,21 @@ bool catalogEntryLess(const CatalogEntry& a, const CatalogEntry& b, CatalogModel
         if (a.uploadDate != b.uploadDate)
             return a.uploadDate > b.uploadDate;
         break;
+    case CatalogModel::SortSizeLargest:
+    case CatalogModel::SortSizeSmallest: {
+        const qint64 aBytes = parseSizeLabelBytes(a.sizeLabel);
+        const qint64 bBytes = parseSizeLabelBytes(b.sizeLabel);
+        if (aBytes != bBytes) {
+            if (aBytes == 0)
+                return false;
+            if (bBytes == 0)
+                return true;
+            return mode == CatalogModel::SortSizeLargest ? (aBytes > bBytes) : (aBytes < bBytes);
+        }
+        if (a.uploadDate != b.uploadDate)
+            return a.uploadDate > b.uploadDate;
+        break;
+    }
     case CatalogModel::SortNewest:
     default:
         if (a.uploadDate != b.uploadDate)
@@ -137,7 +152,7 @@ QHash<int, QByteArray> CatalogModel::roleNames() const
 void CatalogModel::setSortMode(int mode)
 {
     const auto next = static_cast<SortMode>(
-        qBound(static_cast<int>(SortNewest), mode, static_cast<int>(SortNonPortableFirst)));
+        qBound(static_cast<int>(SortNewest), mode, static_cast<int>(SortSizeSmallest)));
     if (m_sortMode == next)
         return;
 
@@ -150,30 +165,8 @@ void CatalogModel::setSortMode(int mode)
     emit sortModeChanged();
 }
 
-void CatalogModel::setInstallKindFilter(int filter)
-{
-    if (m_installKindFilter == filter)
-        return;
-
-    m_installKindFilter = filter;
-    if (!m_entries.isEmpty()) {
-        beginResetModel();
-        sortEntries();
-        endResetModel();
-    }
-    emit installKindFilterChanged();
-}
-
 void CatalogModel::sortEntries()
 {
-    // First filter, then sort
-    if (m_installKindFilter >= 0) {
-        std::stable_partition(m_entries.begin(), m_entries.end(),
-                              [this](const CatalogEntry& entry) {
-                                  return static_cast<int>(entry.installKind) == m_installKindFilter;
-                              });
-    }
-    
     std::stable_sort(m_entries.begin(), m_entries.end(),
                      [this](const CatalogEntry& a, const CatalogEntry& b) {
                          return catalogEntryLess(a, b, m_sortMode);
