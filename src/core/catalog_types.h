@@ -62,4 +62,7 @@ QString catalogItemKindLabel(CatalogItemKind kind);
 QString repairCatalogEntryId(const QString& entryId);
 QString slugifyCatalogId(const QString& title, const QString& sourceId);
 
+/** Parse FreeTP-style size labels ("2.71 GB", "512 MB") into bytes; 0 if unknown. */
+qint64 parseSizeLabelBytes(const QString& label);
+
 } // namespace arachnel::core

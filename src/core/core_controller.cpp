@@ -346,7 +346,10 @@ void CoreController::initializeServices()
                     if (entry.id != entryId)
                         continue;
                     applyMetadataToEntry(entry, metadata);
-                    syncEntryToCatalogModel(entryId);
+                    if (!m_catalogGenreFilter.isEmpty())
+                        applyCatalogFilter(m_activeQuery);
+                    else
+                        syncEntryToCatalogModel(entryId);
                     break;
                 }
                 if (!metadata.coverUrl.isEmpty())
@@ -354,6 +357,8 @@ void CoreController::initializeServices()
                 else
                     applyCoverToEntry(entryId, QString());
                 emit entryMetadataChanged(entryId);
+                if (!metadata.genres.isEmpty())
+                    emit availableCatalogGenresChanged();
             });
 
     connect(m_coverCache, &CoverImageCache::ready, this,
@@ -2492,6 +2497,78 @@ void CoreController::normalizeCatalogSourceIds(QVector<CatalogEntry>& entries,
     }
 }
 
+bool CoreController::entryMatchesCatalogFilters(const CatalogEntry& entry) const
+{
+    if (m_catalogTypeFilter >= 0) {
+        const int kind = static_cast<int>(entry.installKind);
+        if (m_catalogTypeFilter == 2) {
+            if (kind != static_cast<int>(InstallKind::BundledFix)
+                && kind != static_cast<int>(InstallKind::FixDownload))
+                return false;
+        } else if (kind != m_catalogTypeFilter) {
+            return false;
+        }
+    }
+
+    if (m_catalogSizeFilter > 0) {
+        const qint64 bytes = parseSizeLabelBytes(entry.sizeLabel);
+        if (bytes <= 0)
+            return false;
+        constexpr qint64 kGb = 1024LL * 1024 * 1024;
+        switch (m_catalogSizeFilter) {
+        case 1: // < 1 GB
+            if (bytes >= kGb)
+                return false;
+            break;
+        case 2: // 1–5 GB
+            if (bytes < kGb || bytes >= 5 * kGb)
+                return false;
+            break;
+        case 3: // 5–20 GB
+            if (bytes < 5 * kGb || bytes >= 20 * kGb)
+                return false;
+            break;
+        case 4: // 20+ GB
+            if (bytes < 20 * kGb)
+                return false;
+            break;
+        default:
+            break;
+        }
+    }
+
+    if (m_catalogRecencyFilter > 0) {
+        const QDate day = QDate::fromString(entry.uploadDate.left(10), Qt::ISODate);
+        if (!day.isValid())
+            return false;
+        const int days = m_catalogRecencyFilter == 1   ? 7
+                         : m_catalogRecencyFilter == 2 ? 30
+                         : m_catalogRecencyFilter == 3 ? 90
+                                                       : 365;
+        if (day < QDate::currentDate().addDays(-days))
+            return false;
+    }
+
+    if (m_catalogHasAddonsFilter && entry.addons.isEmpty())
+        return false;
+
+    if (!m_catalogGenreFilter.isEmpty()) {
+        const QStringList tokens =
+            entry.genres.split(QLatin1Char(','), Qt::SkipEmptyParts);
+        bool matched = false;
+        for (QString token : tokens) {
+            if (token.trimmed().compare(m_catalogGenreFilter, Qt::CaseInsensitive) == 0) {
+                matched = true;
+                break;
+            }
+        }
+        if (!matched)
+            return false;
+    }
+
+    return true;
+}
+
 void CoreController::applyCatalogFilter(const QString& query)
 {
     const QString needle = query.trimmed().toLower();
@@ -2500,6 +2577,8 @@ void CoreController::applyCatalogFilter(const QString& query)
 
     for (const auto& entry : m_catalogCache) {
         if (!needle.isEmpty() && !entry.title.toLower().contains(needle))
+            continue;
+        if (!entryMatchesCatalogFilters(entry))
             continue;
         filtered.append(entry);
     }
@@ -2515,6 +2594,122 @@ void CoreController::applyCatalogFilter(const QString& query)
         for (const QString& sourceId : m_activeSourceIds)
             m_installKindProbe->queueCatalog(sourceId, m_catalogCache, query);
     }
+}
+
+void CoreController::notifyCatalogFiltersChanged()
+{
+    emit catalogFiltersChanged();
+    applyCatalogFilter(m_activeQuery);
+}
+
+void CoreController::setCatalogTypeFilter(int filter)
+{
+    const int next = (filter < -1 || filter > 2) ? -1 : filter;
+    if (m_catalogTypeFilter == next)
+        return;
+    m_catalogTypeFilter = next;
+    notifyCatalogFiltersChanged();
+}
+
+void CoreController::setCatalogSizeFilter(int filter)
+{
+    const int next = qBound(0, filter, 4);
+    if (m_catalogSizeFilter == next)
+        return;
+    m_catalogSizeFilter = next;
+    notifyCatalogFiltersChanged();
+}
+
+void CoreController::setCatalogRecencyFilter(int filter)
+{
+    const int next = qBound(0, filter, 4);
+    if (m_catalogRecencyFilter == next)
+        return;
+    m_catalogRecencyFilter = next;
+    notifyCatalogFiltersChanged();
+}
+
+void CoreController::setCatalogHasAddonsFilter(bool enabled)
+{
+    if (m_catalogHasAddonsFilter == enabled)
+        return;
+    m_catalogHasAddonsFilter = enabled;
+    notifyCatalogFiltersChanged();
+}
+
+void CoreController::setCatalogGenreFilter(const QString& genre)
+{
+    const QString next = genre.trimmed();
+    if (m_catalogGenreFilter == next)
+        return;
+    m_catalogGenreFilter = next;
+    notifyCatalogFiltersChanged();
+}
+
+int CoreController::catalogActiveFilterCount() const
+{
+    int count = 0;
+    if (m_catalogTypeFilter >= 0)
+        ++count;
+    if (m_catalogSizeFilter > 0)
+        ++count;
+    if (m_catalogRecencyFilter > 0)
+        ++count;
+    if (m_catalogHasAddonsFilter)
+        ++count;
+    if (!m_catalogGenreFilter.isEmpty())
+        ++count;
+    return count;
+}
+
+QStringList CoreController::availableCatalogGenres() const
+{
+    QHash<QString, int> counts;
+    for (const auto& entry : m_catalogCache) {
+        const QStringList tokens =
+            entry.genres.split(QLatin1Char(','), Qt::SkipEmptyParts);
+        for (QString token : tokens) {
+            token = token.trimmed();
+            if (token.isEmpty())
+                continue;
+            ++counts[token];
+        }
+    }
+
+    QStringList genres;
+    genres.reserve(counts.size());
+    for (auto it = counts.constBegin(); it != counts.constEnd(); ++it) {
+        if (it.value() > 0)
+            genres.append(it.key());
+    }
+    genres.sort(Qt::CaseInsensitive);
+    return genres;
+}
+
+void CoreController::clearCatalogFilters()
+{
+    setCatalogFilters(-1, 0, 0, false, {});
+}
+
+void CoreController::setCatalogFilters(int typeFilter, int sizeFilter, int recencyFilter,
+                                       bool hasAddonsFilter, const QString& genreFilter)
+{
+    const int nextType = (typeFilter < -1 || typeFilter > 2) ? -1 : typeFilter;
+    const int nextSize = qBound(0, sizeFilter, 4);
+    const int nextRecency = qBound(0, recencyFilter, 4);
+    const QString nextGenre = genreFilter.trimmed();
+    if (m_catalogTypeFilter == nextType && m_catalogSizeFilter == nextSize
+        && m_catalogRecencyFilter == nextRecency
+        && m_catalogHasAddonsFilter == hasAddonsFilter
+        && m_catalogGenreFilter == nextGenre)
+        return;
+
+    m_catalogTypeFilter = nextType;
+    m_catalogSizeFilter = nextSize;
+    m_catalogRecencyFilter = nextRecency;
+    m_catalogHasAddonsFilter = hasAddonsFilter;
+    m_catalogGenreFilter = nextGenre;
+    notifyCatalogFiltersChanged();
 }
 
 void CoreController::storeCatalogForSource(const QString& sourceId,
@@ -2583,6 +2778,7 @@ void CoreController::rebuildMergedCatalog()
     logDiagnostic(QStringLiteral("rebuildMergedCatalog: install kinds queued"));
 
     applyCatalogFilter(m_activeQuery);
+    emit availableCatalogGenresChanged();
 
     logDiagnostic(QStringLiteral("rebuildMergedCatalog: filter applied, visible=%1").arg(m_catalog.count()));
 

@@ -14,7 +14,6 @@ class CatalogModel : public QAbstractListModel
     Q_OBJECT
     Q_PROPERTY(int count READ count NOTIFY countChanged)
     Q_PROPERTY(int sortMode READ sortMode WRITE setSortMode NOTIFY sortModeChanged)
-    Q_PROPERTY(int installKindFilter READ installKindFilter WRITE setInstallKindFilter NOTIFY installKindFilterChanged)
 
 public:
     enum SortMode {
@@ -24,6 +23,8 @@ public:
         SortTitleDesc,
         SortPortableFirst,
         SortNonPortableFirst,
+        SortSizeLargest,
+        SortSizeSmallest,
     };
     Q_ENUM(SortMode)
 
@@ -57,9 +58,6 @@ public:
     int sortMode() const { return static_cast<int>(m_sortMode); }
     void setSortMode(int mode);
 
-    int installKindFilter() const { return static_cast<int>(m_installKindFilter); }
-    void setInstallKindFilter(int filter);
-
     void setEntries(QVector<CatalogEntry> entries);
     bool updateEntry(const CatalogEntry& entry);
     int indexOfEntry(const QString& id) const;
@@ -71,7 +69,6 @@ public:
 signals:
     void countChanged();
     void sortModeChanged();
-    void installKindFilterChanged();
 
 private:
     void sortEntries();
@@ -79,7 +76,6 @@ private:
 
     QVector<CatalogEntry> m_entries;
     SortMode m_sortMode = SortNewest;
-    int m_installKindFilter = -1; // -1 = all
 };
 
 } // namespace arachnel::core

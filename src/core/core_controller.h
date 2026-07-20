@@ -80,6 +80,21 @@ class CoreController : public QObject
     Q_PROPERTY(AppUpdater* appUpdater READ appUpdater CONSTANT)
     Q_PROPERTY(PluginCatalogService* pluginCatalog READ pluginCatalog CONSTANT)
 
+    // Catalog filters (applied in applyCatalogFilter; CatalogModel only sorts).
+    Q_PROPERTY(int catalogTypeFilter READ catalogTypeFilter WRITE setCatalogTypeFilter
+                   NOTIFY catalogFiltersChanged)
+    Q_PROPERTY(int catalogSizeFilter READ catalogSizeFilter WRITE setCatalogSizeFilter
+                   NOTIFY catalogFiltersChanged)
+    Q_PROPERTY(int catalogRecencyFilter READ catalogRecencyFilter WRITE setCatalogRecencyFilter
+                   NOTIFY catalogFiltersChanged)
+    Q_PROPERTY(bool catalogHasAddonsFilter READ catalogHasAddonsFilter WRITE setCatalogHasAddonsFilter
+                   NOTIFY catalogFiltersChanged)
+    Q_PROPERTY(QString catalogGenreFilter READ catalogGenreFilter WRITE setCatalogGenreFilter
+                   NOTIFY catalogFiltersChanged)
+    Q_PROPERTY(int catalogActiveFilterCount READ catalogActiveFilterCount NOTIFY catalogFiltersChanged)
+    Q_PROPERTY(QStringList availableCatalogGenres READ availableCatalogGenres
+                   NOTIFY availableCatalogGenresChanged)
+
 public:
     static CoreController* create(QQmlEngine* engine, QJSEngine* scriptEngine);
     static CoreController& instance();
@@ -119,6 +134,22 @@ public:
     QVariantList availableProtons() const;
     AppUpdater* appUpdater() { return m_appUpdater; }
     PluginCatalogService* pluginCatalog() { return m_pluginCatalog; }
+
+    int catalogTypeFilter() const { return m_catalogTypeFilter; }
+    void setCatalogTypeFilter(int filter);
+    int catalogSizeFilter() const { return m_catalogSizeFilter; }
+    void setCatalogSizeFilter(int filter);
+    int catalogRecencyFilter() const { return m_catalogRecencyFilter; }
+    void setCatalogRecencyFilter(int filter);
+    bool catalogHasAddonsFilter() const { return m_catalogHasAddonsFilter; }
+    void setCatalogHasAddonsFilter(bool enabled);
+    QString catalogGenreFilter() const { return m_catalogGenreFilter; }
+    void setCatalogGenreFilter(const QString& genre);
+    int catalogActiveFilterCount() const;
+    QStringList availableCatalogGenres() const;
+    Q_INVOKABLE void clearCatalogFilters();
+    Q_INVOKABLE void setCatalogFilters(int typeFilter, int sizeFilter, int recencyFilter,
+                                       bool hasAddonsFilter, const QString& genreFilter);
 
     Q_INVOKABLE QVariantList pluginEntries() const;
     Q_INVOKABLE void browsePluginArach();
@@ -224,6 +255,8 @@ signals:
     void protonStateChanged();
     void availableProtonsChanged();
     void entryMetadataChanged(const QString& entryId);
+    void catalogFiltersChanged();
+    void availableCatalogGenresChanged();
 
 private:
     explicit CoreController(QObject* parent = nullptr);
@@ -239,6 +272,8 @@ private:
     void syncLibraryFromStore();
     void syncProtonCatalog();
     void applyCatalogFilter(const QString& query);
+    void notifyCatalogFiltersChanged();
+    bool entryMatchesCatalogFilters(const CatalogEntry& entry) const;
     void commitCatalogLoad(const QString& sourceId, QVector<CatalogEntry> entries);
     void storeCatalogForSource(const QString& sourceId, QVector<CatalogEntry> entries);
     void rebuildMergedCatalog();
@@ -350,6 +385,12 @@ private:
     bool m_catalogHttpLoadActive = false;
     QHash<QString, QSet<QString>> m_coverWaiters;
     QString m_activeQuery;
+    // Type: -1 all, 0 portable, 1 installer, 2 online fix. Size/recency: 0 = any.
+    int m_catalogTypeFilter = -1;
+    int m_catalogSizeFilter = 0;
+    int m_catalogRecencyFilter = 0;
+    bool m_catalogHasAddonsFilter = false;
+    QString m_catalogGenreFilter;
     QString m_userNotice;
     int m_userNoticeSerial = 0;
     QString m_catalogStatus;

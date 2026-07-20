@@ -181,6 +181,126 @@
     </message>
 </context>
 <context>
+    <name>CatalogFilterSheet</name>
+    <message>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="25"/>
+        <source>All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="26"/>
+        <source>Portable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="27"/>
+        <source>Installer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="28"/>
+        <source>Online fix</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="32"/>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="40"/>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="270"/>
+        <source>Any</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="33"/>
+        <source>&lt; 1 GB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="34"/>
+        <source>1–5 GB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="35"/>
+        <source>5–20 GB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="36"/>
+        <source>20+ GB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="41"/>
+        <source>Last 7 days</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="42"/>
+        <source>Last 30 days</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="43"/>
+        <source>Last 90 days</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="44"/>
+        <source>Last year</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="82"/>
+        <source>Sort &amp; filters</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="106"/>
+        <source>Sort</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="137"/>
+        <source>Type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="168"/>
+        <source>Size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="199"/>
+        <source>Added</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="230"/>
+        <source>Extras</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="241"/>
+        <source>Has add-ons</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="260"/>
+        <source>Genre</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="309"/>
+        <source>Clear all</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="316"/>
+        <source>Apply</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>CatalogPage</name>
     <message>
         <location filename="../../qml/app/CatalogPage.qml" line="40"/>
@@ -213,78 +333,153 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/CatalogPage.qml" line="177"/>
-        <source>Sort</source>
+        <location filename="../../qml/app/CatalogPage.qml" line="46"/>
+        <source>Largest first</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/CatalogPage.qml" line="230"/>
-        <source>Filter by type</source>
+        <location filename="../../qml/app/CatalogPage.qml" line="47"/>
+        <source>Smallest first</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/CatalogPage.qml" line="239"/>
+        <location filename="../../qml/app/CatalogPage.qml" line="53"/>
+        <source>Installer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/CatalogPage.qml" line="54"/>
+        <source>Online fix</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/CatalogPage.qml" line="57"/>
+        <source>Any size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/CatalogPage.qml" line="58"/>
+        <source>&lt; 1 GB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/CatalogPage.qml" line="59"/>
+        <source>1–5 GB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/CatalogPage.qml" line="60"/>
+        <source>5–20 GB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/CatalogPage.qml" line="61"/>
+        <source>20+ GB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/CatalogPage.qml" line="64"/>
+        <source>Any time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/CatalogPage.qml" line="65"/>
+        <source>Last 7 days</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/CatalogPage.qml" line="66"/>
+        <source>Last 30 days</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/CatalogPage.qml" line="67"/>
+        <source>Last 90 days</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/CatalogPage.qml" line="68"/>
+        <source>Last year</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/CatalogPage.qml" line="51"/>
         <source>All</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/CatalogPage.qml" line="253"/>
+        <location filename="../../qml/app/CatalogPage.qml" line="52"/>
         <source>Portable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/CatalogPage.qml" line="267"/>
-        <source>Non-portable</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../qml/app/CatalogPage.qml" line="294"/>
-        <location filename="../../qml/app/CatalogPage.qml" line="520"/>
+        <location filename="../../qml/app/CatalogPage.qml" line="219"/>
+        <location filename="../../qml/app/CatalogPage.qml" line="487"/>
         <source>Catalog</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/CatalogPage.qml" line="529"/>
+        <location filename="../../qml/app/CatalogPage.qml" line="311"/>
+        <source>Type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/CatalogPage.qml" line="319"/>
+        <source>Size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/CatalogPage.qml" line="327"/>
+        <source>Added</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/CatalogPage.qml" line="335"/>
+        <source>Has add-ons</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/CatalogPage.qml" line="496"/>
         <source>Loading…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/CatalogPage.qml" line="530"/>
+        <location filename="../../qml/app/CatalogPage.qml" line="497"/>
         <source>Found: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/CatalogPage.qml" line="611"/>
+        <location filename="../../qml/app/CatalogPage.qml" line="607"/>
         <source>Select sources</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/CatalogPage.qml" line="612"/>
+        <location filename="../../qml/app/CatalogPage.qml" line="608"/>
         <source>Nothing found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/CatalogPage.qml" line="620"/>
+        <location filename="../../qml/app/CatalogPage.qml" line="616"/>
         <source>Try another search or refresh the catalog.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/CatalogPage.qml" line="628"/>
+        <location filename="../../qml/app/CatalogPage.qml" line="624"/>
         <source>Refresh</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/CatalogPage.qml" line="661"/>
+        <location filename="../../qml/app/CatalogPage.qml" line="657"/>
         <source>No games</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/CatalogPage.qml" line="679"/>
+        <location filename="../../qml/app/CatalogPage.qml" line="675"/>
         <source>Add catalog</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/CatalogPage.qml" line="686"/>
+        <location filename="../../qml/app/CatalogPage.qml" line="682"/>
         <source>Settings</source>
         <translation type="unfinished"></translation>
     </message>
@@ -292,12 +487,12 @@
 <context>
     <name>CatalogScrollHeader</name>
     <message>
-        <location filename="../../qml/components/CatalogScrollHeader.qml" line="35"/>
+        <location filename="../../qml/components/CatalogScrollHeader.qml" line="34"/>
         <source>Loading catalog…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/components/CatalogScrollHeader.qml" line="36"/>
+        <location filename="../../qml/components/CatalogScrollHeader.qml" line="35"/>
         <source>Found: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -338,16 +533,16 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/job_display.cpp" line="42"/>
-        <location filename="../../src/core/job_display.cpp" line="89"/>
-        <location filename="../../src/core/job_display.cpp" line="94"/>
+        <location filename="../../src/core/job_display.cpp" line="46"/>
+        <location filename="../../src/core/job_display.cpp" line="93"/>
+        <location filename="../../src/core/job_display.cpp" line="98"/>
         <source>Add-on %1 — %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/job_display.cpp" line="40"/>
-        <location filename="../../src/core/job_display.cpp" line="171"/>
-        <location filename="../../src/core/job_display.cpp" line="173"/>
+        <location filename="../../src/core/job_display.cpp" line="44"/>
+        <location filename="../../src/core/job_display.cpp" line="179"/>
+        <location filename="../../src/core/job_display.cpp" line="181"/>
         <source>Install failed: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -428,51 +623,56 @@
     </message>
     <message>
         <location filename="../../src/core/job_display.cpp" line="29"/>
-        <source>Resuming…</source>
+        <source>Steam blocked downloading game files (need a packaged manifest). Try another title, or set hubcapApiKey in plugin settings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../src/core/job_display.cpp" line="33"/>
-        <source>Failed to start torrent</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../src/core/job_display.cpp" line="34"/>
-        <source>Failed to start HTTP download</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../src/core/job_display.cpp" line="36"/>
-        <source>Downloading %1</source>
+        <source>Resuming…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../src/core/job_display.cpp" line="37"/>
-        <source>Installing %1</source>
+        <source>Failed to start torrent</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../src/core/job_display.cpp" line="38"/>
-        <source>Updating %1</source>
+        <source>Failed to start HTTP download</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/job_display.cpp" line="39"/>
-        <location filename="../../src/core/job_display.cpp" line="176"/>
-        <location filename="../../src/core/job_display.cpp" line="180"/>
-        <source>Installing (%1/%2)</source>
+        <location filename="../../src/core/job_display.cpp" line="40"/>
+        <source>Downloading %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../src/core/job_display.cpp" line="41"/>
-        <location filename="../../src/core/job_display.cpp" line="185"/>
-        <location filename="../../src/core/job_display.cpp" line="187"/>
+        <source>Installing %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/core/job_display.cpp" line="42"/>
+        <source>Updating %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/core/job_display.cpp" line="43"/>
+        <location filename="../../src/core/job_display.cpp" line="184"/>
+        <location filename="../../src/core/job_display.cpp" line="188"/>
+        <source>Installing (%1/%2)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/core/job_display.cpp" line="45"/>
+        <location filename="../../src/core/job_display.cpp" line="193"/>
+        <location filename="../../src/core/job_display.cpp" line="195"/>
         <source>Error: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../src/core/job_kind.cpp" line="11"/>
-        <location filename="../../src/core/catalog_types.cpp" line="30"/>
+        <location filename="../../src/core/catalog_types.cpp" line="50"/>
         <source>Download</source>
         <translation type="unfinished"></translation>
     </message>
@@ -492,27 +692,27 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog_types.cpp" line="13"/>
+        <location filename="../../src/core/catalog_types.cpp" line="33"/>
         <source>Game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog_types.cpp" line="17"/>
+        <location filename="../../src/core/catalog_types.cpp" line="37"/>
         <source>Add-on</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog_types.cpp" line="19"/>
+        <location filename="../../src/core/catalog_types.cpp" line="39"/>
         <source>Component</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog_types.cpp" line="26"/>
+        <location filename="../../src/core/catalog_types.cpp" line="46"/>
         <source>Direct</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog_types.cpp" line="28"/>
+        <location filename="../../src/core/catalog_types.cpp" line="48"/>
         <source>Torrent</source>
         <translation type="unfinished"></translation>
     </message>
@@ -552,13 +752,13 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/job_display.cpp" line="30"/>
+        <location filename="../../src/core/job_display.cpp" line="34"/>
         <location filename="../../src/core/job_status.cpp" line="24"/>
         <source>Paused</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/job_display.cpp" line="35"/>
+        <location filename="../../src/core/job_display.cpp" line="39"/>
         <location filename="../../src/core/job_status.cpp" line="26"/>
         <source>Completed</source>
         <translation type="unfinished"></translation>
@@ -569,15 +769,15 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/job_display.cpp" line="31"/>
+        <location filename="../../src/core/job_display.cpp" line="35"/>
         <location filename="../../src/core/job_status.cpp" line="30"/>
         <source>Cancelled</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/job_display.cpp" line="32"/>
+        <location filename="../../src/core/job_display.cpp" line="36"/>
         <location filename="../../src/core/job_status.cpp" line="37"/>
-        <location filename="../../src/core/core_controller.cpp" line="3096"/>
+        <location filename="../../src/core/core_controller.cpp" line="3552"/>
         <source>Install failed</source>
         <translation type="unfinished"></translation>
     </message>
@@ -593,42 +793,42 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/plugin_host.cpp" line="509"/>
+        <location filename="../../src/core/plugin_host.cpp" line="511"/>
         <source>Invalid plugin file. Choose a plugin package (.arach)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/plugin_host.cpp" line="539"/>
+        <location filename="../../src/core/plugin_host.cpp" line="541"/>
         <source>Could not start archive extraction</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/plugin_host.cpp" line="546"/>
+        <location filename="../../src/core/plugin_host.cpp" line="548"/>
         <source>Archive extraction timed out</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/plugin_host.cpp" line="556"/>
+        <location filename="../../src/core/plugin_host.cpp" line="558"/>
         <source>Archive extraction failed (code %1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/plugin_host.cpp" line="695"/>
+        <location filename="../../src/core/plugin_host.cpp" line="697"/>
         <source>Plugin files were copied but the library failed to load. Rebuild the plugin for your Arachnel version and platform (MSVC/MinGW), then reinstall.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/plugin_host.cpp" line="714"/>
+        <location filename="../../src/core/plugin_host.cpp" line="716"/>
         <source>Invalid plugin id</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/plugin_host.cpp" line="721"/>
+        <location filename="../../src/core/plugin_host.cpp" line="723"/>
         <source>Plugin is not installed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/plugin_host.cpp" line="729"/>
+        <location filename="../../src/core/plugin_host.cpp" line="731"/>
         <source>Could not delete plugin files</source>
         <translation type="unfinished"></translation>
     </message>
@@ -695,7 +895,7 @@
     </message>
     <message>
         <location filename="../../src/core/app_updater.cpp" line="189"/>
-        <location filename="../../src/core/core_controller.cpp" line="218"/>
+        <location filename="../../src/core/core_controller.cpp" line="221"/>
         <source>Arachnel %1 is available</source>
         <translation type="unfinished"></translation>
     </message>
@@ -741,422 +941,479 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="199"/>
+        <location filename="../../src/core/core_controller.cpp" line="202"/>
         <source>Plugin install failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="209"/>
+        <location filename="../../src/core/core_controller.cpp" line="212"/>
         <source>Plugin installed: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="244"/>
+        <location filename="../../src/core/core_controller.cpp" line="247"/>
         <source>Proton-GE installed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="246"/>
+        <location filename="../../src/core/core_controller.cpp" line="249"/>
         <source>Proton-GE download failed: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="283"/>
+        <location filename="../../src/core/core_controller.cpp" line="286"/>
         <source>Catalog error: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="384"/>
-        <location filename="../../src/core/core_controller.cpp" line="415"/>
+        <location filename="../../src/core/core_controller.cpp" line="392"/>
+        <location filename="../../src/core/core_controller.cpp" line="432"/>
         <source>Could not find game to install: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="399"/>
+        <location filename="../../src/core/core_controller.cpp" line="416"/>
         <source>Game not found for add-on</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="404"/>
+        <location filename="../../src/core/core_controller.cpp" line="421"/>
         <source>Add-on not found in catalog</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="445"/>
+        <location filename="../../src/core/core_controller.cpp" line="462"/>
         <source>Download complete — install manually</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="451"/>
+        <location filename="../../src/core/core_controller.cpp" line="468"/>
         <source>Download error: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="495"/>
+        <location filename="../../src/core/core_controller.cpp" line="512"/>
         <source>Installation of %1 is already in progress</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="522"/>
+        <location filename="../../src/core/core_controller.cpp" line="547"/>
         <source>Can&apos;t install %1 — install a plugin for this source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="556"/>
+        <location filename="../../src/core/core_controller.cpp" line="581"/>
         <source>Install failed for %1: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="592"/>
+        <location filename="../../src/core/core_controller.cpp" line="617"/>
         <source>Update installed: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="594"/>
+        <location filename="../../src/core/core_controller.cpp" line="619"/>
         <source>Installed: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="690"/>
+        <location filename="../../src/core/core_controller.cpp" line="715"/>
         <source>Add-on installation is already in progress</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="696"/>
+        <location filename="../../src/core/core_controller.cpp" line="721"/>
         <source>Install the game first</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="702"/>
+        <location filename="../../src/core/core_controller.cpp" line="727"/>
         <source>Plugin not found for %1 — install it in Settings → Plugins</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="760"/>
+        <location filename="../../src/core/core_controller.cpp" line="785"/>
         <source>Add-on install failed for %1: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="781"/>
+        <location filename="../../src/core/core_controller.cpp" line="806"/>
         <source>Add-on installed: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="930"/>
-        <location filename="../../src/core/core_controller.cpp" line="3242"/>
+        <location filename="../../src/core/core_controller.cpp" line="902"/>
+        <location filename="../../src/core/core_controller.cpp" line="3035"/>
+        <source>Preparing runtime environment…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/core/core_controller.cpp" line="992"/>
+        <location filename="../../src/core/core_controller.cpp" line="3698"/>
         <source>Game not found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="936"/>
-        <location filename="../../src/core/core_controller.cpp" line="3317"/>
+        <location filename="../../src/core/core_controller.cpp" line="998"/>
+        <location filename="../../src/core/core_controller.cpp" line="3775"/>
         <source>Add-on not found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="942"/>
+        <location filename="../../src/core/core_controller.cpp" line="1004"/>
         <source>Download the add-on first</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="1626"/>
-        <location filename="../../src/core/core_controller.cpp" line="1639"/>
+        <location filename="../../src/core/core_controller.cpp" line="1757"/>
+        <location filename="../../src/core/core_controller.cpp" line="1770"/>
         <source>%1 update(s) available</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="1628"/>
+        <location filename="../../src/core/core_controller.cpp" line="1759"/>
         <source>No updates</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="1668"/>
+        <location filename="../../src/core/core_controller.cpp" line="1802"/>
         <source>Started %1 update(s)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="1813"/>
+        <location filename="../../src/core/core_controller.cpp" line="1947"/>
         <source>Choose game executable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="1816"/>
+        <location filename="../../src/core/core_controller.cpp" line="1950"/>
         <source>Executables (*.exe *.sh *.x86_64);;All files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="1975"/>
+        <location filename="../../src/core/core_controller.cpp" line="2147"/>
         <source>Install Proton-GE in Settings → Launch before downloading games</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="1978"/>
+        <location filename="../../src/core/core_controller.cpp" line="2150"/>
         <source>Install %1 (Proton-GE) in Settings → Launch before downloading games</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="2425"/>
+        <location filename="../../src/core/core_controller.cpp" line="2788"/>
         <source>%1 · %2 games</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="2427"/>
+        <location filename="../../src/core/core_controller.cpp" line="2790"/>
         <source>%1 sources · %2 games</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="2518"/>
+        <location filename="../../src/core/core_controller.cpp" line="2886"/>
         <source>Catalog empty or unavailable: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="2534"/>
+        <location filename="../../src/core/core_controller.cpp" line="2914"/>
         <source>No catalog URL configured for source %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="2630"/>
-        <location filename="../../src/core/core_controller.cpp" line="3311"/>
+        <location filename="../../src/core/core_controller.cpp" line="3013"/>
+        <location filename="../../src/core/core_controller.cpp" line="3769"/>
         <source>Game not found: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="2634"/>
+        <location filename="../../src/core/core_controller.cpp" line="3017"/>
         <source>%1 is not installed yet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="2639"/>
+        <location filename="../../src/core/core_controller.cpp" line="3022"/>
         <source>%1 is already running</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="2662"/>
+        <location filename="../../src/core/core_controller.cpp" line="3028"/>
+        <source>Runtime setup is already in progress</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/core/runtime_dependency_service.cpp" line="80"/>
+        <source>Could not write file: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/core/runtime_dependency_service.cpp" line="115"/>
+        <source>Could not start installer: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/core/runtime_dependency_service.cpp" line="122"/>
+        <source>Installer timed out: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/core/runtime_dependency_service.cpp" line="130"/>
+        <source>Installer failed (%1): %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/core/runtime_dependency_service.cpp" line="471"/>
+        <source>Steam App ID is missing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/core/runtime_dependency_service.cpp" line="547"/>
+        <source>Downloading runtime: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/core/runtime_dependency_service.cpp" line="563"/>
+        <source>Installer not found for %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/core/runtime_dependency_service.cpp" line="570"/>
+        <source>Installing runtime: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/core/runtime_dependency_service.cpp" line="582"/>
+        <source>Proton is required to install runtime dependencies</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/core/runtime_dependency_service.cpp" line="590"/>
+        <location filename="../../src/core/core_controller.cpp" line="3074"/>
         <source>Proton not found. Install Proton-GE in Settings → Launch.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="2669"/>
+        <location filename="../../src/core/core_controller.cpp" line="3081"/>
         <source>Executable not found for %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="2679"/>
+        <location filename="../../src/core/core_controller.cpp" line="3096"/>
         <source>Failed to launch game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="2695"/>
+        <location filename="../../src/core/core_controller.cpp" line="3112"/>
         <source>Failed to stop game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="2720"/>
+        <location filename="../../src/core/core_controller.cpp" line="3142"/>
         <source>Unknown source: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="2724"/>
+        <location filename="../../src/core/core_controller.cpp" line="3146"/>
         <source>Source &quot;%1&quot; is disabled in settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="2881"/>
+        <location filename="../../src/core/core_controller.cpp" line="3327"/>
         <source>Could not resolve application data folder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="2908"/>
+        <location filename="../../src/core/core_controller.cpp" line="3354"/>
         <source>Failed to delete application data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="2914"/>
+        <location filename="../../src/core/core_controller.cpp" line="3360"/>
         <source>Failed to reset application data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="2926"/>
+        <location filename="../../src/core/core_controller.cpp" line="3372"/>
         <source>Application data deleted. Arachnel will quit now.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="3007"/>
+        <location filename="../../src/core/core_controller.cpp" line="3453"/>
         <source>Enter a catalog URL</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="3015"/>
+        <location filename="../../src/core/core_controller.cpp" line="3461"/>
         <source>Invalid URL — http or https required</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="3034"/>
+        <location filename="../../src/core/core_controller.cpp" line="3480"/>
         <source>Catalog entry not found: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="3044"/>
+        <location filename="../../src/core/core_controller.cpp" line="3490"/>
         <source>No download link for %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="3049"/>
+        <location filename="../../src/core/core_controller.cpp" line="3495"/>
         <source>No Steam App ID for %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="3059"/>
+        <location filename="../../src/core/core_controller.cpp" line="3505"/>
         <source>Plugin not loaded: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="3067"/>
-        <location filename="../../src/core/core_controller.cpp" line="3104"/>
+        <location filename="../../src/core/core_controller.cpp" line="3513"/>
+        <location filename="../../src/core/core_controller.cpp" line="3560"/>
         <source>Could not start download for %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="3163"/>
+        <location filename="../../src/core/core_controller.cpp" line="3619"/>
         <source>Choose library folder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="3172"/>
+        <location filename="../../src/core/core_controller.cpp" line="3628"/>
         <source>Game not found in library</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="3197"/>
+        <location filename="../../src/core/core_controller.cpp" line="3653"/>
         <source>Game removed: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="3228"/>
+        <location filename="../../src/core/core_controller.cpp" line="3684"/>
         <source>No destination library selected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="3249"/>
+        <location filename="../../src/core/core_controller.cpp" line="3705"/>
         <source>Game is already on this library</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="3259"/>
-        <location filename="../../src/core/core_controller.cpp" line="3265"/>
+        <location filename="../../src/core/core_controller.cpp" line="3715"/>
+        <location filename="../../src/core/core_controller.cpp" line="3721"/>
         <source>Could not move: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="3281"/>
+        <location filename="../../src/core/core_controller.cpp" line="3739"/>
         <source>Game moved: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="3323"/>
+        <location filename="../../src/core/core_controller.cpp" line="3781"/>
         <source>Could not start add-on download</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="3332"/>
+        <location filename="../../src/core/core_controller.cpp" line="3790"/>
         <source>Entry not found: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="3346"/>
+        <location filename="../../src/core/core_controller.cpp" line="3805"/>
         <source>Could not start update for %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="3356"/>
+        <location filename="../../src/core/core_controller.cpp" line="3815"/>
         <source>No catalog sources enabled</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="3427"/>
+        <location filename="../../src/core/core_controller.cpp" line="3886"/>
         <source>Download not found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="3431"/>
+        <location filename="../../src/core/core_controller.cpp" line="3890"/>
         <source>Installation is only available for completed downloads</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="3471"/>
+        <location filename="../../src/core/core_controller.cpp" line="3930"/>
         <source>Add-on file not found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="3483"/>
-        <location filename="../../src/core/core_controller.cpp" line="3634"/>
+        <location filename="../../src/core/core_controller.cpp" line="3942"/>
+        <location filename="../../src/core/core_controller.cpp" line="4093"/>
         <source>Download files not found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="3489"/>
-        <location filename="../../src/core/core_controller.cpp" line="3651"/>
+        <location filename="../../src/core/core_controller.cpp" line="3948"/>
+        <location filename="../../src/core/core_controller.cpp" line="4110"/>
         <source>Could not find game to install</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="3615"/>
+        <location filename="../../src/core/core_controller.cpp" line="4074"/>
         <source>Choose game install folder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="3622"/>
+        <location filename="../../src/core/core_controller.cpp" line="4081"/>
         <source>Automatic install is unavailable. Run setup.exe from the download folder, then use the folder button to point to the game.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="3644"/>
+        <location filename="../../src/core/core_controller.cpp" line="4103"/>
         <source>No game executable found in %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../src/core/job_display.cpp" line="12"/>
-        <location filename="../../src/core/core_controller.cpp" line="3660"/>
+        <location filename="../../src/core/core_controller.cpp" line="4119"/>
         <source>Installed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="3661"/>
+        <location filename="../../src/core/core_controller.cpp" line="4120"/>
         <source>Manual install complete for %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="3738"/>
+        <location filename="../../src/core/core_controller.cpp" line="4197"/>
         <source>Plugin installed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="3741"/>
+        <location filename="../../src/core/core_controller.cpp" line="4200"/>
         <source>Plugin install failed: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="3755"/>
+        <location filename="../../src/core/core_controller.cpp" line="4214"/>
         <source>Plugin removed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="3758"/>
+        <location filename="../../src/core/core_controller.cpp" line="4217"/>
         <source>Could not remove plugin: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="3813"/>
+        <location filename="../../src/core/core_controller.cpp" line="4272"/>
         <source>Install plugin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="3815"/>
+        <location filename="../../src/core/core_controller.cpp" line="4274"/>
         <source>Plugin files (*.arach)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/core_controller.cpp" line="3826"/>
+        <location filename="../../src/core/core_controller.cpp" line="4285"/>
         <source>Could not open plugins folder</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1240,7 +1497,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/components/DownloadJobGroupCard.qml" line="193"/>
+        <location filename="../../qml/components/DownloadJobGroupCard.qml" line="222"/>
         <source>Add-ons</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1253,32 +1510,32 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/components/DownloadProgressButton.qml" line="55"/>
+        <location filename="../../qml/components/DownloadProgressButton.qml" line="151"/>
         <source>Installing…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/components/DownloadProgressButton.qml" line="57"/>
+        <location filename="../../qml/components/DownloadProgressButton.qml" line="153"/>
         <source>Retry install</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/components/DownloadProgressButton.qml" line="59"/>
+        <location filename="../../qml/components/DownloadProgressButton.qml" line="155"/>
         <source>Install</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/components/DownloadProgressButton.qml" line="61"/>
+        <location filename="../../qml/components/DownloadProgressButton.qml" line="157"/>
         <source>Downloaded</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/components/DownloadProgressButton.qml" line="63"/>
+        <location filename="../../qml/components/DownloadProgressButton.qml" line="159"/>
         <source>Paused · %1%</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/components/DownloadProgressButton.qml" line="67"/>
+        <location filename="../../qml/components/DownloadProgressButton.qml" line="161"/>
         <source>Downloading · %1%</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1340,83 +1597,88 @@
 <context>
     <name>GameDetailsPage</name>
     <message>
-        <location filename="../../qml/app/GameDetailsPage.qml" line="234"/>
+        <location filename="../../qml/app/GameDetailsPage.qml" line="274"/>
         <source>Game details</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsPage.qml" line="261"/>
+        <location filename="../../qml/app/GameDetailsPage.qml" line="301"/>
         <source>Game not found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsPage.qml" line="294"/>
+        <location filename="../../qml/app/GameDetailsPage.qml" line="334"/>
         <source>%1 add-ons</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsPage.qml" line="303"/>
+        <location filename="../../qml/app/GameDetailsPage.qml" line="343"/>
         <source>Update available</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsPage.qml" line="319"/>
+        <location filename="../../qml/app/GameDetailsPage.qml" line="359"/>
         <source>Source page</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsPage.qml" line="320"/>
+        <location filename="../../qml/app/GameDetailsPage.qml" line="360"/>
         <source>Source website</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsPage.qml" line="331"/>
+        <location filename="../../qml/app/GameDetailsPage.qml" line="371"/>
         <source>Steam</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsPage.qml" line="350"/>
+        <location filename="../../qml/app/GameDetailsPage.qml" line="390"/>
         <source>Install failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsPage.qml" line="361"/>
+        <location filename="../../qml/app/GameDetailsPage.qml" line="404"/>
         <source>Stop</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsPage.qml" line="361"/>
+        <location filename="../../qml/app/GameDetailsPage.qml" line="408"/>
+        <source>Preparing…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/GameDetailsPage.qml" line="409"/>
         <source>Play</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsPage.qml" line="400"/>
-        <location filename="../../qml/app/GameDetailsPage.qml" line="530"/>
+        <location filename="../../qml/app/GameDetailsPage.qml" line="451"/>
+        <location filename="../../qml/app/GameDetailsPage.qml" line="571"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsPage.qml" line="417"/>
+        <location filename="../../qml/app/GameDetailsPage.qml" line="468"/>
         <source>Update</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsPage.qml" line="479"/>
+        <location filename="../../qml/app/GameDetailsPage.qml" line="520"/>
         <source>Description</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsPage.qml" line="485"/>
+        <location filename="../../qml/app/GameDetailsPage.qml" line="526"/>
         <source>Description is not available yet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsPage.qml" line="502"/>
+        <location filename="../../qml/app/GameDetailsPage.qml" line="543"/>
         <source>Remove game?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsPage.qml" line="524"/>
+        <location filename="../../qml/app/GameDetailsPage.qml" line="565"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1469,57 +1731,107 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsSheet.qml" line="269"/>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="275"/>
+        <source>Runtime container</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="281"/>
+        <source>Proton prefix and redistributables for this game (Linux only).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="293"/>
+        <source>Container</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="319"/>
+        <source>Prefix</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="331"/>
+        <source>%1 (not created yet)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="345"/>
+        <source>Steam App ID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="364"/>
+        <source>No runtime dependencies detected for this game.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="365"/>
+        <source>Dependencies: %1 / %2 installed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="386"/>
+        <source>Installed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="386"/>
+        <source>Missing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="415"/>
         <source>Information</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsSheet.qml" line="275"/>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="421"/>
         <source>Source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsSheet.qml" line="276"/>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="422"/>
         <source>Version</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsSheet.qml" line="277"/>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="423"/>
         <source>Size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsSheet.qml" line="278"/>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="424"/>
         <source>Install type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsSheet.qml" line="280"/>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="426"/>
         <source>Install path</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsSheet.qml" line="284"/>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="430"/>
         <source>Installing…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsSheet.qml" line="286"/>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="432"/>
         <source>Waiting to install</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsSheet.qml" line="287"/>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="433"/>
         <source>—</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsSheet.qml" line="290"/>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="436"/>
         <source>Download</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsSheet.qml" line="324"/>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="470"/>
         <source>Done</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1743,57 +2055,57 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/LibraryPage.qml" line="488"/>
+        <location filename="../../qml/app/LibraryPage.qml" line="490"/>
         <source>Details</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/LibraryPage.qml" line="496"/>
+        <location filename="../../qml/app/LibraryPage.qml" line="498"/>
         <source>Update</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/LibraryPage.qml" line="534"/>
+        <location filename="../../qml/app/LibraryPage.qml" line="536"/>
         <source>In library</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/LibraryPage.qml" line="541"/>
+        <location filename="../../qml/app/LibraryPage.qml" line="543"/>
         <source>Sources</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/LibraryPage.qml" line="548"/>
+        <location filename="../../qml/app/LibraryPage.qml" line="550"/>
         <source>Tasks</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/LibraryPage.qml" line="555"/>
+        <location filename="../../qml/app/LibraryPage.qml" line="557"/>
         <source>Updates</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/LibraryPage.qml" line="587"/>
+        <location filename="../../qml/app/LibraryPage.qml" line="589"/>
         <source>%1 active downloads</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/LibraryPage.qml" line="594"/>
+        <location filename="../../qml/app/LibraryPage.qml" line="596"/>
         <source>Downloads continue after restart</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/LibraryPage.qml" line="601"/>
+        <location filename="../../qml/app/LibraryPage.qml" line="603"/>
         <source>Open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/LibraryPage.qml" line="618"/>
+        <location filename="../../qml/app/LibraryPage.qml" line="620"/>
         <source>My library</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/LibraryPage.qml" line="623"/>
+        <location filename="../../qml/app/LibraryPage.qml" line="625"/>
         <source>%1 games</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2125,12 +2437,12 @@
 <context>
     <name>RunningGameBar</name>
     <message>
-        <location filename="../../qml/components/RunningGameBar.qml" line="67"/>
+        <location filename="../../qml/components/RunningGameBar.qml" line="65"/>
         <source>Playing now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/components/RunningGameBar.qml" line="84"/>
+        <location filename="../../qml/components/RunningGameBar.qml" line="83"/>
         <source>Stop</source>
         <translation type="unfinished"></translation>
     </message>

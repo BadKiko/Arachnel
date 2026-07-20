@@ -219,6 +219,152 @@
 
 </context>
 <context>
+    <name>CatalogFilterSheet</name>
+    <message>
+        
+        <location filename="../qml/components/CatalogFilterSheet.qml" line="25" />
+        <source>All</source>
+        <translation>Все</translation>
+    </message>
+    <message>
+        
+        <location filename="../qml/components/CatalogFilterSheet.qml" line="26" />
+        <source>Portable</source>
+        <translation>Портабл</translation>
+    </message>
+    <message>
+        
+        <location filename="../qml/components/CatalogFilterSheet.qml" line="27" />
+        <source>Installer</source>
+        <translation>Установщик</translation>
+    </message>
+    <message>
+        
+        <location filename="../qml/components/CatalogFilterSheet.qml" line="28" />
+        <source>Online fix</source>
+        <translation>Онлайн-фикс</translation>
+    </message>
+    <message>
+        
+        <location filename="../qml/components/CatalogFilterSheet.qml" line="32" />
+        
+        <location filename="../qml/components/CatalogFilterSheet.qml" line="40" />
+        
+        <location filename="../qml/components/CatalogFilterSheet.qml" line="270" />
+        <source>Any</source>
+        <translation>Любой</translation>
+    </message>
+    <message>
+        
+        <location filename="../qml/components/CatalogFilterSheet.qml" line="33" />
+        <source>&lt; 1 GB</source>
+        <translation>&lt; 1 ГБ</translation>
+    </message>
+    <message>
+        
+        <location filename="../qml/components/CatalogFilterSheet.qml" line="34" />
+        <source>1–5 GB</source>
+        <translation>1–5 ГБ</translation>
+    </message>
+    <message>
+        
+        <location filename="../qml/components/CatalogFilterSheet.qml" line="35" />
+        <source>5–20 GB</source>
+        <translation>5–20 ГБ</translation>
+    </message>
+    <message>
+        
+        <location filename="../qml/components/CatalogFilterSheet.qml" line="36" />
+        <source>20+ GB</source>
+        <translation>20+ ГБ</translation>
+    </message>
+    <message>
+        
+        <location filename="../qml/components/CatalogFilterSheet.qml" line="41" />
+        <source>Last 7 days</source>
+        <translation>За 7 дней</translation>
+    </message>
+    <message>
+        
+        <location filename="../qml/components/CatalogFilterSheet.qml" line="42" />
+        <source>Last 30 days</source>
+        <translation>За 30 дней</translation>
+    </message>
+    <message>
+        
+        <location filename="../qml/components/CatalogFilterSheet.qml" line="43" />
+        <source>Last 90 days</source>
+        <translation>За 90 дней</translation>
+    </message>
+    <message>
+        
+        <location filename="../qml/components/CatalogFilterSheet.qml" line="44" />
+        <source>Last year</source>
+        <translation>За год</translation>
+    </message>
+    <message>
+        
+        <location filename="../qml/components/CatalogFilterSheet.qml" line="82" />
+        <source>Sort &amp; filters</source>
+        <translation>Сортировка и фильтры</translation>
+    </message>
+    <message>
+        
+        <location filename="../qml/components/CatalogFilterSheet.qml" line="106" />
+        <source>Sort</source>
+        <translation>Сортировка</translation>
+    </message>
+    <message>
+        
+        <location filename="../qml/components/CatalogFilterSheet.qml" line="137" />
+        <source>Type</source>
+        <translation>Тип</translation>
+    </message>
+    <message>
+        
+        <location filename="../qml/components/CatalogFilterSheet.qml" line="168" />
+        <source>Size</source>
+        <translation>Размер</translation>
+    </message>
+    <message>
+        
+        <location filename="../qml/components/CatalogFilterSheet.qml" line="199" />
+        <source>Added</source>
+        <translation>Добавлено</translation>
+    </message>
+    <message>
+        
+        <location filename="../qml/components/CatalogFilterSheet.qml" line="230" />
+        <source>Extras</source>
+        <translation>Дополнительно</translation>
+    </message>
+    <message>
+        
+        <location filename="../qml/components/CatalogFilterSheet.qml" line="241" />
+        <source>Has add-ons</source>
+        <translation>Есть дополнения</translation>
+    </message>
+    <message>
+        
+        <location filename="../qml/components/CatalogFilterSheet.qml" line="260" />
+        <source>Genre</source>
+        <translation>Жанр</translation>
+    </message>
+    <message>
+        
+        <location filename="../qml/components/CatalogFilterSheet.qml" line="309" />
+        <source>Clear all</source>
+        <translation>Сбросить всё</translation>
+    </message>
+    <message>
+        
+        <location filename="../qml/components/CatalogFilterSheet.qml" line="316" />
+        <source>Apply</source>
+        <translation>Применить</translation>
+    </message>
+
+</context>
+<context>
     <name>CatalogPage</name>
     <message>
         
@@ -236,13 +382,13 @@
         
         <location filename="../qml/app/CatalogPage.qml" line="42" />
         <source>Title A–Z</source>
-        <translation>По названию А–Я</translation>
+        <translation>Название А–Я</translation>
     </message>
     <message>
         
         <location filename="../qml/app/CatalogPage.qml" line="43" />
         <source>Title Z–A</source>
-        <translation>По названию Я–А</translation>
+        <translation>Название Я–А</translation>
     </message>
     <message>
         
@@ -258,93 +404,183 @@
     </message>
     <message>
         
-        <location filename="../qml/app/CatalogPage.qml" line="230" />
-        <source>Filter by type</source>
-        <translation>Фильтр по типу</translation>
-    </message>
-    <message>
-        
-        <location filename="../qml/app/CatalogPage.qml" line="267" />
-        <source>Non-portable</source>
-        <translation>Не портабл</translation>
-    </message>
-    <message>
-        
-        <location filename="../qml/app/CatalogPage.qml" line="177" />
-        <source>Sort</source>
-        <translation>Сортировка</translation>
-    </message>
-    <message>
-        
-        <location filename="../qml/app/CatalogPage.qml" line="239" />
+        <location filename="../qml/app/CatalogPage.qml" line="51" />
         <source>All</source>
         <translation>Все</translation>
     </message>
     <message>
         
-        <location filename="../qml/app/CatalogPage.qml" line="253" />
+        <location filename="../qml/app/CatalogPage.qml" line="46" />
+        <source>Largest first</source>
+        <translation>Сначала большие</translation>
+    </message>
+    <message>
+        
+        <location filename="../qml/app/CatalogPage.qml" line="47" />
+        <source>Smallest first</source>
+        <translation>Сначала маленькие</translation>
+    </message>
+    <message>
+        
+        <location filename="../qml/app/CatalogPage.qml" line="52" />
         <source>Portable</source>
         <translation>Портабл</translation>
     </message>
     <message>
         
-        <location filename="../qml/app/CatalogPage.qml" line="294" />
+        <location filename="../qml/app/CatalogPage.qml" line="53" />
+        <source>Installer</source>
+        <translation>Установщик</translation>
+    </message>
+    <message>
         
-        <location filename="../qml/app/CatalogPage.qml" line="520" />
+        <location filename="../qml/app/CatalogPage.qml" line="54" />
+        <source>Online fix</source>
+        <translation>Онлайн-фикс</translation>
+    </message>
+    <message>
+        
+        <location filename="../qml/app/CatalogPage.qml" line="57" />
+        <source>Any size</source>
+        <translation>Любой размер</translation>
+    </message>
+    <message>
+        
+        <location filename="../qml/app/CatalogPage.qml" line="58" />
+        <source>&lt; 1 GB</source>
+        <translation>&lt; 1 ГБ</translation>
+    </message>
+    <message>
+        
+        <location filename="../qml/app/CatalogPage.qml" line="59" />
+        <source>1–5 GB</source>
+        <translation>1–5 ГБ</translation>
+    </message>
+    <message>
+        
+        <location filename="../qml/app/CatalogPage.qml" line="60" />
+        <source>5–20 GB</source>
+        <translation>5–20 ГБ</translation>
+    </message>
+    <message>
+        
+        <location filename="../qml/app/CatalogPage.qml" line="61" />
+        <source>20+ GB</source>
+        <translation>20+ ГБ</translation>
+    </message>
+    <message>
+        
+        <location filename="../qml/app/CatalogPage.qml" line="64" />
+        <source>Any time</source>
+        <translation>Любое время</translation>
+    </message>
+    <message>
+        
+        <location filename="../qml/app/CatalogPage.qml" line="65" />
+        <source>Last 7 days</source>
+        <translation>За 7 дней</translation>
+    </message>
+    <message>
+        
+        <location filename="../qml/app/CatalogPage.qml" line="66" />
+        <source>Last 30 days</source>
+        <translation>За 30 дней</translation>
+    </message>
+    <message>
+        
+        <location filename="../qml/app/CatalogPage.qml" line="67" />
+        <source>Last 90 days</source>
+        <translation>За 90 дней</translation>
+    </message>
+    <message>
+        
+        <location filename="../qml/app/CatalogPage.qml" line="68" />
+        <source>Last year</source>
+        <translation>За год</translation>
+    </message>
+    <message>
+        
+        <location filename="../qml/app/CatalogPage.qml" line="219" />
+        
+        <location filename="../qml/app/CatalogPage.qml" line="487" />
         <source>Catalog</source>
         <translation>Каталог</translation>
     </message>
     <message>
         
-        <location filename="../qml/app/CatalogPage.qml" line="529" />
+        <location filename="../qml/app/CatalogPage.qml" line="311" />
+        <source>Type</source>
+        <translation>Тип</translation>
+    </message>
+    <message>
+        
+        <location filename="../qml/app/CatalogPage.qml" line="319" />
+        <source>Size</source>
+        <translation>Размер</translation>
+    </message>
+    <message>
+        
+        <location filename="../qml/app/CatalogPage.qml" line="327" />
+        <source>Added</source>
+        <translation>Добавлено</translation>
+    </message>
+    <message>
+        
+        <location filename="../qml/app/CatalogPage.qml" line="335" />
+        <source>Has add-ons</source>
+        <translation>Есть дополнения</translation>
+    </message>
+    <message>
+        
+        <location filename="../qml/app/CatalogPage.qml" line="496" />
         <source>Loading…</source>
         <translation>Загрузка…</translation>
     </message>
     <message>
         
-        <location filename="../qml/app/CatalogPage.qml" line="530" />
+        <location filename="../qml/app/CatalogPage.qml" line="497" />
         <source>Found: %1</source>
         <translation>Найдено: %1</translation>
     </message>
     <message>
         
-        <location filename="../qml/app/CatalogPage.qml" line="611" />
+        <location filename="../qml/app/CatalogPage.qml" line="607" />
         <source>Select sources</source>
         <translation>Выберите источники</translation>
     </message>
     <message>
         
-        <location filename="../qml/app/CatalogPage.qml" line="612" />
+        <location filename="../qml/app/CatalogPage.qml" line="608" />
         <source>Nothing found</source>
         <translation>Ничего не найдено</translation>
     </message>
     <message>
         
-        <location filename="../qml/app/CatalogPage.qml" line="620" />
+        <location filename="../qml/app/CatalogPage.qml" line="616" />
         <source>Try another search or refresh the catalog.</source>
         <translation>Попробуйте другой запрос или обновите каталог.</translation>
     </message>
     <message>
         
-        <location filename="../qml/app/CatalogPage.qml" line="628" />
+        <location filename="../qml/app/CatalogPage.qml" line="624" />
         <source>Refresh</source>
         <translation>Обновить</translation>
     </message>
     <message>
         
-        <location filename="../qml/app/CatalogPage.qml" line="661" />
+        <location filename="../qml/app/CatalogPage.qml" line="657" />
         <source>No games</source>
         <translation>Нет игр</translation>
     </message>
     <message>
         
-        <location filename="../qml/app/CatalogPage.qml" line="679" />
+        <location filename="../qml/app/CatalogPage.qml" line="675" />
         <source>Add catalog</source>
         <translation>Добавить каталог</translation>
     </message>
     <message>
         
-        <location filename="../qml/app/CatalogPage.qml" line="686" />
+        <location filename="../qml/app/CatalogPage.qml" line="682" />
         <source>Settings</source>
         <translation>Настройки</translation>
     </message>
@@ -354,13 +590,13 @@
     <name>CatalogScrollHeader</name>
     <message>
         
-        <location filename="../qml/components/CatalogScrollHeader.qml" line="35" />
+        <location filename="../qml/components/CatalogScrollHeader.qml" line="34" />
         <source>Loading catalog…</source>
         <translation>Загрузка каталога…</translation>
     </message>
     <message>
         
-        <location filename="../qml/components/CatalogScrollHeader.qml" line="36" />
+        <location filename="../qml/components/CatalogScrollHeader.qml" line="35" />
         <source>Found: %1</source>
         <translation>Найдено: %1</translation>
     </message>
@@ -380,31 +616,31 @@
     <name>Core</name>
     <message>
         
-        <location filename="../src/core/catalog_types.cpp" line="13" />
+        <location filename="../src/core/catalog_types.cpp" line="33" />
         <source>Game</source>
         <translation>Игра</translation>
     </message>
     <message>
         
-        <location filename="../src/core/catalog_types.cpp" line="17" />
+        <location filename="../src/core/catalog_types.cpp" line="37" />
         <source>Add-on</source>
         <translation>Дополнение</translation>
     </message>
     <message>
         
-        <location filename="../src/core/catalog_types.cpp" line="19" />
+        <location filename="../src/core/catalog_types.cpp" line="39" />
         <source>Component</source>
         <translation>Компонент</translation>
     </message>
     <message>
         
-        <location filename="../src/core/catalog_types.cpp" line="26" />
+        <location filename="../src/core/catalog_types.cpp" line="46" />
         <source>Direct</source>
         <translation>Прямая</translation>
     </message>
     <message>
         
-        <location filename="../src/core/catalog_types.cpp" line="28" />
+        <location filename="../src/core/catalog_types.cpp" line="48" />
         <source>Torrent</source>
         <translation>Торрент</translation>
     </message>
@@ -412,7 +648,7 @@
         
         <location filename="../src/core/job_kind.cpp" line="11" />
         
-        <location filename="../src/core/catalog_types.cpp" line="30" />
+        <location filename="../src/core/catalog_types.cpp" line="50" />
         <source>Download</source>
         <translation>Загрузка</translation>
     </message>
@@ -714,173 +950,173 @@
         
         <location filename="../src/core/job_status.cpp" line="37" />
         
-        <location filename="../src/core/core_controller.cpp" line="3288" />
+        <location filename="../src/core/core_controller.cpp" line="3552" />
         <source>Install failed</source>
         <translation>Ошибка установки</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="285" />
+        <location filename="../src/core/core_controller.cpp" line="286" />
         <source>Catalog error: %1</source>
         <translation>Ошибка каталога: %1</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="410" />
+        <location filename="../src/core/core_controller.cpp" line="416" />
         <source>Game not found for add-on</source>
         <translation>Игра не найдена для дополнения</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="415" />
+        <location filename="../src/core/core_controller.cpp" line="421" />
         <source>Add-on not found in catalog</source>
         <translation>Дополнение не найдено в каталоге</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="386" />
+        <location filename="../src/core/core_controller.cpp" line="392" />
         
-        <location filename="../src/core/core_controller.cpp" line="426" />
+        <location filename="../src/core/core_controller.cpp" line="432" />
         <source>Could not find game to install: %1</source>
         <translation>Не удалось найти игру для установки: %1</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="462" />
+        <location filename="../src/core/core_controller.cpp" line="468" />
         <source>Download error: %1</source>
         <translation>Ошибка загрузки: %1</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="506" />
+        <location filename="../src/core/core_controller.cpp" line="512" />
         <source>Installation of %1 is already in progress</source>
         <translation>Установка %1 уже выполняется</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="567" />
+        <location filename="../src/core/core_controller.cpp" line="581" />
         <source>Install failed for %1: %2</source>
         <translation>Ошибка установки %1: %2</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="603" />
+        <location filename="../src/core/core_controller.cpp" line="617" />
         <source>Update installed: %1</source>
         <translation>Обновление установлено: %1</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="605" />
+        <location filename="../src/core/core_controller.cpp" line="619" />
         <source>Installed: %1</source>
         <translation>Установлено: %1</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="701" />
+        <location filename="../src/core/core_controller.cpp" line="715" />
         <source>Add-on installation is already in progress</source>
         <translation>Установка дополнения уже выполняется</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="707" />
+        <location filename="../src/core/core_controller.cpp" line="721" />
         <source>Install the game first</source>
         <translation>Сначала установите игру</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="771" />
+        <location filename="../src/core/core_controller.cpp" line="785" />
         <source>Add-on install failed for %1: %2</source>
         <translation>Ошибка установки дополнения %1: %2</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="792" />
+        <location filename="../src/core/core_controller.cpp" line="806" />
         <source>Add-on installed: %1</source>
         <translation>Дополнение установлено: %1</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="868" />
+        <location filename="../src/core/core_controller.cpp" line="902" />
         
-        <location filename="../src/core/core_controller.cpp" line="2798" />
+        <location filename="../src/core/core_controller.cpp" line="3035" />
         <source>Preparing runtime environment…</source>
         <translation>Подготовка среды выполнения…</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="957" />
+        <location filename="../src/core/core_controller.cpp" line="992" />
         
-        <location filename="../src/core/core_controller.cpp" line="3434" />
+        <location filename="../src/core/core_controller.cpp" line="3698" />
         <source>Game not found</source>
         <translation>Игра не найдена</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="963" />
+        <location filename="../src/core/core_controller.cpp" line="998" />
         
-        <location filename="../src/core/core_controller.cpp" line="3509" />
+        <location filename="../src/core/core_controller.cpp" line="3775" />
         <source>Add-on not found</source>
         <translation>Дополнение не найдено</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="969" />
+        <location filename="../src/core/core_controller.cpp" line="1004" />
         <source>Download the add-on first</source>
         <translation>Сначала скачайте дополнение</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="1715" />
+        <location filename="../src/core/core_controller.cpp" line="1757" />
         
-        <location filename="../src/core/core_controller.cpp" line="1728" />
+        <location filename="../src/core/core_controller.cpp" line="1770" />
         <source>%1 update(s) available</source>
         <translation>Доступно обновлений: %1</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="1757" />
+        <location filename="../src/core/core_controller.cpp" line="1802" />
         <source>Started %1 update(s)</source>
         <translation>Запущено обновлений: %1</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="2102" />
+        <location filename="../src/core/core_controller.cpp" line="2147" />
         <source>Install Proton-GE in Settings → Launch before downloading games</source>
         <translation>Установите Proton-GE в Настройки → Запуск перед скачиванием игр</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="2105" />
+        <location filename="../src/core/core_controller.cpp" line="2150" />
         <source>Install %1 (Proton-GE) in Settings → Launch before downloading games</source>
         <translation>Установите %1 (Proton-GE) в Настройки → Запуск перед скачиванием игр</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="2791" />
+        <location filename="../src/core/core_controller.cpp" line="3028" />
         <source>Runtime setup is already in progress</source>
         <translation>Установка среды уже выполняется</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3226" />
+        <location filename="../src/core/core_controller.cpp" line="3490" />
         <source>No download link for %1</source>
         <translation>Нет ссылки для загрузки: %1</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3355" />
+        <location filename="../src/core/core_controller.cpp" line="3619" />
         <source>Choose library folder</source>
         <translation>Выберите папку библиотеки</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3807" />
+        <location filename="../src/core/core_controller.cpp" line="4074" />
         <source>Choose game install folder</source>
         <translation>Выберите папку с игрой</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3836" />
+        <location filename="../src/core/core_controller.cpp" line="4103" />
         <source>No game executable found in %1</source>
         <translation>В %1 не найден исполняемый файл игры</translation>
     </message>
@@ -888,123 +1124,123 @@
         
         <location filename="../src/core/job_display.cpp" line="12" />
         
-        <location filename="../src/core/core_controller.cpp" line="3852" />
+        <location filename="../src/core/core_controller.cpp" line="4119" />
         <source>Installed</source>
         <translation>Установлен</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3853" />
+        <location filename="../src/core/core_controller.cpp" line="4120" />
         <source>Manual install complete for %1</source>
         <translation>Ручная установка завершена: %1</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="4005" />
+        <location filename="../src/core/core_controller.cpp" line="4272" />
         <source>Install plugin</source>
         <translation>Установить плагин</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="1717" />
+        <location filename="../src/core/core_controller.cpp" line="1759" />
         <source>No updates</source>
         <translation>Обновлений нет</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="201" />
+        <location filename="../src/core/core_controller.cpp" line="202" />
         <source>Plugin install failed</source>
         <translation>Ошибка установки плагина</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="211" />
+        <location filename="../src/core/core_controller.cpp" line="212" />
         <source>Plugin installed: %1</source>
         <translation>Плагин установлен: %1</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="246" />
+        <location filename="../src/core/core_controller.cpp" line="247" />
         <source>Proton-GE installed</source>
         <translation>Proton-GE установлен</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="248" />
+        <location filename="../src/core/core_controller.cpp" line="249" />
         <source>Proton-GE download failed: %1</source>
         <translation>Ошибка загрузки Proton-GE: %1</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="456" />
+        <location filename="../src/core/core_controller.cpp" line="462" />
         <source>Download complete — install manually</source>
         <translation>Загрузка завершена — установите вручную</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="533" />
+        <location filename="../src/core/core_controller.cpp" line="547" />
         <source>Can't install %1 — install a plugin for this source</source>
         <translation>Нельзя установить %1 — установите плагин для этого источника</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="713" />
+        <location filename="../src/core/core_controller.cpp" line="727" />
         <source>Plugin not found for %1 — install it in Settings → Plugins</source>
         <translation>Плагин для %1 не найден — установите в Настройки → Плагины</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="1902" />
+        <location filename="../src/core/core_controller.cpp" line="1947" />
         <source>Choose game executable</source>
         <translation>Выберите исполняемый файл игры</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="1905" />
+        <location filename="../src/core/core_controller.cpp" line="1950" />
         <source>Executables (*.exe *.sh *.x86_64);;All files (*)</source>
         <translation>Исполняемые (*.exe *.sh *.x86_64);;Все файлы (*)</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="2552" />
+        <location filename="../src/core/core_controller.cpp" line="2788" />
         <source>%1 · %2 games</source>
         <translation>%1 · %2 игр</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="2554" />
+        <location filename="../src/core/core_controller.cpp" line="2790" />
         <source>%1 sources · %2 games</source>
         <translation>%1 источников · %2 игр</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="2650" />
+        <location filename="../src/core/core_controller.cpp" line="2886" />
         <source>Catalog empty or unavailable: %1</source>
         <translation>Каталог пуст или недоступен: %1</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="2678" />
+        <location filename="../src/core/core_controller.cpp" line="2914" />
         <source>No catalog URL configured for source %1</source>
         <translation>Для источника %1 не задан URL каталога</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="2777" />
+        <location filename="../src/core/core_controller.cpp" line="3013" />
         
-        <location filename="../src/core/core_controller.cpp" line="3503" />
+        <location filename="../src/core/core_controller.cpp" line="3769" />
         <source>Game not found: %1</source>
         <translation>Игра не найдена: %1</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="2781" />
+        <location filename="../src/core/core_controller.cpp" line="3017" />
         <source>%1 is not installed yet</source>
         <translation>%1 ещё не установлена</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="2786" />
+        <location filename="../src/core/core_controller.cpp" line="3022" />
         <source>%1 is already running</source>
         <translation>%1 уже запущена</translation>
     </message>
@@ -1066,231 +1302,231 @@
         
         <location filename="../src/core/runtime_dependency_service.cpp" line="590" />
         
-        <location filename="../src/core/core_controller.cpp" line="2834" />
+        <location filename="../src/core/core_controller.cpp" line="3074" />
         <source>Proton not found. Install Proton-GE in Settings → Launch.</source>
         <translation>Proton не найден. Установите Proton-GE в Настройки → Запуск.</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="2841" />
+        <location filename="../src/core/core_controller.cpp" line="3081" />
         <source>Executable not found for %1</source>
         <translation>Не найден исполняемый файл для %1</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="2856" />
+        <location filename="../src/core/core_controller.cpp" line="3096" />
         <source>Failed to launch game</source>
         <translation>Не удалось запустить игру</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="2872" />
+        <location filename="../src/core/core_controller.cpp" line="3112" />
         <source>Failed to stop game</source>
         <translation>Не удалось остановить игру</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="2902" />
+        <location filename="../src/core/core_controller.cpp" line="3142" />
         <source>Unknown source: %1</source>
         <translation>Неизвестный источник: %1</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="2906" />
+        <location filename="../src/core/core_controller.cpp" line="3146" />
         <source>Source "%1" is disabled in settings</source>
         <translation>Источник «%1» выключен в настройках</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3063" />
+        <location filename="../src/core/core_controller.cpp" line="3327" />
         <source>Could not resolve application data folder</source>
         <translation>Не удалось определить папку данных приложения</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3090" />
+        <location filename="../src/core/core_controller.cpp" line="3354" />
         <source>Failed to delete application data</source>
         <translation>Не удалось удалить данные приложения</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3096" />
+        <location filename="../src/core/core_controller.cpp" line="3360" />
         <source>Failed to reset application data</source>
         <translation>Не удалось сбросить данные приложения</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3108" />
+        <location filename="../src/core/core_controller.cpp" line="3372" />
         <source>Application data deleted. Arachnel will quit now.</source>
         <translation>Данные приложения удалены. Arachnel сейчас закроется.</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3189" />
+        <location filename="../src/core/core_controller.cpp" line="3453" />
         <source>Enter a catalog URL</source>
         <translation>Укажите URL каталога</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3197" />
+        <location filename="../src/core/core_controller.cpp" line="3461" />
         <source>Invalid URL — http or https required</source>
         <translation>Некорректный URL — нужен http или https</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3216" />
+        <location filename="../src/core/core_controller.cpp" line="3480" />
         <source>Catalog entry not found: %1</source>
         <translation>Запись каталога не найдена: %1</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3231" />
+        <location filename="../src/core/core_controller.cpp" line="3495" />
         <source>No Steam App ID for %1</source>
         <translation type="unfinished" />
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3241" />
+        <location filename="../src/core/core_controller.cpp" line="3505" />
         <source>Plugin not loaded: %1</source>
         <translation type="unfinished" />
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3947" />
+        <location filename="../src/core/core_controller.cpp" line="4214" />
         <source>Plugin removed</source>
         <translation>Плагин удалён</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3950" />
+        <location filename="../src/core/core_controller.cpp" line="4217" />
         <source>Could not remove plugin: %1</source>
         <translation>Не удалось удалить плагин: %1</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="4007" />
+        <location filename="../src/core/core_controller.cpp" line="4274" />
         <source>Plugin files (*.arach)</source>
         <translation>Файлы плагинов (*.arach)</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3249" />
+        <location filename="../src/core/core_controller.cpp" line="3513" />
         
-        <location filename="../src/core/core_controller.cpp" line="3296" />
+        <location filename="../src/core/core_controller.cpp" line="3560" />
         <source>Could not start download for %1</source>
         <translation>Не удалось начать загрузку %1</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3364" />
+        <location filename="../src/core/core_controller.cpp" line="3628" />
         <source>Game not found in library</source>
         <translation>Игра не найдена в библиотеке</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3389" />
+        <location filename="../src/core/core_controller.cpp" line="3653" />
         <source>Game removed: %1</source>
         <translation>Игра удалена: %1</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3420" />
+        <location filename="../src/core/core_controller.cpp" line="3684" />
         <source>No destination library selected</source>
         <translation>Не выбран диск назначения</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3441" />
+        <location filename="../src/core/core_controller.cpp" line="3705" />
         <source>Game is already on this library</source>
         <translation>Игра уже на этом диске</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3451" />
+        <location filename="../src/core/core_controller.cpp" line="3715" />
         
-        <location filename="../src/core/core_controller.cpp" line="3457" />
+        <location filename="../src/core/core_controller.cpp" line="3721" />
         <source>Could not move: %1</source>
         <translation>Не удалось перенести: %1</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3473" />
+        <location filename="../src/core/core_controller.cpp" line="3739" />
         <source>Game moved: %1</source>
         <translation>Игра перенесена: %1</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3515" />
+        <location filename="../src/core/core_controller.cpp" line="3781" />
         <source>Could not start add-on download</source>
         <translation>Не удалось начать загрузку дополнения</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3524" />
+        <location filename="../src/core/core_controller.cpp" line="3790" />
         <source>Entry not found: %1</source>
         <translation>Запись не найдена: %1</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3538" />
+        <location filename="../src/core/core_controller.cpp" line="3805" />
         <source>Could not start update for %1</source>
         <translation>Не удалось начать обновление %1</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3548" />
+        <location filename="../src/core/core_controller.cpp" line="3815" />
         <source>No catalog sources enabled</source>
         <translation>Нет включённых источников каталога</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3619" />
+        <location filename="../src/core/core_controller.cpp" line="3886" />
         <source>Download not found</source>
         <translation>Загрузка не найдена</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3623" />
+        <location filename="../src/core/core_controller.cpp" line="3890" />
         <source>Installation is only available for completed downloads</source>
         <translation>Установка доступна только для завершённых загрузок</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3663" />
+        <location filename="../src/core/core_controller.cpp" line="3930" />
         <source>Add-on file not found</source>
         <translation>Файл дополнения не найден</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3675" />
+        <location filename="../src/core/core_controller.cpp" line="3942" />
         
-        <location filename="../src/core/core_controller.cpp" line="3826" />
+        <location filename="../src/core/core_controller.cpp" line="4093" />
         <source>Download files not found</source>
         <translation>Файлы загрузки не найдены</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3681" />
+        <location filename="../src/core/core_controller.cpp" line="3948" />
         
-        <location filename="../src/core/core_controller.cpp" line="3843" />
+        <location filename="../src/core/core_controller.cpp" line="4110" />
         <source>Could not find game to install</source>
         <translation>Не удалось найти игру для установки</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3814" />
+        <location filename="../src/core/core_controller.cpp" line="4081" />
         <source>Automatic install is unavailable. Run setup.exe from the download folder, then use the folder button to point to the game.</source>
         <translation>Автоустановка недоступна. Запустите setup.exe из папки загрузки, затем кнопкой папки укажите, куда установилась игра.</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3930" />
+        <location filename="../src/core/core_controller.cpp" line="4197" />
         <source>Plugin installed</source>
         <translation>Плагин установлен</translation>
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="3933" />
+        <location filename="../src/core/core_controller.cpp" line="4200" />
         <source>Plugin install failed: %1</source>
         <translation>Ошибка установки плагина: %1</translation>
     </message>
@@ -1344,7 +1580,7 @@
     </message>
     <message>
         
-        <location filename="../src/core/core_controller.cpp" line="4018" />
+        <location filename="../src/core/core_controller.cpp" line="4285" />
         <source>Could not open plugins folder</source>
         <translation>Не удалось открыть папку плагинов</translation>
     </message>
@@ -1390,7 +1626,7 @@
         
         <location filename="../src/core/app_updater.cpp" line="189" />
         
-        <location filename="../src/core/core_controller.cpp" line="220" />
+        <location filename="../src/core/core_controller.cpp" line="221" />
         <source>Arachnel %1 is available</source>
         <translation>Доступен Arachnel %1</translation>
     </message>
@@ -3571,6 +3807,264 @@
         <location filename="../qml/settings/SettingsUpdatesPage.qml" line="252" />
         <source>Open release page</source>
         <translation>Открыть страницу релиза</translation>
+    </message>
+
+</context>
+<context>
+    <name>Setup</name>
+    <message>
+        
+        <location filename="../setup/src/self_extractor.cpp" line="140" />
+        <source>Extracting files…</source>
+        <translation>Распаковка файлов…</translation>
+    </message>
+    <message>
+        
+        <location filename="../setup/src/setup_backend.cpp" line="336" />
+        <source>Updating uninstaller…</source>
+        <translation>Обновление деинсталлятора…</translation>
+    </message>
+    <message>
+        
+        <location filename="../setup/src/setup_backend.cpp" line="337" />
+        <source>Registering uninstaller…</source>
+        <translation>Регистрация деинсталлятора…</translation>
+    </message>
+    <message>
+        
+        <location filename="../setup/src/setup_backend.cpp" line="349" />
+        <source>Refreshing shortcuts…</source>
+        <translation>Обновление ярлыков…</translation>
+    </message>
+    <message>
+        
+        <location filename="../setup/src/setup_backend.cpp" line="350" />
+        <source>Creating shortcuts…</source>
+        <translation>Создание ярлыков…</translation>
+    </message>
+    <message>
+        
+        <location filename="../setup/src/setup_backend.cpp" line="355" />
+        <source>Update complete</source>
+        <translation>Обновление завершено</translation>
+    </message>
+    <message>
+        
+        <location filename="../setup/src/setup_backend.cpp" line="356" />
+        <source>Installation complete</source>
+        <translation>Установка завершена</translation>
+    </message>
+    <message>
+        
+        <location filename="../setup/src/setup_backend.cpp" line="374" />
+        
+        <location filename="../setup/src/setup_backend.cpp" line="417" />
+        <source>Please wait — updating Arachnel…</source>
+        <translation>Подождите — обновление Arachnel…</translation>
+    </message>
+    <message>
+        
+        <location filename="../setup/src/setup_backend.cpp" line="375" />
+        
+        <location filename="../setup/src/setup_backend.cpp" line="418" />
+        <source>Preparing…</source>
+        <translation>Подготовка…</translation>
+    </message>
+    <message>
+        
+        <location filename="../setup/src/setup_backend.cpp" line="409" />
+        <source>Waiting for Arachnel to close…</source>
+        <translation>Ожидание закрытия Arachnel…</translation>
+    </message>
+    <message>
+        
+        <location filename="../setup/src/setup_backend.cpp" line="411" />
+        <source>Arachnel is still running. Close it and try again.</source>
+        <translation>Arachnel ещё запущен. Закройте его и попробуйте снова.</translation>
+    </message>
+    <message>
+        
+        <location filename="../setup/src/setup_backend.cpp" line="422" />
+        <source>Clearing install folder…</source>
+        <translation>Очистка папки установки…</translation>
+    </message>
+    <message>
+        
+        <location filename="../setup/src/setup_backend.cpp" line="424" />
+        <source>Could not clear existing install folder</source>
+        <translation>Не удалось очистить папку установки</translation>
+    </message>
+    <message>
+        
+        <location filename="../setup/src/setup_backend.cpp" line="430" />
+        <source>Creating install folder…</source>
+        <translation>Создание папки установки…</translation>
+    </message>
+    <message>
+        
+        <location filename="../setup/src/setup_backend.cpp" line="433" />
+        <source>Could not create install folder</source>
+        <translation>Не удалось создать папку установки</translation>
+    </message>
+    <message>
+        
+        <location filename="../setup/src/setup_backend.cpp" line="447" />
+        <source>Finalizing…</source>
+        <translation>Завершение…</translation>
+    </message>
+
+</context>
+<context>
+    <name>SetupTitleBar</name>
+    <message>
+        
+        <location filename="../setup/qml/components/SetupTitleBar.qml" line="42" />
+        <source>Arachnel Setup</source>
+        <translation type="unfinished" />
+    </message>
+
+</context>
+<context>
+    <name>SetupWindow</name>
+    <message>
+        
+        <location filename="../setup/qml/SetupWindow.qml" line="15" />
+        <source>Arachnel Setup</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        
+        <location filename="../setup/qml/SetupWindow.qml" line="66" />
+        <source>Choose language</source>
+        <translation>Выберите язык</translation>
+    </message>
+    <message>
+        
+        <location filename="../setup/qml/SetupWindow.qml" line="72" />
+        <source>Select the installer language.</source>
+        <translation>Выберите язык установщика.</translation>
+    </message>
+    <message>
+        
+        <location filename="../setup/qml/SetupWindow.qml" line="99" />
+        <source>Install Arachnel</source>
+        <translation>Установка Arachnel</translation>
+    </message>
+    <message>
+        
+        <location filename="../setup/qml/SetupWindow.qml" line="105" />
+        <source>Game launcher with plugin-based sources. This wizard unpacks Arachnel to your computer.</source>
+        <translation>Лаунчер игр с плагинами источников. Мастер распакует Arachnel на компьютер.</translation>
+    </message>
+    <message>
+        
+        <location filename="../setup/qml/SetupWindow.qml" line="114" />
+        <source>No embedded app payload found. Build the installer with run.ps1 --installer.</source>
+        <translation>Нет встроенного пакета приложения. Соберите установщик через run.ps1 --installer.</translation>
+    </message>
+    <message>
+        
+        <location filename="../setup/qml/SetupWindow.qml" line="128" />
+        <source>Choose install location</source>
+        <translation>Выберите папку установки</translation>
+    </message>
+    <message>
+        
+        <location filename="../setup/qml/SetupWindow.qml" line="140" />
+        <source>Install folder</source>
+        <translation>Папка установки</translation>
+    </message>
+    <message>
+        
+        <location filename="../setup/qml/SetupWindow.qml" line="156" />
+        <source>Shortcuts</source>
+        <translation>Ярлыки</translation>
+    </message>
+    <message>
+        
+        <location filename="../setup/qml/SetupWindow.qml" line="161" />
+        <source>Create desktop shortcut</source>
+        <translation>Ярлык на рабочем столе</translation>
+    </message>
+    <message>
+        
+        <location filename="../setup/qml/SetupWindow.qml" line="167" />
+        <source>Create Start Menu shortcut</source>
+        <translation>Ярлык в меню Пуск</translation>
+    </message>
+    <message>
+        
+        <location filename="../setup/qml/SetupWindow.qml" line="180" />
+        <source>Updating Arachnel…</source>
+        <translation>Обновление Arachnel…</translation>
+    </message>
+    <message>
+        
+        <location filename="../setup/qml/SetupWindow.qml" line="180" />
+        <source>Installing…</source>
+        <translation>Установка…</translation>
+    </message>
+    <message>
+        
+        <location filename="../setup/qml/SetupWindow.qml" line="187" />
+        <source>Please wait while Arachnel is updated. Do not close this window.</source>
+        <translation>Подождите, пока Arachnel обновится. Не закрывайте это окно.</translation>
+    </message>
+    <message>
+        
+        <location filename="../setup/qml/SetupWindow.qml" line="188" />
+        <source>Arachnel is being installed on your computer.</source>
+        <translation>Arachnel устанавливается на ваш компьютер.</translation>
+    </message>
+    <message>
+        
+        <location filename="../setup/qml/SetupWindow.qml" line="246" />
+        <source>Arachnel is up to date</source>
+        <translation>Arachnel обновлён</translation>
+    </message>
+    <message>
+        
+        <location filename="../setup/qml/SetupWindow.qml" line="246" />
+        <source>Arachnel is ready</source>
+        <translation>Arachnel готов</translation>
+    </message>
+    <message>
+        
+        <location filename="../setup/qml/SetupWindow.qml" line="269" />
+        <source>Back</source>
+        <translation>Назад</translation>
+    </message>
+    <message>
+        
+        <location filename="../setup/qml/SetupWindow.qml" line="276" />
+        
+        <location filename="../setup/qml/SetupWindow.qml" line="283" />
+        <source>Continue</source>
+        <translation>Далее</translation>
+    </message>
+    <message>
+        
+        <location filename="../setup/qml/SetupWindow.qml" line="291" />
+        <source>Install</source>
+        <translation>Установить</translation>
+    </message>
+    <message>
+        
+        <location filename="../setup/qml/SetupWindow.qml" line="299" />
+        <source>Open folder</source>
+        <translation>Открыть папку</translation>
+    </message>
+    <message>
+        
+        <location filename="../setup/qml/SetupWindow.qml" line="306" />
+        <source>Launch</source>
+        <translation>Запуск</translation>
+    </message>
+    <message>
+        
+        <location filename="../setup/qml/SetupWindow.qml" line="316" />
+        <source>Finish</source>
+        <translation>Готово</translation>
     </message>
 
 </context>
