@@ -11,7 +11,10 @@
 #include "plugin_host.h"
 #include "plugin_interface.h"
 #include "settings_store.h"
+#include "source_plugin_model.h"
+#include "storage_library.h"
 
+#include <QCoreApplication>
 #include <QDir>
 #include <QFileInfo>
 
@@ -251,6 +254,144 @@ QVariantList LibraryController::gamesOnLibrary(const QString& libraryId) const
         rows.append(row);
     }
     return rows;
+}
+
+namespace {
+
+QString guessSourceIdFromFolder(const QString& folderName)
+{
+    const int dash = folderName.indexOf(QLatin1Char('-'));
+    if (dash <= 0)
+        return {};
+    return folderName.left(dash);
+}
+
+QString titleFromFolderName(const QString& folderName, const QString& sourceId)
+{
+    QString rest = folderName;
+    if (!sourceId.isEmpty() && rest.startsWith(sourceId + QLatin1Char('-'), Qt::CaseInsensitive))
+        rest = rest.mid(sourceId.size() + 1);
+    rest.replace(QLatin1Char('-'), QLatin1Char(' '));
+    rest = rest.simplified();
+    if (rest.isEmpty())
+        return folderName;
+    QStringList words = rest.split(QLatin1Char(' '), Qt::SkipEmptyParts);
+    for (QString& word : words) {
+        if (word.size() == 1)
+            word = word.toUpper();
+        else
+            word = word.left(1).toUpper() + word.mid(1);
+    }
+    return words.join(QLatin1Char(' '));
+}
+
+QString pluginDisplayName(PluginHost* plugins, const QString& sourceId)
+{
+    if (!plugins || sourceId.isEmpty())
+        return sourceId;
+    for (const SourcePluginInfo& info : plugins->pluginInfos()) {
+        if (info.id == sourceId)
+            return info.name.isEmpty() ? sourceId : info.name;
+    }
+    return sourceId;
+}
+
+bool installPathTaken(const LibraryStore* store, const QString& installPath)
+{
+    const QString clean = QDir::cleanPath(installPath);
+    for (const LibraryGame& game : store->games()) {
+        if (game.installPath.isEmpty())
+            continue;
+        if (QDir::cleanPath(game.installPath).compare(clean, Qt::CaseInsensitive) == 0)
+            return true;
+    }
+    return false;
+}
+
+} // namespace
+
+int LibraryController::scanInstalledGames()
+{
+    if (!m_settings || !m_store)
+        return 0;
+
+    int added = 0;
+    for (const StorageLibrary& library : m_settings->storageLibraries()->libraries()) {
+        const QString rootPath = normalizedStoragePath(library.path);
+        if (rootPath.isEmpty() || !QFileInfo::exists(rootPath))
+            continue;
+
+        QDir root(rootPath);
+        const QFileInfoList dirs =
+            root.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
+        for (const QFileInfo& dirInfo : dirs) {
+            const QString folderName = dirInfo.fileName();
+            if (folderName.compare(QStringLiteral("downloads"), Qt::CaseInsensitive) == 0)
+                continue;
+
+            const QString installPath = QDir::cleanPath(dirInfo.absoluteFilePath());
+            if (m_store->gameById(folderName) || installPathTaken(m_store, installPath))
+                continue;
+
+            const QString executable = findGameExecutableInTree(installPath);
+            if (executable.isEmpty())
+                continue;
+
+            const QString sourceId = guessSourceIdFromFolder(folderName);
+            LibraryGame game;
+            game.id = folderName;
+            game.installPath = installPath;
+            game.executableOverride = executable;
+            game.libraryId = library.id;
+            game.sourceId = sourceId;
+            game.sourceName = pluginDisplayName(m_plugins, sourceId);
+            game.installKind = InstallKind::PortableArchive;
+
+            if (m_hooks.findCatalogEntry) {
+                if (const CatalogEntry* entry = m_hooks.findCatalogEntry(folderName)) {
+                    game.title = entry->title;
+                    game.coverUrl = entry->coverUrl;
+                    game.sourceId = entry->sourceId.isEmpty() ? sourceId : entry->sourceId;
+                    game.sourceName = pluginDisplayName(m_plugins, game.sourceId);
+                    game.version = entry->version;
+                    game.description = entry->description;
+                    game.genres = entry->genres;
+                    game.sizeLabel = entry->sizeLabel;
+                    game.uploadDate = entry->uploadDate;
+                    game.magnetUri = entry->magnetUris.value(0);
+                    game.steamAppId = entry->steamAppId;
+                    game.installKind = entry->installKind;
+                    QVector<InstalledComponent> components;
+                    components.reserve(entry->addons.size());
+                    for (const auto& addon : entry->addons)
+                        components.append({addon.id, addon.title, addon.uploadDate, false});
+                    game.components = components;
+                }
+            }
+
+            if (game.title.isEmpty())
+                game.title = titleFromFolderName(folderName, game.sourceId);
+
+            if (m_hooks.detectInstallKind)
+                game.installKind = m_hooks.detectInstallKind(game.sourceId, installPath);
+
+            if (game.steamAppId.isEmpty() && m_metadata) {
+                const GameMetadata meta = m_metadata->metadataForTitle(game.title);
+                game.steamAppId = meta.steamAppId;
+                if (game.coverUrl.isEmpty() && !meta.coverUrl.isEmpty())
+                    game.coverUrl = meta.coverUrl;
+            }
+
+            m_store->upsertGame(game);
+            ++added;
+        }
+    }
+
+    if (added > 0) {
+        m_store->save();
+        sync();
+    }
+    return added;
 }
 
 } // namespace arachnel::core

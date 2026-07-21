@@ -4,6 +4,7 @@
 set(ARACHNEL_APP_SOURCES
     src/app/main.cpp
     src/app/crash_log.cpp
+    src/app/settings_identity.cpp
     src/app/crash_log_report.cpp
 
     src/core/install/install_kind.cpp

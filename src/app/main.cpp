@@ -17,6 +17,7 @@
 #include "core/settings/settings_store.h"
 #include "core/i18n/translation_service.h"
 #include "crash_log.h"
+#include "settings_identity.h"
 
 #ifndef QT_QML_MATERIAL_IMPORT_PATH
 #define QT_QML_MATERIAL_IMPORT_PATH ""
@@ -90,11 +91,7 @@ int main(int argc, char* argv[])
     QGuiApplication app(argc, argv);
 #endif
 
-    QCoreApplication::setApplicationName(QStringLiteral("Arachnel"));
-#ifndef ARACHNEL_VERSION
-#define ARACHNEL_VERSION "dev"
-#endif
-    QCoreApplication::setApplicationVersion(QStringLiteral(ARACHNEL_VERSION));
+    arachnel::configureApplicationIdentity();
 
     const bool crashDialogMode = arachnel::isCrashDialogMode(argc, argv);
 

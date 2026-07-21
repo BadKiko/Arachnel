@@ -15,6 +15,8 @@ Item {
 
     Settings {
         id: store
+        organization: "Arachnel"
+        application: "Arachnel"
         category: "appearance"
         property int themeMode: root.defaultThemeMode
         property int paletteType: root.defaultPaletteType

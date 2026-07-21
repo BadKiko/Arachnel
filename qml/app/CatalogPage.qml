@@ -79,6 +79,8 @@ Item {
 
     Settings {
         id: catalogPrefs
+        organization: "Arachnel"
+        application: "Arachnel"
         category: "catalog"
         property int sortMode: 0
         property int viewMode: 0

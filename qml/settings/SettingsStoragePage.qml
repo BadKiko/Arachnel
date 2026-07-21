@@ -181,6 +181,17 @@ Flickable {
                             Core.settings.storageLibraries.addLibrary(folder)
                     }
                 }
+
+                MD.Button {
+                    Layout.fillWidth: true
+                    mdState.type: MD.Enum.BtText
+                    text: qsTr("Scan for installed games")
+                    icon.name: MD.Token.icon.folder_open
+                    onClicked: {
+                        Core.scanInstalledGames()
+                        root.reloadGames()
+                    }
+                }
             }
         }
 

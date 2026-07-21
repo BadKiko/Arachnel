@@ -44,6 +44,8 @@ public:
     void removeEntry(const QString& entryId, bool deleteFiles);
     void moveGame(const QString& gameId, const QString& targetLibraryId);
     QVariantList gamesOnLibrary(const QString& libraryId) const;
+    /** Scan storage roots for on-disk installs missing from library.json. Returns newly added count. */
+    int scanInstalledGames();
 
 private:
     void sync() const;

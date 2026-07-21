@@ -10,11 +10,21 @@
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/i18n/Messages.qml" line="8" />
         <source>Add a catalog to browse games, or install a plugin for download, install, and play.</source>
         <oldsource>Two ways to fill the catalog: Hydra catalogs (games.json) for migrating from Hydra; plugins (.arach) for the full cycle: catalog, install, launch, and add-ons.</oldsource>
         </message>
     <message id="help.hydra_catalog_body">
+        
+        
+        
+        
+        
         
         
         
@@ -32,6 +42,11 @@
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/i18n/Messages.qml" line="14" />
         <source>Pick a game in Catalog to start a download.</source>
         <oldsource>Games from enabled catalogs appear in Catalog. Downloads use torrent magnets from JSON.</oldsource>
@@ -43,10 +58,20 @@
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/i18n/Messages.qml" line="17" />
         <source>After download and install, the game appears here — launch, updates, and details.</source>
         </message>
     <message id="settings.sources.connect_hint">
+        
+        
+        
+        
+        
         
         
         
@@ -64,11 +89,21 @@
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/i18n/Messages.qml" line="23" />
         <source>Tap Add catalog and paste the catalog link.</source>
         <oldsource>Click Add catalog and paste your games.json URL — like Hydra, or a public community feed.</oldsource>
         </message>
     <message id="settings.source_form.desc">
+        
+        
+        
+        
+        
         
         
         
@@ -86,11 +121,21 @@
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/i18n/Messages.qml" line="29" />
         <source>Missing your language? Help translate Arachnel on &lt;a href="%1"&gt;Weblate&lt;/a&gt;.</source>
         <oldsource>Missing your language? Help translate Arachnel on &lt;a href="%1"&gt;Weblate&lt;/a&gt; or send a pull request with translations/*.ts files.</oldsource>
         </message>
     <message id="settings.plugins.install_hint">
+        
+        
+        
+        
+        
         
         
         
@@ -110,11 +155,21 @@ Build the plugin from the arachnel-plugin-freetp repository (dist/freetp.arach).
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/i18n/Messages.qml" line="35" />
         <source>Plugins add catalogs and handle install, updates, and launch (e.g. FreeTP).</source>
         <oldsource>Plugins are sources with catalog, install, and launch. Package: .arach file (ZIP with plugin.json and libraries).</oldsource>
         </message>
     <message id="library.empty.subtitle">
+        
+        
+        
+        
+        
         
         
         
@@ -132,11 +187,21 @@ Build the plugin from the arachnel-plugin-freetp repository (dist/freetp.arach).
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/i18n/Messages.qml" line="41" />
         <source>Install a plugin (e.g. FreeTP) in Settings → Plugins.</source>
         <oldsource>Install a source plugin (FreeTP, etc.) under Settings → Plugins.</oldsource>
         </message>
     <message id="library.step2.body">
+        
+        
+        
+        
+        
         
         
         
@@ -154,10 +219,20 @@ Build the plugin from the arachnel-plugin-freetp repository (dist/freetp.arach).
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/i18n/Messages.qml" line="47" />
         <source>Installed games live here: launch, updates, and details.</source>
         </message>
     <message id="game.install.torrent_hint">
+        
+        
+        
+        
+        
         
         
         
@@ -169,6 +244,11 @@ Build the plugin from the arachnel-plugin-freetp repository (dist/freetp.arach).
         <oldsource>Torrent downloaded. Click Install for the source plugin to extract or install the game.</oldsource>
         </message>
     <message id="steamidra.trust.markdown">
+        
+        
+        
+        
+        
         
         
         
@@ -201,11 +281,21 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/i18n/Messages.qml" line="57" />
         <source>Browse games from your catalogs and sources.</source>
         <oldsource>The source defines how installation works — each plugin has its own pipeline.</oldsource>
         </message>
     <message id="catalog.connect_hint">
+        
+        
+        
+        
+        
         
         
         
@@ -223,11 +313,21 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/i18n/Messages.qml" line="59" />
         <source>Turn on one or more sources above — or leave them all off.</source>
         <oldsource>Enable one or more source chips — or leave them all off.</oldsource>
         </message>
     <message id="storage.libraries_desc">
+        
+        
+        
+        
+        
         
         
         
@@ -245,10 +345,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/i18n/Messages.qml" line="65" />
         <source>Add-ons are available for "%1" — choose what to download with the game.</source>
         </message>
     <message id="downloads.empty_hint">
+        
+        
+        
+        
+        
         
         
         
@@ -265,9 +375,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/i18n/Messages.qml" line="71" />
         <source>Game files will be deleted from disk. This cannot be undone.</source>
         </message>
+
+
+
+
+
 
 
 
@@ -284,6 +404,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/AppUpdateProgressOverlay.qml" line="32" />
         <source>Downloading Arachnel update…</source>
         </message>
@@ -294,9 +419,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/AppUpdateProgressOverlay.qml" line="38" />
         <source>Please wait. The installer will open automatically.</source>
         </message>
+
+
+
+
+
 
 
 
@@ -313,10 +448,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/AppUpdateSheet.qml" line="31" />
         <source>Update available</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -333,10 +478,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/AppUpdateSheet.qml" line="52" />
         <source>Current version: %1</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -353,6 +508,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/AppUpdateSheet.qml" line="75" />
         <source>Release page</source>
         </message>
@@ -363,9 +523,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/AppUpdateSheet.qml" line="86" />
         <source>Update now</source>
         </message>
+
+
+
+
+
 
 
 
@@ -382,10 +552,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/AppWindow.qml" line="16" />
         <source>Arachnel</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -402,6 +582,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/AppWindow.qml" line="120" />
         <source>Catalog</source>
         </message>
@@ -412,9 +597,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/AppWindow.qml" line="124" />
         <source>Downloads</source>
         </message>
+
+
+
+
+
 
 
 
@@ -431,10 +626,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/CatalogCompactBar.qml" line="45" />
         <source>Catalog</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -451,9 +656,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/CatalogCompactBar.qml" line="55" />
         <source>Found: %1</source>
         </message>
+
+
+
+
+
 
 
 
@@ -470,10 +685,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/CatalogEmptyResults.qml" line="53" />
         <source>Select sources</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -490,6 +715,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/CatalogEmptyResults.qml" line="62" />
         <source>Try another search or refresh the catalog.</source>
         </message>
@@ -500,9 +730,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/CatalogEmptyResults.qml" line="70" />
         <source>Refresh</source>
         </message>
+
+
+
+
+
 
 
 
@@ -519,10 +759,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/CatalogFilterSheet.qml" line="26" />
         <source>All</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -539,10 +789,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/CatalogFilterSheet.qml" line="28" />
         <source>Installer</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -559,7 +819,17 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/CatalogFilterSheet.qml" line="33" />
+        
+        
+        
+        
+        
         
         
         
@@ -573,7 +843,17 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/CatalogFilterSheet.qml" line="48" />
+        
+        
+        
+        
+        
         
         
         
@@ -590,10 +870,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/CatalogFilterSheet.qml" line="34" />
         <source>Single-player</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -610,10 +900,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/CatalogFilterSheet.qml" line="36" />
         <source>Multiplayer</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -630,10 +930,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/CatalogFilterSheet.qml" line="42" />
         <source>1–5 GB</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -650,10 +960,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/CatalogFilterSheet.qml" line="44" />
         <source>20+ GB</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -670,10 +990,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/CatalogFilterSheet.qml" line="50" />
         <source>Last 30 days</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -690,10 +1020,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/CatalogFilterSheet.qml" line="52" />
         <source>Last year</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -710,10 +1050,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/CatalogFilterSheet.qml" line="117" />
         <source>Sort</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -730,10 +1080,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/CatalogFilterSheet.qml" line="179" />
         <source>Players</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -750,10 +1110,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/CatalogFilterSheet.qml" line="241" />
         <source>Added</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -770,10 +1140,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/CatalogFilterSheet.qml" line="283" />
         <source>Has add-ons</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -790,6 +1170,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/CatalogFilterSheet.qml" line="351" />
         <source>Clear all</source>
         </message>
@@ -800,9 +1185,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/CatalogFilterSheet.qml" line="358" />
         <source>Apply</source>
         </message>
+
+
+
+
+
 
 
 
@@ -819,9 +1214,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/CatalogIntroHeader.qml" line="14" />
         <source>Catalog</source>
         </message>
+
+
+
+
+
 
 
 
@@ -838,10 +1243,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/CatalogNoSourcesPanel.qml" line="31" />
         <source>No games</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -858,9 +1273,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/CatalogNoSourcesPanel.qml" line="56" />
         <source>Settings</source>
         </message>
+
+
+
+
+
 
 
 
@@ -877,10 +1302,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/CatalogPage.qml" line="40" />
         <source>Newest first</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -897,10 +1332,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/CatalogPage.qml" line="42" />
         <source>Title A–Z</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -917,10 +1362,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/CatalogPage.qml" line="44" />
         <source>Portable first</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -937,10 +1392,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/CatalogPage.qml" line="46" />
         <source>Largest first</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -957,10 +1422,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/CatalogPage.qml" line="53" />
         <source>Installer</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -977,10 +1452,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/CatalogPage.qml" line="57" />
         <source>Any size</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -997,10 +1482,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/CatalogPage.qml" line="59" />
         <source>1–5 GB</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -1017,10 +1512,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/CatalogPage.qml" line="61" />
         <source>20+ GB</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -1037,10 +1542,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/CatalogPage.qml" line="65" />
         <source>Last 7 days</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -1057,10 +1572,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/CatalogPage.qml" line="67" />
         <source>Last 90 days</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -1077,6 +1602,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/CatalogPage.qml" line="51" />
         <source>All</source>
         </message>
@@ -1087,9 +1617,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/CatalogPage.qml" line="52" />
         <source>Portable</source>
         </message>
+
+
+
+
+
 
 
 
@@ -1106,6 +1646,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/CatalogScrollHeader.qml" line="34" />
         <source>Loading catalog…</source>
         </message>
@@ -1116,9 +1661,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/CatalogScrollHeader.qml" line="35" />
         <source>Found: %1</source>
         </message>
+
+
+
+
+
 
 
 
@@ -1135,9 +1690,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/CatalogSourceChips.qml" line="27" />
         <source>%1 · %2</source>
         </message>
+
+
+
+
+
 
 
 
@@ -1154,10 +1719,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/CatalogStickyToolbar.qml" line="59" />
         <source>Type</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -1174,6 +1749,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/CatalogStickyToolbar.qml" line="75" />
         <source>Added</source>
         </message>
@@ -1184,9 +1764,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/CatalogStickyToolbar.qml" line="83" />
         <source>Has add-ons</source>
         </message>
+
+
+
+
+
 
 
 
@@ -1203,10 +1793,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/catalog/catalog_types.cpp" line="84" />
         <source>Game</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -1223,10 +1823,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/catalog/catalog_types.cpp" line="90" />
         <source>Component</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -1243,6 +1853,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/catalog/catalog_types.cpp" line="99" />
         <source>Torrent</source>
         </message>
@@ -1253,7 +1868,17 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/jobs/job_kind.cpp" line="11" />
+        
+        
+        
+        
+        
         
         
         
@@ -1270,10 +1895,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/install/install_kind.cpp" line="11" />
         <source>Portable</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -1290,10 +1925,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/install/install_kind.cpp" line="15" />
         <source>Bundled fix</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -1310,10 +1955,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/install/install_kind.cpp" line="19" />
         <source>Unknown</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -1327,7 +1982,17 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="93" />
+        
+        
+        
+        
+        
         
         
         
@@ -1344,6 +2009,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="44" />
         
         
@@ -1351,7 +2021,17 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="179" />
+        
+        
+        
+        
+        
         
         
         
@@ -1368,10 +2048,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="13" />
         <source>Download complete</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -1388,10 +2078,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="15" />
         <source>Downloading…</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -1408,10 +2108,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="17" />
         <source>Installing…</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -1428,10 +2138,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="19" />
         <source>Preparing…</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -1448,10 +2168,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="21" />
         <source>Getting game info…</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -1468,10 +2198,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="23" />
         <source>Prepared — Steam is downloading</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -1488,10 +2228,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="25" />
         <source>This game is not available for download right now. Try another title.</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -1508,10 +2258,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="28" />
         <source>Download failed. Try again or pick another game.</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -1528,10 +2288,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="33" />
         <source>Resuming…</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -1548,10 +2318,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="38" />
         <source>Failed to start HTTP download</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -1568,10 +2348,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="41" />
         <source>Installing %1</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -1588,6 +2378,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="43" />
         
         
@@ -1595,7 +2390,17 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="184" />
+        
+        
+        
+        
+        
         
         
         
@@ -1612,6 +2417,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="45" />
         
         
@@ -1619,7 +2429,17 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="193" />
+        
+        
+        
+        
+        
         
         
         
@@ -1636,10 +2456,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/jobs/job_kind.cpp" line="13" />
         <source>Install</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -1656,10 +2486,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/jobs/job_kind.cpp" line="17" />
         <source>Task</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -1676,10 +2516,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/jobs/job_status.cpp" line="12" />
         <source>Starting</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -1696,10 +2546,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/jobs/job_status.cpp" line="16" />
         <source>Metadata</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -1716,10 +2576,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/jobs/job_status.cpp" line="20" />
         <source>Installing</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -1736,7 +2606,17 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="34" />
+        
+        
+        
+        
+        
         
         
         
@@ -1753,7 +2633,17 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="39" />
+        
+        
+        
+        
+        
         
         
         
@@ -1770,6 +2660,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/jobs/job_status.cpp" line="28" />
         <source>Failed</source>
         </message>
@@ -1780,7 +2675,17 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="35" />
+        
+        
+        
+        
+        
         
         
         
@@ -1797,6 +2702,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="36" />
         
         
@@ -1804,7 +2714,17 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/jobs/job_status.cpp" line="37" />
+        
+        
+        
+        
+        
         
         
         
@@ -1821,10 +2741,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/catalog/catalog_controller.cpp" line="50" />
         <source>Catalog error: %1</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -1841,6 +2771,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/facade/core_wiring_services.cpp" line="331" />
         <source>Add-on not found in catalog</source>
         </message>
@@ -1851,7 +2786,17 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/facade/core_wiring_services.cpp" line="313" />
+        
+        
+        
+        
+        
         
         
         
@@ -1868,10 +2813,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/facade/core_wiring_services.cpp" line="378" />
         <source>Download error: %1</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -1888,10 +2843,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/install/install_session_service.cpp" line="99" />
         <source>Install failed for %1: %2</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -1908,10 +2873,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/install/install_session_service.cpp" line="132" />
         <source>Installed: %1</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -1928,10 +2903,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/install/install_session_service_install.cpp" line="31" />
         <source>Install the game first</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -1948,10 +2933,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/install/install_session_service_install.cpp" line="97" />
         <source>Add-on installed: %1</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -1968,6 +2963,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/jobs/job_facade_1.cpp" line="101" />
         <source>Game not found</source>
         </message>
@@ -1978,7 +2978,17 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/catalog/catalog_facade_2.cpp" line="309" />
+        
+        
+        
+        
+        
         
         
         
@@ -1995,10 +3005,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/jobs/job_facade_1.cpp" line="113" />
         <source>Download the add-on first</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -2015,10 +3035,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/runtime/proton_facade.cpp" line="226" />
         <source>Install Proton-GE in Settings → Launch before downloading games</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -2035,10 +3065,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/catalog/catalog_facade_2.cpp" line="205" />
         <source>No download link for %1</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -2055,10 +3095,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/jobs/job_facade_2.cpp" line="200" />
         <source>Choose game install folder</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -2075,7 +3125,17 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="12" />
+        
+        
+        
+        
+        
         
         
         
@@ -2092,10 +3152,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/jobs/job_facade_2.cpp" line="246" />
         <source>Manual install complete for %1</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -2112,10 +3182,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/facade/core_wiring_services.cpp" line="198" />
         <source>Plugin install failed</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -2132,10 +3212,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/facade/core_wiring_services.cpp" line="243" />
         <source>Proton-GE installed</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -2152,10 +3242,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/facade/core_wiring_services.cpp" line="372" />
         <source>Download complete — install manually</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -2172,10 +3272,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/install/install_session_service_install.cpp" line="37" />
         <source>Plugin not found for %1 — install it in Settings → Plugins</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -2192,10 +3302,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/library/library_facade_2.cpp" line="55" />
         <source>Executables (*.exe *.sh *.x86_64);;All files (*)</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -2212,10 +3332,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/catalog/catalog_controller.cpp" line="168" />
         <source>%1 sources · %2 games</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -2232,10 +3362,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/catalog/catalog_controller.cpp" line="266" />
         <source>No catalog URL configured for source %1</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -2252,10 +3392,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/runtime/runtime_dependency_service.cpp" line="111" />
         <source>Steam App ID is missing</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -2272,10 +3422,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/runtime/runtime_dependency_service_install.cpp" line="89" />
         <source>Installer not found for %1</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -2292,6 +3452,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/runtime/runtime_dependency_service_install.cpp" line="108" />
         <source>Proton is required to install runtime dependencies</source>
         </message>
@@ -2302,7 +3467,17 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/runtime/runtime_dependency_service_install.cpp" line="116" />
+        
+        
+        
+        
+        
         
         
         
@@ -2319,6 +3494,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/launch/launch_controller.cpp" line="60" />
         <source>Game is not installed yet</source>
         </message>
@@ -2329,7 +3509,17 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/launch/launch_controller.cpp" line="75" />
+        
+        
+        
+        
+        
         
         
         
@@ -2346,7 +3536,17 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/launch/launch_controller.cpp" line="82" />
+        
+        
+        
+        
+        
         
         
         
@@ -2363,10 +3563,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/launch/launch_controller.cpp" line="96" />
         <source>Failed to stop game</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -2383,10 +3593,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/catalog/catalog_facade_2.cpp" line="29" />
         <source>Source "%1" is disabled in settings</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -2403,10 +3623,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/catalog/catalog_facade_2.cpp" line="132" />
         <source>Failed to delete application data</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -2423,10 +3653,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/catalog/catalog_facade_2.cpp" line="150" />
         <source>Application data deleted. Arachnel will quit now.</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -2443,10 +3683,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/catalog/catalog_facade_2.cpp" line="175" />
         <source>Invalid URL — http or https required</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -2463,10 +3713,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/catalog/catalog_facade_2.cpp" line="210" />
         <source>No Steam App ID for %1</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -2483,7 +3743,17 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/catalog/catalog_facade_2.cpp" line="228" />
+        
+        
+        
+        
+        
         
         
         
@@ -2500,10 +3770,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/catalog/catalog_facade_2.cpp" line="315" />
         <source>Could not start add-on download</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -2520,6 +3800,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/catalog/catalog_facade_2.cpp" line="339" />
         <source>Could not start update for %1</source>
         </message>
@@ -2530,10 +3815,34 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/facade/core_wiring_services.cpp" line="172" />
         <source>No catalog sources enabled</source>
         </message>
     <message>
+        
+        
+        
+        <location filename="../src/core/library/library_facade_2.cpp" line="128" />
+        <source>Found %1 game(s) on disk</source>
+        </message>
+    <message>
+        
+        
+        
+        <location filename="../src/core/library/library_facade_2.cpp" line="132" />
+        <source>No new games found on disk</source>
+        </message>
+    <message>
+        
+        
+        
+        
+        
         
         
         
@@ -2550,10 +3859,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/jobs/job_facade_2.cpp" line="16" />
         <source>Installation is only available for completed downloads</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -2570,7 +3889,17 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/jobs/job_facade_2.cpp" line="68" />
+        
+        
+        
+        
+        
         
         
         
@@ -2587,7 +3916,17 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/jobs/job_facade_2.cpp" line="74" />
+        
+        
+        
+        
+        
         
         
         
@@ -2604,10 +3943,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/jobs/job_facade_2.cpp" line="207" />
         <source>Automatic install is unavailable. Run setup.exe from the download folder, then use the folder button to point to the game.</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -2624,10 +3973,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/plugins/plugin_facade.cpp" line="109" />
         <source>Plugin install failed: %1</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -2644,10 +4003,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/plugins/plugin_facade.cpp" line="126" />
         <source>Could not remove plugin: %1</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -2664,10 +4033,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/plugins/plugin_facade.cpp" line="194" />
         <source>Could not open plugins folder</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -2684,10 +4063,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/plugins/plugin_host_packages.cpp" line="72" />
         <source>Could not start archive extraction</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -2704,10 +4093,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/plugins/plugin_host_packages.cpp" line="89" />
         <source>Archive extraction failed (code %1)</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -2724,10 +4123,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/plugins/plugin_host_packages.cpp" line="247" />
         <source>Invalid plugin id</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -2744,10 +4153,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/plugins/plugin_host_packages.cpp" line="262" />
         <source>Could not delete plugin files</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -2764,10 +4183,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/settings/app_updater.cpp" line="45" />
         <source>Not checked yet</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -2784,10 +4213,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/settings/app_updater.cpp" line="138" />
         <source>Update check failed: %1</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -2804,7 +4243,17 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/settings/app_updater.cpp" line="189" />
+        
+        
+        
+        
+        
         
         
         
@@ -2821,7 +4270,17 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/settings/app_updater.cpp" line="191" />
+        
+        
+        
+        
+        
         
         
         
@@ -2838,10 +4297,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/settings/app_updater.cpp" line="195" />
         <source>Update found, but no installer package is available for this platform</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -2858,10 +4327,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/settings/app_updater.cpp" line="229" />
         <source>Downloading Arachnel update…</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -2878,10 +4357,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/plugins/plugin_catalog_service.cpp" line="112" />
         <source>Plugin list is invalid</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -2898,6 +4387,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/plugins/plugin_catalog_service.cpp" line="187" />
         <source>No download link for this plugin</source>
         </message>
@@ -2908,7 +4402,17 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/plugins/plugin_catalog_service.cpp" line="229" />
+        
+        
+        
+        
+        
         
         
         
@@ -2925,10 +4429,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/plugins/plugin_catalog_service.cpp" line="240" />
         <source>Downloaded plugin file is empty</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -2945,10 +4459,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/plugins/plugin_catalog_service.cpp" line="271" />
         <source>Could not save plugin file</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -2965,10 +4489,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/settings/app_updater.cpp" line="292" />
         <source>Starting updater…</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -2985,9 +4519,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../src/core/settings/app_updater.cpp" line="322" />
         <source>Automatic installer launch is only available on Windows</source>
         </message>
+
+
+
+
+
 
 
 
@@ -3004,9 +4548,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/CrashReportDialog.qml" line="14" />
         <source>Application crashed</source>
         </message>
+
+
+
+
+
 
 
 
@@ -3023,6 +4577,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/CrashReportPanel.qml" line="28" />
         <source>Application crashed</source>
         </message>
@@ -3033,7 +4592,17 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/CrashReportPanel.qml" line="35" />
+        
+        
+        
+        
+        
         
         
         
@@ -3050,7 +4619,17 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/CrashReportPanel.qml" line="36" />
+        
+        
+        
+        
+        
         
         
         
@@ -3067,10 +4646,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/CrashReportPanel.qml" line="93" />
         <source>Report file: %1</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -3087,10 +4676,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/CrashReportPanel.qml" line="112" />
         <source>Open folder</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -3107,9 +4706,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/CrashReportPanel.qml" line="126" />
         <source>Create GitHub issue</source>
         </message>
+
+
+
+
+
 
 
 
@@ -3126,9 +4735,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/CrashReportWindow.qml" line="16" />
         <source>Application crashed</source>
         </message>
+
+
+
+
+
 
 
 
@@ -3145,6 +4764,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/DownloadJobCard.qml" line="81" />
         <source>Unknown download</source>
         </message>
@@ -3155,9 +4779,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/DownloadJobCard.qml" line="98" />
         <source>Install failed</source>
         </message>
+
+
+
+
+
 
 
 
@@ -3174,10 +4808,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/DownloadJobGroupCard.qml" line="66" />
         <source>%1 add-ons · %2 downloading</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -3194,6 +4838,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/DownloadJobGroupCard.qml" line="69" />
         <source>%1 add-ons</source>
         </message>
@@ -3204,9 +4853,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/DownloadJobGroupCard.qml" line="221" />
         <source>Add-ons</source>
         </message>
+
+
+
+
+
 
 
 
@@ -3223,10 +4882,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/DownloadProgressButton.qml" line="19" />
         <source>Download</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -3243,10 +4912,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/DownloadProgressButton.qml" line="153" />
         <source>Retry install</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -3263,10 +4942,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/DownloadProgressButton.qml" line="157" />
         <source>Downloaded</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -3283,9 +4972,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/DownloadProgressButton.qml" line="161" />
         <source>Downloading · %1%</source>
         </message>
+
+
+
+
+
 
 
 
@@ -3302,10 +5001,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/DownloadsPage.qml" line="79" />
         <source>No downloads</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -3322,10 +5031,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/DownloadsPage.qml" line="121" />
         <source>%1 active · %2 finished · resume after restart</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -3342,10 +5061,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/DownloadsPage.qml" line="126" />
         <source>%1 finished · torrents resume after restart</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -3362,9 +5091,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/DownloadsPage.qml" line="137" />
         <source>Clear finished</source>
         </message>
+
+
+
+
+
 
 
 
@@ -3381,10 +5120,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/GameDetailsContent.qml" line="39" />
         <source>Game details</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -3401,10 +5150,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/GameDetailsContent.qml" line="99" />
         <source>%1 add-ons</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -3421,10 +5180,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/GameDetailsContent.qml" line="124" />
         <source>Source page</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -3441,10 +5210,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/GameDetailsContent.qml" line="136" />
         <source>Steam</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -3461,10 +5240,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/GameDetailsContent.qml" line="169" />
         <source>Stop</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -3481,6 +5270,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/GameDetailsContent.qml" line="174" />
         <source>Play</source>
         </message>
@@ -3491,7 +5285,17 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/GameDetailsContent.qml" line="216" />
+        
+        
+        
+        
+        
         
         
         
@@ -3508,10 +5312,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/GameDetailsContent.qml" line="233" />
         <source>Update</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -3528,10 +5342,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/GameDetailsContent.qml" line="291" />
         <source>Description is not available yet.</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -3548,9 +5372,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/GameDetailsContent.qml" line="330" />
         <source>Cancel</source>
         </message>
+
+
+
+
+
 
 
 
@@ -3567,6 +5401,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/GameDetailsMediaPreview.qml" line="75" />
         <source>Gameplay video</source>
         </message>
@@ -3577,7 +5416,17 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/GameDetailsMediaPreview.qml" line="189" />
+        
+        
+        
+        
+        
         
         
         
@@ -3594,7 +5443,17 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/GameDetailsMediaPreview.qml" line="207" />
+        
+        
+        
+        
+        
         
         
         
@@ -3611,6 +5470,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/GameDetailsMediaPreview.qml" line="253" />
         <source>Screenshot %1 of %2</source>
         </message>
@@ -3621,9 +5485,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/GameDetailsMediaPreview.qml" line="256" />
         <source>Screenshots</source>
         </message>
+
+
+
+
+
 
 
 
@@ -3640,9 +5514,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/GameDetailsMediaSection.qml" line="77" />
         <source>Screenshots</source>
         </message>
+
+
+
+
+
 
 
 
@@ -3659,10 +5543,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/GameSettingsRuntimePanel.qml" line="35" />
         <source>Runtime container</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -3679,10 +5573,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/GameSettingsRuntimePanel.qml" line="53" />
         <source>Container</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -3699,10 +5603,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/GameSettingsRuntimePanel.qml" line="91" />
         <source>%1 (not created yet)</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -3719,10 +5633,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/GameSettingsRuntimePanel.qml" line="124" />
         <source>No runtime dependencies detected for this game.</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -3739,6 +5663,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/GameSettingsRuntimePanel.qml" line="146" />
         <source>Installed</source>
         </message>
@@ -3749,9 +5678,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/GameSettingsRuntimePanel.qml" line="146" />
         <source>Missing</source>
         </message>
+
+
+
+
+
 
 
 
@@ -3768,10 +5707,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/GameSettingsSheet.qml" line="87" />
         <source>Game settings</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -3788,10 +5737,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/GameSettingsSheet.qml" line="125" />
         <source>When enabled, updates start automatically after the catalog loads.</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -3808,10 +5767,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/GameSettingsSheet.qml" line="164" />
         <source>Override Proton for this game. Default uses Settings → Launch.</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -3828,10 +5797,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/GameSettingsSheet.qml" line="214" />
         <source>Launch options</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -3848,10 +5827,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/GameSettingsSheet.qml" line="232" />
         <source>Custom executable (optional)</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -3868,10 +5857,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/GameSettingsSheet.qml" line="283" />
         <source>Source</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -3888,10 +5887,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/GameSettingsSheet.qml" line="285" />
         <source>Size</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -3908,10 +5917,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/GameSettingsSheet.qml" line="288" />
         <source>Install path</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -3928,10 +5947,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/GameSettingsSheet.qml" line="294" />
         <source>Waiting to install</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -3948,6 +5977,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/GameSettingsSheet.qml" line="298" />
         <source>Download</source>
         </message>
@@ -3958,9 +5992,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/GameSettingsSheet.qml" line="332" />
         <source>Done</source>
         </message>
+
+
+
+
+
 
 
 
@@ -3977,10 +6021,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/InstallAddonSelectionSheet.qml" line="63" />
         <source>Add-ons</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -3997,10 +6051,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/InstallAddonSelectionSheet.qml" line="87" />
         <source>All</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -4017,10 +6081,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/InstallAddonSelectionSheet.qml" line="174" />
         <source>Optional</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -4037,9 +6111,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/InstallAddonSelectionSheet.qml" line="218" />
         <source>Next</source>
         </message>
+
+
+
+
+
 
 
 
@@ -4056,7 +6140,17 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/InstallLocationSheet.qml" line="37" />
+        
+        
+        
+        
+        
         
         
         
@@ -4073,10 +6167,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/InstallLocationSheet.qml" line="45" />
         <source>Choose a drive for installation</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -4093,9 +6197,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/InstallLocationSheet.qml" line="144" />
         <source>Cancel</source>
         </message>
+
+
+
+
+
 
 
 
@@ -4112,10 +6226,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/LibraryContent.qml" line="114" />
         <source>Running</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -4132,10 +6256,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/LibraryContent.qml" line="164" />
         <source>Details</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -4152,10 +6286,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/LibraryContent.qml" line="210" />
         <source>In library</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -4172,10 +6316,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/LibraryContent.qml" line="224" />
         <source>Tasks</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -4192,10 +6346,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/LibraryContent.qml" line="263" />
         <source>%1 active downloads</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -4212,10 +6376,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/LibraryContent.qml" line="277" />
         <source>Open</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -4232,9 +6406,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/LibraryContent.qml" line="299" />
         <source>%1 games</source>
         </message>
+
+
+
+
+
 
 
 
@@ -4251,10 +6435,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/LibraryEmptyState.qml" line="75" />
         <source>Nothing here yet</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -4271,10 +6465,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/LibraryEmptyState.qml" line="96" />
         <source>Install plugin</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -4291,10 +6495,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/LibraryEmptyState.qml" line="119" />
         <source>Catalogs and plugins</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -4311,10 +6525,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/LibraryEmptyState.qml" line="136" />
         <source>Plugin</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -4331,10 +6555,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/LibraryEmptyState.qml" line="142" />
         <source>Catalog</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -4351,9 +6585,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/LibraryEmptyState.qml" line="148" />
         <source>Library</source>
         </message>
+
+
+
+
+
 
 
 
@@ -4370,7 +6614,17 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/LibraryGameCard.qml" line="25" />
+        
+        
+        
+        
+        
         
         
         
@@ -4387,10 +6641,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/LibraryGameCard.qml" line="27" />
         <source>%1/%2 add-ons</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -4407,10 +6671,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/LibraryGameCard.qml" line="63" />
         <source>Installing…</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -4427,10 +6701,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/LibraryGameCard.qml" line="66" />
         <source>Downloading %1%</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -4447,6 +6731,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/LibraryGameCard.qml" line="143" />
         <source>Updating</source>
         </message>
@@ -4457,9 +6746,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/LibraryGameCard.qml" line="195" />
         <source>Running</source>
         </message>
+
+
+
+
+
 
 
 
@@ -4476,10 +6775,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/LibraryPage.qml" line="31" />
         <source>Playing now</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -4496,10 +6805,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/LibraryPage.qml" line="36" />
         <source>Nothing played yet</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -4516,10 +6835,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/LibraryPage.qml" line="75" />
         <source>Installing %1%</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -4536,6 +6865,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/LibraryPage.qml" line="80" />
         <source>Paused · %1%</source>
         </message>
@@ -4546,9 +6880,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/app/LibraryPage.qml" line="81" />
         <source>Downloading %1%</source>
         </message>
+
+
+
+
+
 
 
 
@@ -4565,10 +6909,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/NotificationsPopup.qml" line="46" />
         <source>Notifications</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -4585,9 +6939,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/NotificationsPopup.qml" line="97" />
         <source>Installs, errors, and other events will appear here.</source>
         </message>
+
+
+
+
+
 
 
 
@@ -4604,10 +6968,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/onboarding/OnboardingBasicsStep.qml" line="28" />
         <source>A quick setup before you start</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -4624,10 +6998,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/onboarding/OnboardingBasicsStep.qml" line="48" />
         <source>Language</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -4644,10 +7028,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/onboarding/OnboardingBasicsStep.qml" line="81" />
         <source>Appearance</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -4664,10 +7058,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/onboarding/OnboardingBasicsStep.qml" line="96" />
         <source>Dark</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -4684,6 +7088,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/onboarding/OnboardingBasicsStep.qml" line="110" />
         <source>Palette</source>
         </message>
@@ -4694,9 +7103,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/onboarding/OnboardingBasicsStep.qml" line="141" />
         <source>Primary</source>
         </message>
+
+
+
+
+
 
 
 
@@ -4713,10 +7132,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/onboarding/OnboardingFinalSteps.qml" line="23" />
         <source>Updates</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -4733,10 +7162,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/onboarding/OnboardingFinalSteps.qml" line="34" />
         <source>Check for game updates</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -4753,10 +7192,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/onboarding/OnboardingFinalSteps.qml" line="40" />
         <source>Check for Arachnel updates</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -4773,10 +7222,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/onboarding/OnboardingFinalSteps.qml" line="76" />
         <source>Proton (Linux)</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -4793,10 +7252,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/onboarding/OnboardingFinalSteps.qml" line="87" />
         <source>Proton ready: %1</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -4813,10 +7282,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/onboarding/OnboardingFinalSteps.qml" line="104" />
         <source>Proton already installed</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -4833,10 +7312,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/onboarding/OnboardingFinalSteps.qml" line="106" />
         <source>Download Proton-GE</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -4853,10 +7342,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/onboarding/OnboardingFinalSteps.qml" line="125" />
         <source>You're all set</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -4873,9 +7372,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/onboarding/OnboardingFinalSteps.qml" line="135" />
         <source>Tip: with a plugin installed, Install runs automatically after download. Catalog-only setups need a manual Install step.</source>
         </message>
+
+
+
+
+
 
 
 
@@ -4892,10 +7401,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/onboarding/OnboardingSheet.qml" line="142" />
         <source>Welcome to Arachnel</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -4912,10 +7431,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/onboarding/OnboardingSheet.qml" line="155" />
         <source>Skip</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -4932,6 +7461,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/onboarding/OnboardingSheet.qml" line="236" />
         <source>Get started</source>
         </message>
@@ -4942,9 +7476,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/onboarding/OnboardingSheet.qml" line="236" />
         <source>Next</source>
         </message>
+
+
+
+
+
 
 
 
@@ -4961,10 +7505,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="27" />
         <source>Game library folder</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -4981,10 +7535,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="90" />
         <source>Choose folder…</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -5001,10 +7565,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="116" />
         <source>Source plugins</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -5021,10 +7595,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="144" />
         <source>Official plugins</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -5041,10 +7625,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="157" />
         <source>Loading official plugins…</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -5061,10 +7655,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="207" />
         <source>v%1</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -5081,6 +7685,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="214" />
         <source>Installing…</source>
         </message>
@@ -5091,10 +7700,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="214" />
         <source>Install</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -5111,10 +7730,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="249" />
         <source>v%1 · %2</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -5131,9 +7760,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="270" />
         <source>Skip for now</source>
         </message>
+
+
+
+
+
 
 
 
@@ -5150,10 +7789,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/ProtonRequiredDialog.qml" line="13" />
         <source>Proton required</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -5170,10 +7819,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/ProtonRequiredDialog.qml" line="33" />
         <source>Games run through Proton on Linux. Install %1 before downloading.</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -5190,10 +7849,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/ProtonRequiredDialog.qml" line="43" />
         <source>Currently installed: %1</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -5210,10 +7879,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/ProtonRequiredDialog.qml" line="68" />
         <source>Settings</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -5230,9 +7909,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/ProtonRequiredDialog.qml" line="79" />
         <source>Download %1</source>
         </message>
+
+
+
+
+
 
 
 
@@ -5249,6 +7938,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/RunningGameBar.qml" line="65" />
         <source>Playing now</source>
         </message>
@@ -5259,9 +7953,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/RunningGameBar.qml" line="83" />
         <source>Stop</source>
         </message>
+
+
+
+
+
 
 
 
@@ -5278,10 +7982,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsAboutPage.qml" line="16" />
         <source>Windows</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -5298,10 +8012,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsAboutPage.qml" line="20" />
         <source>macOS</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -5318,10 +8042,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsAboutPage.qml" line="72" />
         <source>Application</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -5338,10 +8072,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsAboutPage.qml" line="98" />
         <source>Unknown</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -5358,10 +8102,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsAboutPage.qml" line="131" />
         <source>Danger zone</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -5378,10 +8132,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsAboutPage.qml" line="162" />
         <source>Deletes settings, download history, caches, plugins, and Proton from the app folder. Game files on your disks stay. Arachnel will quit afterward.</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -5398,10 +8162,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsAboutPage.qml" line="190" />
         <source>Delete application data?</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -5418,6 +8192,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsAboutPage.qml" line="215" />
         <source>Cancel</source>
         </message>
@@ -5428,9 +8207,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsAboutPage.qml" line="222" />
         <source>Delete and quit</source>
         </message>
+
+
+
+
+
 
 
 
@@ -5447,10 +8236,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsAppearancePage.qml" line="15" />
         <source>English</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -5467,10 +8266,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsAppearancePage.qml" line="46" />
         <source>Theme and colors apply across the app.</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -5487,10 +8296,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsAppearancePage.qml" line="59" />
         <source>Light theme</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -5507,10 +8326,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsAppearancePage.qml" line="124" />
         <source>Primary</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -5527,6 +8356,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsAppearancePage.qml" line="194" />
         <source>Community translations</source>
         </message>
@@ -5537,9 +8371,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsAppearancePage.qml" line="210" />
         <source>Help translate</source>
         </message>
+
+
+
+
+
 
 
 
@@ -5556,10 +8400,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsHubPage.qml" line="18" />
         <source>Plugins</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -5576,10 +8430,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsHubPage.qml" line="19" />
         <source>FreeTP and others — install, launch, and add-ons</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -5596,10 +8460,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsHubPage.qml" line="28" />
         <source>Storage</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -5616,10 +8490,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsHubPage.qml" line="33" />
         <source>Updates</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -5636,10 +8520,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsHubPage.qml" line="39" />
         <source>Launch options and Proton on Linux</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -5656,10 +8550,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsHubPage.qml" line="49" />
         <source>Version and app data</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -5676,6 +8580,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsHubPage.qml" line="43" />
         <source>Appearance</source>
         </message>
@@ -5686,9 +8595,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsHubPage.qml" line="48" />
         <source>About</source>
         </message>
+
+
+
+
+
 
 
 
@@ -5705,10 +8624,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsLaunchPage.qml" line="59" />
         <source>Linux: all games run through Proton (Windows builds).</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -5725,10 +8654,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsLaunchPage.qml" line="101" />
         <source>Required before download: %1</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -5745,10 +8684,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsLaunchPage.qml" line="110" />
         <source>Pick default Proton and drag priority with arrows. Steam installs are detected automatically.</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -5765,10 +8714,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsLaunchPage.qml" line="130" />
         <source>Rescan</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -5785,10 +8744,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsLaunchPage.qml" line="84" />
         <source>Proton runtime</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -5805,6 +8774,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsLaunchPage.qml" line="49" />
         <source>Launch options</source>
         </message>
@@ -5815,9 +8789,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsLaunchPage.qml" line="123" />
         <source>Download Proton-GE</source>
         </message>
+
+
+
+
+
 
 
 
@@ -5834,6 +8818,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsPage.qml" line="25" />
         
         
@@ -5841,7 +8830,17 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsPage.qml" line="28" />
+        
+        
+        
+        
+        
         
         
         
@@ -5858,10 +8857,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsPage.qml" line="140" />
         <source>Plugins</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -5878,10 +8887,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsPage.qml" line="157" />
         <source>Hydra catalogs</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -5898,10 +8917,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsPage.qml" line="169" />
         <source>New Hydra catalog</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -5918,10 +8947,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsPage.qml" line="187" />
         <source>Updates</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -5938,10 +8977,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsPage.qml" line="203" />
         <source>Appearance</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -5958,6 +9007,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsPage.qml" line="265" />
         <source>Back</source>
         </message>
@@ -5968,9 +9022,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsPage.qml" line="278" />
         <source>Done</source>
         </message>
+
+
+
+
+
 
 
 
@@ -5987,10 +9051,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsPluginStorePage.qml" line="54" />
         <source>Official plugins from the Arachnel catalog. Install adds them to your plugins folder.</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -6007,10 +9081,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsPluginStorePage.qml" line="74" />
         <source>Refresh list</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -6027,10 +9111,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsPluginStorePage.qml" line="108" />
         <source>No official plugins available for this platform.</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -6047,10 +9141,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsPluginStorePage.qml" line="182" />
         <source>Installed</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -6067,9 +9171,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsPluginStorePage.qml" line="183" />
         <source>Install</source>
         </message>
+
+
+
+
+
 
 
 
@@ -6086,10 +9200,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsPluginsPage.qml" line="164" />
         <source>v%1 · %2</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -6106,10 +9230,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsPluginsPage.qml" line="82" />
         <source>No plugins installed</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -6126,6 +9260,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsPluginsPage.qml" line="105" />
         <source>Installed plugins</source>
         </message>
@@ -6136,7 +9275,17 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsPluginsPage.qml" line="182" />
+        
+        
+        
+        
+        
         
         
         
@@ -6153,10 +9302,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsPluginsPage.qml" line="216" />
         <source>Install from file…</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -6173,10 +9332,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsPluginsPage.qml" line="234" />
         <source>Refresh</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -6193,10 +9362,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsPluginsPage.qml" line="258" />
         <source>Remove plugin?</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -6213,9 +9392,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsPluginsPage.qml" line="284" />
         <source>Cancel</source>
         </message>
+
+
+
+
+
 
 
 
@@ -6232,10 +9421,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsSourceFormPage.qml" line="61" />
         <source>Enter a name and catalog URL.</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -6252,10 +9451,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsSourceFormPage.qml" line="86" />
         <source>Could not save changes.</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -6272,10 +9481,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsSourceFormPage.qml" line="113" />
         <source>Could not load catalog from this URL.</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -6292,10 +9511,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsSourceFormPage.qml" line="143" />
         <source>Name</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -6312,10 +9541,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsSourceFormPage.qml" line="161" />
         <source>Short description (optional)</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -6332,10 +9571,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsSourceFormPage.qml" line="193" />
         <source>Validating…</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -6352,9 +9601,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsSourceFormPage.qml" line="194" />
         <source>Add</source>
         </message>
+
+
+
+
+
 
 
 
@@ -6371,10 +9630,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsSourcesPage.qml" line="28" />
         <source>Games: …</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -6391,10 +9660,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsSourcesPage.qml" line="85" />
         <source>No catalogs yet</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -6411,10 +9690,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsSourcesPage.qml" line="201" />
         <source>No URL — catalog will not load</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -6431,10 +9720,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsSourcesPage.qml" line="204" />
         <source>Disabled</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -6451,6 +9750,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsSourcesPage.qml" line="226" />
         <source>Delete</source>
         </message>
@@ -6461,9 +9765,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsSourcesPage.qml" line="241" />
         <source>Add Hydra catalog</source>
         </message>
+
+
+
+
+
 
 
 
@@ -6480,10 +9794,27 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsStoragePage.qml" line="176" />
         <source>Add drive…</source>
         </message>
     <message>
+        
+        
+        
+        <location filename="../qml/settings/SettingsStoragePage.qml" line="188" />
+        <source>Scan for installed games</source>
+        </message>
+    <message>
+        
+        
+        
+        
+        
         
         
         
@@ -6500,10 +9831,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsStoragePage.qml" line="281" />
         <source>No games on this drive yet</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -6520,6 +9861,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsStoragePage.qml" line="313" />
         <source>Move…</source>
         </message>
@@ -6530,9 +9876,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsStoragePage.qml" line="332" />
         <source>Move to drive</source>
         </message>
+
+
+
+
+
 
 
 
@@ -6549,10 +9905,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsUpdatesPage.qml" line="38" />
         <source>Games</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -6569,10 +9935,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsUpdatesPage.qml" line="85" />
         <source>Install updates automatically on launch</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -6589,10 +9965,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsUpdatesPage.qml" line="60" />
         <source>Shows when a newer build is available in the catalog.</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -6609,10 +9995,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsUpdatesPage.qml" line="111" />
         <source>Check for game updates</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -6629,10 +10025,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsUpdatesPage.qml" line="137" />
         <source>Current version: %1</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -6649,10 +10055,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsUpdatesPage.qml" line="206" />
         <source>Checks for new versions in the background.</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -6669,6 +10085,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsUpdatesPage.qml" line="241" />
         <source>Download and install</source>
         </message>
@@ -6679,9 +10100,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/settings/SettingsUpdatesPage.qml" line="252" />
         <source>Open release page</source>
         </message>
+
+
+
+
+
 
 
 
@@ -6698,10 +10129,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../setup/src/self_extractor.cpp" line="140" />
         <source>Extracting files…</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -6718,10 +10159,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../setup/src/setup_backend.cpp" line="337" />
         <source>Registering uninstaller…</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -6738,10 +10189,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../setup/src/setup_backend.cpp" line="350" />
         <source>Creating shortcuts…</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -6758,6 +10219,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../setup/src/setup_backend.cpp" line="356" />
         <source>Installation complete</source>
         </message>
@@ -6768,7 +10234,17 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../setup/src/setup_backend.cpp" line="374" />
+        
+        
+        
+        
+        
         
         
         
@@ -6785,7 +10261,17 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../setup/src/setup_backend.cpp" line="375" />
+        
+        
+        
+        
+        
         
         
         
@@ -6802,10 +10288,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../setup/src/setup_backend.cpp" line="409" />
         <source>Waiting for Arachnel to close…</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -6822,10 +10318,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../setup/src/setup_backend.cpp" line="422" />
         <source>Clearing install folder…</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -6842,10 +10348,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../setup/src/setup_backend.cpp" line="430" />
         <source>Creating install folder…</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -6862,9 +10378,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../setup/src/setup_backend.cpp" line="447" />
         <source>Finalizing…</source>
         </message>
+
+
+
+
+
 
 
 
@@ -6881,9 +10407,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../setup/qml/components/SetupTitleBar.qml" line="42" />
         <source>Arachnel Setup</source>
         </message>
+
+
+
+
+
 
 
 
@@ -6900,10 +10436,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../setup/qml/SetupWindow.qml" line="15" />
         <source>Arachnel Setup</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -6920,10 +10466,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../setup/qml/SetupWindow.qml" line="72" />
         <source>Select the installer language.</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -6940,10 +10496,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../setup/qml/SetupWindow.qml" line="105" />
         <source>Game launcher with plugin-based sources. This wizard unpacks Arachnel to your computer.</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -6960,10 +10526,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../setup/qml/SetupWindow.qml" line="128" />
         <source>Choose install location</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -6980,10 +10556,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../setup/qml/SetupWindow.qml" line="156" />
         <source>Shortcuts</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -7000,10 +10586,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../setup/qml/SetupWindow.qml" line="167" />
         <source>Create Start Menu shortcut</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -7020,10 +10616,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../setup/qml/SetupWindow.qml" line="180" />
         <source>Installing…</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -7040,10 +10646,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../setup/qml/SetupWindow.qml" line="188" />
         <source>Arachnel is being installed on your computer.</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -7060,10 +10676,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../setup/qml/SetupWindow.qml" line="246" />
         <source>Arachnel is ready</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -7080,7 +10706,17 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../setup/qml/SetupWindow.qml" line="276" />
+        
+        
+        
+        
+        
         
         
         
@@ -7097,10 +10733,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../setup/qml/SetupWindow.qml" line="291" />
         <source>Install</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -7117,6 +10763,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../setup/qml/SetupWindow.qml" line="306" />
         <source>Launch</source>
         </message>
@@ -7127,9 +10778,19 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../setup/qml/SetupWindow.qml" line="316" />
         <source>Finish</source>
         </message>
+
+
+
+
+
 
 
 
@@ -7146,10 +10807,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/SourceHelpDialog.qml" line="12" />
         <source>Catalogs and plugins</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -7166,10 +10837,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/SourceHelpDialog.qml" line="20" />
         <source>Hydra catalog</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -7186,6 +10867,11 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/SourceHelpDialog.qml" line="26" />
         <source>Catalog</source>
         </message>
@@ -7196,10 +10882,20 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
         
         
         
+        
+        
+        
+        
+        
         <location filename="../qml/components/SourceHelpDialog.qml" line="31" />
         <source>Step 3</source>
         </message>
     <message>
+        
+        
+        
+        
+        
         
         
         
@@ -7270,19 +10966,39 @@ If you do not want Arachnel to fetch files, choose **Install via Steam client** 
 
     <message>
         
+        
+        
+        
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="1" />
         <source>Queued in Steam…</source>
     </message>
     <message>
+        
+        
+        
+        
+        
         
         <location filename="../src/core/jobs/job_display.cpp" line="1" />
         <source>Downloading in Steam…</source>
     </message>
     <message>
         
+        
+        
+        
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="1" />
         <source>Waiting in Steam — click Update if needed</source>
     </message>
+
+
+
+
+
 
 </context>
 </TS>
