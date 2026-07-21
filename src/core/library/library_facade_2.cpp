@@ -119,6 +119,21 @@ QVariantList CoreController::gamesOnLibrary(const QString& libraryId) const
     return m_libraryController ? m_libraryController->gamesOnLibrary(libraryId) : QVariantList();
 }
 
+int CoreController::scanInstalledGames()
+{
+    if (!m_libraryController)
+        return 0;
+    const int added = m_libraryController->scanInstalledGames();
+    if (added > 0) {
+        showNotice(QCoreApplication::translate("Core", "Found %1 game(s) on disk").arg(added));
+        if (m_gameUpdates)
+            m_gameUpdates->recalculateLibraryUpdates(false);
+    } else {
+        showNotice(QCoreApplication::translate("Core", "No new games found on disk"));
+    }
+    return added;
+}
+
 void CoreController::checkUpdates()
 {
     if (m_gameUpdates)

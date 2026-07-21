@@ -204,6 +204,8 @@ CoreController::CoreController(QObject* parent)
     connect(&m_sources, &SourcePluginModel::sourcesChanged, this,
             &CoreController::persistSourcesToSettings);
     syncLibraryFromStore();
+    if (m_libraryController)
+        m_libraryController->scanInstalledGames();
 
     m_catalog.bindSource(&m_catalogCache);
     if (!m_catalogFilters) {

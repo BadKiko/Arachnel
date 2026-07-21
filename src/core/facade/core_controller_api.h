@@ -40,6 +40,7 @@
     Q_INVOKABLE void removeEntry(const QString&, bool = true);
     Q_INVOKABLE void moveGame(const QString&, const QString&);
     Q_INVOKABLE QVariantList gamesOnLibrary(const QString&) const;
+    Q_INVOKABLE int scanInstalledGames();
     Q_INVOKABLE bool isEntryPlayable(const QString&) const;
     Q_INVOKABLE bool isEntryDownloadComplete(const QString&) const;
     Q_INVOKABLE bool entryDownloadFilesExist(const QString&) const;

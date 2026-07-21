@@ -146,6 +146,13 @@ MD.BottomSheet {
                         color: MD.Token.color.on_surface_variant
                         typescale: MD.Token.typescale.body_small
                     }
+                    MD.Label {
+                        Layout.fillWidth: true
+                        text: qsTr("Uses LumaCore in the Steam folder so the game can download even if it is not on your account. Steam may restart once so the inject loads.")
+                        wrapMode: Text.WordWrap
+                        color: MD.Token.color.on_surface_variant
+                        typescale: MD.Token.typescale.body_small
+                    }
                 }
             }
         }
