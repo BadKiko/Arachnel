@@ -310,58 +310,10 @@ Item {
                     }
                 }
 
-                Item {
-                    id: progressTrack
+                DownloadJobProgressTrack {
                     Layout.fillWidth: true
                     Layout.preferredHeight: root.addonRow ? 3 : 4
-                    clip: true
-
-                    Rectangle {
-                        anchors.fill: parent
-                        radius: 2
-                        color: MD.Util.transparent(MD.Token.color.primary, 0.25)
-                    }
-
-                    Rectangle {
-                        id: installIndeterminate
-                        visible: root.isInstalling
-                        height: parent.height
-                        width: Math.max(24, parent.width * 0.35)
-                        radius: 2
-                        color: MD.Token.color.primary
-                        x: -width
-
-                        SequentialAnimation {
-                            running: root.isInstalling
-                            loops: Animation.Infinite
-                            NumberAnimation {
-                                target: installIndeterminate
-                                property: "x"
-                                from: -installIndeterminate.width
-                                to: progressTrack.width
-                                duration: 900
-                                easing.type: Easing.InOutQuad
-                            }
-                            NumberAnimation {
-                                target: installIndeterminate
-                                property: "x"
-                                from: progressTrack.width
-                                to: -installIndeterminate.width
-                                duration: 900
-                                easing.type: Easing.InOutQuad
-                            }
-                        }
-                    }
-
-                    Rectangle {
-                        visible: !root.isInstalling
-                        anchors.top: parent.top
-                        anchors.bottom: parent.bottom
-                        anchors.left: parent.left
-                        width: parent.width * (root.progress / 100)
-                        radius: 2
-                        color: root.isPaused ? MD.Token.color.on_surface_variant : MD.Token.color.primary
-                    }
+                    page: root
                 }
 
                 RowLayout {

@@ -10,27 +10,33 @@ function(arachnel_plugin_sdk_init ARACHNEL_ROOT)
         return()
     endif()
 
-    if(NOT EXISTS "${ARACHNEL_ROOT}/src/core/plugin_interface.h")
+    if(NOT EXISTS "${ARACHNEL_ROOT}/src/core/plugins/plugin_interface.h")
         message(FATAL_ERROR "arachnel_plugin_sdk: invalid ARACHNEL_SDK_DIR: ${ARACHNEL_ROOT}")
     endif()
 
     set(_ARACHNEL_PLUGIN_SDK_SOURCES
-        ${ARACHNEL_ROOT}/src/core/catalog_parser.cpp
-        ${ARACHNEL_ROOT}/src/core/catalog_types.cpp
-        ${ARACHNEL_ROOT}/src/core/install_kind.cpp
-        ${ARACHNEL_ROOT}/src/core/install_analysis.cpp
-        ${ARACHNEL_ROOT}/src/core/install_heuristics.cpp
-        ${ARACHNEL_ROOT}/src/core/file_utils.cpp
-        ${ARACHNEL_ROOT}/src/core/windows_runner.cpp
-        ${ARACHNEL_ROOT}/src/core/proton_manager.cpp
-        ${ARACHNEL_ROOT}/src/core/plugin_api.cpp
+        ${ARACHNEL_ROOT}/src/core/catalog/catalog_parser.cpp
+        ${ARACHNEL_ROOT}/src/core/catalog/catalog_types.cpp
+        ${ARACHNEL_ROOT}/src/core/install/install_kind.cpp
+        ${ARACHNEL_ROOT}/src/core/install/install_analysis.cpp
+        ${ARACHNEL_ROOT}/src/core/install/install_heuristics.cpp
+        ${ARACHNEL_ROOT}/src/core/util/file_utils.cpp
+        ${ARACHNEL_ROOT}/src/core/runtime/windows_runner.cpp
+        ${ARACHNEL_ROOT}/src/core/runtime/proton_manager.cpp
+        ${ARACHNEL_ROOT}/src/core/plugins/plugin_api.cpp
     )
 
     add_library(arachnel_plugin_sdk STATIC ${_ARACHNEL_PLUGIN_SDK_SOURCES})
     target_compile_definitions(arachnel_plugin_sdk PUBLIC ARACHNEL_PLUGIN_BUILD)
+    # Flat header names ("plugin_interface.h") for out-of-tree plugins.
     target_include_directories(arachnel_plugin_sdk
         PUBLIC
             ${ARACHNEL_ROOT}/src/core
+            ${ARACHNEL_ROOT}/src/core/catalog
+            ${ARACHNEL_ROOT}/src/core/install
+            ${ARACHNEL_ROOT}/src/core/plugins
+            ${ARACHNEL_ROOT}/src/core/runtime
+            ${ARACHNEL_ROOT}/src/core/util
     )
     target_link_libraries(arachnel_plugin_sdk PUBLIC Qt6::Core Qt6::Network)
     if(WIN32)

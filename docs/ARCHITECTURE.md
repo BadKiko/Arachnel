@@ -1,67 +1,75 @@
 # Архитектура Arachnel
 
-## Слои
+Arachnel — Qt/QML launcher с доменным ядром и внешними плагинами источников.
+Навигация по доменам: [`src/core/README.md`](../src/core/README.md).
 
+## Карта доменов
+
+```text
+QML UI ── Arachnel.Core (CoreController)
+                    │ тонкий QML boundary и композиция сервисов
+ ┌──────────────────┼─────────────────────────────────────────────────┐
+ │ catalog │ library │ jobs │ install │ launch │ runtime │ settings    │
+ │ plugins │ torrent │ facade │ i18n │ util                            │
+ └──────────────────┴─────────────────────────────────────────────────┘
+                    │ ISourcePlugin C ABI
+       external .arach / shared-library source plugins
 ```
-┌─────────────────────────────────────────────────────────────┐
-│  UI (QML) — библиотека, каталог, загрузки, детали, настройки │
-├─────────────────────────────────────────────────────────────┤
-│  Core — stores, каталог, torrent-задачи, метаданные, фасад   │
-├─────────────────────────────────────────────────────────────┤
-│  Source plugins — Online-Fix, FreeTP, … (целевое; TODO)      │
-└─────────────────────────────────────────────────────────────┘
-```
 
-### Core (ядро)
+`CoreController` публикует стабильную поверхность `Arachnel.Core` для QML и
+делегирует работу доменным контроллерам и сервисам. Он не является местом для
+новой бизнес-логики конкретного источника.
 
-Ответственность ядра — то, что **одинаково для всех источников**:
+| Домен | Владеет |
+|-------|---------|
+| `catalog/` | Фидами и плагинными каталогами, парсингом, фильтрами, metadata и обложками |
+| `library/` | `LibraryStore`, модели, storage libraries, обслуживанием и проверкой обновлений |
+| `jobs/` | `JobStore`, QML-модель, `JobOrchestrator` и HTTP-загрузками |
+| `install/` | Анализом артефактов, install kind и `InstallSessionService` |
+| `launch/` | Разрешением launch info, запуском и отслеживанием процесса |
+| `runtime/` | Контейнерами runtime, зависимостями, Proton и Windows runner |
+| `plugins/` | `PluginHost`, пакетом `.arach`, каталогом плагинов и ABI |
+| `torrent/` | Настройками libtorrent, torrent-сессией и metadata fetching |
+| `settings/` | Настройками, уведомлениями и обновлением приложения |
+| `facade/` | `CoreController`, crash façade и склейкой сервисов |
+| `i18n/`, `util/` | Переводами и малыми общими утилитами |
 
-| Модуль | Файлы | Назначение |
-|--------|-------|------------|
-| `CoreController` | `core_controller.*` | Единый QML-фасад (`Arachnel.Core`) |
-| `SettingsStore` | `settings_store.*` | Папки, лимит загрузок, список источников |
-| `LibraryStore` | `library_store.*` | Установленные игры, компоненты/DLC |
-| `JobOrchestrator` | `job_orchestrator.*` | Очередь torrent-задач, прогресс, отмена |
-| `TorrentSession` | `torrent_session.*` | libtorrent: magnet → `downloadsRoot` |
-| `CatalogFeedLoader` | `catalog_feed_loader.*` | JSON-фид каталога (Hydra/FreeTP) |
-| `GameMetadataService` | `game_metadata_service.*` | Обложка/описание через Steam API |
-| `CoverImageCache` | `cover_image_cache.*` | Локальный кэш обложек |
-| `SourcePluginModel` | `source_plugin_model.*` | **Промежуточно:** источники из настроек (URL JSON) |
-| `*_model` | `library_model`, `catalog_model`, `job_model` | Модели для QML |
+`src/app/` содержит точку входа и crash reporting, а не доменную логику.
 
-Ядро **не** знает, как распаковать конкретный архив Online-Fix или когда у FreeTP нужен отдельный фикс.
+## Потоки ответственности
 
-**Персистентность** (через `QStandardPaths::AppDataLocation`):
+- `CatalogController` объединяет каталоги URL-источников и загруженных плагинов.
+- `InstallSessionService` создаёт и завершает install-сессии, передавая
+  source-specific работу в плагин.
+- `JobOrchestrator` управляет HTTP/torrent задачами; `TorrentSession` — общий
+  транспорт для magnet-загрузок.
+- `LibraryController`, `LibraryMaintenanceService` и `GameUpdateService`
+  изменяют и обслуживают библиотеку.
+- `LaunchController` запрашивает у плагина `LaunchInfo`; `ProcessLauncher` и
+  `ProcessTracker` исполняют и наблюдают процесс.
+- `RuntimeDependencyService` подготавливает runtime-зависимости там, где это
+  требуется платформой.
 
-- `settings.json` — пути, `sources[]`, лимит параллельных загрузок
-- `library.json` — библиотека
-- `jobs.json` — активные и завершённые задачи
-- кэш обложек — рядом с данными приложения
+Персистентные stores используют `QStandardPaths::AppDataLocation`: настройки,
+библиотека, jobs и кэш обложек находятся в данных приложения.
 
-### Источники: сейчас и цель
+## Плагины источников
 
-**Сейчас (промежуточная модель):** пользователь добавляет источники в настройках — имя + URL JSON-каталога. `SourcePluginModel` хранит список; `CatalogFeedLoader` грузит фид по URL. Встроенных плагинов и `PluginHost` пока нет.
+`PluginHost` сканирует bundle и пользовательские каталоги плагинов, загружает
+shared library из пакета и предоставляет её `ISourcePlugin` доменам core.
+Плагины живут в отдельных репозиториях; см. [`plugins/README.md`](../plugins/README.md).
 
-**Цель:** `PluginHost` загружает ячейки из `plugins/<source-id>/`; ядро делегирует install/update/launch через `ISourcePlugin`.
+Контракт: `src/core/plugins/plugin_interface.h`; C ABI:
+`src/core/plugins/plugin_api.h`. Текущая версия ABI — **v3**. Хост принимает
+плагины API **v2–v3**; API v3 добавляет capability `owns_download`.
 
-### Source plugin (плагин источника)
+Плагин владеет source-specific поведением: каталогом, анализом дистрибутива,
+установкой, обновлениями и `LaunchInfo`. Для обычного magnet-потока core
+скачивает артефакт, после чего плагин получает `InstallContext`. При
+`owns_download` плагин сам ведёт download/install и сообщает прогресс хосту.
+В core нельзя добавлять ветвления вида `if (sourceId == ...)`.
 
-Один плагин = один тип источника (или семейство с общим API).
-
-Плагин реализует свой пайплайн:
-
-| Этап | Примеры различий между источниками |
-|------|-----------------------------------|
-| Каталог | API сайта, парсинг, локальный индекс |
-| Метаданные | версия, размер, тип дистрибутива |
-| Загрузка | прямая ссылка, magnet, несколько частей |
-| Установка | unzip portable, silent installer, копирование + патч |
-| Обновление | diff, полная перекачка, замена папки |
-| Запуск | `exe` в корне, подпапка `Binaries`, аргументы |
-
-**Торрент** сейчас в ядре (`TorrentSession`), потому что JSON-фиды отдают magnet. После завершения загрузки ядро создаёт запись в библиотеке с `downloadPath`, но **без** `installPath` — установку должен выполнить плагин.
-
-### UI (QML)
+## UI (QML)
 
 | Путь | Содержимое |
 |------|------------|
@@ -71,88 +79,11 @@
 | `qml/nav/` | `PageNavigator` — стек с fade/bounce |
 | `qml/theme/` | Material 3: `Appearance`, `AccentColors` |
 
-UI вызывает `Core` (`Arachnel.Core`); Core оркестрирует stores и torrent. На Windows — frameless window + `AppTitleBar`.
+UI вызывает `Core` (`Arachnel.Core`) и получает модели библиотеки, каталога,
+jobs, sources, notifications и settings. На Windows используется frameless
+window с `AppTitleBar`.
 
-## Контракт плагина источника
+## Сборка
 
-Актуально: `src/core/plugin_interface.h`, ABI в `src/core/plugin_api.h` (**v3**; хост принимает **2..3**).
-
-Типичный torrent-пайплайн (FreeTP): ядро качает magnet → `installFromDownload(downloadPath)`.
-
-**Plugin-owned download** (SteaMidra и аналоги): capability `owns_download` → ядро создаёт job `pluginDownload` и вызывает `startOwnedDownload` / `cancelOwnedDownload` без magnet. Каталог обязан отдавать идентификатор установки (часто `steamAppId`).
-
-`InstallContext` передаёт пути библиотеки/загрузок и (для torrent) `magnetUri`; для owns_download в `magnetUri` хост может прокинуть `steamAppId`.
-
-Тип установки (`installKind`) — для UX в UI; **логику выполняет плагин**:
-
-- `portable_archive` — распаковка;
-- `installer` — тихая установка;
-- `bundled_fix` — готовая сборка;
-- `fix_download` — игра + отдельный патч.
-
-## Примеры плагинов
-
-### online-fix
-
-- дистрибутив: чаще portable-архив;
-- установка: скачать → распаковать в `{library}/{appId}` → записать манифест;
-- обновление: сравнить `uploadDate` с каталогом → перекачать/заменить.
-
-### freetp
-
-- дистрибутив: **зависит от страницы игры**;
-- каталог: JSON-фид (см. [CATALOG_FORMAT.md](CATALOG_FORMAT.md));
-- установка: ветвление внутри плагина (installer / portable / fix overlay);
-- обновление: по `uploadDate` и компонентам DLC.
-
-### steamidra
-
-- отдельный GPL-3 репозиторий; **не** линкуется статически в закрытое ядро;
-- каталог: Hubcap API (+ Steam Store fallback) / локальный `games.json`;
-- загрузка: `owns_download` — LumaCore/SLSsteam + Steam, fallback DepotDownloaderMod;
-- launch: `steam://rungameid/{appid}`.
-
-## Сборка и зависимости
-
-| Компонент | Как подключается |
-|-----------|------------------|
-| Qt 6.8+ | `find_package(Qt6)` — Core, Gui, Network, Qml, Quick, ShaderTools, QuickPrivate |
-| QmlMaterial | FetchContent → `qml_modules/Qcm/Material` |
-| libtorrent | `cmake/ArachnelLibtorrent.cmake` — FetchContent v2.0.11 + Boost headers |
-| Windows | `cmake/patch-qml-material-win.cmake` — SHARED, без spirv-opt |
-
-Опции CMake:
-
-- `ARACHNEL_FAST_BUILD` — `NO_CACHEGEN` для QML (быстрее dev-сборка)
-- `ARACHNEL_LIBTORRENT_SHARED` — DLL libtorrent на Windows (быстрее инкрементальные линковки)
-
-Скрипты разработки: `run.sh` (Linux), `run.ps1` (Windows — configure, build, windeployqt, run).
-
-## Структура репозитория
-
-```
-src/
-  main.cpp
-  core/                 # ядро (реализовано)
-cmake/
-  ArachnelLibtorrent.cmake
-  patch-qml-material-win.cmake
-qml/
-  Main.qml
-  app/                  # страницы
-  settings/             # настройки (bottom sheet)
-  components/
-  nav/
-  theme/
-plugins/                # ячейки источников (пока только README)
-docs/
-run.sh / run.ps1
-```
-
-Пошаговый план: [ROADMAP.md](ROADMAP.md).
-
-Ключевой принцип: **ядро — тонкий оркестратор**; **плагин — самодостаточная ячейка** со своими зависимостями и пайплайном установки.
-
-## Отличие от Hydra в одном предложении
-
-Hydra оптимизирован под **один** способ наполнить библиотеку; Arachnel оптимизирован под **много способов**, каждый из которых инкапсулирован в плагине источника.
+- Root [`CMakeLists.txt`](../CMakeLists.txt) + [`src/CMakeLists.txt`](../src/CMakeLists.txt) (список исходников и include dirs).
+- Плагины: [`cmake/ArachnelPluginSdk.cmake`](../cmake/ArachnelPluginSdk.cmake).

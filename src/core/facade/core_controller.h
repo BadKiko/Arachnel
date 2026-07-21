@@ -13,7 +13,6 @@
 
 #include <QObject>
 #include <QHash>
-#include <QSet>
 #include <QUrl>
 #include <QVariant>
 #include <QVector>
@@ -21,7 +20,6 @@
 #include <optional>
 
 class QTimer;
-
 class QQmlEngine;
 class QJSEngine;
 
@@ -29,6 +27,9 @@ namespace arachnel::core {
 
 struct GameMetadata;
 
+class CatalogFilterService;
+class CatalogController;
+class CatalogCoverCoordinator;
 class CatalogFeedLoader;
 class CoverImageCache;
 class GameMetadataService;
@@ -36,15 +37,20 @@ class HttpDownloadSession;
 class JobOrchestrator;
 class InstallKindProbeService;
 class InstallAnalyzer;
+class InstallSessionService;
+class LibraryController;
+class LibraryMaintenanceService;
+class GameUpdateService;
+class LaunchController;
 class PluginHost;
 class ProtonManager;
 class RuntimeDependencyService;
 class TorrentSession;
 
+/** QML singleton façade (`Arachnel.Core`). Bodies live in domain TUs. */
 class CoreController : public QObject
 {
     Q_OBJECT
-
     Q_PROPERTY(LibraryModel* library READ library CONSTANT)
     Q_PROPERTY(SourcePluginModel* sources READ sources CONSTANT)
     Q_PROPERTY(CatalogModel* catalog READ catalog CONSTANT)
@@ -79,28 +85,19 @@ class CoreController : public QObject
     Q_PROPERTY(QVariantList availableProtons READ availableProtons NOTIFY availableProtonsChanged)
     Q_PROPERTY(AppUpdater* appUpdater READ appUpdater CONSTANT)
     Q_PROPERTY(PluginCatalogService* pluginCatalog READ pluginCatalog CONSTANT)
-
-    // Catalog filters (applied in applyCatalogFilter; CatalogModel only sorts).
-    Q_PROPERTY(int catalogTypeFilter READ catalogTypeFilter WRITE setCatalogTypeFilter
-                   NOTIFY catalogFiltersChanged)
-    Q_PROPERTY(int catalogSizeFilter READ catalogSizeFilter WRITE setCatalogSizeFilter
-                   NOTIFY catalogFiltersChanged)
-    Q_PROPERTY(int catalogRecencyFilter READ catalogRecencyFilter WRITE setCatalogRecencyFilter
-                   NOTIFY catalogFiltersChanged)
-    Q_PROPERTY(bool catalogHasAddonsFilter READ catalogHasAddonsFilter WRITE setCatalogHasAddonsFilter
-                   NOTIFY catalogFiltersChanged)
-    Q_PROPERTY(QString catalogGenreFilter READ catalogGenreFilter WRITE setCatalogGenreFilter
-                   NOTIFY catalogFiltersChanged)
-    Q_PROPERTY(int catalogPlayModeFilter READ catalogPlayModeFilter WRITE setCatalogPlayModeFilter
-                   NOTIFY catalogFiltersChanged)
+    Q_PROPERTY(int catalogTypeFilter READ catalogTypeFilter WRITE setCatalogTypeFilter NOTIFY catalogFiltersChanged)
+    Q_PROPERTY(int catalogSizeFilter READ catalogSizeFilter WRITE setCatalogSizeFilter NOTIFY catalogFiltersChanged)
+    Q_PROPERTY(int catalogRecencyFilter READ catalogRecencyFilter WRITE setCatalogRecencyFilter NOTIFY catalogFiltersChanged)
+    Q_PROPERTY(bool catalogHasAddonsFilter READ catalogHasAddonsFilter WRITE setCatalogHasAddonsFilter NOTIFY catalogFiltersChanged)
+    Q_PROPERTY(QString catalogGenreFilter READ catalogGenreFilter WRITE setCatalogGenreFilter NOTIFY catalogFiltersChanged)
+    Q_PROPERTY(int catalogPlayModeFilter READ catalogPlayModeFilter WRITE setCatalogPlayModeFilter NOTIFY catalogFiltersChanged)
     Q_PROPERTY(int catalogActiveFilterCount READ catalogActiveFilterCount NOTIFY catalogFiltersChanged)
-    Q_PROPERTY(QStringList availableCatalogGenres READ availableCatalogGenres
-                   NOTIFY availableCatalogGenresChanged)
+    Q_PROPERTY(QStringList availableCatalogGenres READ availableCatalogGenres NOTIFY availableCatalogGenresChanged)
 
 public:
-    static CoreController* create(QQmlEngine* engine, QJSEngine* scriptEngine);
+    static CoreController* create(QQmlEngine*, QJSEngine*);
     static CoreController& instance();
-    static void setCrashReporterMode(bool enabled);
+    static void setCrashReporterMode(bool);
 
     LibraryModel* library() { return &m_library; }
     SourcePluginModel* sources() { return &m_sources; }
@@ -108,20 +105,23 @@ public:
     JobModel* jobs() { return &m_jobs; }
     NotificationModel* notifications() { return &m_notifications; }
     SettingsStore* settings() { return &m_settings; }
+    AppUpdater* appUpdater() { return m_appUpdater; }
+    PluginCatalogService* pluginCatalog() { return m_pluginCatalog; }
+
     QString userNotice() const { return m_userNotice; }
     int userNoticeSerial() const { return m_userNoticeSerial; }
-    bool catalogLoading() const { return m_catalogLoading; }
-    QString catalogStatus() const { return m_catalogStatus; }
-    QString activeCatalogSourceId() const { return m_activeSourceIds.value(0); }
-    QStringList activeCatalogSourceIds() const { return m_activeSourceIds; }
+    bool catalogLoading() const;
+    QString catalogStatus() const;
+    QString activeCatalogSourceId() const;
+    QStringList activeCatalogSourceIds() const;
     int pluginCount() const;
     QString pluginsUserDir() const;
     QString pluginsBundleDir() const;
     QString lastPluginError() const { return m_lastPluginError; }
-    bool gameRunning() const { return !m_runningGameId.isEmpty(); }
-    QString runningGameId() const { return m_runningGameId; }
-    QString runningGameTitle() const { return m_runningGameTitle; }
-    QString runningGameCoverUrl() const { return m_runningGameCoverUrl; }
+    bool gameRunning() const;
+    QString runningGameId() const;
+    QString runningGameTitle() const;
+    QString runningGameCoverUrl() const;
     bool runtimeSetupInProgress() const { return m_runtimeSetupInProgress; }
     QString runtimeSetupGameId() const { return m_runtimeSetupGameId; }
     QString runtimeSetupTitle() const { return m_runtimeSetupTitle; }
@@ -134,117 +134,23 @@ public:
     bool protonReady() const;
     QString protonVersion() const;
     QVariantList availableProtons() const;
-    AppUpdater* appUpdater() { return m_appUpdater; }
-    PluginCatalogService* pluginCatalog() { return m_pluginCatalog; }
 
-    int catalogTypeFilter() const { return m_catalogTypeFilter; }
-    void setCatalogTypeFilter(int filter);
-    int catalogSizeFilter() const { return m_catalogSizeFilter; }
-    void setCatalogSizeFilter(int filter);
-    int catalogRecencyFilter() const { return m_catalogRecencyFilter; }
-    void setCatalogRecencyFilter(int filter);
-    bool catalogHasAddonsFilter() const { return m_catalogHasAddonsFilter; }
-    void setCatalogHasAddonsFilter(bool enabled);
-    QString catalogGenreFilter() const { return m_catalogGenreFilter; }
-    void setCatalogGenreFilter(const QString& genre);
-    int catalogPlayModeFilter() const { return m_catalogPlayModeFilter; }
-    void setCatalogPlayModeFilter(int filter);
+    int catalogTypeFilter() const;
+    void setCatalogTypeFilter(int);
+    int catalogSizeFilter() const;
+    void setCatalogSizeFilter(int);
+    int catalogRecencyFilter() const;
+    void setCatalogRecencyFilter(int);
+    bool catalogHasAddonsFilter() const;
+    void setCatalogHasAddonsFilter(bool);
+    QString catalogGenreFilter() const;
+    void setCatalogGenreFilter(const QString&);
+    int catalogPlayModeFilter() const;
+    void setCatalogPlayModeFilter(int);
     int catalogActiveFilterCount() const;
     QStringList availableCatalogGenres() const;
-    Q_INVOKABLE void clearCatalogFilters();
-    Q_INVOKABLE void setCatalogFilters(int typeFilter, int sizeFilter, int recencyFilter,
-                                       bool hasAddonsFilter, const QString& genreFilter,
-                                       int playModeFilter = 0);
-    /** One model update: quiet sort + filters + applyCatalogFilter. */
-    Q_INVOKABLE void applyCatalogPresentation(int sortMode, int typeFilter, int sizeFilter,
-                                              int recencyFilter, bool hasAddonsFilter,
-                                              const QString& genreFilter, int playModeFilter = 0);
 
-    Q_INVOKABLE QVariantList pluginEntries() const;
-    Q_INVOKABLE void browsePluginArach();
-    Q_INVOKABLE bool installPluginArach(const QUrl& fileUrl);
-    Q_INVOKABLE bool uninstallPlugin(const QString& pluginId);
-    Q_INVOKABLE void refreshOfficialPlugins();
-    Q_INVOKABLE void installOfficialPlugin(const QString& pluginId);
-    Q_INVOKABLE void openPluginsFolder();
-    Q_INVOKABLE void rescanPlugins();
-
-    Q_INVOKABLE void launchGame(const QString& gameId);
-    Q_INVOKABLE void stopRunningGame();
-    Q_INVOKABLE void searchCatalog(const QString& sourceId, const QString& query);
-    Q_INVOKABLE void installCatalogEntry(const QString& entryId, const QString& libraryId = {},
-                                         const QVariantList& addonIds = {});
-    Q_INVOKABLE void installCatalogAddon(const QString& entryId, const QString& addonId);
-    Q_INVOKABLE void installDownloadedCatalogAddon(const QString& entryId, const QString& addonId);
-    Q_INVOKABLE bool isCatalogAddonInstalled(const QString& entryId, const QString& addonId) const;
-    Q_INVOKABLE void updateCatalogEntry(const QString& entryId);
-    Q_INVOKABLE void setGameAutoUpdate(const QString& entryId, bool enabled);
-    Q_INVOKABLE void setGameLaunchArgs(const QString& entryId, const QString& args);
-    Q_INVOKABLE void setGameExecutableOverride(const QString& entryId, const QString& path);
-    Q_INVOKABLE void setGameProtonId(const QString& entryId, const QString& protonId);
-    Q_INVOKABLE void refreshAvailableProtons();
-    Q_INVOKABLE void moveProtonInPriority(const QString& protonId, int delta);
-    Q_INVOKABLE QString protonNameForId(const QString& protonId) const;
-    Q_INVOKABLE void downloadProtonGe();
-    Q_INVOKABLE void refreshProtonLatestRelease();
-    Q_INVOKABLE bool needsProtonOnPlatform() const;
-    Q_INVOKABLE bool ensureProtonReady();
-    Q_INVOKABLE bool needsInstallLocationChoice() const;
-    Q_INVOKABLE QString browseGameExecutable(const QString& currentPath = {});
-    Q_INVOKABLE QString browseStorageFolder();
-    Q_INVOKABLE QVariantMap gameRuntimeContainerInfo(const QString& gameId) const;
-    Q_INVOKABLE void openGameRuntimeContainer(const QString& gameId);
-    Q_INVOKABLE void removeGame(const QString& gameId, bool deleteFiles = true);
-    Q_INVOKABLE void removeEntry(const QString& entryId, bool deleteFiles = true);
-    Q_INVOKABLE void moveGame(const QString& gameId, const QString& targetLibraryId);
-    Q_INVOKABLE QVariantList gamesOnLibrary(const QString& libraryId) const;
-    Q_INVOKABLE bool isEntryPlayable(const QString& entryId) const;
-    Q_INVOKABLE bool isEntryDownloadComplete(const QString& entryId) const;
-    Q_INVOKABLE bool entryDownloadFilesExist(const QString& entryId) const;
-    Q_INVOKABLE QVariantMap entryDetails(const QString& entryId) const;
-    Q_INVOKABLE void checkUpdates();
-    Q_INVOKABLE void cancelJob(const QString& jobId);
-    Q_INVOKABLE void toggleJobPause(const QString& jobId);
-    Q_INVOKABLE void removeJob(const QString& jobId);
-    Q_INVOKABLE void retryJob(const QString& jobId);
-    Q_INVOKABLE void retryInstall(const QString& jobId);
-    Q_INVOKABLE bool canRetryJobInstall(const QString& jobId) const;
-    Q_INVOKABLE bool canManualInstallJob(const QString& jobId) const;
-    Q_INVOKABLE void openJobDownloadFolder(const QString& jobId);
-    Q_INVOKABLE void confirmManualInstall(const QString& jobId);
-    Q_INVOKABLE QString browseInstallFolder(const QString& startPath = {});
-    Q_INVOKABLE void clearFinishedJobs();
-    Q_INVOKABLE void markNotificationsRead();
-    Q_INVOKABLE void clearNotifications();
-    Q_INVOKABLE void refreshCatalog(const QString& sourceId);
-    Q_INVOKABLE void setActiveCatalogSource(const QString& sourceId);
-    Q_INVOKABLE bool isCatalogSourceSelected(const QString& sourceId) const;
-    Q_INVOKABLE void toggleCatalogSource(const QString& sourceId);
-    Q_INVOKABLE void applyCatalogSearch(const QString& query);
-    Q_INVOKABLE void refreshSelectedCatalogs();
-    Q_INVOKABLE void pruneDisabledCatalogSources();
-    Q_INVOKABLE void selectCatalogSource(const QString& sourceId, const QString& query = {});
-    Q_INVOKABLE void clearCatalogView();
-    Q_INVOKABLE int catalogEntryCount(const QString& sourceId) const;
-    Q_INVOKABLE void prefetchCatalogCounts();
-    Q_INVOKABLE void validateHydraCatalogUrl(const QString& requestId, const QString& url);
-    Q_INVOKABLE void invalidateSourceCatalog(const QString& sourceId);
-    Q_INVOKABLE void openExternalUrl(const QString& url);
-    Q_INVOKABLE QString applicationDataPath() const;
-    Q_INVOKABLE bool clearApplicationData();
-    Q_INVOKABLE bool hasPendingCrashReport() const;
-    Q_INVOKABLE QString pendingCrashSummary() const;
-    Q_INVOKABLE QString pendingCrashDetails() const;
-    Q_INVOKABLE QString pendingCrashReportPath() const;
-    Q_INVOKABLE void dismissPendingCrashReport();
-    Q_INVOKABLE void openPendingCrashIssue();
-    Q_INVOKABLE void revealPendingCrashReport();
-    Q_INVOKABLE void copyPendingCrashReport();
-    Q_INVOKABLE void requestCatalogCover(const QString& entryId);
-    Q_INVOKABLE void cancelCatalogCover(const QString& entryId);
-    Q_INVOKABLE void invalidateCatalogCover(const QString& entryId);
-    Q_INVOKABLE void enrichCatalogEntry(const QString& entryId);
-    void prepareShutdown();
+#include "core_controller_api.h"
 
 signals:
     void userNoticeChanged();
@@ -253,8 +159,7 @@ signals:
     void activeCatalogSourceIdChanged();
     void activeCatalogSourceIdsChanged();
     void catalogCountsChanged();
-    void hydraCatalogUrlValidated(const QString& requestId, bool ok, int count,
-                                  const QString& error);
+    void hydraCatalogUrlValidated(const QString&, bool, int, const QString&);
     void pluginsChanged();
     void lastPluginErrorChanged();
     void runningGameChanged();
@@ -263,182 +168,12 @@ signals:
     void protonLatestReleaseChanged();
     void protonStateChanged();
     void availableProtonsChanged();
-    void entryMetadataChanged(const QString& entryId);
+    void entryMetadataChanged(const QString&);
     void catalogFiltersChanged();
     void availableCatalogGenresChanged();
 
 private:
-    explicit CoreController(QObject* parent = nullptr);
-
-    void initializeServices();
-    QString sourceWebsiteFor(const QString& sourceId) const;
-    void applyMetadataToEntry(CatalogEntry& entry, const GameMetadata& metadata) const;
-    void syncSourcesFromPlugins();
-    void persistSourcesToSettings();
-    void applyPluginCatalog(const QString& sourceId, QVector<CatalogEntry> entries);
-    void onCatalogReady();
-    void runAutoInstallUpdates();
-    void syncLibraryFromStore();
-    void syncProtonCatalog();
-    void applyCatalogFilter(const QString& query);
-    void notifyCatalogFiltersChanged();
-    bool entryMatchesCatalogFilters(const CatalogEntry& entry) const;
-    void rebuildCatalogIdIndex();
-    void rebuildAvailableCatalogGenres();
-    void scheduleCatalogRefilter();
-    void warmActiveCatalogCovers();
-    void commitCatalogLoad(const QString& sourceId, QVector<CatalogEntry> entries);
-    void storeCatalogForSource(const QString& sourceId, QVector<CatalogEntry> entries);
-    void rebuildMergedCatalog();
-    void requestCatalogLoad(const QString& sourceId);
-    void processCatalogLoadQueue();
-    void loadCatalogSourceNow(const QString& sourceId);
-    void updateCatalogLoadingState();
-    void syncActiveSourceSignals();
-    static void normalizeCatalogSourceIds(QVector<CatalogEntry>& entries, const QString& sourceId);
-    void startNextCatalogPrefetch();
-    void prefetchPluginCatalogCount(const QString& sourceId);
-    void startPluginInstall(const CatalogEntry& entry, const QString& sourceId,
-                            const QString& savePath, JobKind kind,
-                            const QString& libraryId = {}, const QString& jobId = {});
-    void startPluginAddonInstall(const CatalogEntry& parent, const CatalogComponent& addon,
-                                 const QString& sourceId, const QString& artifactPath,
-                                 const QString& progressJobId = {},
-                                 std::function<void(bool success)> done = {});
-    void beginInstallSession(const QString& entryId, const QString& gameJobId,
-                             const QString& sourceId, const QStringList& addonIds);
-    void advanceInstallSession(const QString& entryId);
-    void syncInstallSessionPhase(const QString& entryId);
-    void markCatalogAddonInstalled(const QString& parentEntryId, const QString& addonId,
-                                   const QString& uploadDate);
-    void commitInstalledCatalogGame(const CatalogEntry& entryHint, const QString& sourceId,
-                                    const QString& savePath, const QString& libraryId,
-                                    const QString& installPath, InstallKind installKind);
-    QString resolveAddonArtifactPath(const QString& parentEntryId, const QString& addonId) const;
-    std::optional<CatalogEntry> resolveCatalogEntry(const QString& entryId,
-                                                    const QString& sourceId,
-                                                    const JobEntry* jobHint = nullptr) const;
-    bool gameNeedsInstall(const QString& entryId) const;
-    void retryPendingInstalls();
-    void pruneBrokenLibraryEntries();
-    void migratePollutedEntryIds();
-    void pruneAddonLibraryEntries();
-    void restoreLibraryPlaceholders();
-    void ensureLibraryPlaceholder(const CatalogEntry& entry, const QString& libraryId,
-                                  const QStringList& selectedAddonIds = {});
-    void reconcileJobInstallState();
-    void removeJobsForEntry(const QString& entryId);
-    void pruneUnselectedAddonJobs(const QString& parentEntryId, const QStringList& selectedAddonIds);
-    void pruneCancelledAddonJobs();
-    void markGameRunning(const LibraryGame& game, qint64 processId);
-    void touchLastPlayed(const QString& gameId);
-    void clearRunningGame();
-    void pollRunningGame();
-    const JobEntry* findLatestJobForEntry(const QString& entryId) const;
-    bool entryHasActiveJob(const QString& entryId) const;
-    void showNotice(const QString& message, bool addToHistory = true);
-    void setCatalogLoading(bool loading);
-    void setCatalogStatus(const QString& status);
-    bool isRemoteUploadDateNewer(const QString& remote, const QString& local) const;
-    bool gameHasUpdate(const LibraryGame& game, const CatalogEntry& remote) const;
-    int recalculateLibraryUpdates(bool notify);
-    const CatalogEntry* findCatalogEntry(const QString& entryId) const;
-    std::optional<CatalogEntry> resolveCatalogEntry(const QString& entryId) const;
-    const CatalogComponent* findCatalogAddon(const CatalogEntry& entry,
-                                             const QString& addonId) const;
-    void syncEntryToCatalogModel(const QString& entryId);
-    InstallKind detectInstallKindForEntry(const QString& sourceId,
-                                          const QString& downloadPath) const;
-    bool hasInstallHandlerForPath(const QString& sourceId, const QString& downloadPath) const;
-    void offerManualInstallForJob(const JobEntry& job);
-    void syncCatalogInstallKind(const QString& entryId, InstallKind kind);
-    void syncInstallKindProbeSuspension();
-    void applyCachedMetadata(CatalogEntry& entry) const;
-    void enrichLibraryGameCover(LibraryGame& game) const;
-    bool ensureRuntimeDependenciesForGame(const LibraryGame& game);
-    void setRuntimeSetupActive(const LibraryGame& game, const QString& status);
-    void clearRuntimeSetup();
-    void launchGameAfterRuntimeSetup(const QString& gameId);
-    void warmCatalogCovers(const QString& sourceId, const QString& query, int limit);
-    void applyCoverToEntry(const QString& entryId, const QString& coverUrl);
-    void ensureDiskCover(const QString& entryId, const QString& remoteUrl);
-    static bool isRemoteLibraryCover(const QString& url);
-
-    LibraryModel m_library;
-    SourcePluginModel m_sources;
-    CatalogModel m_catalog;
-    JobModel m_jobs;
-    NotificationModel m_notifications;
-    SettingsStore m_settings;
-    LibraryStore m_libraryStore;
-    JobStore m_jobStore;
-    CatalogFeedLoader* m_catalogLoader = nullptr;
-    CatalogFeedLoader* m_catalogProbeLoader = nullptr;
-    CatalogFeedLoader* m_catalogValidateLoader = nullptr;
-    GameMetadataService* m_metadataService = nullptr;
-    CoverImageCache* m_coverCache = nullptr;
-    TorrentSession* m_torrentSession = nullptr;
-    HttpDownloadSession* m_httpSession = nullptr;
-    JobOrchestrator* m_jobOrchestrator = nullptr;
-    PluginHost* m_pluginHost = nullptr;
-    InstallAnalyzer* m_installAnalyzer = nullptr;
-    InstallKindProbeService* m_installKindProbe = nullptr;
-    RuntimeDependencyService* m_runtimeDependencyService = nullptr;
-    ProtonManager* m_protonManager = nullptr;
-    AppUpdater* m_appUpdater = nullptr;
-    PluginCatalogService* m_pluginCatalog = nullptr;
-
-    QVector<CatalogEntry> m_catalogCache;
-    QHash<QString, int> m_catalogIdToCacheIndex;
-    QHash<QString, QVector<CatalogEntry>> m_catalogBySource;
-    QHash<QString, int> m_catalogCounts;
-    QStringList m_catalogPrefetchQueue;
-    QStringList m_activeSourceIds;
-    QStringList m_catalogLoadQueue;
-    QSet<QString> m_loadingSourceIds;
-    bool m_catalogHttpLoadActive = false;
-    QHash<QString, QSet<QString>> m_coverWaiters;
-    QString m_activeQuery;
-    QString m_filterNeedle;
-    qint64 m_filterCutoffDay = 0;
-    QStringList m_availableCatalogGenres;
-    QTimer* m_catalogRefilterTimer = nullptr;
-    // Type: -1 all, 0 portable, 1 installer, 2 online fix. Size/recency: 0 = any.
-    int m_catalogTypeFilter = -1;
-    int m_catalogSizeFilter = 0;
-    int m_catalogRecencyFilter = 0;
-    bool m_catalogHasAddonsFilter = false;
-    QString m_catalogGenreFilter;
-    int m_catalogPlayModeFilter = 0; // 0=any, 1=single, 2=co-op, 3=multiplayer
-    QString m_userNotice;
-    int m_userNoticeSerial = 0;
-    QString m_catalogStatus;
-    QString m_lastPluginError;
-    QString m_runningGameId;
-    QString m_runningGameTitle;
-    QString m_runningGameCoverUrl;
-    qint64 m_runningProcessId = 0;
-    bool m_runtimeSetupInProgress = false;
-    QString m_runtimeSetupGameId;
-    QString m_runtimeSetupTitle;
-    QString m_runtimeSetupCoverUrl;
-    QString m_runtimeSetupStatus;
-    QTimer* m_runningGameTimer = nullptr;
-    bool m_catalogLoading = false;
-    bool m_applicationDataCleared = false;
-    QSet<QString> m_installingEntries;
-    QSet<QString> m_installingAddons;
-    QHash<QString, QStringList> m_installSelectedAddons;
-
-    struct GameInstallSession {
-        QString gameJobId;
-        QString sourceId;
-        QStringList selectedAddonIds;
-        int installStep = 0;
-        int installTotal = 1;
-        bool gameInstallDone = false;
-    };
-    QHash<QString, GameInstallSession> m_installSessions;
+#include "core_controller_p.h"
 };
 
 void registerCoreTypes();

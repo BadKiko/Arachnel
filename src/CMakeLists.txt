@@ -1,0 +1,102 @@
+# Arachnel core sources — domain layout under src/core/<domain>/
+# Included from the root CMakeLists.txt.
+
+set(ARACHNEL_APP_SOURCES
+    src/app/main.cpp
+    src/app/crash_log.cpp
+    src/app/crash_log_report.cpp
+
+    src/core/install/install_kind.cpp
+    src/core/jobs/job_display.cpp
+    src/core/jobs/job_kind.cpp
+    src/core/catalog/catalog_types.cpp
+    src/core/library/library_model.cpp
+    src/core/plugins/source_plugin_model.cpp
+    src/core/catalog/catalog_model.cpp
+    src/core/settings/notification_model.cpp
+    src/core/jobs/job_model.cpp
+    src/core/jobs/job_status.cpp
+    src/core/jobs/job_store.cpp
+    src/core/settings/settings_store.cpp
+    src/core/settings/settings_store_persistence.cpp
+    src/core/library/storage_library.cpp
+    src/core/library/storage_library_model.cpp
+    src/core/util/file_utils.cpp
+    src/core/library/library_store.cpp
+    src/core/library/library_controller.cpp
+    src/core/library/library_maintenance_service.cpp
+    src/core/library/game_update_service.cpp
+    src/core/catalog/catalog_feed_loader.cpp
+    src/core/catalog/catalog_parser.cpp
+    src/core/catalog/catalog_controller.cpp
+    src/core/catalog/catalog_cover_coordinator.cpp
+    src/core/catalog/catalog_filter_service.cpp
+    src/core/catalog/game_metadata_service.cpp
+    src/core/catalog/game_metadata_service_network.cpp
+    src/core/catalog/cover_image_cache.cpp
+    src/core/torrent/torrent_session.cpp
+    src/core/torrent/torrent_session_poll.cpp
+    src/core/torrent/torrent_settings.cpp
+    src/core/jobs/http_download_session.cpp
+    src/core/torrent/torrent_metadata_fetcher.cpp
+    src/core/install/install_analysis.cpp
+    src/core/install/install_heuristics.cpp
+    src/core/install/install_analyzer.cpp
+    src/core/install/install_kind_probe_service.cpp
+    src/core/install/install_session_service.cpp
+    src/core/install/install_session_service_install.cpp
+    src/core/jobs/job_orchestrator.cpp
+    src/core/jobs/job_orchestrator_progress.cpp
+    src/core/jobs/job_orchestrator_completion.cpp
+    src/core/plugins/plugin_api.cpp
+    src/core/plugins/plugin_host.cpp
+    src/core/plugins/plugin_host_async.cpp
+    src/core/plugins/plugin_host_packages.cpp
+    src/core/plugins/plugin_catalog_service.cpp
+    src/core/runtime/runtime_manifest_probe.cpp
+    src/core/runtime/runtime_depot_catalog.cpp
+    src/core/runtime/runtime_container_manager.cpp
+    src/core/runtime/runtime_dependency_service.cpp
+    src/core/runtime/runtime_dependency_service_install.cpp
+    src/core/launch/process_launcher.cpp
+    src/core/launch/launch_resolver.cpp
+    src/core/runtime/proton_manager.cpp
+    src/core/runtime/proton_manager_download.cpp
+    src/core/runtime/windows_runner.cpp
+    src/core/launch/process_tracker.cpp
+    src/core/launch/launch_controller.cpp
+    src/core/settings/app_updater.cpp
+    src/core/facade/core_controller.cpp
+    src/core/catalog/catalog_facade_1.cpp
+    src/core/catalog/catalog_facade_2.cpp
+    src/core/catalog/catalog_facade_3.cpp
+    src/core/facade/crash_facade.cpp
+    src/core/jobs/job_facade_1.cpp
+    src/core/jobs/job_facade_2.cpp
+    src/core/launch/launch_facade.cpp
+    src/core/library/library_facade_1.cpp
+    src/core/library/library_facade_2.cpp
+    src/core/plugins/plugin_facade.cpp
+    src/core/runtime/proton_facade.cpp
+    src/core/facade/core_wiring_services.cpp
+    src/core/i18n/translation_service.cpp
+)
+
+# Flat includes ("catalog_model.h") keep working across domains.
+set(ARACHNEL_CORE_INCLUDE_DIRS
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/app
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/core
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/core/facade
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/core/catalog
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/core/library
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/core/jobs
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/core/install
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/core/plugins
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/core/launch
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/core/runtime
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/core/torrent
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/core/settings
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/core/i18n
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/core/util
+)

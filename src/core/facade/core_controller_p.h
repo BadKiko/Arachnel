@@ -1,0 +1,116 @@
+// Private CoreController declarations and state.
+// Included only inside CoreController's private section.
+
+    explicit CoreController(QObject* parent = nullptr);
+    void initializeServices();
+
+    QString sourceWebsiteFor(const QString&) const;
+    void applyMetadataToEntry(CatalogEntry&, const GameMetadata&) const;
+    void syncSourcesFromPlugins();
+    void persistSourcesToSettings();
+    void applyPluginCatalog(const QString&, QVector<CatalogEntry>);
+    void onCatalogReady();
+    void runAutoInstallUpdates();
+    void syncLibraryFromStore();
+    void syncProtonCatalog();
+    void applyCatalogFilter(const QString&);
+    void rebuildCatalogIdIndex();
+    void rebuildAvailableCatalogGenres();
+    void scheduleCatalogRefilter();
+    void warmActiveCatalogCovers();
+
+    void startPluginInstall(const CatalogEntry&, const QString&, const QString&, JobKind,
+                            const QString& = {}, const QString& = {});
+    void startPluginAddonInstall(const CatalogEntry&, const CatalogComponent&, const QString&,
+                                 const QString&, const QString& = {},
+                                 std::function<void(bool)> = {});
+    void beginInstallSession(const QString&, const QString&, const QString&, const QStringList&);
+    void advanceInstallSession(const QString&);
+    void markCatalogAddonInstalled(const QString&, const QString&, const QString&);
+    void commitInstalledCatalogGame(const CatalogEntry&, const QString&, const QString&,
+                                    const QString&, const QString&, InstallKind);
+    QString resolveAddonArtifactPath(const QString&, const QString&) const;
+    std::optional<CatalogEntry> resolveCatalogEntry(const QString&, const QString&,
+                                                    const JobEntry* = nullptr) const;
+    bool gameNeedsInstall(const QString&) const;
+    void retryPendingInstalls();
+    void pruneBrokenLibraryEntries();
+    void migratePollutedEntryIds();
+    void pruneAddonLibraryEntries();
+    void restoreLibraryPlaceholders();
+    void ensureLibraryPlaceholder(const CatalogEntry&, const QString&, const QStringList& = {});
+    void reconcileJobInstallState();
+    void removeJobsForEntry(const QString&);
+    void pruneUnselectedAddonJobs(const QString&, const QStringList&);
+    void pruneCancelledAddonJobs();
+    void markGameRunning(const LibraryGame&, qint64);
+    void touchLastPlayed(const QString&);
+    void clearRunningGame();
+    void pollRunningGame();
+    const JobEntry* findLatestJobForEntry(const QString&) const;
+    bool entryHasActiveJob(const QString&) const;
+    void showNotice(const QString&, bool = true);
+    bool isRemoteUploadDateNewer(const QString&, const QString&) const;
+    bool gameHasUpdate(const LibraryGame&, const CatalogEntry&) const;
+    int recalculateLibraryUpdates(bool);
+    const CatalogEntry* findCatalogEntry(const QString&) const;
+    std::optional<CatalogEntry> resolveCatalogEntry(const QString&) const;
+    const CatalogComponent* findCatalogAddon(const CatalogEntry&, const QString&) const;
+    void syncEntryToCatalogModel(const QString&);
+    InstallKind detectInstallKindForEntry(const QString&, const QString&) const;
+    bool hasInstallHandlerForPath(const QString&, const QString&) const;
+    void offerManualInstallForJob(const JobEntry&);
+    void syncCatalogInstallKind(const QString&, InstallKind);
+    void syncInstallKindProbeSuspension();
+    void applyCachedMetadata(CatalogEntry&) const;
+    void enrichLibraryGameCover(LibraryGame&) const;
+    bool ensureRuntimeDependenciesForGame(const LibraryGame&);
+    void setRuntimeSetupActive(const LibraryGame&, const QString&);
+    void clearRuntimeSetup();
+    void launchGameAfterRuntimeSetup(const QString&);
+
+    LibraryModel m_library;
+    SourcePluginModel m_sources;
+    CatalogModel m_catalog;
+    JobModel m_jobs;
+    NotificationModel m_notifications;
+    SettingsStore m_settings;
+    LibraryStore m_libraryStore;
+    JobStore m_jobStore;
+    CatalogFeedLoader* m_catalogValidateLoader = nullptr;
+    GameMetadataService* m_metadataService = nullptr;
+    CoverImageCache* m_coverCache = nullptr;
+    CatalogCoverCoordinator* m_catalogCovers = nullptr;
+    CatalogController* m_catalogController = nullptr;
+    TorrentSession* m_torrentSession = nullptr;
+    HttpDownloadSession* m_httpSession = nullptr;
+    JobOrchestrator* m_jobOrchestrator = nullptr;
+    PluginHost* m_pluginHost = nullptr;
+    InstallAnalyzer* m_installAnalyzer = nullptr;
+    InstallKindProbeService* m_installKindProbe = nullptr;
+    InstallSessionService* m_installSessionService = nullptr;
+    LibraryController* m_libraryController = nullptr;
+    LibraryMaintenanceService* m_libraryMaintenance = nullptr;
+    GameUpdateService* m_gameUpdates = nullptr;
+    LaunchController* m_launchController = nullptr;
+    RuntimeDependencyService* m_runtimeDependencyService = nullptr;
+    ProtonManager* m_protonManager = nullptr;
+    AppUpdater* m_appUpdater = nullptr;
+    PluginCatalogService* m_pluginCatalog = nullptr;
+    QVector<CatalogEntry> m_catalogCache;
+    QHash<QString, int> m_catalogIdToCacheIndex;
+    CatalogFilterService* m_catalogFilters = nullptr;
+    QString m_userNotice;
+    int m_userNoticeSerial = 0;
+    QString m_lastPluginError;
+    QString m_runningGameId;
+    QString m_runningGameTitle;
+    QString m_runningGameCoverUrl;
+    qint64 m_runningProcessId = 0;
+    bool m_runtimeSetupInProgress = false;
+    QString m_runtimeSetupGameId;
+    QString m_runtimeSetupTitle;
+    QString m_runtimeSetupCoverUrl;
+    QString m_runtimeSetupStatus;
+    QTimer* m_runningGameTimer = nullptr;
+    bool m_applicationDataCleared = false;
