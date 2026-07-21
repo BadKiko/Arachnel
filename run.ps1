@@ -15,15 +15,140 @@ function Initialize-DevPath {
     $env:Path = "$machinePath;$userPath"
 }
 
+function Add-QtInstallRoot {
+    param(
+        [System.Collections.Generic.List[string]]$Roots,
+        [string]$Path
+    )
+    if (-not $Path -or -not (Test-Path -LiteralPath $Path)) { return }
+    $resolved = (Resolve-Path -LiteralPath $Path).Path
+    # Kit path …/6.x.y/mingw_64 → install root
+    if (Test-Path -LiteralPath (Join-Path $resolved "lib\cmake\Qt6\Qt6Config.cmake")) {
+        $resolved = Split-Path -Parent (Split-Path -Parent $resolved)
+    }
+    if (-not $Roots.Contains($resolved)) {
+        [void]$Roots.Add($resolved)
+    }
+}
+
+function Get-QtInstallRoots {
+    $roots = [System.Collections.Generic.List[string]]::new()
+    Add-QtInstallRoot $roots $env:QT_INSTALL_DIR
+    Add-QtInstallRoot $roots $env:QTDIR
+    if ($env:CMAKE_PREFIX_PATH) {
+        $p = ($env:CMAKE_PREFIX_PATH -split ';' | Select-Object -First 1)
+        Add-QtInstallRoot $roots $p
+    }
+
+    foreach ($drive in @([IO.DriveInfo]::GetDrives() | Where-Object { $_.DriveType -eq 'Fixed' } | ForEach-Object { $_.Name.TrimEnd('\') })) {
+        foreach ($name in @("Qt", "Qt6")) {
+            $p = Join-Path $drive $name
+            if ((Test-Path -LiteralPath $p) -and -not $roots.Contains($p)) {
+                [void]$roots.Add($p)
+            }
+        }
+    }
+
+    foreach ($p in @(
+            (Join-Path ${env:ProgramFiles} "Qt"),
+            $(if (${env:ProgramFiles(x86)}) { Join-Path ${env:ProgramFiles(x86)} "Qt" }),
+            (Join-Path $env:LOCALAPPDATA "Qt"),
+            (Join-Path $env:USERPROFILE "Qt")
+        )) {
+        if ($p -and (Test-Path -LiteralPath $p) -and -not $roots.Contains($p)) {
+            [void]$roots.Add($p)
+        }
+    }
+    return @($roots)
+}
+
+function Get-QtToolsRoot {
+    param([string]$KitPrefix)
+    if (-not $KitPrefix) { return $null }
+    # <root>/<version>/<kit> → <root>/Tools
+    $versionRoot = Split-Path -Parent $KitPrefix
+    $installRoot = Split-Path -Parent $versionRoot
+    foreach ($tools in @(
+            (Join-Path $installRoot "Tools"),
+            (Join-Path $versionRoot "Tools")
+        )) {
+        if (Test-Path -LiteralPath $tools) { return $tools }
+    }
+    foreach ($root in (Get-QtInstallRoots)) {
+        $tools = Join-Path $root "Tools"
+        if (Test-Path -LiteralPath $tools) { return $tools }
+    }
+    return $null
+}
+
+function Find-MingwBinDir {
+    param([string]$KitPrefix)
+
+    $tools = Get-QtToolsRoot $KitPrefix
+    if ($tools) {
+        $mingwDirs = Get-ChildItem -LiteralPath $tools -Directory -ErrorAction SilentlyContinue |
+            Where-Object { $_.Name -match '^mingw' } |
+            Sort-Object Name -Descending
+        foreach ($dir in $mingwDirs) {
+            $bin = Join-Path $dir.FullName "bin"
+            if (Test-Path -LiteralPath (Join-Path $bin "g++.exe")) {
+                return $bin
+            }
+        }
+    }
+
+    $fromPath = Get-Command gcc.exe -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source
+    if ($fromPath) {
+        return (Split-Path -Parent $fromPath)
+    }
+    return $null
+}
+
+function Find-NinjaDir {
+    param([string]$KitPrefix)
+
+    $tools = Get-QtToolsRoot $KitPrefix
+    if ($tools) {
+        foreach ($name in @("Ninja", "Ninja_64")) {
+            $bin = Join-Path $tools $name
+            if (Test-Path -LiteralPath (Join-Path $bin "ninja.exe")) { return $bin }
+            if (Test-Path -LiteralPath (Join-Path $bin "bin\ninja.exe")) { return (Join-Path $bin "bin") }
+        }
+    }
+
+    $fromPath = Get-Command ninja.exe -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source
+    if ($fromPath) {
+        return (Split-Path -Parent $fromPath)
+    }
+    return $null
+}
+
 function Resolve-Cmake {
     Initialize-DevPath
-    $candidates = @(
-        (Get-Command cmake -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source),
-        "D:\Qt\Tools\CMake_64\bin\cmake.exe",
-        "C:\Program Files\CMake\bin\cmake.exe"
-    ) | Where-Object { $_ -and (Test-Path -LiteralPath $_) }
-    if ($candidates) { return $candidates[0] }
-    throw "cmake not found. Install CMake or Qt Tools (CMake_64)."
+    $candidates = [System.Collections.Generic.List[string]]::new()
+    $fromPath = Get-Command cmake -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source
+    if ($fromPath) { [void]$candidates.Add($fromPath) }
+
+    foreach ($root in (Get-QtInstallRoots)) {
+        $tools = Join-Path $root "Tools"
+        if (-not (Test-Path -LiteralPath $tools)) { continue }
+        Get-ChildItem -LiteralPath $tools -Directory -ErrorAction SilentlyContinue |
+            Where-Object { $_.Name -match '^CMake' } |
+            ForEach-Object {
+                $exe = Join-Path $_.FullName "bin\cmake.exe"
+                if (Test-Path -LiteralPath $exe) { [void]$candidates.Add($exe) }
+            }
+    }
+
+    foreach ($pf in @(${env:ProgramFiles}, ${env:ProgramFiles(x86)})) {
+        if (-not $pf) { continue }
+        $exe = Join-Path $pf "CMake\bin\cmake.exe"
+        if (Test-Path -LiteralPath $exe) { [void]$candidates.Add($exe) }
+    }
+
+    $unique = $candidates | Where-Object { $_ -and (Test-Path -LiteralPath $_) } | Select-Object -Unique
+    if ($unique) { return @($unique)[0] }
+    throw "cmake not found. Install CMake, or set PATH / install Qt Online Installer Tools → CMake."
 }
 
 function Get-QtKitKind {
@@ -34,23 +159,34 @@ function Get-QtKitKind {
 }
 
 function Find-QtKit {
-    if ($env:CMAKE_PREFIX_PATH) {
-        return @{ Prefix = $env:CMAKE_PREFIX_PATH; Kind = (Get-QtKitKind $env:CMAKE_PREFIX_PATH) }
+    foreach ($raw in @($env:CMAKE_PREFIX_PATH, $env:QTDIR)) {
+        if (-not $raw) { continue }
+        $prefix = ($raw -split ';' | Select-Object -First 1)
+        if (-not $prefix) { continue }
+        $qt6Config = Join-Path $prefix "lib\cmake\Qt6\Qt6Config.cmake"
+        if (Test-Path -LiteralPath $qt6Config) {
+            return @{ Prefix = (Resolve-Path -LiteralPath $prefix).Path; Kind = (Get-QtKitKind $prefix) }
+        }
     }
 
-    foreach ($root in @("D:\Qt", "C:\Qt")) {
-        if (-not (Test-Path -LiteralPath $root)) { continue }
+    $kitPreference = @("mingw_64", "msvc2022_64", "msvc2019_64")
+    if ($env:ARACHNEL_QT_KIT) {
+        $kitPreference = @($env:ARACHNEL_QT_KIT) + $kitPreference
+    }
 
+    foreach ($root in (Get-QtInstallRoots)) {
         $versions = Get-ChildItem -LiteralPath $root -Directory -ErrorAction SilentlyContinue |
             Where-Object { $_.Name -match "^\d+\.\d+" } |
-            Sort-Object { [version]$_.Name } -Descending
+            Sort-Object {
+                try { [version]$_.Name } catch { [version]"0.0" }
+            } -Descending
 
         foreach ($versionDir in $versions) {
-            foreach ($kitName in @("mingw_64", "msvc2022_64")) {
+            foreach ($kitName in ($kitPreference | Select-Object -Unique)) {
                 $kit = Join-Path $versionDir.FullName $kitName
                 $qt6Config = Join-Path $kit "lib\cmake\Qt6\Qt6Config.cmake"
                 if (Test-Path -LiteralPath $qt6Config) {
-                    return @{ Prefix = $kit; Kind = $kitName }
+                    return @{ Prefix = $kit; Kind = (Get-QtKitKind $kit) }
                 }
             }
         }
@@ -62,7 +198,11 @@ function Find-QtKit {
 function Get-BuildArgs {
     $qt = Find-QtKit
     if (-not $qt) {
-        throw "Qt kit not found. Set CMAKE_PREFIX_PATH, e.g. D:\Qt\6.11.1\mingw_64"
+        throw @"
+Qt kit not found.
+Set CMAKE_PREFIX_PATH to a Qt6 kit (…/6.x.y/mingw_64 or …/msvc2022_64),
+or QT_INSTALL_DIR to your Qt root (the folder that contains version dirs / Tools).
+"@
     }
 
     $cmake = Resolve-Cmake
@@ -77,12 +217,16 @@ function Get-BuildArgs {
     )
 
     if ($qt.Kind -eq "mingw_64") {
-        $gcc = "D:/Qt/Tools/mingw1310_64/bin/gcc.exe"
-        $gxx = "D:/Qt/Tools/mingw1310_64/bin/g++.exe"
-        if (-not (Test-Path -LiteralPath ($gcc -replace '/', '\'))) {
-            throw "MinGW compiler not found at D:\Qt\Tools\mingw1310_64"
+        $mingwBin = Find-MingwBinDir $qt.Prefix
+        if (-not $mingwBin) {
+            throw "MinGW not found next to Qt (Tools/mingw*_64) and gcc.exe is not on PATH."
         }
-        $env:Path = "D:\Qt\Tools\mingw1310_64\bin;D:\Qt\Tools\Ninja;$env:Path"
+        $gcc = (Join-Path $mingwBin "gcc.exe") -replace '\\', '/'
+        $gxx = (Join-Path $mingwBin "g++.exe") -replace '\\', '/'
+        $pathParts = @($mingwBin)
+        $ninjaDir = Find-NinjaDir $qt.Prefix
+        if ($ninjaDir) { $pathParts += $ninjaDir }
+        $env:Path = ($pathParts -join ";") + ";" + $env:Path
         return @{
             Qt = $qt
             Cmake = $cmake
@@ -249,32 +393,46 @@ function Ensure-BuildDir {
     }
 }
 
+function Find-VulkanBinDir {
+    if ($env:VULKAN_SDK) {
+        $bin = Join-Path $env:VULKAN_SDK "Bin"
+        if (Test-Path -LiteralPath $bin) { return $bin }
+    }
+    foreach ($root in @(
+            "C:\VulkanSDK",
+            (Join-Path ${env:ProgramFiles} "VulkanSDK"),
+            (Join-Path $env:LOCALAPPDATA "VulkanSDK")
+        )) {
+        if (-not (Test-Path -LiteralPath $root)) { continue }
+        $latest = Get-ChildItem -LiteralPath $root -Directory -ErrorAction SilentlyContinue |
+            Sort-Object Name -Descending |
+            Select-Object -First 1
+        if (-not $latest) { continue }
+        $bin = Join-Path $latest.FullName "Bin"
+        if (Test-Path -LiteralPath $bin) { return $bin }
+    }
+    return $null
+}
+
 function Initialize-QtRuntime {
     param([hashtable]$Qt)
 
     if (-not $Qt) { return }
 
+    $runtimePaths = [System.Collections.Generic.List[string]]::new()
     $qtBin = Join-Path $Qt.Prefix "bin"
-    $runtimePaths = @(
-        @($qtBin, "D:\Qt\Tools\mingw1310_64\bin", "D:\Qt\Tools\Ninja") |
-            Where-Object { Test-Path -LiteralPath $_ }
-    )
+    if (Test-Path -LiteralPath $qtBin) { [void]$runtimePaths.Add($qtBin) }
 
-    if ($env:VULKAN_SDK) {
-        $vulkanBin = Join-Path $env:VULKAN_SDK "Bin"
-        if (Test-Path -LiteralPath $vulkanBin) {
-            $runtimePaths = @($vulkanBin) + $runtimePaths
-        }
-    } else {
-        $vulkanRoots = Get-ChildItem -Path "C:\VulkanSDK" -Directory -ErrorAction SilentlyContinue |
-            Sort-Object Name -Descending |
-            Select-Object -First 1
-        if ($vulkanRoots) {
-            $vulkanBin = Join-Path $vulkanRoots.FullName "Bin"
-            if (Test-Path -LiteralPath $vulkanBin) {
-                $runtimePaths = @($vulkanBin) + $runtimePaths
-            }
-        }
+    if ($Qt.Kind -eq "mingw_64") {
+        $mingwBin = Find-MingwBinDir $Qt.Prefix
+        if ($mingwBin) { [void]$runtimePaths.Add($mingwBin) }
+        $ninjaDir = Find-NinjaDir $Qt.Prefix
+        if ($ninjaDir) { [void]$runtimePaths.Add($ninjaDir) }
+    }
+
+    $vulkanBin = Find-VulkanBinDir
+    if ($vulkanBin) {
+        $runtimePaths.Insert(0, $vulkanBin)
     }
 
     if ($runtimePaths.Count -gt 0) {
@@ -739,7 +897,12 @@ Arachnel dev launcher
 
 Pass app args after options, e.g. .\run.ps1 -- --some-flag
 
-Env: BUILD_TYPE (default RelWithDebInfo), CMAKE_PREFIX_PATH, ARACHNEL_FAST_BUILD=0, ARACHNEL_LIBTORRENT_SHARED=0
+Env:
+  BUILD_TYPE (default RelWithDebInfo)
+  CMAKE_PREFIX_PATH / QTDIR     Qt6 kit path (…/6.x.y/mingw_64 or msvc2022_64)
+  QT_INSTALL_DIR                Qt root (contains version dirs + Tools)
+  ARACHNEL_QT_KIT               prefer kit name, e.g. mingw_64 or msvc2022_64
+  ARACHNEL_FAST_BUILD=0, ARACHNEL_LIBTORRENT_SHARED=0
 
 Shared libtorrent migration (static -> DLL) is automatic once; use --rebuild for a full clean.
 "@
