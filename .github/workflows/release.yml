@@ -45,7 +45,16 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
 
       - name: Install build tools
-        run: choco install ninja pkgconfiglite -y --no-progress
+        shell: pwsh
+        run: |
+          # ninja is often preinstalled on windows-latest; pkgconfiglite's SourceForge
+          # mirror flakes (timeout/404) and is optional for our Windows/MSVC path.
+          choco install ninja -y --no-progress --allow-downgrade
+          choco install pkgconfiglite -y --no-progress --allow-downgrade
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "::warning::pkgconfiglite install failed (non-fatal on Windows)"
+            exit 0
+          }
 
       - name: Build installer
         shell: pwsh
