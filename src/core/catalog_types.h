@@ -63,7 +63,16 @@ struct CatalogEntry {
     qint64 sizeBytes = 0;
     qint64 uploadDay = 0; // Julian day; 0 if unknown
     QStringList genreTokens;
+    /** Bitmask: Single=1, Co-op=2, Multiplayer=4 (from Steam categories / genres). */
+    quint8 playModeMask = 0;
 };
+
+constexpr quint8 kPlayModeSingle = 1;
+constexpr quint8 kPlayModeCoop = 2;
+constexpr quint8 kPlayModeMulti = 4;
+
+/** Derive play-mode bits from genre/category tokens (+ online-fix installKind fallback). */
+quint8 playModeMaskFromEntry(const QStringList& genreTokens, InstallKind installKind);
 
 QString catalogItemKindLabel(CatalogItemKind kind);
 QString repairCatalogEntryId(const QString& entryId);

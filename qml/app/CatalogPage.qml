@@ -87,6 +87,7 @@ Item {
         property int recencyFilter: 0
         property bool hasAddonsFilter: false
         property string genreFilter: ""
+        property int playModeFilter: 0
     }
 
     function applySortMode(mode) {
@@ -104,13 +105,14 @@ Item {
         catalogPrefs.recencyFilter = Core.catalogRecencyFilter
         catalogPrefs.hasAddonsFilter = Core.catalogHasAddonsFilter
         catalogPrefs.genreFilter = Core.catalogGenreFilter
+        catalogPrefs.playModeFilter = Core.catalogPlayModeFilter
     }
 
     function restoreCatalogFilters() {
         root.restoringFilters = true
         Core.setCatalogFilters(catalogPrefs.typeFilter, catalogPrefs.sizeFilter,
                                catalogPrefs.recencyFilter, catalogPrefs.hasAddonsFilter,
-                               catalogPrefs.genreFilter)
+                               catalogPrefs.genreFilter, catalogPrefs.playModeFilter)
         root.restoringFilters = false
     }
 
