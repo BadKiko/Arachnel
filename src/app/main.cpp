@@ -13,9 +13,9 @@
 #include <QGuiApplication>
 #endif
 
-#include "core/core_controller.h"
-#include "core/settings_store.h"
-#include "core/translation_service.h"
+#include "core/facade/core_controller.h"
+#include "core/settings/settings_store.h"
+#include "core/i18n/translation_service.h"
 #include "crash_log.h"
 
 #ifndef QT_QML_MATERIAL_IMPORT_PATH

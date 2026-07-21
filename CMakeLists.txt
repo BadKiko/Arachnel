@@ -102,53 +102,10 @@ unset(_QM_LFS_RESULT)
 
 set(CMAKE_AUTOMOC ON)
 
+include(${CMAKE_CURRENT_SOURCE_DIR}/src/CMakeLists.txt)
+
 qt_add_executable(arachnel_app
-    src/main.cpp
-    src/crash_log.cpp
-    src/core/install_kind.cpp
-    src/core/job_display.cpp
-    src/core/job_kind.cpp
-    src/core/catalog_types.cpp
-    src/core/library_model.cpp
-    src/core/source_plugin_model.cpp
-    src/core/catalog_model.cpp
-    src/core/notification_model.cpp
-    src/core/job_model.cpp
-    src/core/job_status.cpp
-    src/core/job_store.cpp
-    src/core/settings_store.cpp
-    src/core/storage_library.cpp
-    src/core/storage_library_model.cpp
-    src/core/file_utils.cpp
-    src/core/library_store.cpp
-    src/core/catalog_feed_loader.cpp
-    src/core/catalog_parser.cpp
-    src/core/game_metadata_service.cpp
-    src/core/cover_image_cache.cpp
-    src/core/torrent_session.cpp
-    src/core/torrent_settings.cpp
-    src/core/http_download_session.cpp
-    src/core/torrent_metadata_fetcher.cpp
-    src/core/install_analysis.cpp
-    src/core/install_heuristics.cpp
-    src/core/install_analyzer.cpp
-    src/core/install_kind_probe_service.cpp
-    src/core/job_orchestrator.cpp
-    src/core/plugin_api.cpp
-    src/core/plugin_host.cpp
-    src/core/plugin_catalog_service.cpp
-    src/core/runtime_manifest_probe.cpp
-    src/core/runtime_depot_catalog.cpp
-    src/core/runtime_container_manager.cpp
-    src/core/runtime_dependency_service.cpp
-    src/core/process_launcher.cpp
-    src/core/launch_resolver.cpp
-    src/core/proton_manager.cpp
-    src/core/windows_runner.cpp
-    src/core/process_tracker.cpp
-    src/core/app_updater.cpp
-    src/core/core_controller.cpp
-    src/core/translation_service.cpp
+    ${ARACHNEL_APP_SOURCES}
 )
 
 if(WIN32)
@@ -207,6 +164,8 @@ target_compile_definitions(arachnel_app PRIVATE
     "QT_QML_MATERIAL_IMPORT_PATH=\"qml_modules\""
     "ARACHNEL_VERSION=\"${ARACHNEL_VERSION}\""
 )
+
+target_include_directories(arachnel_app PRIVATE ${ARACHNEL_CORE_INCLUDE_DIRS})
 
 target_link_libraries(arachnel_app
     PRIVATE

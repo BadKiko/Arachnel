@@ -1,0 +1,99 @@
+#include "launch_controller.h"
+
+#include "launch_resolver.h"
+#include "install_heuristics.h"
+#include "plugin_host.h"
+#include "plugin_interface.h"
+#include "process_launcher.h"
+#include "process_tracker.h"
+#include "settings_store.h"
+
+#include <QCoreApplication>
+#include <QDateTime>
+#include <QFileInfo>
+#include <QTimer>
+
+namespace arachnel::core {
+
+LaunchController::LaunchController(LibraryModel* library, SettingsStore* settings,
+                                   PluginHost* plugins, Hooks hooks, QObject* parent)
+    : QObject(parent), m_library(library), m_settings(settings), m_plugins(plugins),
+      m_hooks(std::move(hooks)), m_timer(new QTimer(this))
+{
+    m_timer->setInterval(1500);
+    connect(m_timer, &QTimer::timeout, this, &LaunchController::pollRunningGame);
+}
+
+void LaunchController::markRunning(const LibraryGame& game, qint64 processId)
+{
+    m_gameId = game.id;
+    m_gameTitle = game.title;
+    m_gameCoverUrl = game.coverUrl;
+    m_processId = processId;
+    emit runningGameChanged();
+    processId > 0 ? m_timer->start() : m_timer->stop();
+}
+
+void LaunchController::clearRunning()
+{
+    if (m_gameId.isEmpty())
+        return;
+    m_gameId.clear();
+    m_gameTitle.clear();
+    m_gameCoverUrl.clear();
+    m_processId = 0;
+    m_timer->stop();
+    emit runningGameChanged();
+}
+
+void LaunchController::pollRunningGame()
+{
+    if (m_processId > 0 && !ProcessTracker::isProcessRunning(m_processId))
+        QTimer::singleShot(0, this, &LaunchController::clearRunning);
+}
+
+void LaunchController::launchGame(const QString& gameId)
+{
+    const LibraryGame* game = m_library->gameById(gameId);
+    if (!game || game->installPath.isEmpty()) {
+        if (m_hooks.notice)
+            m_hooks.notice(QCoreApplication::translate("Core", "Game is not installed yet"));
+        return;
+    }
+    if (gameRunning() && m_gameId == gameId)
+        return;
+    if (m_hooks.ensureRuntime && !m_hooks.ensureRuntime(*game))
+        return;
+    LaunchInfo info;
+    if (ISourcePlugin* plugin = m_plugins->plugin(game->sourceId))
+        info = plugin->launchInfo(*game);
+    if (info.executable.isEmpty() && game->executableOverride.isEmpty())
+        info.executable = findGameExecutableInTree(game->installPath);
+    const ResolvedLaunch resolved = resolveLaunch(info, *game, *m_settings);
+    if (resolved.program.isEmpty()) {
+        if (m_hooks.notice)
+            m_hooks.notice(QCoreApplication::translate("Core", "Executable not found for %1").arg(game->title));
+        return;
+    }
+    QString error;
+    qint64 processId = 0;
+    if (!ProcessLauncher::launch(resolved, &error, &processId)) {
+        if (m_hooks.notice)
+            m_hooks.notice(error.isEmpty() ? QCoreApplication::translate("Core", "Failed to launch game") : error);
+        return;
+    }
+    const LibraryGame launched = *game;
+    QTimer::singleShot(0, this, [this, launched, processId]() { markRunning(launched, processId); });
+}
+
+void LaunchController::stopRunningGame()
+{
+    if (!gameRunning())
+        return;
+    if (m_processId <= 0 || ProcessTracker::terminateProcess(m_processId))
+        QTimer::singleShot(0, this, &LaunchController::clearRunning);
+    else if (m_hooks.notice)
+        m_hooks.notice(QCoreApplication::translate("Core", "Failed to stop game"));
+}
+
+} // namespace arachnel::core
