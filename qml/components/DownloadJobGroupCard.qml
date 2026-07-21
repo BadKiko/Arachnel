@@ -21,7 +21,10 @@ MD.ElevationRectangle {
 
     function updateAddonsPanelHeight() {
         const measured = addonsPanel.implicitHeight
-        if (measured > 0)
+        // Ignore transient 0 while the group object is swapped on progress ticks.
+        if (measured <= 0)
+            return
+        if (Math.abs(measured - addonsPanelHeight) >= 0.5)
             addonsPanelHeight = measured
     }
 

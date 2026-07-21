@@ -99,6 +99,9 @@ void CatalogFilterService::applyFilter(const QString& query)
     timer.start();
 
     m_filterNeedle = query.trimmed().toLower();
+    // Strip zero-width / BOM junk that can sneak in from paste/IME.
+    m_filterNeedle.remove(QChar(0x200B));
+    m_filterNeedle.remove(QChar(0xFEFF));
     m_filterCutoffDay = 0;
     if (m_recencyFilter > 0) {
         const int days = m_recencyFilter == 1   ? 7
@@ -113,8 +116,15 @@ void CatalogFilterService::applyFilter(const QString& query)
     indices.reserve(m_cache->size());
     for (int i = 0; i < m_cache->size(); ++i) {
         const CatalogEntry& entry = m_cache->at(i);
-        if (!m_filterNeedle.isEmpty() && !entry.titleLower.contains(m_filterNeedle))
-            continue;
+        if (!m_filterNeedle.isEmpty()) {
+            const QString titleLower =
+                entry.titleLower.isEmpty() ? entry.title.trimmed().toLower() : entry.titleLower;
+            const bool titleHit = titleLower.contains(m_filterNeedle);
+            const bool idHit = entry.id.contains(m_filterNeedle, Qt::CaseInsensitive)
+                || entry.steamAppId.contains(m_filterNeedle, Qt::CaseInsensitive);
+            if (!titleHit && !idHit)
+                continue;
+        }
         if (!entryMatches(entry))
             continue;
         indices.append(i);
@@ -122,11 +132,12 @@ void CatalogFilterService::applyFilter(const QString& query)
     m_model->setVisibleIndices(std::move(indices));
 
     const qint64 ms = timer.elapsed();
-    if (ms >= 16) {
-        logDiagnostic(QStringLiteral("applyCatalogFilter: %1ms cache=%2 visible=%3")
+    if (ms >= 16 || (!m_filterNeedle.isEmpty() && m_model->count() == 0)) {
+        logDiagnostic(QStringLiteral("applyCatalogFilter: %1ms cache=%2 visible=%3 needle=\"%4\"")
                           .arg(ms)
                           .arg(m_cache->size())
-                          .arg(m_model->count()));
+                          .arg(m_model->count())
+                          .arg(m_filterNeedle));
     }
 }
 

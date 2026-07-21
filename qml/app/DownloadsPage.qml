@@ -17,10 +17,32 @@ Item {
         refreshDebounce.restart()
     }
 
+    function applyGroups(nextGroups) {
+        const list = jobsList
+        const restore = list.visible && list.count > 0
+                && !list.moving && !list.flicking && !list.dragging
+        const y = restore ? list.contentY : 0
+        jobGroups = nextGroups
+        if (!restore)
+            return
+        // Model swap resets contentY; restore after layout settles
+        // (delegate heights can change on the next frame).
+        function restoreY() {
+            if (!list || list.moving || list.flicking || list.dragging)
+                return
+            const maxY = Math.max(0, list.contentHeight - list.height)
+            list.contentY = Math.min(Math.max(0, y), maxY)
+        }
+        Qt.callLater(function () {
+            restoreY()
+            Qt.callLater(restoreY)
+        })
+    }
+
     Timer {
         id: refreshDebounce
         interval: 120
-        onTriggered: jobGroups = Core.jobs.downloadGroups()
+        onTriggered: root.applyGroups(Core.jobs.downloadGroups())
     }
 
     function isGroupExpanded(entryId) {
@@ -151,18 +173,23 @@ Item {
             clip: true
             spacing: MD.Token.spacing.medium
             boundsBehavior: Flickable.StopAtBounds
+            reuseItems: true
+            cacheBuffer: height * 2
             model: root.jobGroups
 
             ScrollBar.vertical: MD.ScrollBar {
                 policy: ScrollBar.AsNeeded
             }
 
+            // Stable identity so progress ticks don't reshuffle delegates.
+            // (JS array models still recreate items; contentY restore handles scroll.)
             delegate: DownloadJobGroupCard {
                 width: jobsList.width
+                required property var modelData
                 group: modelData
-                expanded: root.isGroupExpanded(modelData.entryId)
+                expanded: root.isGroupExpanded(modelData.entryId ?? "")
                 onExpansionToggled: function (value) {
-                    root.setGroupExpanded(modelData.entryId, value)
+                    root.setGroupExpanded(modelData.entryId ?? "", value)
                 }
                 onOpenDetails: function (entryId) { root.openGame(entryId) }
             }
