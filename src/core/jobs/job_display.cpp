@@ -18,10 +18,15 @@ void jobDisplayTranslationSeed()
     QT_TRANSLATE_NOOP("Core", "Installing add-on…");
     QT_TRANSLATE_NOOP("Core", "Preparing…");
     QT_TRANSLATE_NOOP("Core", "Preparing Steam…");
+    QT_TRANSLATE_NOOP("Core", "Preparing Steam client…");
+    QT_TRANSLATE_NOOP("Core", "Downloading from Steam CDN…");
     QT_TRANSLATE_NOOP("Core", "Getting game info…");
     QT_TRANSLATE_NOOP("Core", "Finishing…");
     QT_TRANSLATE_NOOP("Core", "Prepared — Steam is downloading");
     QT_TRANSLATE_NOOP("Core", "Queued in Steam — restart Steam, then open the game there");
+    QT_TRANSLATE_NOOP("Core", "Queued in Steam…");
+    QT_TRANSLATE_NOOP("Core", "Downloading in Steam…");
+    QT_TRANSLATE_NOOP("Core", "Waiting in Steam — click Update if needed");
     QT_TRANSLATE_NOOP("Core", "This game is not available for download right now. Try another title.");
     QT_TRANSLATE_NOOP("Core",
                       "Could not prepare this game for download. Try again later or pick another title.");
@@ -128,6 +133,10 @@ QString displayJobDetail(const QString& detail)
         {"Preparing…", "Preparing…"},
         {"Подготовка Steam…", "Preparing Steam…"},
         {"Preparing Steam…", "Preparing Steam…"},
+        {"Подготовка клиента Steam…", "Preparing Steam client…"},
+        {"Preparing Steam client…", "Preparing Steam client…"},
+        {"Загрузка с Steam CDN…", "Downloading from Steam CDN…"},
+        {"Downloading from Steam CDN…", "Downloading from Steam CDN…"},
         {"Получение данных об игре…", "Getting game info…"},
         {"Getting game info…", "Getting game info…"},
         {"Завершение…", "Finishing…"},
@@ -138,6 +147,14 @@ QString displayJobDetail(const QString& detail)
          "Queued in Steam — restart Steam, then open the game there"},
         {"Queued in Steam — restart Steam, then open the game there",
          "Queued in Steam — restart Steam, then open the game there"},
+        {"В очереди Steam…", "Queued in Steam…"},
+        {"Queued in Steam…", "Queued in Steam…"},
+        {"Загрузка в Steam…", "Downloading in Steam…"},
+        {"Downloading in Steam…", "Downloading in Steam…"},
+        {"Ожидание Steam — нажмите «Обновить», если нужно",
+         "Waiting in Steam — click Update if needed"},
+        {"Waiting in Steam — click Update if needed",
+         "Waiting in Steam — click Update if needed"},
         {"Эта игра сейчас недоступна для загрузки. Попробуйте другую.",
          "This game is not available for download right now. Try another title."},
         {"This game is not available for download right now. Try another title.",

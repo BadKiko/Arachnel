@@ -15,7 +15,7 @@
     Q_INVOKABLE void stopRunningGame();
     Q_INVOKABLE void searchCatalog(const QString&, const QString&);
     Q_INVOKABLE void installCatalogEntry(const QString&, const QString& = {},
-                                         const QVariantList& = {});
+                                         const QVariantList& = {}, const QString& = {});
     Q_INVOKABLE void installCatalogAddon(const QString&, const QString&);
     Q_INVOKABLE void installDownloadedCatalogAddon(const QString&, const QString&);
     Q_INVOKABLE bool isCatalogAddonInstalled(const QString&, const QString&) const;

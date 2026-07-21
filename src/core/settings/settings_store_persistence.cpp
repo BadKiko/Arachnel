@@ -33,6 +33,7 @@ void SettingsStore::load()
         emit globalLaunchArgsChanged();
         emit defaultProtonIdChanged();
         emit protonPriorityChanged();
+        emit steamInstallModeChanged();
         emit sourcesChanged();
         return;
     }
@@ -51,6 +52,12 @@ void SettingsStore::load()
     m_globalLaunchArgs = obj.value(QStringLiteral("globalLaunchArgs")).toString();
     m_defaultProtonId = obj.value(QStringLiteral("defaultProtonId")).toString();
     m_legacyProtonPath = obj.value(QStringLiteral("protonPath")).toString();
+    {
+        const QString mode = obj.value(QStringLiteral("steamInstallMode")).toString().trimmed().toLower();
+        m_steamInstallMode = (mode == QStringLiteral("ddmod") || mode == QStringLiteral("native"))
+                                 ? mode
+                                 : QString();
+    }
     m_protonPriority.clear();
     const QJsonArray priority = obj.value(QStringLiteral("protonPriority")).toArray();
     for (const QJsonValue& value : priority) {
@@ -140,6 +147,7 @@ void SettingsStore::load()
     emit globalLaunchArgsChanged();
     emit defaultProtonIdChanged();
     emit protonPriorityChanged();
+    emit steamInstallModeChanged();
     emit sourcesChanged();
 }
 
@@ -156,6 +164,7 @@ void SettingsStore::save()
     obj.insert(QStringLiteral("onboardingCompleted"), m_onboardingCompleted);
     obj.insert(QStringLiteral("globalLaunchArgs"), m_globalLaunchArgs);
     obj.insert(QStringLiteral("defaultProtonId"), m_defaultProtonId);
+    obj.insert(QStringLiteral("steamInstallMode"), m_steamInstallMode);
     QJsonArray priority;
     for (const QString& id : m_protonPriority)
         priority.append(id);

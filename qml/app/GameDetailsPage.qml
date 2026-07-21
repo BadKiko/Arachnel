@@ -207,23 +207,29 @@ Item {
 
     signal backRequested()
     signal openAddonPicker(string entryId, string title)
-    signal openInstallPicker(string entryId, string title, var selectedAddonIds)
+    signal openInstallPicker(string entryId, string title, var selectedAddonIds, string installMode)
+    signal openSteamInstallMode(string entryId, string title, var selectedAddonIds)
+    signal openSteamidraTrust()
     signal protonRequired()
+
+    readonly property bool isSteamidra: (root.info.sourceId ?? "") === "steamidra"
 
     function needsProtonCheck() {
         return root.onLinux && Core.needsProtonOnPlatform() && !Core.protonReady
     }
 
-    function proceedToInstall(selectedAddonIds) {
+    function proceedToInstall(selectedAddonIds, installMode) {
         if (root.needsProtonCheck()) {
             root.protonRequired()
             return
         }
         const ids = selectedAddonIds || []
-        if (Core.needsInstallLocationChoice())
-            root.openInstallPicker(root.gameId, root.info.title || "", ids)
+        const mode = (installMode || "").toLowerCase()
+        // Steam client installs into its own library — Arachnel folder picker is irrelevant.
+        if (mode !== "native" && Core.needsInstallLocationChoice())
+            root.openInstallPicker(root.gameId, root.info.title || "", ids, mode)
         else
-            Core.installCatalogEntry(root.gameId, "", ids)
+            Core.installCatalogEntry(root.gameId, "", ids, mode)
     }
 
     function beginInstall() {
@@ -232,10 +238,25 @@ Item {
             return
         }
         const addonCount = root.info.addonCount ?? 0
-        if (addonCount > 0)
+        if (addonCount > 0) {
             root.openAddonPicker(root.gameId, root.info.title || "")
-        else
-            root.proceedToInstall([])
+            return
+        }
+        root.afterAddonsSelected([])
+    }
+
+    function afterAddonsSelected(selectedAddonIds) {
+        const ids = selectedAddonIds || []
+        if (!root.isSteamidra) {
+            root.proceedToInstall(ids, "")
+            return
+        }
+        const saved = (Core.settings.steamInstallMode || "").toLowerCase()
+        if (saved === "ddmod" || saved === "native") {
+            root.proceedToInstall(ids, saved)
+            return
+        }
+        root.openSteamInstallMode(root.gameId, root.info.title || "", ids)
     }
 
     function confirmRemove() {

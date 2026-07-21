@@ -16,7 +16,7 @@ MD.ElevationRectangle {
     readonly property var addons: group.addons ?? []
     readonly property bool hasAddons: !!(group.hasAddons) && addons.length > 0
     readonly property bool gameJobActive: jobIsActive(root.group)
-    readonly property int expandColumnWidth: 40
+    readonly property int expandColumnWidth: root.hasAddons ? 40 : 0
     property real addonsPanelHeight: 0
 
     function updateAddonsPanelHeight() {
@@ -114,14 +114,14 @@ MD.ElevationRectangle {
     radius: MD.Token.shape.corner.extra_large
     color: MD.Token.color.surface_container
     elevation: MD.Token.elevation.level0
-    implicitHeight: groupCol.implicitHeight + 2 * MD.Token.spacing.medium
+    implicitHeight: groupCol.implicitHeight + 2 * MD.Token.spacing.large
 
     ColumnLayout {
         id: groupCol
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
-        anchors.margins: MD.Token.spacing.medium
+        anchors.margins: MD.Token.spacing.large
         spacing: 0
 
         RowLayout {
@@ -129,14 +129,13 @@ MD.ElevationRectangle {
             spacing: MD.Token.spacing.small
 
             Item {
+                visible: root.hasAddons
                 Layout.preferredWidth: root.expandColumnWidth
                 Layout.preferredHeight: root.expandColumnWidth
                 Layout.alignment: Qt.AlignTop
 
                 MD.IconButton {
                     anchors.centerIn: parent
-                    visible: root.hasAddons
-                    enabled: root.hasAddons
                     mdState.type: MD.Enum.IBtStandard
                     rotation: root.expanded ? 90 : 0
                     icon.name: MD.Token.icon.chevron_right
@@ -151,39 +150,37 @@ MD.ElevationRectangle {
                 }
             }
 
-            Item {
+            DownloadJobCard {
+                id: gameCard
                 Layout.fillWidth: true
-                Layout.preferredHeight: gameCard.implicitHeight
-
-                DownloadJobCard {
-                    id: gameCard
-                    anchors.fill: parent
-                    embedded: true
-                    showExternalRemove: root.groupAllTerminal()
-                    jobId: root.group.jobId ?? ""
-                    title: root.group.title ?? ""
-                    kindLabel: root.group.kindLabel ?? ""
-                    status: root.group.status ?? ""
-                    statusLabel: root.group.statusLabel ?? ""
-                    progress: root.group.progress ?? 0
-                    bytesDownloaded: root.group.bytesDownloaded ?? 0
-                    totalBytes: (root.group.totalBytes ?? 0) > 0
-                                  ? root.group.totalBytes
-                                  : root.catalogTotalBytes
-                    catalogTotalBytes: root.catalogTotalBytes
-                    detail: root.group.detail ?? ""
-                    coverUrl: root.group.coverUrl ?? ""
-                    entryId: root.group.entryId ?? ""
-                    fillProgress: root.gameJobActive ? (root.group.progress ?? 0) : -1
-                    onOpenDetails: function (entryId) { root.openDetails(entryId) }
-                    onRemoveRequested: root.hasAddons ? root.removeWholeGroup() : Core.removeJob(root.group.jobId)
-                }
+                embedded: true
+                showExternalRemove: root.groupAllTerminal()
+                jobId: root.group.jobId ?? ""
+                title: root.group.title ?? ""
+                kindLabel: root.group.kindLabel ?? ""
+                status: root.group.status ?? ""
+                statusLabel: root.group.statusLabel ?? ""
+                progress: root.group.progress ?? 0
+                bytesDownloaded: root.group.bytesDownloaded ?? 0
+                totalBytes: (root.group.totalBytes ?? 0) > 0
+                              ? root.group.totalBytes
+                              : root.catalogTotalBytes
+                catalogTotalBytes: root.catalogTotalBytes
+                detail: root.group.detail ?? ""
+                coverUrl: root.group.coverUrl ?? ""
+                entryId: root.group.entryId ?? ""
+                fillProgress: root.gameJobActive ? (root.group.progress ?? 0) : -1
+                onOpenDetails: function (entryId) { root.openDetails(entryId) }
+                onRemoveRequested: root.hasAddons ? root.removeWholeGroup()
+                                                  : Core.removeJob(root.group.jobId)
             }
         }
 
         MD.Label {
             Layout.fillWidth: true
-            Layout.leftMargin: root.expandColumnWidth + MD.Token.spacing.small
+            Layout.leftMargin: root.hasAddons
+                               ? root.expandColumnWidth + MD.Token.spacing.small
+                               : 0
             Layout.topMargin: MD.Token.spacing.extra_small
             visible: root.hasAddons && !root.expanded
             text: collapsedAddonSummary()
@@ -194,7 +191,9 @@ MD.ElevationRectangle {
 
         Item {
             Layout.fillWidth: true
-            Layout.leftMargin: root.expandColumnWidth + MD.Token.spacing.small
+            Layout.leftMargin: root.hasAddons
+                               ? root.expandColumnWidth + MD.Token.spacing.small
+                               : 0
             Layout.topMargin: root.expanded ? MD.Token.spacing.small : 0
             Layout.preferredHeight: root.hasAddons && root.expanded ? root.addonsPanelHeight : 0
             visible: root.hasAddons

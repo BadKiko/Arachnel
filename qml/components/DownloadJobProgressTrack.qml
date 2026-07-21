@@ -1,61 +1,68 @@
 import QtQuick
-import QtQuick.Layouts
 import Qcm.Material as MD
 
 Item {
+    id: root
+
     required property var page
-    implicitHeight: 4
-                Item {
-                    id: progressTrack
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: page.addonRow ? 3 : 4
-                    clip: true
 
-                    Rectangle {
-                        anchors.fill: parent
-                        radius: 2
-                        color: MD.Util.transparent(MD.Token.color.primary, 0.25)
-                    }
+    // Active / installing only — no track on completed (looks like a stray underline).
+    readonly property bool showTrack: page.inProgress || page.isInstalling
+    readonly property real fillRatio: {
+        if (page.isInstalling)
+            return 0
+        return Math.max(0, Math.min(1, (page.progress || 0) / 100))
+    }
 
-                    Rectangle {
-                        id: installIndeterminate
-                        visible: page.isInstalling
-                        height: parent.height
-                        width: Math.max(24, parent.width * 0.35)
-                        radius: 2
-                        color: MD.Token.color.primary
-                        x: -width
+    visible: showTrack
+    implicitHeight: visible ? (page.addonRow ? 4 : 5) : 0
+    clip: true
 
-                        SequentialAnimation {
-                            running: page.isInstalling
-                            loops: Animation.Infinite
-                            NumberAnimation {
-                                target: installIndeterminate
-                                property: "x"
-                                from: -installIndeterminate.width
-                                to: progressTrack.width
-                                duration: 900
-                                easing.type: Easing.InOutQuad
-                            }
-                            NumberAnimation {
-                                target: installIndeterminate
-                                property: "x"
-                                from: progressTrack.width
-                                to: -installIndeterminate.width
-                                duration: 900
-                                easing.type: Easing.InOutQuad
-                            }
-                        }
-                    }
+    Rectangle {
+        anchors.fill: parent
+        radius: height / 2
+        color: MD.Util.transparent(MD.Token.color.primary, 0.18)
+    }
 
-                    Rectangle {
-                        visible: !page.isInstalling
-                        anchors.top: parent.top
-                        anchors.bottom: parent.bottom
-                        anchors.left: parent.left
-                        width: parent.width * (page.progress / 100)
-                        radius: 2
-                        color: page.isPaused ? MD.Token.color.on_surface_variant : MD.Token.color.primary
-                    }
-                }
+    Rectangle {
+        id: installIndeterminate
+        visible: page.isInstalling
+        height: parent.height
+        width: Math.max(28, parent.width * 0.28)
+        radius: height / 2
+        color: MD.Token.color.primary
+        x: -width
+
+        SequentialAnimation {
+            running: page.isInstalling && root.visible
+            loops: Animation.Infinite
+            NumberAnimation {
+                target: installIndeterminate
+                property: "x"
+                from: -installIndeterminate.width
+                to: root.width
+                duration: 1100
+                easing.type: Easing.InOutCubic
+            }
+            PauseAnimation { duration: 80 }
+        }
+    }
+
+    Rectangle {
+        visible: !page.isInstalling
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        width: parent.width * root.fillRatio
+        radius: height / 2
+        color: page.isPaused ? MD.Token.color.on_surface_variant
+                             : (page.isFailed ? MD.Token.color.error : MD.Token.color.primary)
+
+        Behavior on width {
+            NumberAnimation {
+                duration: MD.Token.duration.short4
+                easing: MD.Token.easing.standard
+            }
+        }
+    }
 }

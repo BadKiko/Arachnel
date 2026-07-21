@@ -67,12 +67,28 @@ MD.ApplicationWindow {
         root.detailsGameId = ""
     }
 
-    function beginCatalogInstall(entryId, libraryId, addonIds) {
+    property string pendingInstallMode: ""
+
+    function beginCatalogInstall(entryId, libraryId, addonIds, installMode) {
         if (Core.needsProtonOnPlatform() && !Core.protonReady) {
             protonRequiredDialog.open()
             return
         }
-        Core.installCatalogEntry(entryId, libraryId || "", addonIds || [])
+        const mode = (installMode !== undefined && installMode !== null)
+                     ? installMode
+                     : root.pendingInstallMode
+        Core.installCatalogEntry(entryId, libraryId || "", addonIds || [], mode || "")
+        root.pendingInstallMode = ""
+    }
+
+    function continueAfterSteamMode(entryId, title, addonIds, mode) {
+        root.pendingInstallMode = mode || "ddmod"
+        const resolved = (root.pendingInstallMode || "").toLowerCase()
+        // Native: Steam picks the library folder — skip Arachnel location sheet.
+        if (resolved !== "native" && Core.needsInstallLocationChoice())
+            installLocationSheet.openForEntry(entryId, title, addonIds)
+        else
+            root.beginCatalogInstall(entryId, "", addonIds, root.pendingInstallMode)
     }
 
     Component.onCompleted: {
@@ -223,9 +239,14 @@ MD.ApplicationWindow {
             onOpenAddonPicker: function (entryId, title) {
                 installAddonSheet.openForEntry(entryId, title)
             }
-            onOpenInstallPicker: function (entryId, title, selectedAddonIds) {
+            onOpenInstallPicker: function (entryId, title, selectedAddonIds, installMode) {
+                root.pendingInstallMode = installMode || ""
                 installLocationSheet.openForEntry(entryId, title, selectedAddonIds)
             }
+            onOpenSteamInstallMode: function (entryId, title, selectedAddonIds) {
+                steamInstallModeSheet.openForEntry(entryId, title, selectedAddonIds)
+            }
+            onOpenSteamidraTrust: steamidraTrustSheet.openTrust()
             onProtonRequired: protonRequiredDialog.open()
         }
     }
@@ -347,18 +368,34 @@ MD.ApplicationWindow {
     InstallLocationSheet {
         id: installLocationSheet
         anchors.fill: parent
-        installEntry: root.beginCatalogInstall
+        installEntry: function (entryId, libraryId, addonIds) {
+            root.beginCatalogInstall(entryId, libraryId, addonIds, root.pendingInstallMode)
+        }
     }
 
     InstallAddonSelectionSheet {
         id: installAddonSheet
         anchors.fill: parent
         onConfirmed: function (entryId, title, selectedAddonIds) {
-            if (Core.needsInstallLocationChoice())
+            const page = pageStack.currentItem
+            if (page && typeof page.afterAddonsSelected === "function")
+                page.afterAddonsSelected(selectedAddonIds)
+            else if (Core.needsInstallLocationChoice())
                 installLocationSheet.openForEntry(entryId, title, selectedAddonIds)
             else
-                root.beginCatalogInstall(entryId, "", selectedAddonIds)
+                root.beginCatalogInstall(entryId, "", selectedAddonIds, "")
         }
+    }
+
+    SteamInstallModeSheet {
+        id: steamInstallModeSheet
+        anchors.fill: parent
+        continueInstall: root.continueAfterSteamMode
+    }
+
+    SteamidraTrustSheet {
+        id: steamidraTrustSheet
+        anchors.fill: parent
     }
 
     ProtonRequiredDialog {
