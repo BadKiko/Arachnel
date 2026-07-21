@@ -16,6 +16,7 @@ MD.BottomSheet {
     property int draftRecency: 0
     property bool draftHasAddons: false
     property string draftGenre: ""
+    property int draftPlayMode: 0
 
     property var sortOptions: []
 
@@ -26,6 +27,13 @@ MD.BottomSheet {
         { value: 0, label: qsTr("Portable") },
         { value: 1, label: qsTr("Installer") },
         { value: 2, label: qsTr("Online fix") }
+    ]
+
+    readonly property var playModeOptions: [
+        { value: 0, label: qsTr("Any") },
+        { value: 1, label: qsTr("Single-player") },
+        { value: 2, label: qsTr("Co-op") },
+        { value: 3, label: qsTr("Multiplayer") }
     ]
 
     readonly property var sizeOptions: [
@@ -51,12 +59,13 @@ MD.BottomSheet {
         draftRecency = Core.catalogRecencyFilter
         draftHasAddons = Core.catalogHasAddonsFilter
         draftGenre = Core.catalogGenreFilter
+        draftPlayMode = Core.catalogPlayModeFilter
         open()
     }
 
     function applyAndClose() {
         Core.applyCatalogPresentation(draftSortMode, draftType, draftSize, draftRecency,
-                                      draftHasAddons, draftGenre)
+                                      draftHasAddons, draftGenre, draftPlayMode)
         root.sortApplied(draftSortMode)
         close()
     }
@@ -68,6 +77,7 @@ MD.BottomSheet {
         draftRecency = 0
         draftHasAddons = false
         draftGenre = ""
+        draftPlayMode = 0
     }
 
     ColumnLayout {
@@ -154,6 +164,37 @@ MD.BottomSheet {
                                 checked: root.draftType === modelData.value
                                 elevated: root.draftType !== modelData.value
                                 onClicked: root.draftType = modelData.value
+                            }
+                        }
+                    }
+                }
+
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    Layout.leftMargin: MD.Token.spacing.large
+                    Layout.rightMargin: MD.Token.spacing.large
+                    spacing: MD.Token.spacing.small
+
+                    MD.Label {
+                        text: qsTr("Players")
+                        typescale: MD.Token.typescale.label_large
+                        color: MD.Token.color.primary
+                    }
+
+                    Flow {
+                        Layout.fillWidth: true
+                        spacing: MD.Token.spacing.small
+
+                        Repeater {
+                            model: root.playModeOptions
+
+                            MD.FilterChip {
+                                required property var modelData
+                                text: modelData.label
+                                checkable: false
+                                checked: root.draftPlayMode === modelData.value
+                                elevated: root.draftPlayMode !== modelData.value
+                                onClicked: root.draftPlayMode = modelData.value
                             }
                         }
                     }

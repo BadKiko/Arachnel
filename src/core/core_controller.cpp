@@ -2553,6 +2553,14 @@ bool CoreController::entryMatchesCatalogFilters(const CatalogEntry& entry) const
             return false;
     }
 
+    if (m_catalogPlayModeFilter > 0) {
+        const quint8 need = m_catalogPlayModeFilter == 1   ? kPlayModeSingle
+                            : m_catalogPlayModeFilter == 2 ? kPlayModeCoop
+                                                           : kPlayModeMulti;
+        if ((entry.playModeMask & need) == 0)
+            return false;
+    }
+
     return true;
 }
 
@@ -2619,8 +2627,24 @@ void CoreController::rebuildAvailableCatalogGenres()
 {
     QHash<QString, int> counts;
     for (const auto& entry : m_catalogCache) {
-        for (const QString& token : entry.genreTokens)
+        for (const QString& token : entry.genreTokens) {
+            // Play-mode tags have their own filter chips — keep Genre list thematic.
+            const QString lower = token.toLower();
+            if (lower.contains(QLatin1String("single-player"))
+                || lower.contains(QLatin1String("multi-player"))
+                || lower.contains(QLatin1String("co-op")) || lower.contains(QLatin1String("coop"))
+                || lower.contains(QLatin1String("online pvp")) || lower == QLatin1String("pvp")
+                || lower.contains(QLatin1String("mmo"))
+                || lower.contains(QLatin1String("cross-platform"))
+                || lower.contains(QLatin1String("online fix"))
+                || lower.contains(QLatin1String("shared/split"))
+                || lower.contains(QLatin1String("lan pvp")) || lower.contains(QLatin1String("lan co-op"))
+                || lower.contains(QStringLiteral("однопользовател"))
+                || lower.contains(QStringLiteral("мультиплеер"))
+                || lower.contains(QStringLiteral("кооп")))
+                continue;
             ++counts[token];
+        }
     }
 
     QStringList genres;
@@ -2686,6 +2710,15 @@ void CoreController::setCatalogGenreFilter(const QString& genre)
     notifyCatalogFiltersChanged();
 }
 
+void CoreController::setCatalogPlayModeFilter(int filter)
+{
+    const int next = qBound(0, filter, 3);
+    if (m_catalogPlayModeFilter == next)
+        return;
+    m_catalogPlayModeFilter = next;
+    notifyCatalogFiltersChanged();
+}
+
 int CoreController::catalogActiveFilterCount() const
 {
     int count = 0;
@@ -2699,6 +2732,8 @@ int CoreController::catalogActiveFilterCount() const
         ++count;
     if (!m_catalogGenreFilter.isEmpty())
         ++count;
+    if (m_catalogPlayModeFilter > 0)
+        ++count;
     return count;
 }
 
@@ -2709,20 +2744,23 @@ QStringList CoreController::availableCatalogGenres() const
 
 void CoreController::clearCatalogFilters()
 {
-    setCatalogFilters(-1, 0, 0, false, {});
+    setCatalogFilters(-1, 0, 0, false, {}, 0);
 }
 
 void CoreController::setCatalogFilters(int typeFilter, int sizeFilter, int recencyFilter,
-                                       bool hasAddonsFilter, const QString& genreFilter)
+                                       bool hasAddonsFilter, const QString& genreFilter,
+                                       int playModeFilter)
 {
     const int nextType = (typeFilter < -1 || typeFilter > 2) ? -1 : typeFilter;
     const int nextSize = qBound(0, sizeFilter, 4);
     const int nextRecency = qBound(0, recencyFilter, 4);
     const QString nextGenre = genreFilter.trimmed();
+    const int nextPlay = qBound(0, playModeFilter, 3);
     if (m_catalogTypeFilter == nextType && m_catalogSizeFilter == nextSize
         && m_catalogRecencyFilter == nextRecency
         && m_catalogHasAddonsFilter == hasAddonsFilter
-        && m_catalogGenreFilter == nextGenre)
+        && m_catalogGenreFilter == nextGenre
+        && m_catalogPlayModeFilter == nextPlay)
         return;
 
     m_catalogTypeFilter = nextType;
@@ -2730,12 +2768,13 @@ void CoreController::setCatalogFilters(int typeFilter, int sizeFilter, int recen
     m_catalogRecencyFilter = nextRecency;
     m_catalogHasAddonsFilter = hasAddonsFilter;
     m_catalogGenreFilter = nextGenre;
+    m_catalogPlayModeFilter = nextPlay;
     notifyCatalogFiltersChanged();
 }
 
 void CoreController::applyCatalogPresentation(int sortMode, int typeFilter, int sizeFilter,
                                               int recencyFilter, bool hasAddonsFilter,
-                                              const QString& genreFilter)
+                                              const QString& genreFilter, int playModeFilter)
 {
     m_catalog.setSortModeQuiet(sortMode);
 
@@ -2743,17 +2782,20 @@ void CoreController::applyCatalogPresentation(int sortMode, int typeFilter, int 
     const int nextSize = qBound(0, sizeFilter, 4);
     const int nextRecency = qBound(0, recencyFilter, 4);
     const QString nextGenre = genreFilter.trimmed();
+    const int nextPlay = qBound(0, playModeFilter, 3);
     const bool filtersChanged =
         m_catalogTypeFilter != nextType || m_catalogSizeFilter != nextSize
         || m_catalogRecencyFilter != nextRecency
         || m_catalogHasAddonsFilter != hasAddonsFilter
-        || m_catalogGenreFilter != nextGenre;
+        || m_catalogGenreFilter != nextGenre
+        || m_catalogPlayModeFilter != nextPlay;
 
     m_catalogTypeFilter = nextType;
     m_catalogSizeFilter = nextSize;
     m_catalogRecencyFilter = nextRecency;
     m_catalogHasAddonsFilter = hasAddonsFilter;
     m_catalogGenreFilter = nextGenre;
+    m_catalogPlayModeFilter = nextPlay;
 
     if (filtersChanged)
         emit catalogFiltersChanged();

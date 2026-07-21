@@ -21,6 +21,39 @@ void prepareCatalogEntry(CatalogEntry& entry)
         if (!token.isEmpty())
             entry.genreTokens.append(token);
     }
+    entry.playModeMask = playModeMaskFromEntry(entry.genreTokens, entry.installKind);
+}
+
+quint8 playModeMaskFromEntry(const QStringList& genreTokens, InstallKind installKind)
+{
+    quint8 mask = 0;
+    for (const QString& raw : genreTokens) {
+        const QString t = raw.trimmed().toLower();
+        if (t.isEmpty())
+            continue;
+        if (t.contains(QLatin1String("single-player")) || t.contains(QLatin1String("singleplayer"))
+            || t.contains(QStringLiteral("однопользовател")))
+            mask |= kPlayModeSingle;
+        if (t.contains(QLatin1String("co-op")) || t.contains(QLatin1String("coop"))
+            || t.contains(QStringLiteral("кооп")))
+            mask |= kPlayModeCoop;
+        if (t.contains(QLatin1String("multi-player")) || t.contains(QLatin1String("multiplayer"))
+            || t.contains(QLatin1String("online pvp")) || t == QLatin1String("pvp")
+            || t.contains(QLatin1String("mmo"))
+            || t.contains(QLatin1String("cross-platform"))
+            || t.contains(QLatin1String("online fix"))
+            || t.contains(QStringLiteral("мультиплеер")))
+            mask |= kPlayModeMulti;
+        // Online Co-op / Online PvP are online multiplayer modes.
+        if (t.contains(QLatin1String("online co-op")) || t.contains(QLatin1String("online pvp"))
+            || t.contains(QLatin1String("online fix")))
+            mask |= kPlayModeMulti;
+    }
+    // FreeTP/steamidra mark online-capable titles as BundledFix / FixDownload.
+    if (mask == 0
+        && (installKind == InstallKind::BundledFix || installKind == InstallKind::FixDownload))
+        mask |= kPlayModeMulti;
+    return mask;
 }
 
 qint64 parseSizeLabelBytes(const QString& label)

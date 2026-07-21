@@ -91,6 +91,8 @@ class CoreController : public QObject
                    NOTIFY catalogFiltersChanged)
     Q_PROPERTY(QString catalogGenreFilter READ catalogGenreFilter WRITE setCatalogGenreFilter
                    NOTIFY catalogFiltersChanged)
+    Q_PROPERTY(int catalogPlayModeFilter READ catalogPlayModeFilter WRITE setCatalogPlayModeFilter
+                   NOTIFY catalogFiltersChanged)
     Q_PROPERTY(int catalogActiveFilterCount READ catalogActiveFilterCount NOTIFY catalogFiltersChanged)
     Q_PROPERTY(QStringList availableCatalogGenres READ availableCatalogGenres
                    NOTIFY availableCatalogGenresChanged)
@@ -145,15 +147,18 @@ public:
     void setCatalogHasAddonsFilter(bool enabled);
     QString catalogGenreFilter() const { return m_catalogGenreFilter; }
     void setCatalogGenreFilter(const QString& genre);
+    int catalogPlayModeFilter() const { return m_catalogPlayModeFilter; }
+    void setCatalogPlayModeFilter(int filter);
     int catalogActiveFilterCount() const;
     QStringList availableCatalogGenres() const;
     Q_INVOKABLE void clearCatalogFilters();
     Q_INVOKABLE void setCatalogFilters(int typeFilter, int sizeFilter, int recencyFilter,
-                                       bool hasAddonsFilter, const QString& genreFilter);
+                                       bool hasAddonsFilter, const QString& genreFilter,
+                                       int playModeFilter = 0);
     /** One model update: quiet sort + filters + applyCatalogFilter. */
     Q_INVOKABLE void applyCatalogPresentation(int sortMode, int typeFilter, int sizeFilter,
                                               int recencyFilter, bool hasAddonsFilter,
-                                              const QString& genreFilter);
+                                              const QString& genreFilter, int playModeFilter = 0);
 
     Q_INVOKABLE QVariantList pluginEntries() const;
     Q_INVOKABLE void browsePluginArach();
@@ -404,6 +409,7 @@ private:
     int m_catalogRecencyFilter = 0;
     bool m_catalogHasAddonsFilter = false;
     QString m_catalogGenreFilter;
+    int m_catalogPlayModeFilter = 0; // 0=any, 1=single, 2=co-op, 3=multiplayer
     QString m_userNotice;
     int m_userNoticeSerial = 0;
     QString m_catalogStatus;

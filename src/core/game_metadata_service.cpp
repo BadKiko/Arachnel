@@ -760,6 +760,13 @@ void GameMetadataService::handleDetailsFinished(QNetworkReply* reply)
             QStringList genres;
             for (const QJsonValue& genreValue : data.value(QStringLiteral("genres")).toArray())
                 genres.append(genreValue.toObject().value(QStringLiteral("description")).toString());
+            // Steam categories carry Single-player / Multi-player / Online Co-op / etc.
+            for (const QJsonValue& catValue : data.value(QStringLiteral("categories")).toArray()) {
+                const QString desc =
+                    catValue.toObject().value(QStringLiteral("description")).toString().trimmed();
+                if (!desc.isEmpty() && !genres.contains(desc))
+                    genres.append(desc);
+            }
             metadata.genres = genres.join(QStringLiteral(", "));
             metadata.screenshotUrls =
                 parseScreenshotUrls(data.value(QStringLiteral("screenshots")).toArray());
