@@ -102,6 +102,7 @@ Item {
             Layout.leftMargin: pageMargin
             Layout.rightMargin: pageMargin
             Layout.topMargin: MD.Token.spacing.medium
+            spacing: MD.Token.spacing.medium
 
             ColumnLayout {
                 Layout.fillWidth: true
@@ -113,18 +114,29 @@ Item {
                 }
 
                 MD.Label {
-                    text: Core.jobs.activeCount > 0
-                          ? qsTr("%1 active · resume after restart").arg(Core.jobs.activeCount)
-                          : qsTr("Torrents resume after restart")
+                    text: {
+                        const active = Core.jobs.activeCount
+                        const finished = root.countFinished()
+                        if (active > 0 && finished > 0)
+                            return qsTr("%1 active · %2 finished · resume after restart")
+                                    .arg(active).arg(finished)
+                        if (active > 0)
+                            return qsTr("%1 active · resume after restart").arg(active)
+                        if (finished > 0)
+                            return qsTr("%1 finished · torrents resume after restart").arg(finished)
+                        return qsTr("Torrents resume after restart")
+                    }
                     color: MD.Token.color.on_surface_variant
                     typescale: MD.Token.typescale.body_medium
+                    elide: Text.ElideRight
                 }
             }
 
-            MD.IconButton {
+            MD.Button {
                 visible: root.countFinished() > 0
-                mdState.type: MD.Enum.IBtStandard
+                text: qsTr("Clear finished")
                 icon.name: MD.Token.icon.delete_sweep
+                mdState.type: MD.Enum.BtText
                 onClicked: Core.clearFinishedJobs()
             }
         }
@@ -137,7 +149,7 @@ Item {
             Layout.rightMargin: pageMargin
             Layout.bottomMargin: pageMargin
             clip: true
-            spacing: MD.Token.spacing.small
+            spacing: MD.Token.spacing.medium
             boundsBehavior: Flickable.StopAtBounds
             model: root.jobGroups
 

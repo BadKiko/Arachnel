@@ -268,6 +268,19 @@ void SettingsStore::setProtonPriority(const QStringList& ids)
     save();
 }
 
+void SettingsStore::setSteamInstallMode(const QString& mode)
+{
+    const QString normalized = mode.trimmed().toLower();
+    QString next;
+    if (normalized == QStringLiteral("ddmod") || normalized == QStringLiteral("native"))
+        next = normalized;
+    if (m_steamInstallMode == next)
+        return;
+    m_steamInstallMode = next;
+    emit steamInstallModeChanged();
+    save();
+}
+
 void SettingsStore::promoteProtonInPriority(const QString& id)
 {
     const QString normalized = id.trimmed();

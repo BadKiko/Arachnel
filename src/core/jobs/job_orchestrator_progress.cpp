@@ -39,9 +39,9 @@ void JobOrchestrator::reportPluginProgress(const QString& jobId,
     }
     if (downloaded <= 0 && total > 0 && progress.percent > 0)
         downloaded = total * progress.percent / 100;
-    // Do NOT invent total from percent (e.g. 2.7 GB at 9% → fake 30 GB / "19.5 GB").
-    // Only trust totals reported by the plugin worker.
-    if (total > 0 && downloaded > 0 && total > downloaded * 2)
+    // Drop only *estimated* totals that disagree badly with bytes. Never discard
+    // an explicit plugin total (Steam ACF BytesToDownload is trusted).
+    if (progress.totalBytes <= 0 && total > 0 && downloaded > 0 && total > downloaded * 2)
         total = 0;
     job.bytesDownloaded = downloaded;
     job.totalBytes = total;

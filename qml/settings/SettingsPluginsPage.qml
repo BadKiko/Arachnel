@@ -176,6 +176,49 @@ Flickable {
                             wrapMode: Text.WordWrap
                         }
 
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: MD.Token.spacing.extra_small
+                            visible: modelData.pluginId === "steamidra"
+
+                            MD.Label {
+                                Layout.fillWidth: true
+                                text: qsTr("Steam install method")
+                                typescale: MD.Token.typescale.label_large
+                                color: MD.Token.color.primary
+                            }
+
+                            MD.Label {
+                                Layout.fillWidth: true
+                                text: qsTr("Ask each time, or always use Arachnel CDN / Steam client.")
+                                wrapMode: Text.WordWrap
+                                color: MD.Token.color.on_surface_variant
+                                typescale: MD.Token.typescale.body_small
+                            }
+
+                            Flow {
+                                Layout.fillWidth: true
+                                spacing: MD.Token.spacing.small
+
+                                MD.FilterChip {
+                                    text: qsTr("Ask each time")
+                                    checked: !(Core.settings.steamInstallMode === "ddmod"
+                                               || Core.settings.steamInstallMode === "native")
+                                    onClicked: Core.settings.steamInstallMode = ""
+                                }
+                                MD.FilterChip {
+                                    text: qsTr("Arachnel (CDN)")
+                                    checked: Core.settings.steamInstallMode === "ddmod"
+                                    onClicked: Core.settings.steamInstallMode = "ddmod"
+                                }
+                                MD.FilterChip {
+                                    text: qsTr("Steam client")
+                                    checked: Core.settings.steamInstallMode === "native"
+                                    onClicked: Core.settings.steamInstallMode = "native"
+                                }
+                            }
+                        }
+
                         MD.Button {
                             Layout.alignment: Qt.AlignLeft
                             mdState.type: MD.Enum.BtText

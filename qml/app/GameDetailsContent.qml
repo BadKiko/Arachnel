@@ -104,6 +104,17 @@ Item {
                             icon.name: MD.Token.icon.install_desktop
                         }
                         MD.AssistChip {
+                            visible: (page.info.sourceId ?? "") === "steamidra"
+                            text: qsTr("Steam CDN · Online Fix")
+                            icon.name: MD.Token.icon.check_circle
+                            elevated: true
+                            mdState.backgroundColor: MD.Token.color.tertiary_container
+                            mdState.textColor: MD.Token.color.on_tertiary_container
+                            mdState.iconColor: MD.Token.color.on_tertiary_container
+                            mdState.outlineColor: MD.Token.color.tertiary_container
+                            onClicked: page.openSteamidraTrust()
+                        }
+                        MD.AssistChip {
                             visible: !!(page.info.hasUpdate)
                             text: qsTr("Update available")
                             icon.name: MD.Token.icon.update
@@ -143,7 +154,18 @@ Item {
                     MD.Label {
                         Layout.fillWidth: true
                         visible: page.readyToInstall && !page.installFailed
+                                 && (page.info.sourceId ?? "") !== "steamidra"
                         text: Messages.gameInstallTorrentHint
+                        wrapMode: Text.WordWrap
+                        color: MD.Token.color.on_surface_variant
+                        typescale: MD.Token.typescale.body_medium
+                    }
+
+                    MD.Label {
+                        Layout.fillWidth: true
+                        visible: page.readyToInstall && !page.installFailed
+                                 && (page.info.sourceId ?? "") === "steamidra"
+                        text: qsTr("Steam CDN download ready. Prefer Steam’s client? Choose that on Install.")
                         wrapMode: Text.WordWrap
                         color: MD.Token.color.on_surface_variant
                         typescale: MD.Token.typescale.body_medium

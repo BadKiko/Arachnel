@@ -4,6 +4,7 @@
 #include "file_utils.h"
 #include "game_metadata_service.h"
 #include "install_heuristics.h"
+#include "job_status.h"
 #include "job_store.h"
 #include "launch_resolver.h"
 #include "library_store.h"
@@ -32,6 +33,10 @@ void LibraryController::sync() const
 
 bool LibraryController::isEntryPlayable(const QString& entryId) const
 {
+    for (const JobEntry& job : m_jobs->jobs()) {
+        if (job.entryId == entryId && !isJobTerminal(job.status))
+            return false;
+    }
     const LibraryGame* game = m_store->gameById(entryId);
     if (!game || game->installPath.isEmpty() || !QFileInfo::exists(game->installPath))
         return false;

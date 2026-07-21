@@ -34,6 +34,7 @@ function(arachnel_plugin_sdk_init ARACHNEL_ROOT)
             ${ARACHNEL_ROOT}/src/core
             ${ARACHNEL_ROOT}/src/core/catalog
             ${ARACHNEL_ROOT}/src/core/install
+            ${ARACHNEL_ROOT}/src/core/library
             ${ARACHNEL_ROOT}/src/core/plugins
             ${ARACHNEL_ROOT}/src/core/runtime
             ${ARACHNEL_ROOT}/src/core/util
