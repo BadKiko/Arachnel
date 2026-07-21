@@ -34,17 +34,36 @@ Item {
             Layout.fillWidth: true
             Layout.maximumWidth: 560
             Layout.alignment: Qt.AlignLeft
-            onAccepted: page.applyCatalogSearch(searchText.trim())
+
+            // Keep results in sync with the field. Enter used to be required, so
+            // typing a new query over a failed search left "Found: 0" on screen.
+            Timer {
+                id: searchDebounce
+                interval: 180
+                onTriggered: page.applyCatalogSearch(catalogSearch.searchText.trim())
+            }
+
+            onAccepted: {
+                searchDebounce.stop()
+                page.applyCatalogSearch(catalogSearch.searchText.trim())
+            }
             onSearchTextChanged: {
-                if (!searchText.length)
+                if (!catalogSearch.searchText.length) {
+                    searchDebounce.stop()
                     page.applyCatalogSearch("")
+                    return
+                }
+                searchDebounce.restart()
             }
 
             Connections {
                 target: page
                 function onSearchQueryChanged() {
-                    if (catalogSearch.searchText !== page.searchQuery)
-                        catalogSearch.searchText = page.searchQuery
+                    if (catalogSearch.searchText === page.searchQuery)
+                        return
+                    // Avoid re-debounce when we push the committed query back.
+                    searchDebounce.stop()
+                    catalogSearch.searchText = page.searchQuery
                 }
             }
         }
