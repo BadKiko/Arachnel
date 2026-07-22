@@ -1,5 +1,6 @@
 #include "install_session_service.h"
 
+#include "install_marker.h"
 #include "job_model.h"
 #include "job_orchestrator.h"
 #include "plugin_host.h"
@@ -9,6 +10,7 @@
 
 #include <QCoreApplication>
 #include <QDir>
+#include <QFileInfo>
 
 namespace arachnel::core {
 
@@ -170,6 +172,9 @@ void InstallSessionService::commitInstalledCatalogGame(const CatalogEntry& entry
         game.steamAppId = catalog.steamAppId;
     if (game.steamAppId.isEmpty())
         game.steamAppId = m_hooks.metadataSteamAppIdForTitle(catalog.title);
+
+    if (!game.installPath.isEmpty() && QFileInfo::exists(game.installPath))
+        writeInstallMarker(game.installPath, game.id, game.sourceId);
 
     m_libraryStore->upsertGame(game);
     m_hooks.syncLibrary();

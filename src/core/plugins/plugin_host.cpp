@@ -2,6 +2,7 @@
 
 #include "crash_log.h"
 #include "catalog_types.h"
+#include "file_utils.h"
 
 #include "plugin_api.h"
 
@@ -45,16 +46,6 @@ PluginHost::~PluginHost()
     unloadAll();
 }
 
-QStringList PluginHost::pluginSearchRoots()
-{
-    QStringList roots;
-    const QString dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    if (!dataDir.isEmpty())
-        roots << dataDir + QStringLiteral("/plugins");
-
-    return roots;
-}
-
 void PluginHost::unloadAll()
 {
     for (auto it = m_plugins.begin(); it != m_plugins.end(); ++it) {
@@ -76,8 +67,68 @@ void PluginHost::shutdownPlugins()
     unloadAll();
 }
 
+QStringList PluginHost::pluginSearchRoots()
+{
+    QStringList roots;
+    const QString dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    if (!dataDir.isEmpty())
+        roots << dataDir + QStringLiteral("/plugins");
+
+#if defined(Q_OS_WIN)
+    const QByteArray roaming = qgetenv("APPDATA");
+    if (!roaming.isEmpty()) {
+        const QString legacy =
+            QString::fromLocal8Bit(roaming) + QStringLiteral("/Arachnel/plugins");
+        if (!roots.contains(legacy, Qt::CaseInsensitive))
+            roots << legacy;
+    }
+#endif
+
+    const QString sidecar =
+        QCoreApplication::applicationDirPath() + QStringLiteral("/plugins");
+    if (!roots.contains(sidecar, Qt::CaseInsensitive))
+        roots << sidecar;
+
+    return roots;
+}
+
+void PluginHost::migratePluginTrees()
+{
+    const QString destRoot = writablePluginsDir();
+    if (destRoot.isEmpty())
+        return;
+
+    QStringList sources;
+#if defined(Q_OS_WIN)
+    const QByteArray roaming = qgetenv("APPDATA");
+    if (!roaming.isEmpty())
+        sources << QString::fromLocal8Bit(roaming) + QStringLiteral("/Arachnel/plugins");
+#endif
+    sources << QCoreApplication::applicationDirPath() + QStringLiteral("/plugins");
+
+    for (const QString& sourceRoot : sources) {
+        if (QDir::cleanPath(sourceRoot).compare(QDir::cleanPath(destRoot), Qt::CaseInsensitive) == 0)
+            continue;
+        QDir src(sourceRoot);
+        if (!src.exists())
+            continue;
+        const QStringList ids = src.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
+        for (const QString& id : ids) {
+            const QString from = src.absoluteFilePath(id);
+            const QString to = destRoot + QLatin1Char('/') + id;
+            if (QDir(to).exists())
+                continue;
+            if (!QFileInfo::exists(from + QStringLiteral("/plugin.json")))
+                continue;
+            QString error;
+            copyPathRecursive(from, to, &error);
+        }
+    }
+}
+
 void PluginHost::scan()
 {
+    migratePluginTrees();
     unloadAll();
 
     const QStringList roots = pluginSearchRoots();
@@ -89,6 +140,8 @@ void PluginHost::scan()
         const QStringList entries =
             rootDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
         for (const QString& entry : entries) {
+            if (entry.endsWith(QStringLiteral(".staging")) || entry.endsWith(QStringLiteral(".bak")))
+                continue;
             const QString pluginDir = rootDir.absoluteFilePath(entry);
             loadPluginDir(pluginDir);
         }
@@ -285,6 +338,21 @@ ISourcePlugin* PluginHost::plugin(const QString& id) const
 bool PluginHost::hasPlugin(const QString& id) const
 {
     return m_plugins.contains(id);
+}
+
+bool PluginHost::hasPluginFilesOnDisk(const QString& id) const
+{
+    const QString trimmed = id.trimmed();
+    if (trimmed.isEmpty())
+        return false;
+
+    for (const QString& root : pluginSearchRoots()) {
+        const QString manifest =
+            QDir(root).absoluteFilePath(trimmed + QStringLiteral("/plugin.json"));
+        if (QFileInfo::exists(manifest))
+            return true;
+    }
+    return false;
 }
 
 QStringList PluginHost::pluginIds() const

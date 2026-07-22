@@ -28,6 +28,9 @@ build_dlls.txt
 dist_dlls.txt
 qml-test-err.txt
 
+# Local deploy helper (Cursor /deploy-local)
+scripts/deploy-media.ps1
+
 # Local agent / download progress dumps (repo root)
 /_*.log
 /_*.out

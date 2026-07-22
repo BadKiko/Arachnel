@@ -5,6 +5,7 @@
 #include "game_metadata_service.h"
 #include "install_heuristics.h"
 #include "install_kind.h"
+#include "install_marker.h"
 #include "job_status.h"
 #include "job_store.h"
 #include "launch_resolver.h"
@@ -341,6 +342,14 @@ int LibraryController::scanInstalledGames()
     if (!m_settings || !m_store)
         return 0;
 
+    // Stamp known library installs so re-scan keeps only Arachnel-managed folders.
+    for (const LibraryGame& game : m_store->games()) {
+        if (game.installPath.isEmpty() || !QFileInfo::exists(game.installPath))
+            continue;
+        if (!hasInstallMarker(game.installPath))
+            writeInstallMarker(game.installPath, game.id, game.sourceId);
+    }
+
     int added = 0;
     for (const StorageLibrary& library : m_settings->storageLibraries()->libraries()) {
         const QString rootPath = normalizedStoragePath(library.path);
@@ -357,6 +366,10 @@ int LibraryController::scanInstalledGames()
 
             const QString installPath = QDir::cleanPath(dirInfo.absoluteFilePath());
             if (m_store->gameById(folderName) || installPathTaken(m_store, installPath))
+                continue;
+
+            // Only folders Arachnel itself installed (marker written on commit).
+            if (!hasInstallMarker(installPath))
                 continue;
 
             const QString executable = findGameExecutableInTree(installPath);

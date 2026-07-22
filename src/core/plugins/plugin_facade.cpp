@@ -93,6 +93,15 @@ QVariantList CoreController::pluginEntries() const
     return entries;
 }
 
+bool CoreController::isPluginInstalledOnDisk(const QString& pluginId) const
+{
+    if (!m_pluginHost)
+        return false;
+    if (m_pluginHost->hasPlugin(pluginId))
+        return true;
+    return m_pluginHost->hasPluginFilesOnDisk(pluginId);
+}
+
 bool CoreController::installPluginArach(const QUrl& fileUrl)
 {
     if (!m_pluginHost)

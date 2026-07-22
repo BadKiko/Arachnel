@@ -41,13 +41,46 @@ bool directoryLooksLikeAppData(const QString& path)
         || QFileInfo::exists(path + QStringLiteral("/plugins"));
 }
 
+bool pathIsSelfOrDescendant(const QString& path, const QString& ancestor)
+{
+    const QString cleanPath = QDir::cleanPath(path);
+    const QString cleanAncestor = QDir::cleanPath(ancestor);
+    if (cleanPath.compare(cleanAncestor, Qt::CaseInsensitive) == 0)
+        return true;
+    const QString prefix = cleanAncestor + QLatin1Char('/');
+    return cleanPath.startsWith(prefix, Qt::CaseInsensitive);
+}
+
 bool copyDirectoryRecursive(const QString& source, const QString& destination)
 {
     QDir src(source);
     if (!src.exists())
         return false;
-    QDir().mkpath(destination);
 
+    const QString cleanSource = QDir::cleanPath(source);
+    const QString cleanDestination = QDir::cleanPath(destination);
+    // AppDataLocation is often %APPDATA%/Arachnel/Arachnel while legacy data lives in
+    // %APPDATA%/Arachnel — copying without this guard nests destination into itself forever.
+    if (pathIsSelfOrDescendant(cleanDestination, cleanSource)) {
+        QDir().mkpath(cleanDestination);
+        const auto entries =
+            src.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot | QDir::Hidden);
+        for (const QFileInfo& entry : entries) {
+            const QString abs = QDir::cleanPath(entry.absoluteFilePath());
+            if (pathIsSelfOrDescendant(abs, cleanDestination))
+                continue;
+            const QString target = cleanDestination + QLatin1Char('/') + entry.fileName();
+            if (entry.isDir()) {
+                if (!copyDirectoryRecursive(abs, target))
+                    return false;
+            } else if (!QFile::exists(target) && !QFile::copy(abs, target)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    QDir().mkpath(destination);
     const auto entries =
         src.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot | QDir::Hidden);
     for (const QFileInfo& entry : entries) {

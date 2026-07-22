@@ -9,6 +9,7 @@
 #include <QDateTime>
 #include <QDesktopServices>
 #include <QDir>
+#include <QDirIterator>
 #include <QFile>
 #include <QFileInfo>
 #include <QFutureWatcher>
@@ -29,6 +30,80 @@
 #endif
 
 namespace arachnel::setup {
+
+namespace {
+
+/** User plugin dir used by the app (org+app = Arachnel/Arachnel). Setup has a different
+ *  applicationName, so AppDataLocation would be wrong — hardcode the app path. */
+QString arachnelUserPluginsDir()
+{
+#if defined(Q_OS_WIN)
+    const QByteArray roaming = qgetenv("APPDATA");
+    if (roaming.isEmpty())
+        return {};
+    return QDir::fromNativeSeparators(QString::fromLocal8Bit(roaming)
+                                      + QStringLiteral("/Arachnel/Arachnel/plugins"));
+#else
+    return QDir::homePath() + QStringLiteral("/.local/share/Arachnel/Arachnel/plugins");
+#endif
+}
+
+bool copyPluginTree(const QString& srcRoot, const QString& dstRoot)
+{
+    QDir src(srcRoot);
+    if (!src.exists())
+        return true;
+    if (!QDir().mkpath(dstRoot))
+        return false;
+
+    QDirIterator it(srcRoot, QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot,
+                    QDirIterator::Subdirectories);
+    while (it.hasNext()) {
+        it.next();
+        const QString relative = src.relativeFilePath(it.filePath());
+        const QString dest = dstRoot + QLatin1Char('/') + relative;
+        if (it.fileInfo().isDir()) {
+            if (!QDir().mkpath(dest))
+                return false;
+            continue;
+        }
+        if (QFile::exists(dest))
+            continue; // keep existing user plugins
+        if (!QDir().mkpath(QFileInfo(dest).absolutePath()))
+            return false;
+        if (!QFile::copy(it.filePath(), dest))
+            return false;
+    }
+    return true;
+}
+
+/** Before wiping the install folder on update, rescue any plugins that lived next to the exe. */
+void preserveInstallDirPlugins(const QString& installPath)
+{
+    const QString installPlugins =
+        QDir(installPath).absoluteFilePath(QStringLiteral("plugins"));
+    if (!QDir(installPlugins).exists())
+        return;
+
+    const QString userPlugins = arachnelUserPluginsDir();
+    if (userPlugins.isEmpty())
+        return;
+
+    QDir().mkpath(userPlugins);
+    QDir src(installPlugins);
+    const QStringList ids = src.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
+    for (const QString& id : ids) {
+        const QString from = src.absoluteFilePath(id);
+        if (!QFileInfo::exists(from + QStringLiteral("/plugin.json")))
+            continue;
+        const QString to = userPlugins + QLatin1Char('/') + id;
+        if (QDir(to).exists())
+            continue;
+        copyPluginTree(from, to);
+    }
+}
+
+} // namespace
 
 QString SetupBackend::detectDefaultLanguage()
 {
@@ -419,6 +494,8 @@ void SetupBackend::startInstall()
 
         QDir target(installPath);
         if (target.exists()) {
+            if (updateMode)
+                preserveInstallDirPlugins(installPath);
             report(8, QCoreApplication::translate("Setup", "Clearing install folder…"));
             if (!target.removeRecursively()) {
                 result.second = QCoreApplication::translate("Setup",
