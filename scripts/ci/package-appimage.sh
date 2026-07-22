@@ -111,15 +111,35 @@ deploy_qml_modules() {
   fi
 
   local material_lib=""
-  if [[ -f "${BUILD}/_deps/qml_material-build/libqml_material.so" ]]; then
-    material_lib="${BUILD}/_deps/qml_material-build/libqml_material.so"
-  else
-    material_lib="$(find "${BUILD}" -name 'libqml_material.so' -type f | head -n1 || true)"
+  local search_roots=("${BUILD}")
+  if [[ -n "${FETCHCONTENT_BASE_DIR:-}" ]]; then
+    search_roots+=("${FETCHCONTENT_BASE_DIR}")
+  fi
+  search_roots+=("${ROOT}/.cache/fetchcontent")
+
+  for root in "${search_roots[@]}"; do
+    [[ -d "${root}" ]] || continue
+    if [[ -f "${root}/_deps/qml_material-build/libqml_material.so" ]]; then
+      material_lib="${root}/_deps/qml_material-build/libqml_material.so"
+      break
+    fi
+    if [[ -f "${root}/qml_material-build/libqml_material.so" ]]; then
+      material_lib="${root}/qml_material-build/libqml_material.so"
+      break
+    fi
+  done
+  if [[ -z "${material_lib}" ]]; then
+    for root in "${search_roots[@]}"; do
+      [[ -d "${root}" ]] || continue
+      material_lib="$(find "${root}" -name 'libqml_material.so' -type f 2>/dev/null | head -n1 || true)"
+      [[ -n "${material_lib}" ]] && break
+    done
   fi
   if [[ -z "${material_lib}" || ! -f "${material_lib}" ]]; then
-    echo "ERROR: libqml_material.so not found under ${BUILD}" >&2
+    echo "ERROR: libqml_material.so not found under ${search_roots[*]}" >&2
     exit 1
   fi
+  echo "==> Found libqml_material.so at ${material_lib}"
 
   echo "==> Copy libqml_material.so → usr/lib and beside QML plugin"
   cp -a "${material_lib}" "${lib_dir}/"
