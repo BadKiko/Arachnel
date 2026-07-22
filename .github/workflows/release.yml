@@ -51,6 +51,21 @@ jobs:
       - name: Setup sccache
         uses: mozilla-actions/sccache-action@v0.0.10
 
+      # Ninja on Windows cannot CreateProcess("sccache") — needs full path to sccache.exe
+      - name: Resolve sccache path for CMake
+        shell: pwsh
+        run: |
+          $path = $env:SCCACHE_PATH
+          if ($path -and (Test-Path -LiteralPath "$path.exe")) { $path = "$path.exe" }
+          elseif (-not ($path -and (Test-Path -LiteralPath $path))) {
+            $cmd = Get-Command sccache -ErrorAction SilentlyContinue
+            if ($cmd) { $path = $cmd.Source }
+          }
+          if (-not $path) { throw "sccache not found" }
+          Write-Host "CMAKE_*_COMPILER_LAUNCHER=$path"
+          "CMAKE_C_COMPILER_LAUNCHER=$path" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "CMAKE_CXX_COMPILER_LAUNCHER=$path" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
       - name: Cache FetchContent (Boost / libtorrent / QmlMaterial)
         uses: actions/cache@v4
         with:
@@ -152,6 +167,13 @@ jobs:
 
       - name: Setup sccache
         uses: mozilla-actions/sccache-action@v0.0.10
+
+      - name: Resolve sccache path for CMake
+        run: |
+          path="${SCCACHE_PATH:-$(command -v sccache)}"
+          echo "CMAKE_C_COMPILER_LAUNCHER=$path" >> "$GITHUB_ENV"
+          echo "CMAKE_CXX_COMPILER_LAUNCHER=$path" >> "$GITHUB_ENV"
+          echo "CMAKE_*_COMPILER_LAUNCHER=$path"
 
       - name: Cache FetchContent (Boost / libtorrent / QmlMaterial)
         uses: actions/cache@v4
