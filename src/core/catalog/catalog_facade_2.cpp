@@ -21,30 +21,6 @@ QStringList variantListToStringList(const QVariantList& values)
     return result;
 }
 
-void syncSteamidraPreferMode(const QString& mode)
-{
-    const QString normalized = mode.trimmed().toLower();
-    if (normalized != QStringLiteral("ddmod") && normalized != QStringLiteral("native"))
-        return;
-
-    const QString path =
-        QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
-        + QStringLiteral("/plugins/steamidra/settings.json");
-    QJsonObject obj;
-    {
-        QFile in(path);
-        if (in.open(QIODevice::ReadOnly))
-            obj = QJsonDocument::fromJson(in.readAll()).object();
-    }
-    if (obj.value(QStringLiteral("preferMode")).toString() == normalized)
-        return;
-    obj.insert(QStringLiteral("preferMode"), normalized);
-    QFile out(path);
-    if (!out.open(QIODevice::WriteOnly | QIODevice::Truncate))
-        return;
-    out.write(QJsonDocument(obj).toJson(QJsonDocument::Indented));
-}
-
 } // namespace
 
 void CoreController::searchCatalog(const QString& sourceId, const QString& query)
@@ -212,6 +188,7 @@ void CoreController::installCatalogEntry(const QString& entryId, const QString& 
                                          const QVariantList& addonIdsVariant,
                                          const QString& installMode)
 {
+    Q_UNUSED(installMode);
     if (!ensureProtonReady())
         return;
 
@@ -282,9 +259,7 @@ void CoreController::installCatalogEntry(const QString& entryId, const QString& 
         ctx.magnetUri = entry.steamAppId;
         ctx.uploadDate = entry.uploadDate;
         ctx.installKind = entry.installKind;
-        ctx.installMode = installMode.trimmed();
-        if (entry.sourceId == QStringLiteral("steamidra"))
-            syncSteamidraPreferMode(ctx.installMode);
+        ctx.installMode.clear();
 
         m_pluginHost->runOwnedDownloadAsync(
             plugin, ctx,

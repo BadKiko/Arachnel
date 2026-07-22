@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <cstring>
+#include <QCoreApplication>
 
 namespace arachnel::core {
 
@@ -287,7 +288,7 @@ QString catalogFeedValidationError(const QByteArray& payload)
 {
     const QByteArray trimmed = payload.trimmed();
     if (trimmed.isEmpty())
-        return QStringLiteral("Пустой ответ сервера");
+        return QCoreApplication::translate("Core", "Empty server response");
 
     if (trimmed.startsWith('<')) {
         const QByteArray lower = trimmed.toLower();
@@ -298,19 +299,19 @@ QString catalogFeedValidationError(const QByteArray& payload)
 
     const QJsonDocument document = QJsonDocument::fromJson(payload);
     if (!document.isObject())
-        return QStringLiteral("Некорректный JSON");
+        return QCoreApplication::translate("Core", "Invalid JSON");
 
     const QJsonObject root = document.object();
     if (!root.contains(QStringLiteral("downloads")))
-        return QStringLiteral("Нет массива downloads — это не каталог Hydra");
+        return QCoreApplication::translate("Core", "No downloads array — not a Hydra catalog");
 
     const QJsonArray downloads = root.value(QStringLiteral("downloads")).toArray();
     if (downloads.isEmpty())
-        return QStringLiteral("Массив downloads пуст");
+        return QCoreApplication::translate("Core", "downloads array is empty");
 
     const QVector<CatalogEntry> entries = parseCatalogFeed(payload, QStringLiteral("probe"));
     if (entries.isEmpty())
-        return QStringLiteral("Не удалось разобрать игры из каталога");
+        return QCoreApplication::translate("Core", "Failed to parse games from catalog");
 
     return {};
 }

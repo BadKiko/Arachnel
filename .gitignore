@@ -36,3 +36,7 @@ qml-test-err.txt
 /_progress_*
 
 translations/generated/*.qm
+
+__pycache__/
+*.py[cod]
+

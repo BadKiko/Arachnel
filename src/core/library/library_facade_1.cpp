@@ -354,4 +354,10 @@ void CoreController::setGameProtonId(const QString& entryId, const QString& prot
     syncLibraryFromStore();
 }
 
+void CoreController::setGameOnlineFixEnabled(const QString& entryId, bool enabled)
+{
+    if (m_libraryController)
+        m_libraryController->setGameOnlineFixEnabled(entryId, enabled);
+}
+
 } // namespace arachnel::core

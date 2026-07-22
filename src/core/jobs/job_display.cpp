@@ -18,25 +18,9 @@ void jobDisplayTranslationSeed()
     QT_TRANSLATE_NOOP("Core", "Installing add-on…");
     QT_TRANSLATE_NOOP("Core", "Preparing…");
     QT_TRANSLATE_NOOP("Core", "Preparing Steam…");
-    QT_TRANSLATE_NOOP("Core", "Preparing Steam client…");
     QT_TRANSLATE_NOOP("Core", "Downloading from Steam CDN…");
     QT_TRANSLATE_NOOP("Core", "Getting game info…");
     QT_TRANSLATE_NOOP("Core", "Finishing…");
-    QT_TRANSLATE_NOOP("Core", "Prepared — Steam is downloading");
-    QT_TRANSLATE_NOOP("Core", "Queued in Steam — restart Steam, then open the game there");
-    QT_TRANSLATE_NOOP("Core", "Queued in Steam…");
-    QT_TRANSLATE_NOOP("Core", "Downloading in Steam…");
-    QT_TRANSLATE_NOOP("Core", "Waiting in Steam — click Update if needed");
-    QT_TRANSLATE_NOOP("Core", "Restarting Steam for LumaCore…");
-    QT_TRANSLATE_NOOP(
-        "Core",
-        "LumaCore is missing from the Steam folder. "
-        "Reinstall the Steam plugin or use Download in Arachnel (CDN).");
-    QT_TRANSLATE_NOOP(
-        "Core",
-        "Steam still reports no license after LumaCore restart. "
-        "Check that LumaCore DLLs are in the Steam folder, then retry — "
-        "or use Download in Arachnel (CDN).");
     QT_TRANSLATE_NOOP("Core", "This game is not available for download right now. Try another title.");
     QT_TRANSLATE_NOOP("Core",
                       "Could not prepare this game for download. Try again later or pick another title.");
@@ -143,38 +127,12 @@ QString displayJobDetail(const QString& detail)
         {"Preparing…", "Preparing…"},
         {"Подготовка Steam…", "Preparing Steam…"},
         {"Preparing Steam…", "Preparing Steam…"},
-        {"Подготовка клиента Steam…", "Preparing Steam client…"},
-        {"Preparing Steam client…", "Preparing Steam client…"},
         {"Загрузка с Steam CDN…", "Downloading from Steam CDN…"},
         {"Downloading from Steam CDN…", "Downloading from Steam CDN…"},
         {"Получение данных об игре…", "Getting game info…"},
         {"Getting game info…", "Getting game info…"},
         {"Завершение…", "Finishing…"},
         {"Finishing…", "Finishing…"},
-        {"Готово — Steam загружает игру", "Prepared — Steam is downloading"},
-        {"Prepared — Steam is downloading", "Prepared — Steam is downloading"},
-        {"В очереди Steam — перезапустите Steam и откройте игру там",
-         "Queued in Steam — restart Steam, then open the game there"},
-        {"Queued in Steam — restart Steam, then open the game there",
-         "Queued in Steam — restart Steam, then open the game there"},
-        {"В очереди Steam…", "Queued in Steam…"},
-        {"Queued in Steam…", "Queued in Steam…"},
-        {"Загрузка в Steam…", "Downloading in Steam…"},
-        {"Downloading in Steam…", "Downloading in Steam…"},
-        {"Ожидание Steam — нажмите «Обновить», если нужно",
-         "Waiting in Steam — click Update if needed"},
-        {"Waiting in Steam — click Update if needed",
-         "Waiting in Steam — click Update if needed"},
-        {"Перезапуск Steam для LumaCore…", "Restarting Steam for LumaCore…"},
-        {"Restarting Steam for LumaCore…", "Restarting Steam for LumaCore…"},
-        {"В папке Steam нет LumaCore. Переустановите Steam-плагин или выберите «Скачать в Arachnel (CDN)».",
-         "LumaCore is missing from the Steam folder. Reinstall the Steam plugin or use Download in Arachnel (CDN)."},
-        {"LumaCore is missing from the Steam folder. Reinstall the Steam plugin or use Download in Arachnel (CDN).",
-         "LumaCore is missing from the Steam folder. Reinstall the Steam plugin or use Download in Arachnel (CDN)."},
-        {"Steam всё ещё пишет «нет лицензий» после перезапуска LumaCore. Проверьте DLL в папке Steam и повторите — или выберите «Скачать в Arachnel (CDN)».",
-         "Steam still reports no license after LumaCore restart. Check that LumaCore DLLs are in the Steam folder, then retry — or use Download in Arachnel (CDN)."},
-        {"Steam still reports no license after LumaCore restart. Check that LumaCore DLLs are in the Steam folder, then retry — or use Download in Arachnel (CDN).",
-         "Steam still reports no license after LumaCore restart. Check that LumaCore DLLs are in the Steam folder, then retry — or use Download in Arachnel (CDN)."},
         {"Эта игра сейчас недоступна для загрузки. Попробуйте другую.",
          "This game is not available for download right now. Try another title."},
         {"This game is not available for download right now. Try another title.",

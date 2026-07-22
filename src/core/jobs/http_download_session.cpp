@@ -8,6 +8,7 @@
 #include <QNetworkRequest>
 #include <QRegularExpression>
 #include <QUrl>
+#include <QCoreApplication>
 
 namespace arachnel::core {
 
@@ -122,7 +123,7 @@ bool HttpDownloadSession::addJob(const QString& jobId, const QString& url, const
         QFile file(filePath);
         if (!file.open(QIODevice::WriteOnly)) {
             reply->deleteLater();
-            emit httpFailed(jobId, QStringLiteral("Не удалось сохранить файл"));
+            emit httpFailed(jobId, QCoreApplication::translate("Core", "Failed to save file"));
             return;
         }
         file.write(reply->readAll());

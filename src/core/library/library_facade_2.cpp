@@ -69,7 +69,11 @@ QString CoreController::browseStorageFolder()
         DWORD options = 0;
         if (SUCCEEDED(dialog->GetOptions(&options)))
             dialog->SetOptions(options | FOS_PICKFOLDERS | FOS_FORCEFILESYSTEM);
-        dialog->SetTitle(L"Выберите папку библиотеки");
+        {
+            const QString title =
+                QCoreApplication::translate("Core", "Choose library folder");
+            dialog->SetTitle(reinterpret_cast<LPCWSTR>(title.utf16()));
+        }
 
         if (SUCCEEDED(dialog->Show(nullptr))) {
             IShellItem* item = nullptr;

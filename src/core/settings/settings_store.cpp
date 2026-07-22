@@ -13,7 +13,6 @@
 
 namespace arachnel::core {
 
-
 #include "settings_store_helpers.h"
 
 SettingsStore::SettingsStore(QObject* parent)
@@ -265,19 +264,6 @@ void SettingsStore::setProtonPriority(const QStringList& ids)
         return;
     m_protonPriority = normalized;
     emit protonPriorityChanged();
-    save();
-}
-
-void SettingsStore::setSteamInstallMode(const QString& mode)
-{
-    const QString normalized = mode.trimmed().toLower();
-    QString next;
-    if (normalized == QStringLiteral("ddmod") || normalized == QStringLiteral("native"))
-        next = normalized;
-    if (m_steamInstallMode == next)
-        return;
-    m_steamInstallMode = next;
-    emit steamInstallModeChanged();
     save();
 }
 

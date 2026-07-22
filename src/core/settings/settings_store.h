@@ -36,9 +36,6 @@ class SettingsStore : public QObject
                    defaultProtonIdChanged)
     Q_PROPERTY(QStringList protonPriority READ protonPriority WRITE setProtonPriority NOTIFY
                    protonPriorityChanged)
-    /** Empty = ask each install; "ddmod" or "native" = remembered Steam plugin mode. */
-    Q_PROPERTY(QString steamInstallMode READ steamInstallMode WRITE setSteamInstallMode NOTIFY
-                   steamInstallModeChanged)
 
 public:
     explicit SettingsStore(QObject* parent = nullptr);
@@ -55,7 +52,6 @@ public:
     QString defaultProtonId() const { return m_defaultProtonId; }
     QStringList protonPriority() const { return m_protonPriority; }
     QString legacyProtonPath() const { return m_legacyProtonPath; }
-    QString steamInstallMode() const { return m_steamInstallMode; }
     StorageLibraryModel* storageLibraries() { return &m_storageLibraries; }
     const StorageLibraryModel* storageLibraries() const { return &m_storageLibraries; }
 
@@ -90,7 +86,6 @@ public:
     void setProtonPriority(const QStringList& ids);
     void promoteProtonInPriority(const QString& id);
     void clearLegacyProtonPath();
-    void setSteamInstallMode(const QString& mode);
 
     QString resolvedProtonId(const QString& gameProtonId, class ProtonManager& manager) const;
 
@@ -111,7 +106,6 @@ signals:
     void defaultProtonIdChanged();
     void protonPriorityChanged();
     void pluginStatesChanged();
-    void steamInstallModeChanged();
 
 private:
     void ensureDefaultStorageLibraries();
@@ -128,7 +122,6 @@ private:
     QString m_defaultProtonId;
     QStringList m_protonPriority;
     QString m_legacyProtonPath;
-    QString m_steamInstallMode;
     QVector<SourcePluginInfo> m_sources;
     QHash<QString, bool> m_pluginEnabledStates;
     StorageLibraryModel m_storageLibraries;

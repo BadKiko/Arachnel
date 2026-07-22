@@ -29,7 +29,6 @@
 
 namespace arachnel::core {
 
-
 #include "plugin_host_helpers.h"
 
 bool PluginHost::extractArachArchive(const QString& archivePath, const QString& destDir,
@@ -129,17 +128,17 @@ bool PluginHost::installFromArach(const QString& archivePath)
 
     QFileInfo archiveInfo(archivePath);
     if (!archiveInfo.exists() || !archiveInfo.isFile()) {
-        m_lastError = QStringLiteral("Файл не найден: %1").arg(archivePath);
+        m_lastError = QCoreApplication::translate("Core", "File not found: %1").arg(archivePath);
         return false;
     }
     if (archiveInfo.suffix().compare(QStringLiteral("arach"), Qt::CaseInsensitive) != 0) {
-        m_lastError = QStringLiteral("Поддерживаются только пакеты с расширением .arach");
+        m_lastError = QCoreApplication::translate("Core", "Only .arach packages are supported");
         return false;
     }
 
     QTemporaryDir tempDir;
     if (!tempDir.isValid()) {
-        m_lastError = QStringLiteral("Не удалось создать временную папку");
+        m_lastError = QCoreApplication::translate("Core", "Failed to create temporary folder");
         return false;
     }
 
@@ -151,13 +150,13 @@ bool PluginHost::installFromArach(const QString& archivePath)
 
     QString bundleRoot;
     if (!findPluginBundleRoot(tempDir.path(), &bundleRoot)) {
-        m_lastError = QStringLiteral("В архиве нет plugin.json");
+        m_lastError = QCoreApplication::translate("Core", "Archive has no plugin.json");
         return false;
     }
 
     QFile manifestFile(bundleRoot + QStringLiteral("/plugin.json"));
     if (!manifestFile.open(QIODevice::ReadOnly)) {
-        m_lastError = QStringLiteral("Не удалось прочитать plugin.json");
+        m_lastError = QCoreApplication::translate("Core", "Failed to read plugin.json");
         return false;
     }
 
@@ -165,12 +164,12 @@ bool PluginHost::installFromArach(const QString& archivePath)
     const QString id = manifest.value(QStringLiteral("id")).toString();
     const QString libraryBase = manifest.value(QStringLiteral("library")).toString();
     if (id.isEmpty() || libraryBase.isEmpty()) {
-        m_lastError = QStringLiteral("Некорректный plugin.json");
+        m_lastError = QCoreApplication::translate("Core", "Invalid plugin.json");
         return false;
     }
 
     if (resolveLibraryFile(bundleRoot, libraryBase).isEmpty()) {
-        m_lastError = QStringLiteral("В пакете нет библиотеки %1").arg(
+        m_lastError = QCoreApplication::translate("Core", "Package is missing library %1").arg(
             platformLibraryName(libraryBase));
         return false;
     }
@@ -179,13 +178,13 @@ bool PluginHost::installFromArach(const QString& archivePath)
     QDir targetDir(targetRoot);
     if (targetDir.exists()) {
         if (!targetDir.removeRecursively()) {
-            m_lastError = QStringLiteral("Не удалось заменить существующий плагин");
+            m_lastError = QCoreApplication::translate("Core", "Failed to replace existing plugin");
             return false;
         }
     }
 
     if (!QDir().mkpath(targetRoot)) {
-        m_lastError = QStringLiteral("Не удалось создать папку плагина");
+        m_lastError = QCoreApplication::translate("Core", "Failed to create plugin folder");
         return false;
     }
 
@@ -194,7 +193,7 @@ bool PluginHost::installFromArach(const QString& archivePath)
     for (const QString& fileName : files) {
         if (!QFile::copy(bundleDir.absoluteFilePath(fileName),
                          targetRoot + QLatin1Char('/') + fileName)) {
-            m_lastError = QStringLiteral("Не удалось скопировать %1").arg(fileName);
+            m_lastError = QCoreApplication::translate("Core", "Failed to copy %1").arg(fileName);
             return false;
         }
     }
@@ -209,15 +208,15 @@ bool PluginHost::installFromArach(const QString& archivePath)
             const QString relativePath = QDir(srcSubdir).relativeFilePath(it.filePath());
             const QString destination = dstSubdir + QLatin1Char('/') + relativePath;
             if (!QDir().mkpath(QFileInfo(destination).path())) {
-                m_lastError = QStringLiteral("Не удалось создать папку плагина");
+                m_lastError = QCoreApplication::translate("Core", "Failed to create plugin folder");
                 return false;
             }
             if (QFile::exists(destination) && !QFile::remove(destination)) {
-                m_lastError = QStringLiteral("Не удалось заменить %1").arg(relativePath);
+                m_lastError = QCoreApplication::translate("Core", "Failed to replace %1").arg(relativePath);
                 return false;
             }
             if (!QFile::copy(it.filePath(), destination)) {
-                m_lastError = QStringLiteral("Не удалось скопировать %1").arg(relativePath);
+                m_lastError = QCoreApplication::translate("Core", "Failed to copy %1").arg(relativePath);
                 return false;
             }
         }

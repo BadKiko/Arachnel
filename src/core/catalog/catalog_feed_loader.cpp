@@ -6,6 +6,7 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QVariant>
+#include <QCoreApplication>
 
 namespace arachnel::core {
 
@@ -84,7 +85,7 @@ void CatalogFeedLoader::handleFinished(QNetworkReply* reply)
     const QVector<CatalogEntry> entries = parseCatalogFeed(payload, parseSourceId);
 
     if (entries.isEmpty()) {
-        emit feedFailed(sourceId, QStringLiteral("Каталог пуст или формат не распознан"));
+        emit feedFailed(sourceId, QCoreApplication::translate("Core", "Catalog is empty or format not recognized"));
         return;
     }
 

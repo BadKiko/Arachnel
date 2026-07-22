@@ -134,6 +134,39 @@ MD.BottomSheet {
                     onToggled: Core.setGameAutoUpdate(root.gameId, checked)
                 }
             }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: MD.Token.spacing.medium
+                visible: !!(root.info.onlineFixCanToggle)
+
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: 2
+
+                    MD.Label {
+                        Layout.fillWidth: true
+                        text: qsTr("Online Fix for this game")
+                        typescale: MD.Token.typescale.body_large
+                    }
+
+                    MD.Label {
+                        Layout.fillWidth: true
+                        text: qsTr("When disabled, SteamFix/winmm overlay DLLs are renamed so the game runs without the fix.")
+                        color: MD.Token.color.on_surface_variant
+                        typescale: MD.Token.typescale.body_small
+                        wrapMode: Text.WordWrap
+                    }
+                }
+
+                MD.Switch {
+                    checked: !!(root.info.onlineFixEnabled)
+                    onToggled: {
+                        Core.setGameOnlineFixEnabled(root.gameId, checked)
+                        root.detailsRevision++
+                    }
+                }
+            }
         }
 
         MD.ElevationRectangle {
@@ -284,6 +317,12 @@ MD.BottomSheet {
                         { label: qsTr("Version"), value: root.info.version ?? "" },
                         { label: qsTr("Size"), value: root.info.sizeLabel || "—" },
                         { label: qsTr("Install type"), value: root.info.installKindLabel ?? "" },
+                        {
+                            label: qsTr("Online Fix"),
+                            value: root.info.onlineFixRelevant
+                                   ? (root.info.onlineFixLabel || qsTr("Not installed"))
+                                   : qsTr("Not needed")
+                        },
                         {
                             label: qsTr("Install path"),
                             value: root.playable

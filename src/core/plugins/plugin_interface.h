@@ -37,7 +37,7 @@ struct InstallContext {
     QString protonExecutable;
     QString compatDataPath;
     QString steamCompatClientPath;
-    /** Optional plugin hint (e.g. steamidra: "ddmod" | "native" | "auto"). */
+    /** Optional plugin hint (unused by current plugins; reserved). */
     QString installMode;
 };
 

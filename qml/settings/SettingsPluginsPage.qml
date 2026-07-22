@@ -153,14 +153,6 @@ Flickable {
                                 }
                             }
 
-                            MD.IconButton {
-                                visible: modelData.pluginId === "steamidra"
-                                mdState.type: MD.Enum.IBtStandard
-                                icon.name: MD.Token.icon.settings
-                                Accessible.name: qsTr("Steam install method")
-                                onClicked: steamInstallPrefsSheet.openPrefs()
-                            }
-
                             MD.Switch {
                                 checked: modelData.sourceEnabled
                                 onToggled: Core.sources.setSourceEnabled(modelData.pluginId, checked)
@@ -308,7 +300,4 @@ Flickable {
         }
     }
 
-    SteamInstallPrefsSheet {
-        id: steamInstallPrefsSheet
-    }
 }

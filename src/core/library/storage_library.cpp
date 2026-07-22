@@ -1,5 +1,6 @@
 #include "storage_library.h"
 
+#include <QCoreApplication>
 #include <QDir>
 #include <QFileInfo>
 
@@ -30,7 +31,7 @@ QString autoStorageLibraryLabel(const QString& path)
 {
     const QString normalized = normalizedStoragePath(path);
     if (normalized.isEmpty())
-        return QStringLiteral("Библиотека");
+        return QCoreApplication::translate("Core", "Library");
 
 #if defined(Q_OS_WIN)
     if (normalized.size() >= 2 && normalized.at(1) == QLatin1Char(':')) {
@@ -41,7 +42,7 @@ QString autoStorageLibraryLabel(const QString& path)
         DWORD maxLen = 0;
         DWORD flags = 0;
 
-        QString driveType = QStringLiteral("Диск");
+        QString driveType = QCoreApplication::translate("Core", "Disk");
         if (GetVolumeInformationW(drive, volumeName, MAX_PATH, &serial, &maxLen, &flags,
                                   fileSystem, MAX_PATH)) {
             const QString fs = QString::fromWCharArray(fileSystem);

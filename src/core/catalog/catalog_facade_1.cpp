@@ -139,12 +139,8 @@ QString CoreController::sourceWebsiteFor(const QString& sourceId) const
 {
     if (sourceId == QStringLiteral("freetp"))
         return QStringLiteral("https://freetp.org/");
-
-    if (const SourcePluginInfo* plugin = m_sources.pluginById(sourceId)) {
-        const QUrl catalogUrl(plugin->catalogUrl);
-        if (catalogUrl.isValid() && !catalogUrl.host().isEmpty())
-            return QStringLiteral("%1://%2").arg(catalogUrl.scheme(), catalogUrl.host());
-    }
+    // Do not invent a website from catalogUrl (relay / API hosts are not a public source site).
+    Q_UNUSED(sourceId);
     return {};
 }
 
