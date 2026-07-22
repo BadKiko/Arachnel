@@ -726,7 +726,17 @@ function Test-NeedsCmakeConfigure {
 }
 
 function Enable-CompileCache {
-    # Honor launchers already set by CI (sccache-action / env).
+    # Honor launchers already set by CI (sccache-action / env), but resolve to a
+    # full path — on Windows Ninja CreateProcess fails for bare "sccache".
+    foreach ($var in @('CMAKE_C_COMPILER_LAUNCHER', 'CMAKE_CXX_COMPILER_LAUNCHER')) {
+        $value = [Environment]::GetEnvironmentVariable($var)
+        if (-not $value) { continue }
+        if (Test-Path -LiteralPath $value) { continue }
+        $cmd = Get-Command $value -ErrorAction SilentlyContinue
+        if ($cmd -and $cmd.Source) {
+            [Environment]::SetEnvironmentVariable($var, $cmd.Source)
+        }
+    }
     if ($env:CMAKE_CXX_COMPILER_LAUNCHER -and $env:CMAKE_C_COMPILER_LAUNCHER) {
         return
     }
