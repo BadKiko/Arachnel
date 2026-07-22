@@ -227,6 +227,8 @@ CoreController::CoreController(QObject* parent)
                 m_appUpdater->checkForUpdates(false);
         });
     }
+
+    QTimer::singleShot(5000, this, [this]() { scheduleOfficialPluginAutoUpdate(); });
 }
 
 

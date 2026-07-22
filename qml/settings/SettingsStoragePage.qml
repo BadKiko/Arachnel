@@ -166,6 +166,18 @@ Flickable {
                                 icon.name: MD.Token.icon.star
                                 onClicked: Core.settings.storageLibraries.setDefaultLibrary(libraryId)
                             }
+
+                            MD.IconButton {
+                                visible: Core.settings.storageLibraries.count > 1
+                                mdState.type: MD.Enum.IBtStandard
+                                icon.name: MD.Token.icon.delete
+                                onClicked: {
+                                    removeDriveDialog.libraryId = libraryId
+                                    removeDriveDialog.libraryLabel = label
+                                    removeDriveDialog.gameCount = Core.gamesOnLibrary(libraryId).length
+                                    removeDriveDialog.open()
+                                }
+                            }
                         }
                     }
                 }
@@ -361,6 +373,66 @@ Flickable {
                         for (let i = 0; i < root.selectedGameIds.length; ++i)
                             Core.moveGame(root.selectedGameIds[i], libraryId)
                         moveSheet.close()
+                        root.reloadGames()
+                    }
+                }
+            }
+        }
+    }
+
+    MD.Dialog {
+        id: removeDriveDialog
+        parent: Overlay.overlay
+        modal: true
+        property string libraryId: ""
+        property string libraryLabel: ""
+        property int gameCount: 0
+        title: qsTr("Remove drive?")
+
+        contentItem: ColumnLayout {
+            spacing: MD.Token.spacing.medium
+            width: parent ? parent.width : implicitWidth
+
+            MD.Label {
+                Layout.fillWidth: true
+                text: removeDriveDialog.gameCount > 0
+                      ? qsTr("“%1” still has games. Move or delete them first.")
+                            .arg(removeDriveDialog.libraryLabel)
+                      : qsTr("Remove “%1” from Arachnel? Files on disk are not deleted.")
+                            .arg(removeDriveDialog.libraryLabel)
+                wrapMode: Text.WordWrap
+                typescale: MD.Token.typescale.body_medium
+            }
+        }
+
+        footer: Item {
+            implicitHeight: footerRow.implicitHeight + MD.Token.spacing.medium
+
+            MD.DialogButtonBox {
+                id: footerRow
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+
+                MD.Button {
+                    mdState.type: MD.Enum.BtText
+                    text: removeDriveDialog.gameCount > 0 ? qsTr("OK") : qsTr("Cancel")
+                    DialogButtonBox.buttonRole: DialogButtonBox.RejectRole
+                    onClicked: removeDriveDialog.close()
+                }
+
+                MD.Button {
+                    visible: removeDriveDialog.gameCount === 0
+                    mdState.type: MD.Enum.BtFilled
+                    text: qsTr("Remove")
+                    DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole
+                    onClicked: {
+                        const id = removeDriveDialog.libraryId
+                        removeDriveDialog.close()
+                        if (!Core.settings.storageLibraries.removeLibrary(id))
+                            return
+                        if (root.selectedLibraryId === id)
+                            root.selectedLibraryId = Core.settings.storageLibraries.defaultLibraryId
                         root.reloadGames()
                     }
                 }

@@ -68,6 +68,10 @@
     void setRuntimeSetupActive(const LibraryGame&, const QString&);
     void clearRuntimeSetup();
     void launchGameAfterRuntimeSetup(const QString&);
+    void scheduleOfficialPluginAutoUpdate();
+    void runOfficialPluginAutoUpdate();
+    void finishOfficialPluginAutoUpdate();
+    bool installPluginArachInternal(const QUrl& fileUrl, bool quiet);
 
     LibraryModel m_library;
     SourcePluginModel m_sources;
@@ -97,6 +101,8 @@
     ProtonManager* m_protonManager = nullptr;
     AppUpdater* m_appUpdater = nullptr;
     PluginCatalogService* m_pluginCatalog = nullptr;
+    bool m_autoUpdatingOfficialPlugins = false;
+    int m_autoUpdatePluginSuccessCount = 0;
     QVector<CatalogEntry> m_catalogCache;
     QHash<QString, int> m_catalogIdToCacheIndex;
     CatalogFilterService* m_catalogFilters = nullptr;

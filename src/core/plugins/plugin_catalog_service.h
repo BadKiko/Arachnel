@@ -39,12 +39,17 @@ signals:
     void errorChanged();
     /// On success, pathOrError is the downloaded .arach path; on failure it is an error message.
     void installFinished(const QString& pluginId, bool ok, const QString& pathOrError);
+    /// Fired when the install queue becomes idle (no active download and no pending ids).
+    void installQueueDrained();
 
 private:
     void setLoading(bool value);
     void setInstalling(const QString& pluginId);
     void setError(const QString& message);
     void downloadAndInstall(const QVariantMap& entry);
+    void finishInstallAttempt(const QString& pluginId, bool ok, const QString& pathOrError);
+    void processInstallQueue();
+    bool beginInstall(const QString& pluginId);
     QString downloadUrlForEntry(const QVariantMap& entry) const;
     QString currentPlatformId() const;
 
@@ -52,6 +57,7 @@ private:
     QNetworkReply* m_catalogReply = nullptr;
     QNetworkReply* m_downloadReply = nullptr;
     QVariantList m_plugins;
+    QStringList m_installQueue;
     bool m_loading = false;
     bool m_installing = false;
     QString m_installingPluginId;

@@ -299,16 +299,29 @@ bool PluginHost::uninstallPlugin(const QString& pluginId)
 
     const QString targetRoot = writablePluginsDir() + QLatin1Char('/') + id;
     QDir targetDir(targetRoot);
-    if (!targetDir.exists()) {
-        m_lastError = QCoreApplication::translate("Core", "Plugin is not installed");
-        return false;
-    }
 
     // Drop loaded libraries before deleting files (DLL/.so stay locked otherwise).
     unloadAll();
 
-    if (!targetDir.removeRecursively()) {
-        m_lastError = QCoreApplication::translate("Core", "Could not delete plugin files");
+    bool removedAny = false;
+    QStringList roots = pluginSearchRoots();
+    if (!roots.contains(writablePluginsDir(), Qt::CaseInsensitive))
+        roots.prepend(writablePluginsDir());
+
+    for (const QString& root : roots) {
+        QDir dir(root + QLatin1Char('/') + id);
+        if (!dir.exists())
+            continue;
+        if (!dir.removeRecursively()) {
+            m_lastError = QCoreApplication::translate("Core", "Could not delete plugin files");
+            scan();
+            return false;
+        }
+        removedAny = true;
+    }
+
+    if (!removedAny) {
+        m_lastError = QCoreApplication::translate("Core", "Plugin is not installed");
         scan();
         return false;
     }

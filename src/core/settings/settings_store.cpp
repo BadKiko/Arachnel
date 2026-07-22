@@ -230,6 +230,14 @@ void SettingsStore::setOnboardingCompleted(bool completed)
     save();
 }
 
+void SettingsStore::setLastLaunchedAppVersion(const QString& version)
+{
+    if (m_lastLaunchedAppVersion == version)
+        return;
+    m_lastLaunchedAppVersion = version;
+    save();
+}
+
 void SettingsStore::setGlobalLaunchArgs(const QString& args)
 {
     if (m_globalLaunchArgs == args)

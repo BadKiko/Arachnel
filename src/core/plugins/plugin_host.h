@@ -36,6 +36,10 @@ public:
     bool hasPlugin(const QString& id) const;
     /** True if plugin.json exists under a search root (even if DLL failed to load). */
     bool hasPluginFilesOnDisk(const QString& id) const;
+    /** Version from on-disk plugin.json (empty if missing). */
+    QString pluginVersionOnDisk(const QString& id) const;
+    /** All plugin.json packages under search roots (loaded or not). */
+    QVector<SourcePluginInfo> diskPluginInfos() const;
     QStringList pluginIds() const;
     int count() const { return m_plugins.size(); }
 

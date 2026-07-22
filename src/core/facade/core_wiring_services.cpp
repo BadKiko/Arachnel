@@ -202,12 +202,22 @@ void CoreController::initializeServices()
                 // detail is temp .arach path on success from catalog service
                 if (detail.endsWith(QStringLiteral(".arach"), Qt::CaseInsensitive)
                     || QFileInfo::exists(detail)) {
-                    if (installPluginArach(QUrl::fromLocalFile(detail)))
+                    if (installPluginArachInternal(QUrl::fromLocalFile(detail),
+                                                   m_autoUpdatingOfficialPlugins)) {
                         QFile::remove(detail);
-                } else {
+                        if (m_autoUpdatingOfficialPlugins)
+                            ++m_autoUpdatePluginSuccessCount;
+                    }
+                } else if (!m_autoUpdatingOfficialPlugins) {
                     showNotice(QCoreApplication::translate("Core", "Plugin installed: %1").arg(pluginId));
+                } else {
+                    ++m_autoUpdatePluginSuccessCount;
                 }
             });
+    connect(m_pluginCatalog, &PluginCatalogService::installQueueDrained, this, [this]() {
+        if (m_autoUpdatingOfficialPlugins)
+            finishOfficialPluginAutoUpdate();
+    });
     connect(m_appUpdater, &AppUpdater::updateCheckFinished, this,
             [this](bool available, const QString& latestVersion) {
                 if (!available)

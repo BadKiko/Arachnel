@@ -12,12 +12,27 @@ export QT_QML_MATERIAL_IMPORT_PATH="${BUILD}/qml_modules"
 export QML2_IMPORT_PATH="${BUILD}/qml_modules"
 
 echo "==> Configure (Release)"
-cmake -S "${ROOT}" -B "${BUILD}" \
-  -G Ninja \
-  -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH:-${QT_ROOT_DIR:-}}" \
-  -DARACHNEL_VERSION="${VERSION}" \
+FETCH_DIR="${FETCHCONTENT_BASE_DIR:-${ROOT}/.cache/fetchcontent}"
+mkdir -p "${FETCH_DIR}"
+
+CMAKE_ARGS=(
+  -S "${ROOT}"
+  -B "${BUILD}"
+  -G Ninja
+  -DCMAKE_BUILD_TYPE=Release
+  -DCMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH:-${QT_ROOT_DIR:-}}"
+  -DFETCHCONTENT_BASE_DIR="${FETCH_DIR}"
+  -DARACHNEL_VERSION="${VERSION}"
   -DARACHNEL_FAST_BUILD=OFF
+)
+if [[ -n "${CMAKE_C_COMPILER_LAUNCHER:-}" ]]; then
+  CMAKE_ARGS+=(-DCMAKE_C_COMPILER_LAUNCHER="${CMAKE_C_COMPILER_LAUNCHER}")
+fi
+if [[ -n "${CMAKE_CXX_COMPILER_LAUNCHER:-}" ]]; then
+  CMAKE_ARGS+=(-DCMAKE_CXX_COMPILER_LAUNCHER="${CMAKE_CXX_COMPILER_LAUNCHER}")
+fi
+
+cmake "${CMAKE_ARGS[@]}"
 
 echo "==> Build arachnel_app"
 cmake --build "${BUILD}" --target arachnel_app -j"$(nproc)"

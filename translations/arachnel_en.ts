@@ -1301,6 +1301,12 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <source>Could not remove plugin: %1</source>
         </message>
     <message>
+        <source>Plugins updated</source>
+        </message>
+    <message>
+        <source>v%1 · %2 — not loaded</source>
+        </message>
+    <message>
         
         <location filename="../src/core/plugins/plugin_facade.cpp" line="192" />
         <source>Plugin files (*.arach)</source>
@@ -3455,6 +3461,18 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         
         <location filename="../qml/settings/SettingsStoragePage.qml" line="176" />
         <source>Add drive…</source>
+        </message>
+    <message>
+        <source>Remove drive?</source>
+        </message>
+    <message>
+        <source>Remove “%1” from Arachnel? Files on disk are not deleted.</source>
+        </message>
+    <message>
+        <source>“%1” still has games. Move or delete them first.</source>
+        </message>
+    <message>
+        <source>Remove</source>
         </message>
     <message>
         

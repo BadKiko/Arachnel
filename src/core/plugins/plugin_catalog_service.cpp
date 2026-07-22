@@ -165,9 +165,19 @@ QString PluginCatalogService::downloadUrlForEntry(const QVariantMap& entry) cons
 
 void PluginCatalogService::installPlugin(const QString& pluginId)
 {
-    if (m_installing || pluginId.trimmed().isEmpty())
+    const QString id = pluginId.trimmed();
+    if (id.isEmpty())
         return;
 
+    if (id != m_installingPluginId && !m_installQueue.contains(id))
+        m_installQueue.append(id);
+
+    if (!m_installing)
+        processInstallQueue();
+}
+
+bool PluginCatalogService::beginInstall(const QString& pluginId)
+{
     QVariantMap found;
     for (const QVariant& item : m_plugins) {
         const QVariantMap row = item.toMap();
@@ -179,20 +189,39 @@ void PluginCatalogService::installPlugin(const QString& pluginId)
     if (found.isEmpty()) {
         setError(QCoreApplication::translate("Core", "Plugin not found in the official list"));
         emit installFinished(pluginId, false, m_error);
-        return;
+        return false;
     }
 
     const QString url = downloadUrlForEntry(found);
     if (url.isEmpty()) {
         setError(QCoreApplication::translate("Core", "No download link for this plugin"));
         emit installFinished(pluginId, false, m_error);
-        return;
+        return false;
     }
 
     m_pendingInstallId = pluginId;
     setError({});
     setInstalling(pluginId);
     downloadAndInstall(found);
+    return true;
+}
+
+void PluginCatalogService::finishInstallAttempt(const QString& pluginId, bool ok,
+                                                const QString& pathOrError)
+{
+    setInstalling({});
+    emit installFinished(pluginId, ok, pathOrError);
+    processInstallQueue();
+}
+
+void PluginCatalogService::processInstallQueue()
+{
+    while (!m_installQueue.isEmpty()) {
+        const QString next = m_installQueue.takeFirst();
+        if (beginInstall(next))
+            return;
+    }
+    emit installQueueDrained();
 }
 
 void PluginCatalogService::downloadAndInstall(const QVariantMap& entry)
@@ -219,7 +248,8 @@ void PluginCatalogService::downloadAndInstall(const QVariantMap& entry)
                 QNetworkReply* reply = m_downloadReply;
                 m_downloadReply = nullptr;
                 if (!reply) {
-                    setInstalling({});
+                    finishInstallAttempt(pluginId, false,
+                                         QCoreApplication::translate("Core", "Download failed"));
                     return;
                 }
                 reply->deleteLater();
@@ -229,8 +259,7 @@ void PluginCatalogService::downloadAndInstall(const QVariantMap& entry)
                         QCoreApplication::translate("Core", "Download failed: %1")
                             .arg(reply->errorString());
                     setError(err);
-                    setInstalling({});
-                    emit installFinished(pluginId, false, err);
+                    finishInstallAttempt(pluginId, false, err);
                     return;
                 }
 
@@ -239,8 +268,7 @@ void PluginCatalogService::downloadAndInstall(const QVariantMap& entry)
                     const QString err =
                         QCoreApplication::translate("Core", "Downloaded plugin file is empty");
                     setError(err);
-                    setInstalling({});
-                    emit installFinished(pluginId, false, err);
+                    finishInstallAttempt(pluginId, false, err);
                     return;
                 }
 
@@ -253,8 +281,7 @@ void PluginCatalogService::downloadAndInstall(const QVariantMap& entry)
                         const QString err = QCoreApplication::translate(
                             "Core", "Plugin file checksum mismatch");
                         setError(err);
-                        setInstalling({});
-                        emit installFinished(pluginId, false, err);
+                        finishInstallAttempt(pluginId, false, err);
                         return;
                     }
                 }
@@ -270,15 +297,13 @@ void PluginCatalogService::downloadAndInstall(const QVariantMap& entry)
                     const QString err =
                         QCoreApplication::translate("Core", "Could not save plugin file");
                     setError(err);
-                    setInstalling({});
-                    emit installFinished(pluginId, false, err);
+                    finishInstallAttempt(pluginId, false, err);
                     return;
                 }
                 out.write(payload);
                 out.close();
 
-                setInstalling({});
-                emit installFinished(pluginId, true, path);
+                finishInstallAttempt(pluginId, true, path);
             });
 }
 } // namespace arachnel::core

@@ -15,6 +15,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QProcess>
+#include <QSet>
 #include <QStandardPaths>
 #include <QTemporaryDir>
 #include <QTimer>
@@ -353,6 +354,65 @@ bool PluginHost::hasPluginFilesOnDisk(const QString& id) const
             return true;
     }
     return false;
+}
+
+QString PluginHost::pluginVersionOnDisk(const QString& id) const
+{
+    const QString trimmed = id.trimmed();
+    if (trimmed.isEmpty())
+        return {};
+
+    for (const QString& root : pluginSearchRoots()) {
+        const QString manifest =
+            QDir(root).absoluteFilePath(trimmed + QStringLiteral("/plugin.json"));
+        QFile file(manifest);
+        if (!file.open(QIODevice::ReadOnly))
+            continue;
+        const QJsonObject obj = QJsonDocument::fromJson(file.readAll()).object();
+        const QString version = obj.value(QStringLiteral("version")).toString().trimmed();
+        if (!version.isEmpty())
+            return version;
+    }
+    return {};
+}
+
+QVector<SourcePluginInfo> PluginHost::diskPluginInfos() const
+{
+    QVector<SourcePluginInfo> infos;
+    QSet<QString> seen;
+
+    for (const QString& root : pluginSearchRoots()) {
+        QDir rootDir(root);
+        if (!rootDir.exists())
+            continue;
+        const QStringList entries =
+            rootDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
+        for (const QString& entry : entries) {
+            if (entry.endsWith(QStringLiteral(".staging")) || entry.endsWith(QStringLiteral(".bak")))
+                continue;
+            const QString pluginDir = rootDir.absoluteFilePath(entry);
+            QFile file(pluginDir + QStringLiteral("/plugin.json"));
+            if (!file.open(QIODevice::ReadOnly))
+                continue;
+            const QJsonObject obj = QJsonDocument::fromJson(file.readAll()).object();
+            const QString id = obj.value(QStringLiteral("id")).toString().trimmed();
+            if (id.isEmpty() || seen.contains(id))
+                continue;
+            seen.insert(id);
+
+            SourcePluginInfo info;
+            info.id = id;
+            info.name = obj.value(QStringLiteral("name")).toString(id);
+            info.description = obj.value(QStringLiteral("description")).toString();
+            info.pluginVersion = obj.value(QStringLiteral("version")).toString();
+            info.pluginRootPath = pluginDir;
+            info.iconName = obj.value(QStringLiteral("iconName")).toString(QStringLiteral("extension"));
+            info.isPlugin = true;
+            info.enabled = false;
+            infos.append(info);
+        }
+    }
+    return infos;
 }
 
 QStringList PluginHost::pluginIds() const
