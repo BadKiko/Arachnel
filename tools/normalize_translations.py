@@ -106,6 +106,12 @@ EN_TO_RU: dict[str, str] = {
     "Found %1 game(s) on disk": "Найдено игр на диске: %1",
     "No new games found on disk": "Новых игр на диске не найдено",
     "Add drive…": "Добавить диск…",
+    "Remove drive?": "Удалить диск?",
+    "Remove “%1” from Arachnel? Files on disk are not deleted.":
+        "Убрать «%1» из Arachnel? Файлы на диске не удаляются.",
+    "“%1” still has games. Move or delete them first.":
+        "На «%1» ещё есть игры. Сначала перенесите или удалите их.",
+    "Remove": "Убрать",
     "Installed": "Установлено",
     "Download complete": "Загрузка завершена",
     "Installation required": "Требуется установка",
@@ -427,6 +433,8 @@ EN_TO_RU: dict[str, str] = {
     "Remove \"%1\"? Catalogs from this plugin will stop working until you install it again.": "Удалить «%1»? Каталоги этого плагина перестанут работать, пока вы не установите его снова.",
     "Plugin removed": "Плагин удалён",
     "Could not remove plugin: %1": "Не удалось удалить плагин: %1",
+    "Plugins updated": "Плагины обновлены",
+    "v%1 · %2 — not loaded": "v%1 · %2 — не загружен",
     "Invalid plugin id": "Некорректный id плагина",
     "Plugin is not installed": "Плагин не установлен",
     "Failed to install plugin files": "Не удалось установить файлы плагина",

@@ -22,6 +22,9 @@ env:
   BUILD_TYPE: Release
   ARACHNEL_FAST_BUILD: "0"
   ARACHNEL_QT_KIT: mingw_64
+  SCCACHE_GHA_ENABLED: "true"
+  CMAKE_C_COMPILER_LAUNCHER: sccache
+  CMAKE_CXX_COMPILER_LAUNCHER: sccache
 
 jobs:
   build-windows:
@@ -44,6 +47,17 @@ jobs:
           cache: true
           # aqtinstall 3.3.0 cannot resolve Qt 6.11+ Windows layout yet
           aqtsource: git+https://github.com/miurahr/aqtinstall.git
+
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.10
+
+      - name: Cache FetchContent (Boost / libtorrent / QmlMaterial)
+        uses: actions/cache@v4
+        with:
+          path: .cache/fetchcontent
+          key: fetchcontent-win-${{ hashFiles('cmake/ArachnelLibtorrent.cmake', 'CMakeLists.txt', 'cmake/patch-qml-material-win.cmake') }}
+          restore-keys: |
+            fetchcontent-win-
 
       - name: Install build tools
         shell: pwsh
@@ -80,9 +94,15 @@ jobs:
           ARACHNEL_VERSION: ${{ inputs.version }}
           ARACHNEL_QT_KIT: ${{ env.ARACHNEL_QT_KIT }}
           CMAKE_PREFIX_PATH: ${{ env.QT_ROOT_DIR }}
+          FETCHCONTENT_BASE_DIR: ${{ github.workspace }}/.cache/fetchcontent
         run: |
           git lfs install
           .\run.ps1 --installer
+
+      - name: sccache stats
+        if: always()
+        shell: pwsh
+        run: sccache --show-stats
 
       - name: Sign installer (optional)
         shell: pwsh
@@ -130,13 +150,35 @@ jobs:
           cache: true
           aqtsource: git+https://github.com/miurahr/aqtinstall.git
 
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.10
+
+      - name: Cache FetchContent (Boost / libtorrent / QmlMaterial)
+        uses: actions/cache@v4
+        with:
+          path: .cache/fetchcontent
+          key: fetchcontent-linux-${{ hashFiles('cmake/ArachnelLibtorrent.cmake', 'CMakeLists.txt', 'cmake/patch-qml-material-win.cmake') }}
+          restore-keys: |
+            fetchcontent-linux-
+
+      - name: Cache linuxdeploy tools
+        uses: actions/cache@v4
+        with:
+          path: dist-linux/linuxdeploy
+          key: linuxdeploy-tools-v1
+
       - name: Build AppImage
         env:
           ARACHNEL_VERSION: ${{ inputs.version }}
           CMAKE_PREFIX_PATH: ${{ env.QT_ROOT_DIR }}
+          FETCHCONTENT_BASE_DIR: ${{ github.workspace }}/.cache/fetchcontent
         run: |
           git lfs install
           bash scripts/ci/package-appimage.sh
+
+      - name: sccache stats
+        if: always()
+        run: sccache --show-stats
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

@@ -17,6 +17,19 @@ Artifacts:
 
 The release notes body lists commits since the previous `v*` tag.
 
+## CI speed (caching)
+
+Release builds already cache:
+
+| Cache | What |
+|-------|------|
+| Qt (`install-qt-action`) | Qt kits |
+| **sccache** | Compiled objects (Arachnel, libtorrent, QmlMaterial, QML cachegen C++) |
+| **FetchContent** (`.cache/fetchcontent`) | Boost headers, libtorrent + QmlMaterial sources |
+| linuxdeploy tools | AppImage packagers (Linux) |
+
+First release after a toolchain/dep bump is still cold; later runs reuse hits. Check the **sccache stats** step in the Actions log.
+
 ## Windows code signing (optional)
 
 Without secrets the EXE is **unsigned** (SmartScreen may warn).

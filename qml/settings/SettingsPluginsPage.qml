@@ -154,6 +154,7 @@ Flickable {
                             }
 
                             MD.Switch {
+                                visible: modelData.loaded !== false
                                 checked: modelData.sourceEnabled
                                 onToggled: Core.sources.setSourceEnabled(modelData.pluginId, checked)
                             }
@@ -161,8 +162,10 @@ Flickable {
 
                         MD.Label {
                             Layout.fillWidth: true
-                            text: qsTr("v%1 · %2").arg(modelData.pluginVersion).arg(modelData.pluginId)
-                            color: MD.Token.color.primary
+                            text: modelData.loaded === false
+                                  ? qsTr("v%1 · %2 — not loaded").arg(modelData.pluginVersion).arg(modelData.pluginId)
+                                  : qsTr("v%1 · %2").arg(modelData.pluginVersion).arg(modelData.pluginId)
+                            color: modelData.loaded === false ? MD.Token.color.error : MD.Token.color.primary
                             typescale: MD.Token.typescale.label_small
                         }
 

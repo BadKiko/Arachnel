@@ -1,5 +1,8 @@
 #include "core_controller_impl.h"
 
+#include <QSet>
+#include <QVersionNumber>
+
 namespace arachnel::core {
 
 void CoreController::syncSourcesFromPlugins()
@@ -78,6 +81,7 @@ QString CoreController::pluginsBundleDir() const
 QVariantList CoreController::pluginEntries() const
 {
     QVariantList entries;
+    QSet<QString> seen;
     for (const auto& source : m_sources.plugins()) {
         if (!source.isPlugin)
             continue;
@@ -88,7 +92,26 @@ QVariantList CoreController::pluginEntries() const
         row.insert(QStringLiteral("pluginVersion"), source.pluginVersion);
         row.insert(QStringLiteral("pluginRootPath"), source.pluginRootPath);
         row.insert(QStringLiteral("sourceEnabled"), source.enabled);
+        row.insert(QStringLiteral("loaded"), true);
         entries.append(row);
+        seen.insert(source.id);
+    }
+
+    // Packages on disk that failed to load (ABI mismatch, etc.) — still allow Delete.
+    if (m_pluginHost) {
+        for (const auto& disk : m_pluginHost->diskPluginInfos()) {
+            if (seen.contains(disk.id))
+                continue;
+            QVariantMap row;
+            row.insert(QStringLiteral("pluginId"), disk.id);
+            row.insert(QStringLiteral("name"), disk.name);
+            row.insert(QStringLiteral("description"), disk.description);
+            row.insert(QStringLiteral("pluginVersion"), disk.pluginVersion);
+            row.insert(QStringLiteral("pluginRootPath"), disk.pluginRootPath);
+            row.insert(QStringLiteral("sourceEnabled"), false);
+            row.insert(QStringLiteral("loaded"), false);
+            entries.append(row);
+        }
     }
     return entries;
 }
@@ -104,6 +127,11 @@ bool CoreController::isPluginInstalledOnDisk(const QString& pluginId) const
 
 bool CoreController::installPluginArach(const QUrl& fileUrl)
 {
+    return installPluginArachInternal(fileUrl, false);
+}
+
+bool CoreController::installPluginArachInternal(const QUrl& fileUrl, bool quiet)
+{
     if (!m_pluginHost)
         return false;
 
@@ -112,9 +140,12 @@ bool CoreController::installPluginArach(const QUrl& fileUrl)
     m_lastPluginError = ok ? QString() : m_pluginHost->lastError();
     emit lastPluginErrorChanged();
     if (ok) {
-        showNotice(QCoreApplication::translate("Core", "Plugin installed"));
+        if (!quiet)
+            showNotice(QCoreApplication::translate("Core", "Plugin installed"));
         emit pluginsChanged();
-    } else {
+    } else if (!quiet) {
+        showNotice(QCoreApplication::translate("Core", "Plugin install failed: %1").arg(m_lastPluginError));
+    } else if (!m_lastPluginError.isEmpty()) {
         showNotice(QCoreApplication::translate("Core", "Plugin install failed: %1").arg(m_lastPluginError));
     }
     return ok;
@@ -148,6 +179,84 @@ void CoreController::installOfficialPlugin(const QString& pluginId)
 {
     if (m_pluginCatalog)
         m_pluginCatalog->installPlugin(pluginId);
+}
+
+void CoreController::scheduleOfficialPluginAutoUpdate()
+{
+    if (!m_pluginCatalog || !m_pluginHost)
+        return;
+
+    connect(m_pluginCatalog, &PluginCatalogService::pluginsChanged, this,
+            &CoreController::runOfficialPluginAutoUpdate, Qt::SingleShotConnection);
+    m_pluginCatalog->refresh();
+}
+
+void CoreController::runOfficialPluginAutoUpdate()
+{
+    if (!m_pluginCatalog || !m_pluginHost || m_autoUpdatingOfficialPlugins)
+        return;
+
+    if (m_pluginCatalog->plugins().isEmpty()) {
+        // Keep lastLaunched unchanged so a failed/empty catalog refresh retries next launch.
+        return;
+    }
+
+    const QString appVersion = QCoreApplication::applicationVersion();
+    // Empty lastLaunched (first run of this feature) or Arachnel upgrade → force reinstall of
+    // on-disk plugins so MinGW builds replace leftover MSVC packages.
+    const bool forceAfterAppChange = m_settings.lastLaunchedAppVersion() != appVersion;
+
+    QStringList toInstall;
+    for (const QVariant& item : m_pluginCatalog->plugins()) {
+        const QVariantMap row = item.toMap();
+        const QString id = row.value(QStringLiteral("id")).toString().trimmed();
+        if (id.isEmpty())
+            continue;
+
+        const bool onDisk = m_pluginHost->hasPlugin(id) || m_pluginHost->hasPluginFilesOnDisk(id);
+        if (!onDisk)
+            continue;
+
+        const QString catalogVersion = row.value(QStringLiteral("version")).toString().trimmed();
+        const QString localVersion = m_pluginHost->pluginVersionOnDisk(id);
+        const bool unloaded = m_pluginHost->hasPluginFilesOnDisk(id) && !m_pluginHost->hasPlugin(id);
+
+        bool needsUpdate = forceAfterAppChange || unloaded;
+        if (!needsUpdate && !catalogVersion.isEmpty() && catalogVersion != localVersion) {
+            const QVersionNumber remote = QVersionNumber::fromString(catalogVersion);
+            const QVersionNumber local = QVersionNumber::fromString(localVersion);
+            if (!remote.isNull() && !local.isNull())
+                needsUpdate = remote > local;
+            else
+                needsUpdate = true;
+        }
+
+        if (needsUpdate)
+            toInstall.append(id);
+    }
+
+    if (toInstall.isEmpty()) {
+        m_settings.setLastLaunchedAppVersion(appVersion);
+        return;
+    }
+
+    m_autoUpdatingOfficialPlugins = true;
+    m_autoUpdatePluginSuccessCount = 0;
+    for (const QString& id : toInstall)
+        m_pluginCatalog->installPlugin(id);
+}
+
+void CoreController::finishOfficialPluginAutoUpdate()
+{
+    if (!m_autoUpdatingOfficialPlugins)
+        return;
+
+    m_autoUpdatingOfficialPlugins = false;
+    m_settings.setLastLaunchedAppVersion(QCoreApplication::applicationVersion());
+    if (m_autoUpdatePluginSuccessCount > 0) {
+        showNotice(QCoreApplication::translate("Core", "Plugins updated"));
+    }
+    m_autoUpdatePluginSuccessCount = 0;
 }
 
 void CoreController::browsePluginArach()

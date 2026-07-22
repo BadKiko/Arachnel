@@ -51,6 +51,7 @@ void SettingsStore::load()
     m_globalLaunchArgs = obj.value(QStringLiteral("globalLaunchArgs")).toString();
     m_defaultProtonId = obj.value(QStringLiteral("defaultProtonId")).toString();
     m_legacyProtonPath = obj.value(QStringLiteral("protonPath")).toString();
+    m_lastLaunchedAppVersion = obj.value(QStringLiteral("lastLaunchedAppVersion")).toString();
     m_protonPriority.clear();
     const QJsonArray priority = obj.value(QStringLiteral("protonPriority")).toArray();
     for (const QJsonValue& value : priority) {
@@ -156,6 +157,7 @@ void SettingsStore::save()
     obj.insert(QStringLiteral("onboardingCompleted"), m_onboardingCompleted);
     obj.insert(QStringLiteral("globalLaunchArgs"), m_globalLaunchArgs);
     obj.insert(QStringLiteral("defaultProtonId"), m_defaultProtonId);
+    obj.insert(QStringLiteral("lastLaunchedAppVersion"), m_lastLaunchedAppVersion);
     QJsonArray priority;
     for (const QString& id : m_protonPriority)
         priority.append(id);

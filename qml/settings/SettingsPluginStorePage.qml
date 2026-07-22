@@ -16,16 +16,6 @@ Flickable {
     }
 
     function isPluginInstalled(pluginId) {
-        if (Core.isPluginInstalledOnDisk(pluginId))
-            return true
-        for (let i = 0; i < pluginRows.length; ++i) {
-            if (pluginRows[i].pluginId === pluginId)
-                return true
-        }
-        return false
-    }
-
-    function isPluginLoaded(pluginId) {
         for (let i = 0; i < pluginRows.length; ++i) {
             if (pluginRows[i].pluginId === pluginId)
                 return true
@@ -189,19 +179,9 @@ Flickable {
 
                             MD.Button {
                                 mdState.type: installed ? MD.Enum.BtText : MD.Enum.BtFilledTonal
-                                text: {
-                                    if (thisInstalling)
-                                        return qsTr("Installing…")
-                                    if (installed && root.isPluginLoaded(modelData.id))
-                                        return qsTr("Installed")
-                                    if (installed)
-                                        return qsTr("Repair")
-                                    return qsTr("Install")
-                                }
-                                // Allow reinstall when files exist but the DLL failed to load.
-                                enabled: !(Core.pluginCatalog && Core.pluginCatalog.installing)
-                                         && (!installed
-                                             || (installed && !root.isPluginLoaded(modelData.id)))
+                                text: installed ? qsTr("Installed")
+                                      : (thisInstalling ? qsTr("Installing…") : qsTr("Install"))
+                                enabled: !installed && !(Core.pluginCatalog && Core.pluginCatalog.installing)
                                 onClicked: Core.installOfficialPlugin(modelData.id)
                             }
                         }

@@ -57,8 +57,6 @@ Item {
     }
 
     function isPluginInstalled(pluginId) {
-        if (Core.isPluginInstalledOnDisk(pluginId))
-            return true
         for (let i = 0; i < pluginRows.length; ++i) {
             if (pluginRows[i].pluginId === pluginId)
                 return true

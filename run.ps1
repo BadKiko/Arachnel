@@ -216,6 +216,18 @@ or QT_INSTALL_DIR to your Qt root (the folder that contains version dirs / Tools
         "-DARACHNEL_VERSION=$(if ($env:ARACHNEL_VERSION) { $env:ARACHNEL_VERSION } else { 'dev' })"
     )
 
+    if ($env:CMAKE_C_COMPILER_LAUNCHER) {
+        $configureArgs += "-DCMAKE_C_COMPILER_LAUNCHER=$($env:CMAKE_C_COMPILER_LAUNCHER)"
+    }
+    if ($env:CMAKE_CXX_COMPILER_LAUNCHER) {
+        $configureArgs += "-DCMAKE_CXX_COMPILER_LAUNCHER=$($env:CMAKE_CXX_COMPILER_LAUNCHER)"
+    }
+    if ($env:FETCHCONTENT_BASE_DIR) {
+        New-Item -ItemType Directory -Force -Path $env:FETCHCONTENT_BASE_DIR | Out-Null
+        $fetchDir = ($env:FETCHCONTENT_BASE_DIR -replace '\\', '/')
+        $configureArgs += "-DFETCHCONTENT_BASE_DIR=$fetchDir"
+    }
+
     if ($qt.Kind -eq "mingw_64") {
         $mingwBin = Find-MingwBinDir $qt.Prefix
         if (-not $mingwBin) {
@@ -312,10 +324,10 @@ function New-InstallerPackage {
         New-ReleasePackage
     }
 
+    Enable-CompileCache
     $plan = Get-BuildArgs
     Ensure-BuildDir $plan.Qt
     Initialize-QtRuntime $plan.Qt
-    Enable-CompileCache
 
     if (Test-NeedsCmakeConfigure) {
         Write-Host "CMake configure ..."
@@ -491,10 +503,10 @@ function Deploy-QtRuntime {
 }
 
 function New-ReleasePackage {
+    Enable-CompileCache
     $plan = Get-BuildArgs
     Ensure-BuildDir $plan.Qt
     Initialize-QtRuntime $plan.Qt
-    Enable-CompileCache
 
     if (Test-NeedsCmakeConfigure) {
         Write-Host "CMake configure ..."
@@ -714,22 +726,26 @@ function Test-NeedsCmakeConfigure {
 }
 
 function Enable-CompileCache {
-    if ($env:GITHUB_ACTIONS -eq 'true') { return }
+    # Honor launchers already set by CI (sccache-action / env).
+    if ($env:CMAKE_CXX_COMPILER_LAUNCHER -and $env:CMAKE_C_COMPILER_LAUNCHER) {
+        return
+    }
     foreach ($name in @("sccache", "ccache")) {
         $cmd = Get-Command $name -ErrorAction SilentlyContinue
         if ($cmd) {
             $env:CMAKE_C_COMPILER_LAUNCHER = $cmd.Source
             $env:CMAKE_CXX_COMPILER_LAUNCHER = $cmd.Source
+            Write-Host "Compile cache: $name ($($cmd.Source))"
             return
         }
     }
 }
 
 function Ensure-DevBuild {
+    Enable-CompileCache
     $plan = Get-BuildArgs
     Ensure-BuildDir $plan.Qt
     Initialize-QtRuntime $plan.Qt
-    Enable-CompileCache
 
     $appPath = Get-AppPath
     if (Test-Path -LiteralPath $appPath) {

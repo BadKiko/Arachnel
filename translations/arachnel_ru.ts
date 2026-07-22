@@ -1431,6 +1431,14 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>Не удалось удалить плагин: %1</translation>
     </message>
     <message>
+        <source>Plugins updated</source>
+        <translation>Плагины обновлены</translation>
+    </message>
+    <message>
+        <source>v%1 · %2 — not loaded</source>
+        <translation>v%1 · %2 — не загружен</translation>
+    </message>
+    <message>
         
         <location filename="../src/core/plugins/plugin_facade.cpp" line="192" />
         <source>Plugin files (*.arach)</source>
@@ -4075,6 +4083,22 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <location filename="../qml/settings/SettingsStoragePage.qml" line="176" />
         <source>Add drive…</source>
         <translation>Добавить диск…</translation>
+    </message>
+    <message>
+        <source>Remove drive?</source>
+        <translation>Удалить диск?</translation>
+    </message>
+    <message>
+        <source>Remove “%1” from Arachnel? Files on disk are not deleted.</source>
+        <translation>Убрать «%1» из Arachnel? Файлы на диске не удаляются.</translation>
+    </message>
+    <message>
+        <source>“%1” still has games. Move or delete them first.</source>
+        <translation>На «%1» ещё есть игры. Сначала перенесите или удалите их.</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>Убрать</translation>
     </message>
     <message>
         

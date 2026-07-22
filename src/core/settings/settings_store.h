@@ -89,6 +89,10 @@ public:
 
     QString resolvedProtonId(const QString& gameProtonId, class ProtonManager& manager) const;
 
+    /// Last Arachnel version that completed official-plugin auto-update.
+    QString lastLaunchedAppVersion() const { return m_lastLaunchedAppVersion; }
+    void setLastLaunchedAppVersion(const QString& version);
+
     void load();
     void save();
 
@@ -122,6 +126,7 @@ private:
     QString m_defaultProtonId;
     QStringList m_protonPriority;
     QString m_legacyProtonPath;
+    QString m_lastLaunchedAppVersion;
     QVector<SourcePluginInfo> m_sources;
     QHash<QString, bool> m_pluginEnabledStates;
     StorageLibraryModel m_storageLibraries;
