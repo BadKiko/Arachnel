@@ -4,10 +4,12 @@
 #include "file_utils.h"
 #include "game_metadata_service.h"
 #include "install_heuristics.h"
+#include "install_kind.h"
 #include "job_status.h"
 #include "job_store.h"
 #include "launch_resolver.h"
 #include "library_store.h"
+#include "online_fix_overlay.h"
 #include "plugin_host.h"
 #include "plugin_interface.h"
 #include "settings_store.h"
@@ -111,6 +113,16 @@ QVariantMap LibraryController::entryDetails(const QString& entryId) const
             info.insert(QStringLiteral("downloadPath"), job->savePath);
     }
     info.insert(QStringLiteral("installed"), isEntryPlayable(entryId));
+
+    const QString installPath = info.value(QStringLiteral("installPath")).toString();
+    const QVariantMap fixInfo = onlineFixOverlayInfo(installPath);
+    for (auto it = fixInfo.constBegin(); it != fixInfo.constEnd(); ++it)
+        info.insert(it.key(), it.value());
+    const int installKind = info.value(QStringLiteral("installKind")).toInt();
+    const bool catalogWantsFix = installKind == static_cast<int>(InstallKind::BundledFix)
+        || installKind == static_cast<int>(InstallKind::FixDownload);
+    info.insert(QStringLiteral("onlineFixRelevant"),
+                fixInfo.value(QStringLiteral("onlineFixPresent")).toBool() || catalogWantsFix);
     return info;
 }
 
@@ -155,6 +167,20 @@ void LibraryController::setGameProtonId(const QString& entryId, const QString& p
     LibraryGame game = *existing;
     game.protonId = protonId.trimmed();
     m_store->upsertGame(game);
+    sync();
+}
+
+void LibraryController::setGameOnlineFixEnabled(const QString& entryId, bool enabled)
+{
+    const LibraryGame* existing = m_store->gameById(entryId);
+    if (!existing || existing->installPath.isEmpty())
+        return;
+    QString error;
+    if (!setOnlineFixOverlayEnabled(existing->installPath, enabled, &error)) {
+        if (m_hooks.notice && !error.isEmpty())
+            m_hooks.notice(error);
+        return;
+    }
     sync();
 }
 

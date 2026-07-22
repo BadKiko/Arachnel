@@ -40,6 +40,7 @@ public:
     void setGameLaunchArgs(const QString& entryId, const QString& args);
     void setGameExecutableOverride(const QString& entryId, const QString& path);
     void setGameProtonId(const QString& entryId, const QString& protonId);
+    void setGameOnlineFixEnabled(const QString& entryId, bool enabled);
     void removeGame(const QString& gameId, bool deleteFiles);
     void removeEntry(const QString& entryId, bool deleteFiles);
     void moveGame(const QString& gameId, const QString& targetLibraryId);

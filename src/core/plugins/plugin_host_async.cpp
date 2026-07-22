@@ -35,7 +35,7 @@ void PluginHost::runInstallAsync(ISourcePlugin* plugin, const InstallContext& ct
     if (!plugin) {
         InstallResult result;
         result.success = false;
-        result.error = QStringLiteral("Плагин не найден");
+        result.error = QCoreApplication::translate("Core", "Plugin not found");
         callback(result);
         return;
     }
@@ -57,7 +57,7 @@ void PluginHost::runAddonInstallAsync(ISourcePlugin* plugin, const AddonInstallC
     if (!plugin) {
         InstallResult result;
         result.success = false;
-        result.error = QStringLiteral("Плагин не найден");
+        result.error = QCoreApplication::translate("Core", "Plugin not found");
         callback(result);
         return;
     }
@@ -79,7 +79,7 @@ void PluginHost::runOwnedDownloadAsync(ISourcePlugin* plugin, const InstallConte
     if (!plugin) {
         InstallResult result;
         result.success = false;
-        result.error = QStringLiteral("Плагин не найден");
+        result.error = QCoreApplication::translate("Core", "Plugin not found");
         if (onFinished)
             onFinished(result);
         return;

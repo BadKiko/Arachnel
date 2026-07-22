@@ -2,6 +2,7 @@
 
 #include "proton_manager.h"
 
+#include <QCoreApplication>
 #include <QDir>
 #include <QFileInfo>
 #include <QProcess>
@@ -22,13 +23,13 @@ bool runProcess(QProcess& process, int timeoutMs, QString* errorOut)
 {
     if (!process.waitForStarted(15000)) {
         if (errorOut)
-            *errorOut = QStringLiteral("Не удалось запустить: %1").arg(process.program());
+            *errorOut = QCoreApplication::translate("Core", "Failed to start: %1").arg(process.program());
         return false;
     }
     if (!process.waitForFinished(timeoutMs)) {
         process.kill();
         if (errorOut)
-            *errorOut = QStringLiteral("Таймаут: %1").arg(process.program());
+            *errorOut = QCoreApplication::translate("Core", "Timeout: %1").arg(process.program());
         return false;
     }
     if (process.exitStatus() != QProcess::NormalExit || process.exitCode() != 0) {
@@ -36,7 +37,7 @@ bool runProcess(QProcess& process, int timeoutMs, QString* errorOut)
             const QString stderrText =
                 QString::fromLocal8Bit(process.readAllStandardError()).trimmed();
             *errorOut = stderrText.isEmpty()
-                            ? QStringLiteral("%1 завершился с кодом %2")
+                            ? QCoreApplication::translate("Core", "%1 exited with code %2")
                                   .arg(process.program())
                                   .arg(process.exitCode())
                             : stderrText;
@@ -95,9 +96,9 @@ QString formatWindowsParameters(const QStringList& arguments)
 QString describeWin32Error(DWORD error)
 {
     if (error == ERROR_CANCELLED)
-        return QStringLiteral("запуск отменён (UAC)");
+        return QCoreApplication::translate("Core", "launch cancelled (UAC)");
     if (error == ERROR_ELEVATION_REQUIRED)
-        return QStringLiteral("требуются права администратора");
+        return QCoreApplication::translate("Core", "administrator rights required");
     return QStringLiteral("Win32 %1").arg(error);
 }
 
@@ -106,7 +107,7 @@ bool runWindowsNativeProcess(const QString& program, const QStringList& argument
 {
     if (!QFileInfo::exists(program)) {
         if (errorOut)
-            *errorOut = QStringLiteral("Файл не найден: %1").arg(program);
+            *errorOut = QCoreApplication::translate("Core", "File not found: %1").arg(program);
         return false;
     }
 
@@ -130,7 +131,7 @@ bool runWindowsNativeProcess(const QString& program, const QStringList& argument
 
     if (!ShellExecuteExW(&executeInfo)) {
         if (errorOut) {
-            *errorOut = QStringLiteral("Не удалось запустить %1: %2")
+            *errorOut = QCoreApplication::translate("Core", "Failed to start %1: %2")
                             .arg(nativeProgram, describeWin32Error(GetLastError()));
         }
         return false;
@@ -138,7 +139,7 @@ bool runWindowsNativeProcess(const QString& program, const QStringList& argument
 
     if (!executeInfo.hProcess) {
         if (errorOut)
-            *errorOut = QStringLiteral("Не удалось отследить процесс установки");
+            *errorOut = QCoreApplication::translate("Core", "Could not track installer process");
         return false;
     }
 
@@ -148,7 +149,7 @@ bool runWindowsNativeProcess(const QString& program, const QStringList& argument
         TerminateProcess(executeInfo.hProcess, 1);
         CloseHandle(executeInfo.hProcess);
         if (errorOut)
-            *errorOut = QStringLiteral("Таймаут: %1").arg(nativeProgram);
+            *errorOut = QCoreApplication::translate("Core", "Timeout: %1").arg(nativeProgram);
         return false;
     }
 
@@ -158,7 +159,7 @@ bool runWindowsNativeProcess(const QString& program, const QStringList& argument
 
     if (exitCode != 0) {
         if (errorOut)
-            *errorOut = QStringLiteral("%1 завершился с кодом %2").arg(nativeProgram).arg(exitCode);
+            *errorOut = QCoreApplication::translate("Core", "%1 exited with code %2").arg(nativeProgram).arg(exitCode);
         return false;
     }
 
@@ -214,7 +215,7 @@ bool runWindowsProgramAndWait(const QString& program, const QStringList& argumen
 #else
     if (!QFileInfo::exists(program)) {
         if (errorOut)
-            *errorOut = QStringLiteral("Файл не найден: %1").arg(program);
+            *errorOut = QCoreApplication::translate("Core", "File not found: %1").arg(program);
         return false;
     }
 

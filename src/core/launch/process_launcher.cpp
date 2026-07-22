@@ -2,6 +2,7 @@
 
 #include <QFileInfo>
 #include <QProcess>
+#include <QCoreApplication>
 
 namespace arachnel::core {
 
@@ -9,14 +10,14 @@ bool ProcessLauncher::launch(const ResolvedLaunch& launch, QString* errorOut, qi
 {
     if (launch.program.isEmpty()) {
         if (errorOut)
-            *errorOut = QStringLiteral("Исполняемый файл не задан");
+            *errorOut = QCoreApplication::translate("Core", "Executable is not set");
         return false;
     }
 
     QFileInfo programInfo(launch.program);
     if (!programInfo.exists()) {
         if (errorOut)
-            *errorOut = QStringLiteral("Файл не найден: %1").arg(launch.program);
+            *errorOut = QCoreApplication::translate("Core", "File not found: %1").arg(launch.program);
         return false;
     }
 
@@ -33,7 +34,7 @@ bool ProcessLauncher::launch(const ResolvedLaunch& launch, QString* errorOut, qi
     qint64 processId = 0;
     const bool ok = process.startDetached(&processId);
     if (!ok && errorOut)
-        *errorOut = QStringLiteral("Не удалось запустить процесс");
+        *errorOut = QCoreApplication::translate("Core", "Failed to start process");
     if (ok && processIdOut)
         *processIdOut = processId;
     return ok;

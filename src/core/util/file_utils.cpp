@@ -4,6 +4,7 @@
 #include <QDirIterator>
 #include <QFile>
 #include <QFileInfo>
+#include <QCoreApplication>
 
 namespace arachnel::core {
 
@@ -20,14 +21,14 @@ bool removePathRecursive(const QString& path, QString* errorOut)
         if (QFile::remove(path))
             return true;
         if (errorOut)
-            *errorOut = QStringLiteral("Не удалось удалить файл: %1").arg(path);
+            *errorOut = QCoreApplication::translate("Core", "Failed to delete file: %1").arg(path);
         return false;
     }
 
     QDir dir(path);
     if (!dir.removeRecursively()) {
         if (errorOut)
-            *errorOut = QStringLiteral("Не удалось удалить папку: %1").arg(path);
+            *errorOut = QCoreApplication::translate("Core", "Failed to delete folder: %1").arg(path);
         return false;
     }
     return true;
@@ -38,7 +39,7 @@ bool copyPathRecursive(const QString& src, const QString& dst, QString* errorOut
     QFileInfo srcInfo(src);
     if (!srcInfo.exists()) {
         if (errorOut)
-            *errorOut = QStringLiteral("Источник не найден: %1").arg(src);
+            *errorOut = QCoreApplication::translate("Core", "Source not found: %1").arg(src);
         return false;
     }
 
@@ -46,13 +47,13 @@ bool copyPathRecursive(const QString& src, const QString& dst, QString* errorOut
         QDir().mkpath(QFileInfo(dst).absolutePath());
         if (QFile::exists(dst) && !QFile::remove(dst)) {
             if (errorOut)
-                *errorOut = QStringLiteral("Не удалось заменить: %1").arg(dst);
+                *errorOut = QCoreApplication::translate("Core", "Failed to replace: %1").arg(dst);
             return false;
         }
         if (QFile::copy(src, dst))
             return true;
         if (errorOut)
-            *errorOut = QStringLiteral("Не удалось скопировать: %1").arg(src);
+            *errorOut = QCoreApplication::translate("Core", "Failed to copy: %1").arg(src);
         return false;
     }
 
@@ -60,7 +61,7 @@ bool copyPathRecursive(const QString& src, const QString& dst, QString* errorOut
     QDir dstDir(dst);
     if (!dstDir.exists() && !QDir().mkpath(dst)) {
         if (errorOut)
-            *errorOut = QStringLiteral("Не удалось создать папку: %1").arg(dst);
+            *errorOut = QCoreApplication::translate("Core", "Failed to create folder: %1").arg(dst);
         return false;
     }
 

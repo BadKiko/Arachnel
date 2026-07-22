@@ -165,7 +165,7 @@ Item {
                         Layout.fillWidth: true
                         visible: page.readyToInstall && !page.installFailed
                                  && (page.info.sourceId ?? "") === "steamidra"
-                        text: qsTr("Steam CDN download ready. Prefer Steam’s client? Choose that on Install.")
+                        text: qsTr("Ready to download from Steam CDN. Online Fix can be included when needed.")
                         wrapMode: Text.WordWrap
                         color: MD.Token.color.on_surface_variant
                         typescale: MD.Token.typescale.body_medium

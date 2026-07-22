@@ -24,6 +24,7 @@
     Q_INVOKABLE void setGameLaunchArgs(const QString&, const QString&);
     Q_INVOKABLE void setGameExecutableOverride(const QString&, const QString&);
     Q_INVOKABLE void setGameProtonId(const QString&, const QString&);
+    Q_INVOKABLE void setGameOnlineFixEnabled(const QString&, bool);
     Q_INVOKABLE void refreshAvailableProtons();
     Q_INVOKABLE void moveProtonInPriority(const QString&, int);
     Q_INVOKABLE QString protonNameForId(const QString&) const;
