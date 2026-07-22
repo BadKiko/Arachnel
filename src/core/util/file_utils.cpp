@@ -67,9 +67,18 @@ bool copyPathRecursive(const QString& src, const QString& dst, QString* errorOut
 
     const QStringList entries =
         srcDir.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot);
+    const QString cleanSrc = QDir::cleanPath(src);
+    const QString cleanDst = QDir::cleanPath(dst);
     for (const QString& entry : entries) {
         const QString srcPath = srcDir.absoluteFilePath(entry);
         const QString dstPath = dstDir.absoluteFilePath(entry);
+        // Never copy a destination that lives inside the source tree into itself.
+        if (QDir::cleanPath(srcPath).compare(cleanDst, Qt::CaseInsensitive) == 0)
+            continue;
+        if (cleanDst.startsWith(cleanSrc + QLatin1Char('/'), Qt::CaseInsensitive)
+            && QDir::cleanPath(srcPath)
+                   .startsWith(cleanDst + QLatin1Char('/'), Qt::CaseInsensitive))
+            continue;
         if (!copyPathRecursive(srcPath, dstPath, errorOut))
             return false;
     }

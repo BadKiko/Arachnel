@@ -17,27 +17,6 @@ MD.ElevationRectangle {
     readonly property bool hasAddons: !!(group.hasAddons) && addons.length > 0
     readonly property bool gameJobActive: jobIsActive(root.group)
     readonly property int expandColumnWidth: root.hasAddons ? 40 : 0
-    property real addonsPanelHeight: 0
-
-    function updateAddonsPanelHeight() {
-        const measured = addonsPanel.implicitHeight
-        // Ignore transient 0 while the group object is swapped on progress ticks.
-        if (measured <= 0)
-            return
-        if (Math.abs(measured - addonsPanelHeight) >= 0.5)
-            addonsPanelHeight = measured
-    }
-
-    onExpandedChanged: {
-        if (expanded)
-            updateAddonsPanelHeight()
-        else
-            Qt.callLater(updateAddonsPanelHeight)
-    }
-
-    onGroupChanged: Qt.callLater(updateAddonsPanelHeight)
-
-    Component.onCompleted: Qt.callLater(updateAddonsPanelHeight)
 
     function jobIsActive(job) {
         if (!job || !job.status)
@@ -192,90 +171,82 @@ MD.ElevationRectangle {
             elide: Text.ElideRight
         }
 
-        Item {
+        ColumnLayout {
+            id: addonsPanel
             Layout.fillWidth: true
             Layout.leftMargin: root.hasAddons
                                ? root.expandColumnWidth + MD.Token.spacing.small
                                : 0
-            Layout.topMargin: root.expanded ? MD.Token.spacing.small : 0
-            Layout.preferredHeight: root.hasAddons && root.expanded ? root.addonsPanelHeight : 0
-            visible: root.hasAddons
-            clip: true
+            Layout.topMargin: MD.Token.spacing.small
+            visible: root.hasAddons && root.expanded
+            spacing: MD.Token.spacing.small
 
-            ColumnLayout {
-                id: addonsPanel
-                width: parent.width
+            RowLayout {
+                Layout.fillWidth: true
                 spacing: MD.Token.spacing.small
 
-                onImplicitHeightChanged: root.updateAddonsPanelHeight()
-
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: MD.Token.spacing.small
-
-                    MD.Icon {
-                        name: MD.Token.icon.extension
-                        size: 18
-                        color: MD.Token.color.primary
-                    }
-
-                    MD.Label {
-                        Layout.fillWidth: true
-                        text: qsTr("Add-ons")
-                        typescale: MD.Token.typescale.label_large
-                        color: MD.Token.color.on_surface_variant
-                    }
-
-                    MD.Label {
-                        text: collapsedAddonSummary()
-                        color: MD.Token.color.on_surface_variant
-                        typescale: MD.Token.typescale.label_small
-                        elide: Text.ElideRight
-                    }
+                MD.Icon {
+                    name: MD.Token.icon.extension
+                    size: 18
+                    color: MD.Token.color.primary
                 }
 
-                Rectangle {
+                MD.Label {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 1
-                    color: MD.Token.color.outline_variant
+                    text: qsTr("Add-ons")
+                    typescale: MD.Token.typescale.label_large
+                    color: MD.Token.color.on_surface_variant
                 }
 
-                Repeater {
-                    model: root.addons
+                MD.Label {
+                    text: collapsedAddonSummary()
+                    color: MD.Token.color.on_surface_variant
+                    typescale: MD.Token.typescale.label_small
+                    elide: Text.ElideRight
+                }
+            }
 
-                    ColumnLayout {
-                        required property var modelData
-                        required property int index
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 1
+                color: MD.Token.color.outline_variant
+            }
+
+            Repeater {
+                model: root.addons
+
+                ColumnLayout {
+                    required property var modelData
+                    required property int index
+                    Layout.fillWidth: true
+                    spacing: 0
+
+                    DownloadJobCard {
                         Layout.fillWidth: true
-                        spacing: 0
+                        embedded: true
+                        compact: true
+                        addonRow: true
+                        jobId: modelData.jobId ?? ""
+                        title: root.addonTitle(modelData)
+                        kindLabel: modelData.kindLabel ?? ""
+                        status: modelData.status ?? ""
+                        statusLabel: modelData.statusLabel ?? ""
+                        progress: modelData.progress ?? 0
+                        bytesDownloaded: modelData.bytesDownloaded ?? 0
+                        totalBytes: modelData.totalBytes ?? 0
+                        detail: modelData.detail ?? ""
+                        coverUrl: modelData.coverUrl ?? ""
+                        entryId: modelData.entryId ?? ""
+                        parentEntryId: modelData.parentEntryId ?? root.group.entryId ?? ""
+                        onOpenDetails: function (entryId) { root.openDetails(entryId) }
+                    }
 
-                        DownloadJobCard {
-                            Layout.fillWidth: true
-                            embedded: true
-                            compact: true
-                            addonRow: true
-                            jobId: modelData.jobId ?? ""
-                            title: root.addonTitle(modelData)
-                            kindLabel: modelData.kindLabel ?? ""
-                            status: modelData.status ?? ""
-                            statusLabel: modelData.statusLabel ?? ""
-                            progress: modelData.progress ?? 0
-                            bytesDownloaded: modelData.bytesDownloaded ?? 0
-                            totalBytes: modelData.totalBytes ?? 0
-                            detail: modelData.detail ?? ""
-                            coverUrl: modelData.coverUrl ?? ""
-                            entryId: modelData.entryId ?? ""
-                            parentEntryId: modelData.parentEntryId ?? root.group.entryId ?? ""
-                            onOpenDetails: function (entryId) { root.openDetails(entryId) }
-                        }
-
-                        Rectangle {
-                            Layout.fillWidth: true
-                            Layout.topMargin: MD.Token.spacing.small
-                            Layout.preferredHeight: 1
-                            visible: index < root.addons.length - 1
-                            color: MD.Util.transparent(MD.Token.color.outline_variant, 0.65)
-                        }
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.topMargin: MD.Token.spacing.small
+                        Layout.preferredHeight: 1
+                        visible: index < root.addons.length - 1
+                        color: MD.Util.transparent(MD.Token.color.outline_variant, 0.65)
                     }
                 }
             }

@@ -183,15 +183,22 @@ Item {
 
             // Stable identity so progress ticks don't reshuffle delegates.
             // (JS array models still recreate items; contentY restore handles scroll.)
-            delegate: DownloadJobGroupCard {
+            delegate: Item {
+                id: rowRoot
                 width: jobsList.width
+                height: Math.ceil(card.implicitHeight)
                 required property var modelData
-                group: modelData
-                expanded: root.isGroupExpanded(modelData.entryId ?? "")
-                onExpansionToggled: function (value) {
-                    root.setGroupExpanded(modelData.entryId ?? "", value)
+
+                DownloadJobGroupCard {
+                    id: card
+                    width: parent.width
+                    group: rowRoot.modelData
+                    expanded: root.isGroupExpanded(rowRoot.modelData.entryId ?? "")
+                    onExpansionToggled: function (value) {
+                        root.setGroupExpanded(rowRoot.modelData.entryId ?? "", value)
+                    }
+                    onOpenDetails: function (entryId) { root.openGame(entryId) }
                 }
-                onOpenDetails: function (entryId) { root.openGame(entryId) }
             }
         }
     }

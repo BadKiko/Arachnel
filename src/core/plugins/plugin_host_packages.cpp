@@ -2,6 +2,7 @@
 
 #include "crash_log.h"
 #include "catalog_types.h"
+#include "file_utils.h"
 
 #include "plugin_api.h"
 
@@ -174,53 +175,102 @@ bool PluginHost::installFromArach(const QString& archivePath)
         return false;
     }
 
-    const QString targetRoot = writablePluginsDir() + QLatin1Char('/') + id;
-    QDir targetDir(targetRoot);
-    if (targetDir.exists()) {
-        if (!targetDir.removeRecursively()) {
-            m_lastError = QCoreApplication::translate("Core", "Failed to replace existing plugin");
-            return false;
-        }
-    }
-
-    if (!QDir().mkpath(targetRoot)) {
+    const QString pluginsRoot = writablePluginsDir();
+    if (pluginsRoot.isEmpty()) {
         m_lastError = QCoreApplication::translate("Core", "Failed to create plugin folder");
         return false;
     }
 
-    QDir bundleDir(bundleRoot);
-    const QStringList files = bundleDir.entryList(QDir::Files);
-    for (const QString& fileName : files) {
-        if (!QFile::copy(bundleDir.absoluteFilePath(fileName),
-                         targetRoot + QLatin1Char('/') + fileName)) {
-            m_lastError = QCoreApplication::translate("Core", "Failed to copy %1").arg(fileName);
-            return false;
+    const QString targetRoot = pluginsRoot + QLatin1Char('/') + id;
+    const QString stagingRoot = targetRoot + QStringLiteral(".staging");
+    const QString backupRoot = targetRoot + QStringLiteral(".bak");
+
+    // Build into staging first so a failed install never deletes the working plugin.
+    removePathRecursive(stagingRoot);
+    removePathRecursive(backupRoot);
+    if (!QDir().mkpath(stagingRoot)) {
+        m_lastError = QCoreApplication::translate("Core", "Failed to create plugin folder");
+        return false;
+    }
+
+    auto copyTree = [](const QString& srcRoot, const QString& dstRoot, QString* errorOut) -> bool {
+        QDir bundleDir(srcRoot);
+        const QStringList files = bundleDir.entryList(QDir::Files);
+        for (const QString& fileName : files) {
+            if (!QFile::copy(bundleDir.absoluteFilePath(fileName),
+                             dstRoot + QLatin1Char('/') + fileName)) {
+                if (errorOut)
+                    *errorOut = QCoreApplication::translate("Core", "Failed to copy %1").arg(fileName);
+                return false;
+            }
+        }
+
+        const QStringList subdirs = bundleDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+        for (const QString& subdir : subdirs) {
+            const QString srcSubdir = bundleDir.absoluteFilePath(subdir);
+            const QString dstSubdir = dstRoot + QLatin1Char('/') + subdir;
+            QDirIterator it(srcSubdir, QDir::Files, QDirIterator::Subdirectories);
+            while (it.hasNext()) {
+                it.next();
+                const QString relativePath = QDir(srcSubdir).relativeFilePath(it.filePath());
+                const QString destination = dstSubdir + QLatin1Char('/') + relativePath;
+                if (!QDir().mkpath(QFileInfo(destination).path())) {
+                    if (errorOut)
+                        *errorOut =
+                            QCoreApplication::translate("Core", "Failed to create plugin folder");
+                    return false;
+                }
+                if (!QFile::copy(it.filePath(), destination)) {
+                    if (errorOut)
+                        *errorOut =
+                            QCoreApplication::translate("Core", "Failed to copy %1").arg(relativePath);
+                    return false;
+                }
+            }
+        }
+        return true;
+    };
+
+    QString copyError;
+    if (!copyTree(bundleRoot, stagingRoot, &copyError)) {
+        m_lastError = copyError;
+        removePathRecursive(stagingRoot);
+        return false;
+    }
+
+    // Unlock loaded plugin DLLs before renaming folders on Windows.
+    unloadAll();
+
+    if (QDir(targetRoot).exists()) {
+        if (!QDir().rename(targetRoot, backupRoot)) {
+            // Fallback when rename across volumes / locks fails.
+            if (!copyPathRecursive(targetRoot, backupRoot, &copyError)
+                || !removePathRecursive(targetRoot, &copyError)) {
+                m_lastError = QCoreApplication::translate("Core", "Failed to replace existing plugin");
+                if (!copyError.isEmpty())
+                    m_lastError += QStringLiteral(": ") + copyError;
+                removePathRecursive(stagingRoot);
+                scan();
+                return false;
+            }
         }
     }
 
-    const QStringList subdirs = bundleDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-    for (const QString& subdir : subdirs) {
-        const QString srcSubdir = bundleDir.absoluteFilePath(subdir);
-        const QString dstSubdir = targetRoot + QLatin1Char('/') + subdir;
-        QDirIterator it(srcSubdir, QDir::Files, QDirIterator::Subdirectories);
-        while (it.hasNext()) {
-            it.next();
-            const QString relativePath = QDir(srcSubdir).relativeFilePath(it.filePath());
-            const QString destination = dstSubdir + QLatin1Char('/') + relativePath;
-            if (!QDir().mkpath(QFileInfo(destination).path())) {
-                m_lastError = QCoreApplication::translate("Core", "Failed to create plugin folder");
-                return false;
-            }
-            if (QFile::exists(destination) && !QFile::remove(destination)) {
-                m_lastError = QCoreApplication::translate("Core", "Failed to replace %1").arg(relativePath);
-                return false;
-            }
-            if (!QFile::copy(it.filePath(), destination)) {
-                m_lastError = QCoreApplication::translate("Core", "Failed to copy %1").arg(relativePath);
-                return false;
-            }
+    if (!QDir().rename(stagingRoot, targetRoot)) {
+        if (!copyPathRecursive(stagingRoot, targetRoot, &copyError)) {
+            m_lastError = QCoreApplication::translate("Core", "Failed to install plugin files");
+            if (!copyError.isEmpty())
+                m_lastError += QStringLiteral(": ") + copyError;
+            removePathRecursive(stagingRoot);
+            if (QDir(backupRoot).exists())
+                QDir().rename(backupRoot, targetRoot);
+            scan();
+            return false;
         }
+        removePathRecursive(stagingRoot);
     }
+
+    removePathRecursive(backupRoot);
 
     scan();
     if (!hasPlugin(id)) {

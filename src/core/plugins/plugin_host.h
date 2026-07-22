@@ -34,6 +34,8 @@ public:
     QVector<SourcePluginInfo> pluginInfos() const;
     ISourcePlugin* plugin(const QString& id) const;
     bool hasPlugin(const QString& id) const;
+    /** True if plugin.json exists under a search root (even if DLL failed to load). */
+    bool hasPluginFilesOnDisk(const QString& id) const;
     QStringList pluginIds() const;
     int count() const { return m_plugins.size(); }
 
@@ -54,6 +56,8 @@ public:
     void cancelOwnedDownload(const QString& pluginId, const QString& jobId);
 
     static QStringList pluginSearchRoots();
+    /** Copy plugins from install-dir / legacy AppData into the writable plugins folder. */
+    static void migratePluginTrees();
 
     bool pluginOwnsDownload(const QString& pluginId) const;
     int pluginApiVersion(const QString& pluginId) const;

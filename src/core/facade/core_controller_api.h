@@ -4,6 +4,7 @@
     Q_INVOKABLE void setCatalogFilters(int, int, int, bool, const QString&, int = 0);
     Q_INVOKABLE void applyCatalogPresentation(int, int, int, int, bool, const QString&, int = 0);
     Q_INVOKABLE QVariantList pluginEntries() const;
+    Q_INVOKABLE bool isPluginInstalledOnDisk(const QString&) const;
     Q_INVOKABLE void browsePluginArach();
     Q_INVOKABLE bool installPluginArach(const QUrl&);
     Q_INVOKABLE bool uninstallPlugin(const QString&);
