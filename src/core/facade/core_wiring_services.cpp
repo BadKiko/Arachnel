@@ -8,6 +8,18 @@ namespace arachnel::core {
 void CoreController::initializeServices()
 {
     m_metadataService = new GameMetadataService(this);
+    {
+        const QUrl catalogUrl(m_settings.catalogUrlForSource(QStringLiteral("steamidra")));
+        if (catalogUrl.isValid() && !catalogUrl.host().isEmpty()) {
+            const QString base = QStringLiteral("%1://%2")
+                                     .arg(catalogUrl.scheme().isEmpty() ? QStringLiteral("https")
+                                                                        : catalogUrl.scheme(),
+                                          catalogUrl.authority());
+            m_metadataService->setSizeApiBaseUrl(base);
+        } else {
+            m_metadataService->setSizeApiBaseUrl(QStringLiteral("https://ryuu.badkiko.ru"));
+        }
+    }
     m_coverCache = new CoverImageCache(this);
     m_catalogCovers = new CatalogCoverCoordinator(
         m_coverCache, m_metadataService, &m_settings, &m_catalog,
