@@ -42,6 +42,7 @@ void GameMetadataService::loadCache()
         metadata.description = obj.value(QStringLiteral("description")).toString();
         metadata.descriptionLanguage = obj.value(QStringLiteral("descriptionLanguage")).toString();
         metadata.genres = obj.value(QStringLiteral("genres")).toString();
+        metadata.sizeLabel = obj.value(QStringLiteral("sizeLabel")).toString();
         metadata.steamAppId = obj.value(QStringLiteral("steamAppId")).toString();
         metadata.trailerUrl = obj.value(QStringLiteral("trailerUrl")).toString();
         metadata.trailerThumbnailUrl = obj.value(QStringLiteral("trailerThumbnailUrl")).toString();
@@ -62,6 +63,7 @@ void GameMetadataService::saveCache()
         obj.insert(QStringLiteral("description"), it->description);
         obj.insert(QStringLiteral("descriptionLanguage"), it->descriptionLanguage);
         obj.insert(QStringLiteral("genres"), it->genres);
+        obj.insert(QStringLiteral("sizeLabel"), it->sizeLabel);
         obj.insert(QStringLiteral("steamAppId"), it->steamAppId);
         obj.insert(QStringLiteral("trailerUrl"), it->trailerUrl);
         obj.insert(QStringLiteral("trailerThumbnailUrl"), it->trailerThumbnailUrl);
@@ -165,6 +167,10 @@ void GameMetadataService::queueFetch(const QString& entryId, const QString& titl
         && cached.descriptionLanguage.compare(uiLanguage, Qt::CaseInsensitive) == 0) {
         if (hasCachedMedia(cached)) {
             emit metadataReady(entryId, cached);
+            if (cached.sizeLabel.isEmpty() && !cached.steamAppId.isEmpty()) {
+                m_inFlight.insert(entryId);
+                requestDepotSize(entryId, title, cached.steamAppId);
+            }
             return;
         }
         if (!cached.steamAppId.isEmpty() && needsMediaRefresh(cached)) {
@@ -174,6 +180,10 @@ void GameMetadataService::queueFetch(const QString& entryId, const QString& titl
         }
         if (!cached.screenshotUrls.isEmpty() || !cached.trailerUrl.isEmpty()) {
             emit metadataReady(entryId, cached);
+            if (cached.sizeLabel.isEmpty() && !cached.steamAppId.isEmpty()) {
+                m_inFlight.insert(entryId);
+                requestDepotSize(entryId, title, cached.steamAppId);
+            }
             return;
         }
     }

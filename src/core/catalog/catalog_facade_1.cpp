@@ -161,6 +161,8 @@ void CoreController::applyMetadataToEntry(CatalogEntry& entry,
     }
     if (!metadata.steamAppId.isEmpty())
         entry.steamAppId = metadata.steamAppId;
+    if (!metadata.sizeLabel.isEmpty())
+        entry.sizeLabel = metadata.sizeLabel;
     if (!metadata.trailerUrl.isEmpty())
         entry.trailerUrl = metadata.trailerUrl;
     if (!metadata.trailerThumbnailUrl.isEmpty())

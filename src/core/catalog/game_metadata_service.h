@@ -18,6 +18,7 @@ struct GameMetadata {
     QString description;
     QString descriptionLanguage;
     QString genres;
+    QString sizeLabel;
     QString steamAppId;
     QString trailerUrl;
     QString trailerThumbnailUrl;
@@ -68,6 +69,7 @@ private:
     void handleSearchFinished(QNetworkReply* reply);
     void handleAssetsFinished(QNetworkReply* reply);
     void handleDetailsFinished(QNetworkReply* reply);
+    void handleDepotSizeFinished(QNetworkReply* reply);
     void finishCover(const QString& entryId, const QString& title, const GameMetadata& metadata);
     void requestStoreAssets(const QString& entryId, const QString& title, const QString& appId,
                             MetadataFetchMode mode, const QStringList& remainingParentTerms = {},
@@ -75,6 +77,7 @@ private:
     void requestAppDetails(const QString& entryId, const QString& title, const QString& appId,
                            const QString& coverUrl, MetadataFetchMode mode,
                            const QString& languageCode);
+    void requestDepotSize(const QString& entryId, const QString& title, const QString& appId);
     void tryDeferredFull(const QString& entryId);
     int indexOfPending(const QString& entryId) const;
 

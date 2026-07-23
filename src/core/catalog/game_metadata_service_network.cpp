@@ -255,6 +255,89 @@ void GameMetadataService::handleDetailsFinished(QNetworkReply* reply)
     reply->deleteLater();
     m_cache.insert(entryTitle, metadata);
     m_saveTimer->start();
+    emit metadataReady(entryId, metadata);
+
+    if (!appId.isEmpty() && metadata.sizeLabel.isEmpty()) {
+        requestDepotSize(entryId, entryTitle, appId);
+        return;
+    }
+
+    m_inFlight.remove(entryId);
+    tryDeferredFull(entryId);
+    requestNext();
+}
+
+void GameMetadataService::requestDepotSize(const QString& entryId, const QString& title,
+                                           const QString& appId)
+{
+    if (entryId.isEmpty() || appId.isEmpty()) {
+        m_inFlight.remove(entryId);
+        requestNext();
+        return;
+    }
+
+    QUrl url(QStringLiteral("https://api.steamcmd.net/v1/info/%1").arg(appId));
+    QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("Arachnel/0.1"));
+    QNetworkReply* reply = m_network->get(request);
+    reply->setProperty("entryId", entryId);
+    reply->setProperty("entryTitle", title);
+    reply->setProperty("steamAppId", appId);
+    connect(reply, &QNetworkReply::finished, this,
+            [this, reply]() { handleDepotSizeFinished(reply); });
+    ++m_activeRequests;
+}
+
+void GameMetadataService::handleDepotSizeFinished(QNetworkReply* reply)
+{
+    --m_activeRequests;
+
+    const QString entryId = reply->property("entryId").toString();
+    const QString entryTitle = reply->property("entryTitle").toString();
+    const QString appId = reply->property("steamAppId").toString();
+
+    GameMetadata metadata = m_cache.value(entryTitle);
+    if (metadata.steamAppId.isEmpty())
+        metadata.steamAppId = appId;
+
+    if (reply->error() == QNetworkReply::NoError) {
+        const QJsonObject root = QJsonDocument::fromJson(reply->readAll()).object();
+        const QJsonObject app =
+            root.value(QStringLiteral("data")).toObject().value(appId).toObject();
+        const QJsonObject depots = app.value(QStringLiteral("depots")).toObject();
+        qint64 total = 0;
+        for (auto it = depots.constBegin(); it != depots.constEnd(); ++it) {
+            bool ok = false;
+            it.key().toLongLong(&ok);
+            if (!ok)
+                continue;
+            const QJsonObject depot = it.value().toObject();
+            if (depot.isEmpty())
+                continue;
+            // Skip DLC depots and non-English language packs.
+            if (depot.contains(QStringLiteral("dlcappid"))) {
+                const QJsonValue dlc = depot.value(QStringLiteral("dlcappid"));
+                if (!(dlc.isNull() || (dlc.isString() && dlc.toString().isEmpty())))
+                    continue;
+            }
+            const QJsonObject config = depot.value(QStringLiteral("config")).toObject();
+            const QString language = config.value(QStringLiteral("language")).toString().trimmed();
+            if (!language.isEmpty()
+                && language.compare(QStringLiteral("english"), Qt::CaseInsensitive) != 0)
+                continue;
+            const QJsonObject pub =
+                depot.value(QStringLiteral("manifests")).toObject().value(QStringLiteral("public")).toObject();
+            const qint64 size = pub.value(QStringLiteral("size")).toString().toLongLong();
+            if (size > 0)
+                total += size;
+        }
+        if (total > 0)
+            metadata.sizeLabel = formatSizeLabelBytes(total);
+    }
+
+    reply->deleteLater();
+    m_cache.insert(entryTitle, metadata);
+    m_saveTimer->start();
     m_inFlight.remove(entryId);
     emit metadataReady(entryId, metadata);
     tryDeferredFull(entryId);

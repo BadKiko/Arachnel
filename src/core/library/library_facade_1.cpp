@@ -286,6 +286,11 @@ void CoreController::onCatalogReady()
 {
     const int updates = recalculateLibraryUpdates(false);
 
+    // Recalc on every catalog ready (source switch), but notify / auto-install only once per session.
+    if (m_startupLibraryUpdatesHandled)
+        return;
+    m_startupLibraryUpdatesHandled = true;
+
     if (m_settings.autoCheckUpdates() && updates > 0)
         showNotice(QCoreApplication::translate("Core", "%1 update(s) available").arg(updates));
 
