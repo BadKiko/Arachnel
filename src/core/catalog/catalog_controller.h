@@ -5,6 +5,7 @@
 #include <functional>
 
 #include <QHash>
+#include <QList>
 #include <QObject>
 #include <QSet>
 #include <QStringList>
@@ -60,6 +61,8 @@ public:
     void clearCatalogView();
     void invalidateSourceCatalog(const QString& sourceId);
     void prefetchCatalogCounts();
+    /** Block until in-flight plugin->catalog() futures finish (call before unloading DLLs). */
+    void waitForInFlightPluginCatalogLoads();
 
 signals:
     void catalogLoadingChanged(bool loading);
@@ -91,6 +94,7 @@ private:
     QString m_activeQuery;
     QString m_catalogStatus;
     bool m_catalogHttpLoadActive = false;
+    QList<QObject*> m_inFlightPluginCatalogWatchers;
 };
 
 } // namespace arachnel::core

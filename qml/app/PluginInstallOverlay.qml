@@ -42,25 +42,10 @@ Item {
 
                 MD.Label {
                     Layout.fillWidth: true
-                    text: {
-                        if (Core.pluginCatalog && Core.pluginCatalog.installing) {
-                            const id = Core.pluginCatalog.installingPluginId
-                            return id.length
-                                   ? qsTr("Installing plugin “%1”…").arg(id)
-                                   : qsTr("Installing plugin…")
-                        }
-                        return qsTr("Installing plugin…")
-                    }
+                    text: qsTr("Updating plugins…")
                     typescale: MD.Token.typescale.title_medium
                     wrapMode: Text.WordWrap
-                }
-
-                MD.Label {
-                    Layout.fillWidth: true
-                    text: qsTr("Downloading and unpacking. The UI stays responsive — please wait.")
-                    wrapMode: Text.WordWrap
-                    color: MD.Token.color.on_surface_variant
-                    typescale: MD.Token.typescale.body_medium
+                    horizontalAlignment: Text.AlignHCenter
                 }
 
                 Item {

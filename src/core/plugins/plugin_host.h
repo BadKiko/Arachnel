@@ -59,6 +59,9 @@ public:
                                OwnedProgressCallback onProgress, InstallCallback onFinished);
     void cancelOwnedDownload(const QString& pluginId, const QString& jobId);
 
+    /** Called immediately before unloadAll during install/uninstall (wait for catalog futures). */
+    void setBeforeUnloadHook(std::function<void()> hook);
+
     static QStringList pluginSearchRoots();
     /** Copy plugins from install-dir / legacy AppData into the writable plugins folder. */
     static void migratePluginTrees();
@@ -79,6 +82,7 @@ private:
 
     QHash<QString, LoadedPlugin*> m_plugins;
     QString m_lastError;
+    std::function<void()> m_beforeUnload;
 };
 
 } // namespace arachnel::core

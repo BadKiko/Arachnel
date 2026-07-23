@@ -53,6 +53,12 @@ void CoreController::initializeServices()
     m_catalogController =
         new CatalogController(&m_catalog, &m_sources, m_pluginHost, &m_catalogCache,
                               std::move(catalogHooks), this);
+    if (m_pluginHost) {
+        m_pluginHost->setBeforeUnloadHook([this]() {
+            if (m_catalogController)
+                m_catalogController->waitForInFlightPluginCatalogLoads();
+        });
+    }
     connect(m_catalogController, &CatalogController::catalogLoadingChanged, this,
             [this](bool) { emit catalogLoadingChanged(); });
     connect(m_catalogController, &CatalogController::catalogStatusChanged, this,

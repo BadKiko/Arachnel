@@ -3451,24 +3451,8 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <name>PluginInstallOverlay</name>
     <message>
         
-        
-        <location filename="../qml/app/PluginInstallOverlay.qml" line="49" />
-        <source>Installing plugin “%1”…</source>
-        </message>
-    <message>
-        
-        
-        <location filename="../qml/app/PluginInstallOverlay.qml" line="50" />
-        
-        
-        <location filename="../qml/app/PluginInstallOverlay.qml" line="52" />
-        <source>Installing plugin…</source>
-        </message>
-    <message>
-        
-        
-        <location filename="../qml/app/PluginInstallOverlay.qml" line="60" />
-        <source>Downloading and unpacking. The UI stays responsive — please wait.</source>
+        <location filename="../qml/app/PluginInstallOverlay.qml" line="45" />
+        <source>Updating plugins…</source>
         </message>
 
 

@@ -49,6 +49,9 @@ PluginHost::~PluginHost()
 
 void PluginHost::unloadAll()
 {
+    if (m_beforeUnload)
+        m_beforeUnload();
+
     for (auto it = m_plugins.begin(); it != m_plugins.end(); ++it) {
         LoadedPlugin* loaded = it.value();
         if (!loaded)
@@ -61,6 +64,11 @@ void PluginHost::unloadAll()
         delete loaded;
     }
     m_plugins.clear();
+}
+
+void PluginHost::setBeforeUnloadHook(std::function<void()> hook)
+{
+    m_beforeUnload = std::move(hook);
 }
 
 void PluginHost::shutdownPlugins()

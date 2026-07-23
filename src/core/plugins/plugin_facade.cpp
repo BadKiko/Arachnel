@@ -2,6 +2,7 @@
 
 #include <QEventLoop>
 #include <QSet>
+#include <QTimer>
 #include <QVersionNumber>
 
 namespace arachnel::core {
@@ -205,6 +206,12 @@ void CoreController::runOfficialPluginAutoUpdate()
 {
     if (!m_pluginCatalog || !m_pluginHost || m_autoUpdatingOfficialPlugins)
         return;
+
+    // Don't unload plugin DLLs while QtConcurrent is still inside plugin->catalog().
+    if (m_catalogController && m_catalogController->catalogLoading()) {
+        QTimer::singleShot(1500, this, &CoreController::runOfficialPluginAutoUpdate);
+        return;
+    }
 
     if (m_pluginCatalog->plugins().isEmpty()) {
         // Keep lastLaunched unchanged so a failed/empty catalog refresh retries next launch.
