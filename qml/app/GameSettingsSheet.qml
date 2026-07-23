@@ -174,16 +174,14 @@ MD.BottomSheet {
             Layout.leftMargin: MD.Token.spacing.large
             Layout.rightMargin: MD.Token.spacing.large
             visible: root.onLinux && root.gameId.length > 0
-            Layout.preferredHeight: protonPickCol.implicitHeight + 2 * MD.Token.spacing.medium
+            implicitHeight: protonPickCol.implicitHeight + 2 * MD.Token.spacing.medium
             radius: MD.Token.shape.corner.large
             color: MD.Token.color.surface_container_low
             elevation: MD.Token.elevation.level0
 
             ColumnLayout {
                 id: protonPickCol
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.top: parent.top
+                anchors.fill: parent
                 anchors.margins: MD.Token.spacing.medium
                 spacing: MD.Token.spacing.small
 
@@ -230,16 +228,14 @@ MD.BottomSheet {
             Layout.leftMargin: MD.Token.spacing.large
             Layout.rightMargin: MD.Token.spacing.large
             visible: root.playable
-            Layout.preferredHeight: launchCol.implicitHeight + 2 * MD.Token.spacing.medium
+            implicitHeight: launchCol.implicitHeight + 2 * MD.Token.spacing.medium
             radius: MD.Token.shape.corner.large
             color: MD.Token.color.surface_container_low
             elevation: MD.Token.elevation.level0
 
             ColumnLayout {
                 id: launchCol
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.top: parent.top
+                anchors.fill: parent
                 anchors.margins: MD.Token.spacing.medium
                 spacing: MD.Token.spacing.small
 
@@ -251,22 +247,28 @@ MD.BottomSheet {
                 MD.TextField {
                     id: launchArgsField
                     Layout.fillWidth: true
+                    Layout.preferredHeight: 56
+                    Layout.maximumHeight: 56
                     placeholderText: qsTr("Extra launch arguments for this game")
                     onEditingFinished: Core.setGameLaunchArgs(root.gameId, text)
                 }
 
                 RowLayout {
                     Layout.fillWidth: true
+                    Layout.preferredHeight: 56
                     spacing: MD.Token.spacing.small
 
                     MD.TextField {
                         id: exeField
                         Layout.fillWidth: true
+                        Layout.preferredHeight: 56
+                        Layout.maximumHeight: 56
                         placeholderText: qsTr("Custom executable (optional)")
                         onEditingFinished: Core.setGameExecutableOverride(root.gameId, text)
                     }
 
                     MD.IconButton {
+                        Layout.alignment: Qt.AlignVCenter
                         mdState.type: MD.Enum.IBtStandard
                         icon.name: MD.Token.icon.folder_open
                         onClicked: {
@@ -293,16 +295,14 @@ MD.BottomSheet {
             Layout.fillWidth: true
             Layout.leftMargin: MD.Token.spacing.large
             Layout.rightMargin: MD.Token.spacing.large
-            Layout.preferredHeight: metaCol.implicitHeight + 2 * MD.Token.spacing.medium
+            implicitHeight: metaCol.implicitHeight + 2 * MD.Token.spacing.medium
             radius: MD.Token.shape.corner.large
             color: MD.Token.color.surface_container_low
             elevation: MD.Token.elevation.level0
 
             ColumnLayout {
                 id: metaCol
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.top: parent.top
+                anchors.fill: parent
                 anchors.margins: MD.Token.spacing.medium
                 spacing: MD.Token.spacing.small
 
