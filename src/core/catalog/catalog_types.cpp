@@ -77,6 +77,21 @@ qint64 parseSizeLabelBytes(const QString& label)
     return static_cast<qint64>(value);
 }
 
+QString formatSizeLabelBytes(qint64 bytes)
+{
+    if (bytes <= 0)
+        return {};
+    static const QStringList units{QStringLiteral("B"), QStringLiteral("KB"), QStringLiteral("MB"),
+                                   QStringLiteral("GB"), QStringLiteral("TB")};
+    double value = static_cast<double>(bytes);
+    int unit = 0;
+    while (value >= 1024.0 && unit < units.size() - 1) {
+        value /= 1024.0;
+        ++unit;
+    }
+    return QStringLiteral("%1 %2").arg(QString::number(value, 'f', unit == 0 ? 0 : 1), units.at(unit));
+}
+
 QString catalogItemKindLabel(CatalogItemKind kind)
 {
     switch (kind) {

@@ -86,7 +86,8 @@ Item {
                             const out = []
                             for (let i = 0; i < raw.length; ++i) {
                                 const t = raw[i].trim()
-                                if (t.length)
+                                // DRM has its own status chip below.
+                                if (t.length && t.toLowerCase() !== "drm")
                                     out.push(t)
                             }
                             return out
@@ -123,6 +124,19 @@ Item {
                             visible: !!(page.info.sizeLabel)
                             text: page.info.sizeLabel ?? ""
                             icon.name: MD.Token.icon.hard_drive
+                        }
+                        MD.AssistChip {
+                            visible: {
+                                const g = (page.info.genres ?? "").toString().toLowerCase()
+                                return g.split(",").some(t => t.trim() === "drm")
+                            }
+                            text: qsTr("DRM")
+                            icon.name: MD.Token.icon.shield
+                            elevated: true
+                            mdState.backgroundColor: MD.Token.color.error_container
+                            mdState.textColor: MD.Token.color.on_error_container
+                            mdState.iconColor: MD.Token.color.on_error_container
+                            mdState.outlineColor: MD.Token.color.error_container
                         }
                         MD.AssistChip {
                             visible: !!(page.info.hasAddons)

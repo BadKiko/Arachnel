@@ -81,6 +81,9 @@ QString slugifyCatalogId(const QString& title, const QString& sourceId);
 /** Parse FreeTP-style size labels ("2.71 GB", "512 MB") into bytes; 0 if unknown. */
 qint64 parseSizeLabelBytes(const QString& label);
 
+/** Format byte counts as "512 MB" / "67.5 GB" for catalog size chips. */
+QString formatSizeLabelBytes(qint64 bytes);
+
 /** Fill titleLower / sizeBytes / uploadDay / genreTokens from primary fields. */
 void prepareCatalogEntry(CatalogEntry& entry);
 

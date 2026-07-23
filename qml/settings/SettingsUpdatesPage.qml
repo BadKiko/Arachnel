@@ -51,13 +51,13 @@ Flickable {
 
                 MD.Label {
                     Layout.fillWidth: true
-                    text: qsTr("Check for updates when loading the catalog")
+                    text: qsTr("Check for updates on launch")
                     typescale: MD.Token.typescale.body_large
                 }
 
                 MD.Label {
                     Layout.fillWidth: true
-                    text: qsTr("Shows when a newer build is available in the catalog.")
+                    text: qsTr("Shows once at startup when a newer build is available in the catalog.")
                     color: MD.Token.color.on_surface_variant
                     typescale: MD.Token.typescale.body_small
                     wrapMode: Text.WordWrap
@@ -88,7 +88,7 @@ Flickable {
 
                 MD.Label {
                     Layout.fillWidth: true
-                    text: qsTr("Downloads updates when you open the catalog. You can turn this off per game.")
+                    text: qsTr("Downloads updates once at startup. You can turn this off per game.")
                     color: MD.Token.color.on_surface_variant
                     typescale: MD.Token.typescale.body_small
                     wrapMode: Text.WordWrap
