@@ -40,9 +40,14 @@ public:
     void loadCache();
     void saveCache();
 
+    // Prefer relay /v1/app/{id}/size (steamcmd is often blocked on Windows).
+    void setSizeApiBaseUrl(const QString& baseUrl);
+
     // Visible cards should call this — newest requests jump the queue (lazy-load priority).
+    // knownSteamAppId skips Steam store search (steamidra / catalog already know the app).
     void queueFetch(const QString& entryId, const QString& title, MetadataFetchMode mode,
-                    const QString& languageCode = QStringLiteral("en"));
+                    const QString& languageCode = QStringLiteral("en"),
+                    const QString& knownSteamAppId = {});
     // Drop pending (not in-flight) work when a GridView delegate is recycled.
     // Returns true if a queued request was removed.
     bool cancelPending(const QString& entryId);
@@ -61,6 +66,7 @@ private:
         int termIndex = 0;
         MetadataFetchMode mode = MetadataFetchMode::CoverOnly;
         QString languageCode = QStringLiteral("en");
+        QString knownSteamAppId;
     };
 
     void requestNext();
@@ -78,12 +84,16 @@ private:
                            const QString& coverUrl, MetadataFetchMode mode,
                            const QString& languageCode);
     void requestDepotSize(const QString& entryId, const QString& title, const QString& appId);
+    void startKnownAppFetch(const QString& entryId, const QString& title, const QString& appId,
+                            MetadataFetchMode mode, const QString& languageCode,
+                            const GameMetadata& cached);
     void tryDeferredFull(const QString& entryId);
     int indexOfPending(const QString& entryId) const;
 
     struct DeferredFullRequest {
         QString title;
         QString languageCode;
+        QString knownSteamAppId;
     };
 
     QNetworkAccessManager* m_network = nullptr;
@@ -93,6 +103,7 @@ private:
     QHash<QString, DeferredFullRequest> m_deferredFull;
     int m_activeRequests = 0;
     QTimer* m_saveTimer = nullptr;
+    QString m_sizeApiBaseUrl;
 
     // Visible cards prepend into the queue; keep enough headroom for prefetch + scrolling.
     static constexpr int kMaxConcurrent = 4;

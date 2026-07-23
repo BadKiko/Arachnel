@@ -248,7 +248,7 @@ void CoreController::enrichCatalogEntry(const QString& entryId)
         return;
 
     m_metadataService->queueFetch(entryId, entry->title, MetadataFetchMode::Full,
-                                  m_settings.uiLanguage());
+                                  m_settings.uiLanguage(), entry->steamAppId);
 
     if (m_installKindProbe) {
         QString magnet;

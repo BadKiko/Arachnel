@@ -29,6 +29,14 @@ GameMetadataService::GameMetadataService(QObject* parent)
     loadCache();
 }
 
+void GameMetadataService::setSizeApiBaseUrl(const QString& baseUrl)
+{
+    QString trimmed = baseUrl.trimmed();
+    while (trimmed.endsWith(QLatin1Char('/')))
+        trimmed.chop(1);
+    m_sizeApiBaseUrl = trimmed;
+}
+
 void GameMetadataService::loadCache()
 {
     QFile file(cacheFilePath());
@@ -146,18 +154,43 @@ void GameMetadataService::tryDeferredFull(const QString& entryId)
 
     const DeferredFullRequest request = it.value();
     m_deferredFull.remove(entryId);
-    queueFetch(entryId, request.title, MetadataFetchMode::Full, request.languageCode);
+    queueFetch(entryId, request.title, MetadataFetchMode::Full, request.languageCode,
+               request.knownSteamAppId);
+}
+
+void GameMetadataService::startKnownAppFetch(const QString& entryId, const QString& title,
+                                             const QString& appId, MetadataFetchMode mode,
+                                             const QString& languageCode,
+                                             const GameMetadata& cached)
+{
+    m_inFlight.insert(entryId);
+    if (mode == MetadataFetchMode::CoverOnly) {
+        requestStoreAssets(entryId, title, appId, mode, {}, languageCode);
+        return;
+    }
+    if (isVerticalLibraryCover(cached.coverUrl) || !cached.coverUrl.isEmpty())
+        requestAppDetails(entryId, title, appId, cached.coverUrl, mode, languageCode);
+    else
+        requestStoreAssets(entryId, title, appId, mode, {}, languageCode);
 }
 
 void GameMetadataService::queueFetch(const QString& entryId, const QString& title,
-                                     MetadataFetchMode mode, const QString& languageCode)
+                                     MetadataFetchMode mode, const QString& languageCode,
+                                     const QString& knownSteamAppId)
 {
     if (entryId.isEmpty() || title.isEmpty())
         return;
 
     const QString uiLanguage = languageCode.trimmed().isEmpty() ? QStringLiteral("en")
                                                                   : languageCode.trimmed();
-    const GameMetadata cached = m_cache.value(title);
+    GameMetadata cached = m_cache.value(title);
+    if (!knownSteamAppId.isEmpty() && cached.steamAppId != knownSteamAppId) {
+        cached.steamAppId = knownSteamAppId;
+        m_cache.insert(title, cached);
+    }
+    const QString appId =
+        !knownSteamAppId.isEmpty() ? knownSteamAppId.trimmed() : cached.steamAppId.trimmed();
+
     if (mode == MetadataFetchMode::CoverOnly && isVerticalLibraryCover(cached.coverUrl)) {
         emit coverReady(entryId, cached.coverUrl);
         return;
@@ -167,22 +200,21 @@ void GameMetadataService::queueFetch(const QString& entryId, const QString& titl
         && cached.descriptionLanguage.compare(uiLanguage, Qt::CaseInsensitive) == 0) {
         if (hasCachedMedia(cached)) {
             emit metadataReady(entryId, cached);
-            if (cached.sizeLabel.isEmpty() && !cached.steamAppId.isEmpty()) {
+            if (cached.sizeLabel.isEmpty() && !appId.isEmpty()) {
                 m_inFlight.insert(entryId);
-                requestDepotSize(entryId, title, cached.steamAppId);
+                requestDepotSize(entryId, title, appId);
             }
             return;
         }
-        if (!cached.steamAppId.isEmpty() && needsMediaRefresh(cached)) {
-            m_inFlight.insert(entryId);
-            requestStoreAssets(entryId, title, cached.steamAppId, mode, {}, uiLanguage);
+        if (!appId.isEmpty() && needsMediaRefresh(cached)) {
+            startKnownAppFetch(entryId, title, appId, mode, uiLanguage, cached);
             return;
         }
         if (!cached.screenshotUrls.isEmpty() || !cached.trailerUrl.isEmpty()) {
             emit metadataReady(entryId, cached);
-            if (cached.sizeLabel.isEmpty() && !cached.steamAppId.isEmpty()) {
+            if (cached.sizeLabel.isEmpty() && !appId.isEmpty()) {
                 m_inFlight.insert(entryId);
-                requestDepotSize(entryId, title, cached.steamAppId);
+                requestDepotSize(entryId, title, appId);
             }
             return;
         }
@@ -190,7 +222,7 @@ void GameMetadataService::queueFetch(const QString& entryId, const QString& titl
 
     if (m_inFlight.contains(entryId)) {
         if (mode == MetadataFetchMode::Full)
-            m_deferredFull.insert(entryId, {title, uiLanguage});
+            m_deferredFull.insert(entryId, {title, uiLanguage, appId});
         return;
     }
 
@@ -200,8 +232,20 @@ void GameMetadataService::queueFetch(const QString& entryId, const QString& titl
         if (mode == MetadataFetchMode::Full)
             req.mode = MetadataFetchMode::Full;
         req.languageCode = uiLanguage;
+        if (!appId.isEmpty())
+            req.knownSteamAppId = appId;
         m_pending.prepend(std::move(req));
         requestNext();
+        return;
+    }
+
+    // Catalog already knows the Steam app (steamidra) — skip flaky store search.
+    if (!appId.isEmpty()) {
+        if (mode == MetadataFetchMode::CoverOnly && isVerticalLibraryCover(cached.coverUrl)) {
+            emit coverReady(entryId, cached.coverUrl);
+            return;
+        }
+        startKnownAppFetch(entryId, title, appId, mode, uiLanguage, cached);
         return;
     }
 
@@ -213,13 +257,19 @@ void GameMetadataService::queueFetch(const QString& entryId, const QString& titl
         return;
     }
 
-    prependPending({entryId, title, searchTermsFor(title), 0, mode, uiLanguage});
+    prependPending({entryId, title, searchTermsFor(title), 0, mode, uiLanguage, {}});
 }
 
 void GameMetadataService::requestNext()
 {
     while (m_activeRequests < kMaxConcurrent && !m_pending.isEmpty()) {
         const PendingRequest request = m_pending.takeFirst();
+        if (!request.knownSteamAppId.isEmpty()) {
+            startKnownAppFetch(request.entryId, request.title, request.knownSteamAppId,
+                               request.mode, request.languageCode, m_cache.value(request.title));
+            continue;
+        }
+
         m_inFlight.insert(request.entryId);
 
         const QString term = request.searchTerms.value(request.termIndex);

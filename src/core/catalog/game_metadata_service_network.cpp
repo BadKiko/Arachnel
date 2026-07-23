@@ -276,13 +276,19 @@ void GameMetadataService::requestDepotSize(const QString& entryId, const QString
         return;
     }
 
-    QUrl url(QStringLiteral("https://api.steamcmd.net/v1/info/%1").arg(appId));
+    const bool useRelay = !m_sizeApiBaseUrl.isEmpty();
+    const QUrl url = useRelay
+        ? QUrl(QStringLiteral("%1/v1/app/%2/size").arg(m_sizeApiBaseUrl, appId))
+        : QUrl(QStringLiteral("https://api.steamcmd.net/v1/info/%1").arg(appId));
     QNetworkRequest request(url);
     request.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("Arachnel/0.1"));
+    // Depot size payloads can be large / slow; don't abort early like cover fetches.
+    request.setTransferTimeout(45000);
     QNetworkReply* reply = m_network->get(request);
     reply->setProperty("entryId", entryId);
     reply->setProperty("entryTitle", title);
     reply->setProperty("steamAppId", appId);
+    reply->setProperty("sizeViaRelay", useRelay);
     connect(reply, &QNetworkReply::finished, this,
             [this, reply]() { handleDepotSizeFinished(reply); });
     ++m_activeRequests;
@@ -295,6 +301,7 @@ void GameMetadataService::handleDepotSizeFinished(QNetworkReply* reply)
     const QString entryId = reply->property("entryId").toString();
     const QString entryTitle = reply->property("entryTitle").toString();
     const QString appId = reply->property("steamAppId").toString();
+    const bool viaRelay = reply->property("sizeViaRelay").toBool();
 
     GameMetadata metadata = m_cache.value(entryTitle);
     if (metadata.steamAppId.isEmpty())
@@ -302,37 +309,74 @@ void GameMetadataService::handleDepotSizeFinished(QNetworkReply* reply)
 
     if (reply->error() == QNetworkReply::NoError) {
         const QJsonObject root = QJsonDocument::fromJson(reply->readAll()).object();
-        const QJsonObject app =
-            root.value(QStringLiteral("data")).toObject().value(appId).toObject();
-        const QJsonObject depots = app.value(QStringLiteral("depots")).toObject();
-        qint64 total = 0;
-        for (auto it = depots.constBegin(); it != depots.constEnd(); ++it) {
-            bool ok = false;
-            it.key().toLongLong(&ok);
-            if (!ok)
-                continue;
-            const QJsonObject depot = it.value().toObject();
-            if (depot.isEmpty())
-                continue;
-            // Skip DLC depots and non-English language packs.
-            if (depot.contains(QStringLiteral("dlcappid"))) {
-                const QJsonValue dlc = depot.value(QStringLiteral("dlcappid"));
-                if (!(dlc.isNull() || (dlc.isString() && dlc.toString().isEmpty())))
+        // Relay: { sizeBytes, sizeLabel }
+        const QString relayLabel = root.value(QStringLiteral("sizeLabel")).toString().trimmed();
+        const qint64 relayBytes = static_cast<qint64>(root.value(QStringLiteral("sizeBytes")).toDouble());
+        if (!relayLabel.isEmpty()) {
+            metadata.sizeLabel = relayLabel;
+        } else if (relayBytes > 0) {
+            metadata.sizeLabel = formatSizeLabelBytes(relayBytes);
+        } else {
+            const QJsonObject app =
+                root.value(QStringLiteral("data")).toObject().value(appId).toObject();
+            const QJsonObject depots = app.value(QStringLiteral("depots")).toObject();
+            qint64 total = 0;
+            for (auto it = depots.constBegin(); it != depots.constEnd(); ++it) {
+                bool ok = false;
+                it.key().toLongLong(&ok);
+                if (!ok)
                     continue;
+                const QJsonObject depot = it.value().toObject();
+                if (depot.isEmpty())
+                    continue;
+                // Skip DLC depots and non-English language packs.
+                if (depot.contains(QStringLiteral("dlcappid"))) {
+                    const QJsonValue dlc = depot.value(QStringLiteral("dlcappid"));
+                    if (!(dlc.isNull() || (dlc.isString() && dlc.toString().isEmpty())))
+                        continue;
+                }
+                const QJsonObject config = depot.value(QStringLiteral("config")).toObject();
+                const QString language = config.value(QStringLiteral("language")).toString().trimmed();
+                if (!language.isEmpty()
+                    && language.compare(QStringLiteral("english"), Qt::CaseInsensitive) != 0)
+                    continue;
+                const QJsonObject pub =
+                    depot.value(QStringLiteral("manifests")).toObject().value(QStringLiteral("public")).toObject();
+                qint64 size = 0;
+                const QJsonValue sizeVal = pub.value(QStringLiteral("size"));
+                if (sizeVal.isString())
+                    size = sizeVal.toString().toLongLong();
+                else if (sizeVal.isDouble())
+                    size = static_cast<qint64>(sizeVal.toDouble());
+                if (size <= 0) {
+                    const QJsonValue maxVal = depot.value(QStringLiteral("maxsize"));
+                    if (maxVal.isString())
+                        size = maxVal.toString().toLongLong();
+                    else if (maxVal.isDouble())
+                        size = static_cast<qint64>(maxVal.toDouble());
+                }
+                if (size > 0)
+                    total += size;
             }
-            const QJsonObject config = depot.value(QStringLiteral("config")).toObject();
-            const QString language = config.value(QStringLiteral("language")).toString().trimmed();
-            if (!language.isEmpty()
-                && language.compare(QStringLiteral("english"), Qt::CaseInsensitive) != 0)
-                continue;
-            const QJsonObject pub =
-                depot.value(QStringLiteral("manifests")).toObject().value(QStringLiteral("public")).toObject();
-            const qint64 size = pub.value(QStringLiteral("size")).toString().toLongLong();
-            if (size > 0)
-                total += size;
+            if (total > 0)
+                metadata.sizeLabel = formatSizeLabelBytes(total);
         }
-        if (total > 0)
-            metadata.sizeLabel = formatSizeLabelBytes(total);
+    } else if (viaRelay && metadata.sizeLabel.isEmpty()) {
+        // Relay down — last-ditch direct steamcmd (often times out on Windows).
+        reply->deleteLater();
+        QUrl url(QStringLiteral("https://api.steamcmd.net/v1/info/%1").arg(appId));
+        QNetworkRequest request(url);
+        request.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("Arachnel/0.1"));
+        request.setTransferTimeout(45000);
+        QNetworkReply* fallback = m_network->get(request);
+        fallback->setProperty("entryId", entryId);
+        fallback->setProperty("entryTitle", entryTitle);
+        fallback->setProperty("steamAppId", appId);
+        fallback->setProperty("sizeViaRelay", false);
+        connect(fallback, &QNetworkReply::finished, this,
+                [this, fallback]() { handleDepotSizeFinished(fallback); });
+        ++m_activeRequests;
+        return;
     }
 
     reply->deleteLater();

@@ -150,7 +150,7 @@ void CatalogCoverCoordinator::requestCatalogCover(const QString& entryId)
         m_catalog->notifyEntryChanged(entryId);
     }
     m_metadataService->queueFetch(entryId, entry->title, MetadataFetchMode::CoverOnly,
-                                  m_settings->uiLanguage());
+                                  m_settings->uiLanguage(), entry->steamAppId);
 }
 
 void CatalogCoverCoordinator::cancelCatalogCover(const QString& entryId)
@@ -184,7 +184,7 @@ void CatalogCoverCoordinator::invalidateCatalogCover(const QString& entryId)
     entry->metadataPending = true;
     m_catalog->notifyEntryChanged(entryId);
     m_metadataService->queueFetch(entryId, entry->title, MetadataFetchMode::CoverOnly,
-                                  m_settings->uiLanguage());
+                                  m_settings->uiLanguage(), entry->steamAppId);
 }
 
 } // namespace arachnel::core
