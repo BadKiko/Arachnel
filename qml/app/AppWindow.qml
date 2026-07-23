@@ -106,11 +106,6 @@ MD.ApplicationWindow {
         }
     }
 
-
-    AppUpdateProgressOverlay {
-        anchors.fill: parent
-    }
-
     readonly property var navModel: [
         {
             name: qsTr("Library"),
@@ -387,11 +382,19 @@ MD.ApplicationWindow {
         z: 1900
     }
 
+    AppUpdateProgressOverlay {
+        anchors.fill: parent
+    }
+
+    PluginInstallOverlay {
+        anchors.fill: parent
+    }
+
     AppSnackbar {
         id: snackbar
         anchors.fill: parent
         anchors.leftMargin: 88
-        z: 2000
+        z: 3200
     }
 
 }

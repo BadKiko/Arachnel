@@ -1,5 +1,6 @@
 #include "core_controller_impl.h"
 
+#include <QEventLoop>
 #include <QSet>
 #include <QVersionNumber>
 
@@ -136,7 +137,16 @@ bool CoreController::installPluginArachInternal(const QUrl& fileUrl, bool quiet)
         return false;
 
     const QString path = fileUrl.isLocalFile() ? fileUrl.toLocalFile() : fileUrl.toString();
+    if (!m_pluginInstallBusy) {
+        m_pluginInstallBusy = true;
+        emit pluginInstallBusyChanged();
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+    }
     const bool ok = m_pluginHost->installFromArach(path);
+    if (m_pluginInstallBusy) {
+        m_pluginInstallBusy = false;
+        emit pluginInstallBusyChanged();
+    }
     m_lastPluginError = ok ? QString() : m_pluginHost->lastError();
     emit lastPluginErrorChanged();
     if (ok) {

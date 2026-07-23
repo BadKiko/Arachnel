@@ -103,6 +103,7 @@
     PluginCatalogService* m_pluginCatalog = nullptr;
     bool m_autoUpdatingOfficialPlugins = false;
     int m_autoUpdatePluginSuccessCount = 0;
+    bool m_pluginInstallBusy = false;
     QVector<CatalogEntry> m_catalogCache;
     QHash<QString, int> m_catalogIdToCacheIndex;
     CatalogFilterService* m_catalogFilters = nullptr;

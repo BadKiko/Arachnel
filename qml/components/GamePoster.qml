@@ -202,13 +202,6 @@ Item {
             height: parent.height
             clip: true
 
-            Behavior on width {
-                NumberAnimation {
-                    duration: MD.Token.duration.short4
-                    easing.type: Easing.OutCubic
-                }
-            }
-
             Image {
                 width: fillHost.width
                 height: fillHost.height

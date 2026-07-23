@@ -191,25 +191,57 @@ void LibraryController::removeGame(const QString& gameId, bool deleteFiles)
     if (!game)
         return;
     const LibraryGame removed = *game;
+
+    QStringList pathsToDelete;
     if (deleteFiles) {
-        QString error;
         const QString libraryId = removed.libraryId.isEmpty() ? m_settings->defaultLibraryId()
                                                                : removed.libraryId;
         const QString gameDir = m_settings->gameDirFor(libraryId, gameId);
-        if (!gameDir.isEmpty())
-            removePathRecursive(gameDir, &error);
-        if (!removed.installPath.isEmpty()
-            && removed.installPath.compare(gameDir, Qt::CaseInsensitive) != 0)
-            removePathRecursive(removed.installPath, &error);
-        removePathRecursive(removed.downloadPath, &error);
+        auto appendUnique = [&pathsToDelete](const QString& path) {
+            if (path.isEmpty())
+                return;
+            for (const QString& existing : pathsToDelete) {
+                if (existing.compare(path, Qt::CaseInsensitive) == 0)
+                    return;
+            }
+            pathsToDelete.append(path);
+        };
+        appendUnique(gameDir);
+        appendUnique(removed.installPath);
+        appendUnique(removed.downloadPath);
     }
+
     m_store->removeGame(gameId);
     m_store->save();
     if (m_hooks.removeJobs)
         m_hooks.removeJobs(gameId);
     sync();
-    if (m_hooks.notice)
-        m_hooks.notice(QStringLiteral("Game removed: %1").arg(removed.title));
+
+    if (pathsToDelete.isEmpty()) {
+        if (m_hooks.notice)
+            m_hooks.notice(QCoreApplication::translate("Core", "Game removed: %1").arg(removed.title));
+        return;
+    }
+
+    // Drop from library immediately; wipe folders on a worker thread so the UI stays responsive.
+    if (m_hooks.deleteGameFilesAsync) {
+        if (m_hooks.notice) {
+            m_hooks.notice(
+                QCoreApplication::translate("Core", "Removing “%1”…").arg(removed.title));
+        }
+        m_hooks.deleteGameFilesAsync(pathsToDelete, removed.title);
+        return;
+    }
+
+    QString error;
+    for (const QString& path : pathsToDelete)
+        removePathRecursive(path, &error);
+    if (m_hooks.notice) {
+        if (!error.isEmpty())
+            m_hooks.notice(error);
+        else
+            m_hooks.notice(QCoreApplication::translate("Core", "Game removed: %1").arg(removed.title));
+    }
 }
 
 void LibraryController::removeEntry(const QString& entryId, bool deleteFiles)
@@ -281,6 +313,67 @@ QVariantList LibraryController::gamesOnLibrary(const QString& libraryId) const
         rows.append(row);
     }
     return rows;
+}
+
+bool LibraryController::removeStorageLibrary(const QString& libraryId, bool force)
+{
+    if (!m_settings || libraryId.isEmpty())
+        return false;
+
+    auto* storage = m_settings->storageLibraries();
+    if (!storage || storage->count() <= 1)
+        return false;
+
+    int gameCount = 0;
+    for (const LibraryGame& game : m_store->games()) {
+        const QString gid = game.libraryId.isEmpty() ? m_settings->defaultLibraryId() : game.libraryId;
+        if (gid == libraryId)
+            ++gameCount;
+    }
+
+    if (gameCount > 0 && !force)
+        return false;
+
+    QString fallbackId;
+    for (const StorageLibrary& library : storage->libraries()) {
+        if (library.id != libraryId) {
+            fallbackId = library.id;
+            if (library.isDefault)
+                break;
+        }
+    }
+    if (fallbackId.isEmpty())
+        return false;
+
+    if (gameCount > 0) {
+        for (LibraryGame game : m_store->games()) {
+            const QString gid =
+                game.libraryId.isEmpty() ? m_settings->defaultLibraryId() : game.libraryId;
+            if (gid != libraryId)
+                continue;
+            // Keep install paths as-is; only detach from the removed drive entry.
+            game.libraryId = fallbackId;
+            m_store->upsertGame(game);
+        }
+        m_store->save();
+        sync();
+    }
+
+    if (!storage->removeLibrary(libraryId))
+        return false;
+
+    if (m_hooks.notice) {
+        if (gameCount > 0) {
+            m_hooks.notice(
+                QCoreApplication::translate("Core",
+                                            "Drive removed. %1 game(s) kept on disk and listed "
+                                            "under another drive.")
+                    .arg(gameCount));
+        } else {
+            m_hooks.notice(QCoreApplication::translate("Core", "Drive removed"));
+        }
+    }
+    return true;
 }
 
 namespace {

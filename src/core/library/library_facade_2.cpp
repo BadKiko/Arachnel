@@ -123,6 +123,11 @@ QVariantList CoreController::gamesOnLibrary(const QString& libraryId) const
     return m_libraryController ? m_libraryController->gamesOnLibrary(libraryId) : QVariantList();
 }
 
+bool CoreController::removeStorageLibrary(const QString& libraryId, bool force)
+{
+    return m_libraryController && m_libraryController->removeStorageLibrary(libraryId, force);
+}
+
 int CoreController::scanInstalledGames()
 {
     if (!m_libraryController)

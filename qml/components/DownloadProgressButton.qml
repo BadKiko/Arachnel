@@ -238,13 +238,6 @@ Item {
                     width: parent.width * root.fillRatio
                     visible: root.showProgressFill
                     color: MD.Token.color.primary
-
-                    Behavior on width {
-                        NumberAnimation {
-                            duration: MD.Token.duration.short4
-                            easing: MD.Token.easing.standard
-                        }
-                    }
                 }
 
                 ActionRow {

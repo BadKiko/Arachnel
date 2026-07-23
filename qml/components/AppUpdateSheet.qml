@@ -9,7 +9,7 @@ MD.BottomSheet {
     id: root
 
     sheetType: MD.Enum.BottomSheetModal
-    dismissOnDragDown: true
+    dismissOnDragDown: !(Core.appUpdater && Core.appUpdater.downloading)
 
     property string pendingVersion: ""
 
@@ -83,14 +83,42 @@ MD.BottomSheet {
             MD.Button {
                 Layout.fillWidth: true
                 mdState.type: MD.Enum.BtFilled
-                text: qsTr("Update now")
+                text: Core.appUpdater && Core.appUpdater.downloading
+                      ? qsTr("Downloading… %1%").arg(Core.appUpdater.downloadProgress)
+                      : qsTr("Update now")
                 enabled: Core.appUpdater && Core.appUpdater.updateAvailable
-                         && !Core.appUpdater.checking && !Core.appUpdater.downloading
+                         && !Core.appUpdater.checking
+                         && !Core.appUpdater.downloading
                 onClicked: {
                     if (Core.appUpdater)
                         Core.appUpdater.downloadAndInstall()
-                    root.close()
+                    // Keep sheet open — progress overlay shows percent on top.
                 }
+            }
+        }
+
+        Item {
+            Layout.fillWidth: true
+            Layout.leftMargin: MD.Token.spacing.large
+            Layout.rightMargin: MD.Token.spacing.large
+            Layout.bottomMargin: MD.Token.spacing.medium
+            Layout.preferredHeight: 8
+            visible: Core.appUpdater && Core.appUpdater.downloading
+            clip: true
+
+            Rectangle {
+                anchors.fill: parent
+                radius: 4
+                color: MD.Util.transparent(MD.Token.color.primary, 0.2)
+            }
+
+            Rectangle {
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                anchors.left: parent.left
+                width: parent.width * Math.max(0, Math.min(1, Core.appUpdater.downloadProgress / 100))
+                radius: 4
+                color: MD.Token.color.primary
             }
         }
     }

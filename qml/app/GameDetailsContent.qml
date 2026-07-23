@@ -68,13 +68,43 @@ Item {
                         wrapMode: Text.WordWrap
                     }
 
-                    MD.Label {
+                    // Genres/categories as a single-row chip strip (Steam dumps dozens of tags).
+                    Flickable {
+                        id: genreStrip
                         Layout.fillWidth: true
-                        visible: !!(page.info.genres)
-                        text: page.info.genres ?? ""
-                        color: MD.Token.color.primary
-                        typescale: MD.Token.typescale.label_large
-                        wrapMode: Text.WordWrap
+                        Layout.preferredHeight: genreRow.implicitHeight
+                        visible: genreTokens.length > 0
+                        clip: true
+                        contentWidth: genreRow.implicitWidth
+                        contentHeight: height
+                        flickableDirection: Flickable.HorizontalFlick
+                        boundsBehavior: Flickable.StopAtBounds
+                        interactive: contentWidth > width
+
+                        readonly property var genreTokens: {
+                            const raw = (page.info.genres ?? "").toString().split(",")
+                            const out = []
+                            for (let i = 0; i < raw.length; ++i) {
+                                const t = raw[i].trim()
+                                if (t.length)
+                                    out.push(t)
+                            }
+                            return out
+                        }
+
+                        Row {
+                            id: genreRow
+                            spacing: MD.Token.spacing.extra_small
+
+                            Repeater {
+                                model: genreStrip.genreTokens
+
+                                MD.AssistChip {
+                                    required property var modelData
+                                    text: modelData
+                                }
+                            }
+                        }
                     }
 
                     Flow {
