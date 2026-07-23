@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Controls
 
 import Arachnel.Core 1.0
 import Qcm.Material as MD
@@ -211,9 +212,20 @@ ColumnLayout {
                         }
                         MD.Button {
                             mdState.type: installed ? MD.Enum.BtText : MD.Enum.BtFilledTonal
-                            text: installed ? qsTr("Installed") : (thisInstalling ? qsTr("Installing…") : qsTr("Install"))
-                            enabled: !installed && !(Core.pluginCatalog && Core.pluginCatalog.installing)
-                            onClicked: Core.installOfficialPlugin(modelData.id)
+                            text: installed ? qsTr("Delete")
+                                  : (thisInstalling ? qsTr("Installing…") : qsTr("Install"))
+                            icon.name: installed ? MD.Token.icon.delete : MD.Token.icon.download
+                            enabled: installed
+                                     || !(Core.pluginCatalog && Core.pluginCatalog.installing)
+                            onClicked: {
+                                if (installed) {
+                                    removeDialog.pluginId = modelData.id
+                                    removeDialog.pluginName = modelData.name
+                                    removeDialog.open()
+                                } else {
+                                    Core.installOfficialPlugin(modelData.id)
+                                }
+                            }
                         }
                     }
                 }
@@ -227,7 +239,19 @@ ColumnLayout {
             }
         }
         Repeater {
-            model: root.pluginRows
+            model: {
+                const official = {}
+                const catalog = Core.pluginCatalog ? Core.pluginCatalog.plugins : []
+                for (let i = 0; i < catalog.length; ++i)
+                    official[catalog[i].id] = true
+                const out = []
+                for (let i = 0; i < root.pluginRows.length; ++i) {
+                    const row = root.pluginRows[i]
+                    if (!official[row.pluginId])
+                        out.push(row)
+                }
+                return out
+            }
             Rectangle {
                 required property var modelData
                 Layout.fillWidth: true
@@ -251,9 +275,15 @@ ColumnLayout {
                             typescale: MD.Token.typescale.label_small
                         }
                     }
-                    MD.Switch {
-                        checked: modelData.sourceEnabled
-                        onToggled: Core.sources.setSourceEnabled(modelData.pluginId, checked)
+                    MD.Button {
+                        mdState.type: MD.Enum.BtText
+                        text: qsTr("Delete")
+                        icon.name: MD.Token.icon.delete
+                        onClicked: {
+                            removeDialog.pluginId = modelData.pluginId
+                            removeDialog.pluginName = modelData.name
+                            removeDialog.open()
+                        }
                     }
                 }
             }
@@ -277,6 +307,53 @@ ColumnLayout {
             color: MD.Token.color.error
             wrapMode: Text.WordWrap
             typescale: MD.Token.typescale.body_small
+        }
+
+        MD.Dialog {
+            id: removeDialog
+            parent: Overlay.overlay
+            modal: true
+            property string pluginId: ""
+            property string pluginName: ""
+            title: qsTr("Remove plugin?")
+
+            contentItem: ColumnLayout {
+                spacing: MD.Token.spacing.medium
+                width: parent ? parent.width : implicitWidth
+
+                MD.Label {
+                    Layout.fillWidth: true
+                    text: qsTr("Remove \"%1\"? Catalogs from this plugin will stop working until you install it again.")
+                          .arg(removeDialog.pluginName)
+                    wrapMode: Text.WordWrap
+                    typescale: MD.Token.typescale.body_medium
+                }
+            }
+
+            footer: Item {
+                implicitHeight: footerRow.implicitHeight + MD.Token.spacing.medium
+
+                MD.DialogButtonBox {
+                    id: footerRow
+                    anchors.right: parent.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.rightMargin: MD.Token.spacing.medium
+
+                    MD.Button {
+                        text: qsTr("Cancel")
+                        mdState.type: MD.Enum.BtText
+                        onClicked: removeDialog.close()
+                    }
+                    MD.Button {
+                        text: qsTr("Delete")
+                        mdState.type: MD.Enum.BtFilled
+                        onClicked: {
+                            Core.uninstallPlugin(removeDialog.pluginId)
+                            removeDialog.close()
+                        }
+                    }
+                }
+            }
         }
     }
 }

@@ -29,14 +29,24 @@ bool CoreController::ensureRuntimeDependenciesForGame(const LibraryGame& game)
     request.title = game.title;
     request.installPath = game.installPath;
 
+    setRuntimeSetupActive(game,
+                          QCoreApplication::translate("Core", "Preparing runtime environment…"));
+
     const RuntimeEnsureResult result = m_runtimeDependencyService->ensureInstalled(
         request, m_protonManager, &m_settings, [this](const QString& status) {
             if (status.isEmpty())
                 return;
-            m_runtimeSetupStatus = status;
-            emit runtimeSetupChanged();
-            QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+            // Queue UI updates — never processEvents() from inside launch/setup.
+            QMetaObject::invokeMethod(
+                this,
+                [this, status]() {
+                    m_runtimeSetupStatus = status;
+                    emit runtimeSetupChanged();
+                },
+                Qt::QueuedConnection);
         });
+
+    clearRuntimeSetup();
 
     if (!result.success && !result.error.isEmpty()) {
         showNotice(result.error);

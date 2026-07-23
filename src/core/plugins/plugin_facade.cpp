@@ -258,6 +258,7 @@ void CoreController::runOfficialPluginAutoUpdate()
     }
 
     m_autoUpdatingOfficialPlugins = true;
+    emit pluginAutoUpdatingChanged();
     m_autoUpdatePluginSuccessCount = 0;
     for (const QString& id : toInstall)
         m_pluginCatalog->installPlugin(id);
@@ -269,6 +270,7 @@ void CoreController::finishOfficialPluginAutoUpdate()
         return;
 
     m_autoUpdatingOfficialPlugins = false;
+    emit pluginAutoUpdatingChanged();
     m_settings.setLastLaunchedAppVersion(QCoreApplication::applicationVersion());
     if (m_autoUpdatePluginSuccessCount > 0) {
         showNotice(QCoreApplication::translate("Core", "Plugins updated"));

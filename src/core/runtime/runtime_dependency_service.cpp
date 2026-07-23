@@ -16,14 +16,20 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QMutex>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QProcess>
 #include <QSettings>
 #include <QStandardPaths>
+#include <QThread>
+#include <QTimer>
 #include <QUrl>
 #include <QUrlQuery>
+#include <QWaitCondition>
+
+#include <memory>
 
 #if defined(Q_OS_WIN)
 #include <qt_windows.h>

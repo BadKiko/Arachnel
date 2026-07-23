@@ -23,6 +23,12 @@ Flickable {
         return false
     }
 
+    function requestUninstall(pluginId, pluginName) {
+        removeDialog.pluginId = pluginId
+        removeDialog.pluginName = pluginName
+        removeDialog.open()
+    }
+
     Component.onCompleted: {
         reloadPlugins()
         Core.refreshOfficialPlugins()
@@ -179,12 +185,66 @@ Flickable {
 
                             MD.Button {
                                 mdState.type: installed ? MD.Enum.BtText : MD.Enum.BtFilledTonal
-                                text: installed ? qsTr("Installed")
+                                text: installed ? qsTr("Delete")
                                       : (thisInstalling ? qsTr("Installing…") : qsTr("Install"))
-                                enabled: !installed && !(Core.pluginCatalog && Core.pluginCatalog.installing)
-                                onClicked: Core.installOfficialPlugin(modelData.id)
+                                icon.name: installed ? MD.Token.icon.delete : MD.Token.icon.download
+                                enabled: installed
+                                         || !(Core.pluginCatalog && Core.pluginCatalog.installing)
+                                onClicked: {
+                                    if (installed)
+                                        root.requestUninstall(modelData.id, modelData.name)
+                                    else
+                                        Core.installOfficialPlugin(modelData.id)
+                                }
                             }
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    MD.Dialog {
+        id: removeDialog
+        parent: Overlay.overlay
+        modal: true
+        property string pluginId: ""
+        property string pluginName: ""
+        title: qsTr("Remove plugin?")
+
+        contentItem: ColumnLayout {
+            spacing: MD.Token.spacing.medium
+            width: parent ? parent.width : implicitWidth
+
+            MD.Label {
+                Layout.fillWidth: true
+                text: qsTr("Remove \"%1\"? Catalogs from this plugin will stop working until you install it again.")
+                      .arg(removeDialog.pluginName)
+                wrapMode: Text.WordWrap
+                typescale: MD.Token.typescale.body_medium
+            }
+        }
+
+        footer: Item {
+            implicitHeight: footerRow.implicitHeight + MD.Token.spacing.medium
+
+            MD.DialogButtonBox {
+                id: footerRow
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.rightMargin: MD.Token.spacing.medium
+
+                MD.Button {
+                    text: qsTr("Cancel")
+                    mdState.type: MD.Enum.BtText
+                    onClicked: removeDialog.close()
+                }
+                MD.Button {
+                    text: qsTr("Delete")
+                    mdState.type: MD.Enum.BtFilled
+                    onClicked: {
+                        Core.uninstallPlugin(removeDialog.pluginId)
+                        removeDialog.close()
                     }
                 }
             }

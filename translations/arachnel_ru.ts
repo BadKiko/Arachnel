@@ -6,11 +6,15 @@
     <message id="help.catalog_intro">
         
         
+        
+        
         <location filename="../qml/i18n/Messages.qml" line="8" />
         <source>Add a catalog to browse games, or install a plugin for download, install, and play.</source>
         <translation>Добавьте каталог, чтобы смотреть игры, или установите плагин для загрузки, установки и запуска.</translation>
     </message>
     <message id="help.hydra_catalog_body">
+        
+        
         
         
         <location filename="../qml/i18n/Messages.qml" line="11" />
@@ -20,11 +24,15 @@
     <message id="help.catalog_body">
         
         
+        
+        
         <location filename="../qml/i18n/Messages.qml" line="14" />
         <source>Pick a game in Catalog to start a download.</source>
         <translation>Выберите игру в Каталоге, чтобы начать загрузку.</translation>
     </message>
     <message id="help.library_body">
+        
+        
         
         
         <location filename="../qml/i18n/Messages.qml" line="17" />
@@ -34,11 +42,15 @@
     <message id="settings.sources.connect_hint">
         
         
+        
+        
         <location filename="../qml/i18n/Messages.qml" line="20" />
         <source>Add a catalog URL from Hydra or another community list. Install a plugin (e.g. FreeTP) to install and play.</source>
         <translation>Добавьте URL каталога из Hydra или другого списка. Установите плагин (например FreeTP), чтобы ставить и запускать игры.</translation>
     </message>
     <message id="settings.sources.add_hint">
+        
+        
         
         
         <location filename="../qml/i18n/Messages.qml" line="23" />
@@ -48,11 +60,15 @@
     <message id="settings.source_form.desc">
         
         
+        
+        
         <location filename="../qml/i18n/Messages.qml" line="26" />
         <source>Paste a catalog URL. Arachnel loads the game list; a plugin handles install and launch.</source>
         <translation>Вставьте URL каталога. Arachnel загрузит список игр; плагин отвечает за установку и запуск.</translation>
     </message>
     <message id="settings.appearance.weblate_hint">
+        
+        
         
         
         <location filename="../qml/i18n/Messages.qml" line="29" />
@@ -62,11 +78,15 @@
     <message id="settings.plugins.install_hint">
         
         
+        
+        
         <location filename="../qml/i18n/Messages.qml" line="32" />
         <source>Use Install plugin below and pick a plugin file (e.g. FreeTP).</source>
         <translation>Нажмите «Установить плагин» ниже и выберите файл плагина (например FreeTP).</translation>
     </message>
     <message id="settings.plugins.desc">
+        
+        
         
         
         <location filename="../qml/i18n/Messages.qml" line="35" />
@@ -76,6 +96,8 @@
     <message id="library.empty.subtitle">
         
         
+        
+        
         <location filename="../qml/i18n/Messages.qml" line="38" />
         <source>Your library is empty. Install a plugin, pick a game in Catalog, and it will appear here.</source>
         <translation>Библиотека пуста. Установите плагин, выберите игру в Каталоге — и она появится здесь.</translation>
@@ -83,11 +105,15 @@
     <message id="library.step1.body">
         
         
+        
+        
         <location filename="../qml/i18n/Messages.qml" line="41" />
         <source>Install a plugin (e.g. FreeTP) in Settings → Plugins.</source>
         <translation>Установите плагин (например FreeTP) в Настройки → Плагины.</translation>
     </message>
     <message id="library.step2.body">
+        
+        
         
         
         <location filename="../qml/i18n/Messages.qml" line="44" />
@@ -98,6 +124,8 @@
     <message id="library.step3.body">
         
         
+        
+        
         <location filename="../qml/i18n/Messages.qml" line="47" />
         <source>Installed games live here: launch, updates, and details.</source>
         <translation>Установленные игры живут здесь: запуск, обновления, детали.</translation>
@@ -105,11 +133,15 @@
     <message id="game.install.torrent_hint">
         
         
+        
+        
         <location filename="../qml/i18n/Messages.qml" line="50" />
         <source>Download finished. Click Install to set up the game.</source>
         <translation>Загрузка завершена. Нажмите «Установить», чтобы поставить игру.</translation>
     </message>
     <message id="steamidra.trust.markdown">
+        
+        
         
         
         <location filename="../qml/i18n/Messages.qml" line="53" />
@@ -143,11 +175,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message id="catalog.pipeline_desc">
         
         
+        
+        
         <location filename="../qml/i18n/Messages.qml" line="56" />
         <source>Browse games from your catalogs and sources.</source>
         <translation>Игры из ваших каталогов и источников.</translation>
     </message>
     <message id="catalog.connect_hint">
+        
+        
         
         
         <location filename="../qml/i18n/Messages.qml" line="59" />
@@ -157,11 +193,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message id="catalog.enable_chips_hint">
         
         
+        
+        
         <location filename="../qml/i18n/Messages.qml" line="62" />
         <source>Turn on one or more sources above — or leave them all off.</source>
         <translation>Включите один или несколько источников выше — или оставьте все выключенными.</translation>
     </message>
     <message id="storage.libraries_desc">
+        
+        
         
         
         <location filename="../qml/i18n/Messages.qml" line="65" />
@@ -171,11 +211,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message id="addons.selection_hint">
         
         
+        
+        
         <location filename="../qml/i18n/Messages.qml" line="68" />
         <source>Add-ons are available for "%1" — choose what to download with the game.</source>
         <translation>К игре «%1» доступны дополнения — выберите, что скачать вместе с игрой.</translation>
     </message>
     <message id="downloads.empty_hint">
+        
+        
         
         
         <location filename="../qml/i18n/Messages.qml" line="71" />
@@ -185,16 +229,22 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message id="game.delete_warning">
         
         
+        
+        
         <location filename="../qml/i18n/Messages.qml" line="74" />
         <source>Game files will be deleted from disk. This cannot be undone.</source>
         <translation>Файлы игры будут удалены с диска. Это действие нельзя отменить.</translation>
     </message>
 
 
+
+
 </context>
 <context>
     <name>AppUpdateProgressOverlay</name>
     <message>
+        
+        
         
         
         <location filename="../qml/app/AppUpdateProgressOverlay.qml" line="42" />
@@ -204,11 +254,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/AppUpdateProgressOverlay.qml" line="48" />
         <source>Please wait. The installer will open automatically.</source>
         <translation>Подождите. Установщик откроется автоматически.</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/AppUpdateProgressOverlay.qml" line="80" />
@@ -217,10 +271,14 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
 
 
+
+
 </context>
 <context>
     <name>AppUpdateSheet</name>
     <message>
+        
+        
         
         
         <location filename="../qml/components/AppUpdateSheet.qml" line="31" />
@@ -230,11 +288,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/AppUpdateSheet.qml" line="39" />
         <source>Arachnel %1 is ready to install. Update now to get the latest fixes and features.</source>
         <translation>Arachnel %1 готов к установке. Обновитесь, чтобы получить последние исправления и возможности.</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/components/AppUpdateSheet.qml" line="52" />
@@ -244,11 +306,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/AppUpdateSheet.qml" line="67" />
         <source>Later</source>
         <translation>Позже</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/components/AppUpdateSheet.qml" line="75" />
@@ -258,11 +324,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/AppUpdateSheet.qml" line="87" />
         <source>Downloading… %1%</source>
         <translation>Скачивание… %1%</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/components/AppUpdateSheet.qml" line="88" />
@@ -271,10 +341,14 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
 
 
+
+
 </context>
 <context>
     <name>AppWindow</name>
     <message>
+        
+        
         
         
         <location filename="../qml/app/AppWindow.qml" line="16" />
@@ -284,11 +358,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/AppWindow.qml" line="111" />
         <source>Library</source>
         <translation>Библиотека</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/AppWindow.qml" line="115" />
@@ -298,16 +376,22 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/AppWindow.qml" line="119" />
         <source>Downloads</source>
         <translation>Загрузки</translation>
     </message>
 
 
+
+
 </context>
 <context>
     <name>CatalogCompactBar</name>
     <message>
+        
+        
         
         
         <location filename="../qml/components/CatalogCompactBar.qml" line="45" />
@@ -317,11 +401,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/CatalogCompactBar.qml" line="54" />
         <source>Loading…</source>
         <translation>Загрузка…</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/components/CatalogCompactBar.qml" line="55" />
@@ -330,10 +418,14 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
 
 
+
+
 </context>
 <context>
     <name>CatalogEmptyResults</name>
     <message>
+        
+        
         
         
         <location filename="../qml/components/CatalogEmptyResults.qml" line="53" />
@@ -343,11 +435,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/CatalogEmptyResults.qml" line="54" />
         <source>Nothing found</source>
         <translation>Ничего не найдено</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/components/CatalogEmptyResults.qml" line="62" />
@@ -357,16 +453,22 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/CatalogEmptyResults.qml" line="70" />
         <source>Refresh</source>
         <translation>Обновить</translation>
     </message>
 
 
+
+
 </context>
 <context>
     <name>CatalogFilterSheet</name>
     <message>
+        
+        
         
         
         <location filename="../qml/components/CatalogFilterSheet.qml" line="26" />
@@ -376,11 +478,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/CatalogFilterSheet.qml" line="27" />
         <source>Portable</source>
         <translation>Портабл</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/components/CatalogFilterSheet.qml" line="28" />
@@ -390,6 +496,8 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/CatalogFilterSheet.qml" line="29" />
         <source>Online fix</source>
         <translation>Онлайн-фикс</translation>
@@ -397,13 +505,21 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/CatalogFilterSheet.qml" line="33" />
+        
+        
         
         
         <location filename="../qml/components/CatalogFilterSheet.qml" line="40" />
         
         
+        
+        
         <location filename="../qml/components/CatalogFilterSheet.qml" line="48" />
+        
+        
         
         
         <location filename="../qml/components/CatalogFilterSheet.qml" line="312" />
@@ -413,11 +529,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/CatalogFilterSheet.qml" line="34" />
         <source>Single-player</source>
         <translation>Одиночная</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/components/CatalogFilterSheet.qml" line="35" />
@@ -427,11 +547,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/CatalogFilterSheet.qml" line="36" />
         <source>Multiplayer</source>
         <translation>Мультиплеер</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/components/CatalogFilterSheet.qml" line="41" />
@@ -441,11 +565,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/CatalogFilterSheet.qml" line="42" />
         <source>1–5 GB</source>
         <translation>1–5 ГБ</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/components/CatalogFilterSheet.qml" line="43" />
@@ -455,11 +583,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/CatalogFilterSheet.qml" line="44" />
         <source>20+ GB</source>
         <translation>20+ ГБ</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/components/CatalogFilterSheet.qml" line="49" />
@@ -469,11 +601,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/CatalogFilterSheet.qml" line="50" />
         <source>Last 30 days</source>
         <translation>За 30 дней</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/components/CatalogFilterSheet.qml" line="51" />
@@ -483,11 +619,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/CatalogFilterSheet.qml" line="52" />
         <source>Last year</source>
         <translation>За год</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/components/CatalogFilterSheet.qml" line="93" />
@@ -497,11 +637,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/CatalogFilterSheet.qml" line="117" />
         <source>Sort</source>
         <translation>Сортировка</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/components/CatalogFilterSheet.qml" line="148" />
@@ -511,11 +655,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/CatalogFilterSheet.qml" line="179" />
         <source>Players</source>
         <translation>Игроки</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/components/CatalogFilterSheet.qml" line="210" />
@@ -525,11 +673,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/CatalogFilterSheet.qml" line="241" />
         <source>Added</source>
         <translation>Добавлено</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/components/CatalogFilterSheet.qml" line="272" />
@@ -539,11 +691,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/CatalogFilterSheet.qml" line="283" />
         <source>Has add-ons</source>
         <translation>Есть дополнения</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/components/CatalogFilterSheet.qml" line="302" />
@@ -553,11 +709,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/CatalogFilterSheet.qml" line="351" />
         <source>Clear all</source>
         <translation>Сбросить всё</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/components/CatalogFilterSheet.qml" line="358" />
@@ -566,10 +726,14 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
 
 
+
+
 </context>
 <context>
     <name>CatalogIntroHeader</name>
     <message>
+        
+        
         
         
         <location filename="../qml/components/CatalogIntroHeader.qml" line="14" />
@@ -578,10 +742,14 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
 
 
+
+
 </context>
 <context>
     <name>CatalogNoSourcesPanel</name>
     <message>
+        
+        
         
         
         <location filename="../qml/components/CatalogNoSourcesPanel.qml" line="31" />
@@ -591,11 +759,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/CatalogNoSourcesPanel.qml" line="49" />
         <source>Add catalog</source>
         <translation>Добавить каталог</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/components/CatalogNoSourcesPanel.qml" line="56" />
@@ -604,10 +776,14 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
 
 
+
+
 </context>
 <context>
     <name>CatalogPage</name>
     <message>
+        
+        
         
         
         <location filename="../qml/app/CatalogPage.qml" line="40" />
@@ -617,11 +793,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/CatalogPage.qml" line="41" />
         <source>Oldest first</source>
         <translation>Сначала старые</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/CatalogPage.qml" line="42" />
@@ -631,11 +811,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/CatalogPage.qml" line="43" />
         <source>Title Z–A</source>
         <translation>Название Я–А</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/CatalogPage.qml" line="44" />
@@ -645,11 +829,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/CatalogPage.qml" line="45" />
         <source>Non-portable first</source>
         <translation>Сначала не портабл</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/CatalogPage.qml" line="51" />
@@ -659,11 +847,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/CatalogPage.qml" line="46" />
         <source>Largest first</source>
         <translation>Сначала большие</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/CatalogPage.qml" line="47" />
@@ -673,11 +865,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/CatalogPage.qml" line="52" />
         <source>Portable</source>
         <translation>Портабл</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/CatalogPage.qml" line="53" />
@@ -687,11 +883,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/CatalogPage.qml" line="54" />
         <source>Online fix</source>
         <translation>Онлайн-фикс</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/CatalogPage.qml" line="57" />
@@ -701,11 +901,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/CatalogPage.qml" line="58" />
         <source>&lt; 1 GB</source>
         <translation>&lt; 1 ГБ</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/CatalogPage.qml" line="59" />
@@ -715,11 +919,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/CatalogPage.qml" line="60" />
         <source>5–20 GB</source>
         <translation>5–20 ГБ</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/CatalogPage.qml" line="61" />
@@ -729,11 +937,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/CatalogPage.qml" line="64" />
         <source>Any time</source>
         <translation>Любое время</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/CatalogPage.qml" line="65" />
@@ -743,11 +955,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/CatalogPage.qml" line="66" />
         <source>Last 30 days</source>
         <translation>За 30 дней</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/CatalogPage.qml" line="67" />
@@ -757,16 +973,22 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/CatalogPage.qml" line="68" />
         <source>Last year</source>
         <translation>За год</translation>
     </message>
 
 
+
+
 </context>
 <context>
     <name>CatalogScrollHeader</name>
     <message>
+        
+        
         
         
         <location filename="../qml/components/CatalogScrollHeader.qml" line="34" />
@@ -776,10 +998,14 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/CatalogScrollHeader.qml" line="35" />
         <source>Found: %1</source>
         <translation>Найдено: %1</translation>
     </message>
+
+
 
 
 </context>
@@ -788,16 +1014,22 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/CatalogSourceChips.qml" line="27" />
         <source>%1 · %2</source>
         <translation>%1 · %2</translation>
     </message>
 
 
+
+
 </context>
 <context>
     <name>CatalogStickyToolbar</name>
     <message>
+        
+        
         
         
         <location filename="../qml/components/CatalogStickyToolbar.qml" line="78" />
@@ -807,11 +1039,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/CatalogStickyToolbar.qml" line="86" />
         <source>Size</source>
         <translation>Размер</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/components/CatalogStickyToolbar.qml" line="94" />
@@ -821,16 +1057,22 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/CatalogStickyToolbar.qml" line="102" />
         <source>Has add-ons</source>
         <translation>Есть дополнения</translation>
     </message>
 
 
+
+
 </context>
 <context>
     <name>Core</name>
     <message>
+        
+        
         
         
         <location filename="../src/core/catalog/catalog_types.cpp" line="84" />
@@ -840,11 +1082,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/catalog/catalog_types.cpp" line="88" />
         <source>Add-on</source>
         <translation>Дополнение</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/catalog/catalog_types.cpp" line="90" />
@@ -854,11 +1100,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/catalog/catalog_types.cpp" line="97" />
         <source>Direct</source>
         <translation>Прямая</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/catalog/catalog_types.cpp" line="99" />
@@ -868,7 +1118,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/jobs/job_kind.cpp" line="11" />
+        
+        
         
         
         <location filename="../src/core/catalog/catalog_types.cpp" line="101" />
@@ -878,11 +1132,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/install/install_kind.cpp" line="11" />
         <source>Portable</source>
         <translation>Портабл</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/install/install_kind.cpp" line="13" />
@@ -892,11 +1150,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/install/install_kind.cpp" line="15" />
         <source>Bundled fix</source>
         <translation>Встроенный фикс</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/install/install_kind.cpp" line="17" />
@@ -906,6 +1168,8 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/install/install_kind.cpp" line="19" />
         <source>Unknown</source>
         <translation>Неизвестно</translation>
@@ -913,10 +1177,16 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="45" />
         
         
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="92" />
+        
+        
         
         
         <location filename="../src/core/jobs/job_display.cpp" line="97" />
@@ -926,10 +1196,16 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="43" />
         
         
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="174" />
+        
+        
         
         
         <location filename="../src/core/jobs/job_display.cpp" line="176" />
@@ -939,11 +1215,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="13" />
         <source>Download complete</source>
         <translation>Загрузка завершена</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/jobs/job_display.cpp" line="14" />
@@ -953,11 +1233,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="15" />
         <source>Downloading…</source>
         <translation>Загрузка…</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/jobs/job_display.cpp" line="16" />
@@ -967,11 +1251,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="17" />
         <source>Installing…</source>
         <translation>Установка…</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/jobs/job_display.cpp" line="18" />
@@ -981,11 +1269,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="19" />
         <source>Preparing…</source>
         <translation>Подготовка…</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/jobs/job_display.cpp" line="20" />
@@ -995,11 +1287,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="21" />
         <source>Downloading from Steam CDN…</source>
         <translation>Загрузка с Steam CDN…</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/jobs/job_display.cpp" line="22" />
@@ -1009,11 +1305,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="23" />
         <source>Finishing…</source>
         <translation>Завершение…</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/jobs/job_display.cpp" line="24" />
@@ -1023,11 +1323,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="25" />
         <source>Could not prepare this game for download. Try again later or pick another title.</source>
         <translation>Не удалось подготовить игру к загрузке. Попробуйте позже или выберите другую.</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/jobs/job_display.cpp" line="27" />
@@ -1037,11 +1341,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="28" />
         <source>Steam blocked downloading game files (need a packaged manifest). Try another title, or set hubcapApiKey in plugin settings.</source>
         <translation>Steam заблокировал загрузку файлов (нужен готовый манифест). Попробуйте другую игру или укажите hubcapApiKey в настройках плагина.</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/jobs/job_display.cpp" line="32" />
@@ -1051,11 +1359,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="36" />
         <source>Failed to start torrent</source>
         <translation>Не удалось начать торрент</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/jobs/job_display.cpp" line="37" />
@@ -1065,11 +1377,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="39" />
         <source>Downloading %1</source>
         <translation>Загрузка %1</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/jobs/job_display.cpp" line="40" />
@@ -1079,6 +1395,8 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="41" />
         <source>Updating %1</source>
         <translation>Обновление %1</translation>
@@ -1086,10 +1404,16 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="42" />
         
         
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="179" />
+        
+        
         
         
         <location filename="../src/core/jobs/job_display.cpp" line="183" />
@@ -1099,10 +1423,16 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="44" />
         
         
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="188" />
+        
+        
         
         
         <location filename="../src/core/jobs/job_display.cpp" line="190" />
@@ -1112,11 +1442,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/jobs/job_kind.cpp" line="13" />
         <source>Install</source>
         <translation>Установить</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/jobs/job_kind.cpp" line="15" />
@@ -1126,11 +1460,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/jobs/job_kind.cpp" line="17" />
         <source>Task</source>
         <translation>Задача</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/jobs/job_status.cpp" line="10" />
@@ -1140,11 +1478,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/jobs/job_status.cpp" line="12" />
         <source>Starting</source>
         <translation>Запуск</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/jobs/job_status.cpp" line="14" />
@@ -1154,11 +1496,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/jobs/job_status.cpp" line="16" />
         <source>Metadata</source>
         <translation>Метаданные</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/jobs/job_status.cpp" line="18" />
@@ -1168,11 +1514,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/jobs/job_status.cpp" line="20" />
         <source>Installing</source>
         <translation>Установка</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/jobs/job_status.cpp" line="22" />
@@ -1182,7 +1532,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="33" />
+        
+        
         
         
         <location filename="../src/core/jobs/job_status.cpp" line="24" />
@@ -1192,7 +1546,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="38" />
+        
+        
         
         
         <location filename="../src/core/jobs/job_status.cpp" line="26" />
@@ -1202,6 +1560,8 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/jobs/job_status.cpp" line="28" />
         <source>Failed</source>
         <translation>Ошибка</translation>
@@ -1209,7 +1569,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="34" />
+        
+        
         
         
         <location filename="../src/core/jobs/job_status.cpp" line="30" />
@@ -1219,10 +1583,16 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="35" />
         
         
+        
+        
         <location filename="../src/core/jobs/job_status.cpp" line="37" />
+        
+        
         
         
         <location filename="../src/core/catalog/catalog_facade_2.cpp" line="275" />
@@ -1232,11 +1602,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/catalog/catalog_controller.cpp" line="50" />
         <source>Catalog error: %1</source>
         <translation>Ошибка каталога: %1</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/facade/core_wiring_services.cpp" line="361" />
@@ -1246,6 +1620,8 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/facade/core_wiring_services.cpp" line="366" />
         <source>Add-on not found in catalog</source>
         <translation>Дополнение не найдено в каталоге</translation>
@@ -1253,7 +1629,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/facade/core_wiring_services.cpp" line="348" />
+        
+        
         
         
         <location filename="../src/core/facade/core_wiring_services.cpp" line="377" />
@@ -1263,11 +1643,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/facade/core_wiring_services.cpp" line="413" />
         <source>Download error: %1</source>
         <translation>Ошибка загрузки: %1</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/install/install_session_service.cpp" line="38" />
@@ -1277,11 +1661,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/install/install_session_service.cpp" line="99" />
         <source>Install failed for %1: %2</source>
         <translation>Ошибка установки %1: %2</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/install/install_session_service.cpp" line="131" />
@@ -1291,11 +1679,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/install/install_session_service.cpp" line="132" />
         <source>Installed: %1</source>
         <translation>Установлено: %1</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/install/install_session_service_install.cpp" line="71" />
@@ -1305,11 +1697,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/install/install_session_service_install.cpp" line="78" />
         <source>Install the game first</source>
         <translation>Сначала установите игру</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/install/install_session_service_install.cpp" line="135" />
@@ -1319,11 +1715,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/install/install_session_service_install.cpp" line="150" />
         <source>Add-on installed: %1</source>
         <translation>Дополнение установлено: %1</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/facade/core_wiring_services.cpp" line="128" />
@@ -1333,6 +1733,8 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/jobs/job_facade_1.cpp" line="101" />
         <source>Game not found</source>
         <translation>Игра не найдена</translation>
@@ -1340,7 +1742,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/catalog/catalog_facade_2.cpp" line="317" />
+        
+        
         
         
         <location filename="../src/core/jobs/job_facade_1.cpp" line="107" />
@@ -1350,11 +1756,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/jobs/job_facade_1.cpp" line="113" />
         <source>Download the add-on first</source>
         <translation>Сначала скачайте дополнение</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/library/library_facade_1.cpp" line="295" />
@@ -1364,11 +1774,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/runtime/proton_facade.cpp" line="226" />
         <source>Install Proton-GE in Settings → Launch before downloading games</source>
         <translation>Установите Proton-GE в Настройки → Запуск перед скачиванием игр</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/runtime/proton_facade.cpp" line="229" />
@@ -1378,6 +1792,8 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/catalog/catalog_facade_2.cpp" line="212" />
         <source>No download link for %1</source>
         <translation>Нет ссылки для загрузки: %1</translation>
@@ -1385,7 +1801,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/library/library_facade_2.cpp" line="74" />
+        
+        
         
         
         <location filename="../src/core/library/library_facade_2.cpp" line="98" />
@@ -1395,11 +1815,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/jobs/job_facade_2.cpp" line="200" />
         <source>Choose game install folder</source>
         <translation>Выберите папку с игрой</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/jobs/job_facade_2.cpp" line="229" />
@@ -1409,7 +1833,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/jobs/job_display.cpp" line="12" />
+        
+        
         
         
         <location filename="../src/core/jobs/job_facade_2.cpp" line="245" />
@@ -1419,11 +1847,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/jobs/job_facade_2.cpp" line="246" />
         <source>Manual install complete for %1</source>
         <translation>Ручная установка завершена: %1</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/plugins/plugin_facade.cpp" line="309" />
@@ -1433,11 +1865,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/facade/core_wiring_services.cpp" line="223" />
         <source>Plugin install failed</source>
         <translation>Ошибка установки плагина</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/facade/core_wiring_services.cpp" line="237" />
@@ -1447,11 +1883,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/facade/core_wiring_services.cpp" line="278" />
         <source>Proton-GE installed</source>
         <translation>Proton-GE установлен</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/facade/core_wiring_services.cpp" line="280" />
@@ -1461,11 +1901,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/facade/core_wiring_services.cpp" line="407" />
         <source>Download complete — install manually</source>
         <translation>Загрузка завершена — установите вручную</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/install/install_session_service.cpp" line="69" />
@@ -1475,11 +1919,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/install/install_session_service_install.cpp" line="84" />
         <source>Plugin not found for %1 — install it in Settings → Plugins</source>
         <translation>Плагин для %1 не найден — установите в Настройки → Плагины</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/library/library_facade_2.cpp" line="52" />
@@ -1489,11 +1937,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/library/library_facade_2.cpp" line="55" />
         <source>Executables (*.exe *.sh *.x86_64);;All files (*)</source>
         <translation>Исполняемые (*.exe *.sh *.x86_64);;Все файлы (*)</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/catalog/catalog_controller.cpp" line="164" />
@@ -1503,11 +1955,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/catalog/catalog_controller.cpp" line="168" />
         <source>%1 sources · %2 games</source>
         <translation>%1 источников · %2 игр</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/catalog/catalog_controller.cpp" line="247" />
@@ -1517,11 +1973,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/catalog/catalog_controller.cpp" line="266" />
         <source>No catalog URL configured for source %1</source>
         <translation>Для источника %1 не задан URL каталога</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/catalog/catalog_facade_2.cpp" line="311" />
@@ -1531,11 +1991,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/runtime/runtime_dependency_service.cpp" line="111" />
         <source>Steam App ID is missing</source>
         <translation>Не указан Steam App ID</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/runtime/runtime_dependency_service_install.cpp" line="73" />
@@ -1545,11 +2009,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/runtime/runtime_dependency_service_install.cpp" line="89" />
         <source>Installer not found for %1</source>
         <translation>Установщик не найден для %1</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/runtime/runtime_dependency_service_install.cpp" line="96" />
@@ -1559,6 +2027,8 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/runtime/runtime_dependency_service_install.cpp" line="108" />
         <source>Proton is required to install runtime dependencies</source>
         <translation>Для установки зависимостей нужен Proton</translation>
@@ -1566,7 +2036,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/runtime/runtime_dependency_service_install.cpp" line="116" />
+        
+        
         
         
         <location filename="../src/core/launch/launch_facade.cpp" line="110" />
@@ -1576,6 +2050,8 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/launch/launch_controller.cpp" line="60" />
         <source>Game is not installed yet</source>
         <translation type="unfinished" />
@@ -1583,7 +2059,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/launch/launch_controller.cpp" line="75" />
+        
+        
         
         
         <location filename="../src/core/launch/launch_facade.cpp" line="117" />
@@ -1593,7 +2073,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/launch/launch_controller.cpp" line="82" />
+        
+        
         
         
         <location filename="../src/core/launch/launch_facade.cpp" line="132" />
@@ -1603,11 +2087,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/launch/launch_controller.cpp" line="96" />
         <source>Failed to stop game</source>
         <translation>Не удалось остановить игру</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/catalog/catalog_facade_2.cpp" line="30" />
@@ -1617,11 +2105,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/catalog/catalog_facade_2.cpp" line="34" />
         <source>Source "%1" is disabled in settings</source>
         <translation>Источник «%1» выключен в настройках</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/catalog/catalog_facade_2.cpp" line="114" />
@@ -1631,11 +2123,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/catalog/catalog_facade_2.cpp" line="137" />
         <source>Failed to delete application data</source>
         <translation>Не удалось удалить данные приложения</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/catalog/catalog_facade_2.cpp" line="143" />
@@ -1645,11 +2141,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/catalog/catalog_facade_2.cpp" line="155" />
         <source>Application data deleted. Arachnel will quit now.</source>
         <translation>Данные приложения удалены. Arachnel сейчас закроется.</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/catalog/catalog_facade_2.cpp" line="172" />
@@ -1659,11 +2159,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/catalog/catalog_facade_2.cpp" line="180" />
         <source>Invalid URL — http or https required</source>
         <translation>Некорректный URL — нужен http или https</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/catalog/catalog_facade_2.cpp" line="202" />
@@ -1673,11 +2177,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/catalog/catalog_facade_2.cpp" line="217" />
         <source>No Steam App ID for %1</source>
         <translation type="unfinished" />
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/catalog/catalog_facade_2.cpp" line="227" />
@@ -1687,11 +2195,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/plugins/plugin_facade.cpp" line="173" />
         <source>Plugin removed</source>
         <translation>Плагин удалён</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/plugins/plugin_facade.cpp" line="176" />
@@ -1701,11 +2213,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/plugins/plugin_facade.cpp" line="267" />
         <source>Plugins updated</source>
         <translation>Плагины обновлены</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/plugins/plugin_facade.cpp" line="311" />
@@ -1715,7 +2231,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/catalog/catalog_facade_2.cpp" line="235" />
+        
+        
         
         
         <location filename="../src/core/catalog/catalog_facade_2.cpp" line="283" />
@@ -1725,11 +2245,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/catalog/catalog_facade_2.cpp" line="323" />
         <source>Could not start add-on download</source>
         <translation>Не удалось начать загрузку дополнения</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/catalog/catalog_facade_2.cpp" line="332" />
@@ -1739,11 +2263,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/catalog/catalog_facade_2.cpp" line="347" />
         <source>Could not start update for %1</source>
         <translation>Не удалось начать обновление %1</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/facade/core_wiring_services.cpp" line="197" />
@@ -1753,11 +2281,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/library/library_facade_2.cpp" line="137" />
         <source>Found %1 game(s) on disk</source>
         <translation>Найдено игр на диске: %1</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/library/library_facade_2.cpp" line="141" />
@@ -1767,11 +2299,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/jobs/job_facade_2.cpp" line="12" />
         <source>Download not found</source>
         <translation>Загрузка не найдена</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/jobs/job_facade_2.cpp" line="16" />
@@ -1781,6 +2317,8 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/jobs/job_facade_2.cpp" line="56" />
         <source>Add-on file not found</source>
         <translation>Файл дополнения не найден</translation>
@@ -1788,7 +2326,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/jobs/job_facade_2.cpp" line="68" />
+        
+        
         
         
         <location filename="../src/core/jobs/job_facade_2.cpp" line="219" />
@@ -1798,7 +2340,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/jobs/job_facade_2.cpp" line="74" />
+        
+        
         
         
         <location filename="../src/core/jobs/job_facade_2.cpp" line="236" />
@@ -1808,11 +2354,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/jobs/job_facade_2.cpp" line="207" />
         <source>Automatic install is unavailable. Run setup.exe from the download folder, then use the folder button to point to the game.</source>
         <translation>Автоустановка недоступна. Запустите setup.exe из папки загрузки, затем кнопкой папки укажите, куда установилась игра.</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/plugins/plugin_facade.cpp" line="154" />
@@ -1822,7 +2372,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/plugins/plugin_facade.cpp" line="157" />
+        
+        
         
         
         <location filename="../src/core/plugins/plugin_facade.cpp" line="159" />
@@ -1832,11 +2386,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/plugins/plugin_host_packages.cpp" line="43" />
         <source>Invalid plugin file. Choose a plugin package (.arach)</source>
         <translation>Неверный файл плагина. Выберите пакет плагина (.arach)</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/plugins/plugin_host_packages.cpp" line="73" />
@@ -1846,11 +2404,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/plugins/plugin_host_packages.cpp" line="85" />
         <source>Archive extraction timed out</source>
         <translation>Таймаут распаковки</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/plugins/plugin_host_packages.cpp" line="96" />
@@ -1860,13 +2422,21 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/plugins/plugin_host_packages.cpp" line="139" />
+        
+        
         
         
         <location filename="../src/core/launch/process_launcher.cpp" line="20" />
         
         
+        
+        
         <location filename="../src/core/runtime/windows_runner.cpp" line="110" />
+        
+        
         
         
         <location filename="../src/core/runtime/windows_runner.cpp" line="218" />
@@ -1876,11 +2446,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/plugins/plugin_host_packages.cpp" line="143" />
         <source>Only .arach packages are supported</source>
         <translation>Поддерживаются только пакеты с расширением .arach</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/plugins/plugin_host_packages.cpp" line="149" />
@@ -1890,11 +2464,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/plugins/plugin_host_packages.cpp" line="161" />
         <source>Archive has no plugin.json</source>
         <translation>В архиве нет plugin.json</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/plugins/plugin_host_packages.cpp" line="167" />
@@ -1904,11 +2482,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/plugins/plugin_host_packages.cpp" line="175" />
         <source>Invalid plugin.json</source>
         <translation>Некорректный plugin.json</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/plugins/plugin_host_packages.cpp" line="180" />
@@ -1918,10 +2500,16 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/plugins/plugin_host_packages.cpp" line="187" />
         
         
+        
+        
         <location filename="../src/core/plugins/plugin_host_packages.cpp" line="199" />
+        
+        
         
         
         <location filename="../src/core/plugins/plugin_host_packages.cpp" line="229" />
@@ -1931,7 +2519,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/plugins/plugin_host_packages.cpp" line="210" />
+        
+        
         
         
         <location filename="../src/core/plugins/plugin_host_packages.cpp" line="235" />
@@ -1941,11 +2533,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/plugins/plugin_host_packages.cpp" line="260" />
         <source>Failed to replace existing plugin</source>
         <translation>Не удалось заменить установленный плагин</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/plugins/plugin_host_packages.cpp" line="272" />
@@ -1955,11 +2551,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/plugins/plugin_host_packages.cpp" line="288" />
         <source>Plugin files were copied but the library failed to load. Rebuild the plugin for your Arachnel version and platform (MSVC/MinGW), then reinstall.</source>
         <translation>Плагин скопирован, но библиотека не загрузилась. Пересоберите плагин под вашу версию Arachnel и платформу (MSVC/MinGW) и установите снова.</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/plugins/plugin_host_packages.cpp" line="307" />
@@ -1969,11 +2569,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/plugins/plugin_host_packages.cpp" line="335" />
         <source>Plugin is not installed</source>
         <translation>Плагин не установлен</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/plugins/plugin_host_packages.cpp" line="327" />
@@ -1983,11 +2587,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/plugins/plugin_facade.cpp" line="322" />
         <source>Could not open plugins folder</source>
         <translation>Не удалось открыть папку плагинов</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/torrent/torrent_session.cpp" line="139" />
@@ -1997,11 +2605,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/settings/app_updater.cpp" line="45" />
         <source>Not checked yet</source>
         <translation>Еще не проверялось</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/settings/app_updater.cpp" line="117" />
@@ -2011,11 +2623,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/settings/app_updater.cpp" line="138" />
         <source>Update check failed: %1</source>
         <translation>Ошибка проверки обновлений: %1</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/settings/app_updater.cpp" line="162" />
@@ -2025,7 +2641,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/settings/app_updater.cpp" line="189" />
+        
+        
         
         
         <location filename="../src/core/facade/core_wiring_services.cpp" line="252" />
@@ -2035,7 +2655,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/settings/app_updater.cpp" line="191" />
+        
+        
         
         
         <location filename="../src/core/settings/app_updater.cpp" line="193" />
@@ -2045,11 +2669,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/settings/app_updater.cpp" line="195" />
         <source>Update found, but no installer package is available for this platform</source>
         <translation>Обновление найдено, но для этой платформы нет установщика</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/settings/app_updater.cpp" line="214" />
@@ -2059,11 +2687,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/settings/app_updater.cpp" line="229" />
         <source>Downloading Arachnel update…</source>
         <translation>Скачивание обновления Arachnel…</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/plugins/plugin_catalog_service.cpp" line="115" />
@@ -2073,11 +2705,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/plugins/plugin_catalog_service.cpp" line="124" />
         <source>Plugin list is invalid</source>
         <translation>Список плагинов повреждён</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/plugins/plugin_catalog_service.cpp" line="202" />
@@ -2087,11 +2723,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/plugins/plugin_catalog_service.cpp" line="209" />
         <source>No download link for this plugin</source>
         <translation>Нет ссылки для загрузки этого плагина</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/plugins/plugin_catalog_service.cpp" line="308" />
@@ -2101,7 +2741,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/plugins/plugin_catalog_service.cpp" line="323" />
+        
+        
         
         
         <location filename="../src/core/settings/app_updater.cpp" line="294" />
@@ -2111,11 +2755,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/plugins/plugin_catalog_service.cpp" line="333" />
         <source>Downloaded plugin file is empty</source>
         <translation>Скачанный файл плагина пуст</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/plugins/plugin_catalog_service.cpp" line="344" />
@@ -2125,6 +2773,8 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/plugins/plugin_catalog_service.cpp" line="260" />
         <source>Could not save plugin file</source>
         <translation>Не удалось сохранить файл плагина</translation>
@@ -2132,7 +2782,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/settings/app_updater.cpp" line="245" />
+        
+        
         
         
         <location filename="../src/core/settings/app_updater.cpp" line="307" />
@@ -2142,11 +2796,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/settings/app_updater.cpp" line="296" />
         <source>Unknown error</source>
         <translation type="unfinished" />
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/settings/app_updater.cpp" line="316" />
@@ -2156,11 +2814,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/settings/app_updater.cpp" line="337" />
         <source>Could not start the Arachnel installer</source>
         <translation>Не удалось запустить установщик Arachnel</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/settings/app_updater.cpp" line="346" />
@@ -2170,11 +2832,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/install/online_fix_overlay.cpp" line="224" />
         <source>Not installed</source>
         <translation>Не установлен</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/install/online_fix_overlay.cpp" line="226" />
@@ -2184,11 +2850,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/install/online_fix_overlay.cpp" line="228" />
         <source>Disabled</source>
         <translation>Отключён</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/install/online_fix_overlay.cpp" line="208" />
@@ -2198,11 +2868,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/install/online_fix_overlay.cpp" line="129" />
         <source>Failed to enable Online Fix: %1</source>
         <translation>Не удалось включить Online Fix: %1</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/install/online_fix_overlay.cpp" line="141" />
@@ -2212,11 +2886,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/settings/settings_store_persistence.cpp" line="108" />
         <source>FreeTP torrent catalog — magnet links and add-ons</source>
         <translation>Торрент-каталог FreeTP — magnet-ссылки и дополнения</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/library/storage_library.cpp" line="34" />
@@ -2226,11 +2904,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/library/storage_library.cpp" line="45" />
         <source>Disk</source>
         <translation>Диск</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/util/file_utils.cpp" line="24" />
@@ -2240,11 +2922,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/util/file_utils.cpp" line="31" />
         <source>Failed to delete folder: %1</source>
         <translation>Не удалось удалить папку: %1</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/util/file_utils.cpp" line="42" />
@@ -2254,11 +2940,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/util/file_utils.cpp" line="50" />
         <source>Failed to replace: %1</source>
         <translation>Не удалось заменить: %1</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/util/file_utils.cpp" line="56" />
@@ -2268,11 +2958,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/util/file_utils.cpp" line="64" />
         <source>Failed to create folder: %1</source>
         <translation>Не удалось создать папку: %1</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/catalog/catalog_feed_loader.cpp" line="88" />
@@ -2282,11 +2976,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/catalog/catalog_parser.cpp" line="291" />
         <source>Empty server response</source>
         <translation>Пустой ответ сервера</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/catalog/catalog_parser.cpp" line="302" />
@@ -2296,11 +2994,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/catalog/catalog_parser.cpp" line="306" />
         <source>No downloads array — not a Hydra catalog</source>
         <translation>Нет массива downloads — это не каталог Hydra</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/catalog/catalog_parser.cpp" line="310" />
@@ -2310,11 +3012,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/catalog/catalog_parser.cpp" line="314" />
         <source>Failed to parse games from catalog</source>
         <translation>Не удалось разобрать игры из каталога</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/jobs/http_download_session.cpp" line="126" />
@@ -2324,10 +3030,16 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/plugins/plugin_host_async.cpp" line="38" />
         
         
+        
+        
         <location filename="../src/core/plugins/plugin_host_async.cpp" line="60" />
+        
+        
         
         
         <location filename="../src/core/plugins/plugin_host_async.cpp" line="82" />
@@ -2337,11 +3049,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/launch/process_launcher.cpp" line="13" />
         <source>Executable is not set</source>
         <translation>Исполняемый файл не задан</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/launch/process_launcher.cpp" line="37" />
@@ -2351,6 +3067,8 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/runtime/windows_runner.cpp" line="26" />
         <source>Failed to start: %1</source>
         <translation>Не удалось запустить: %1</translation>
@@ -2358,7 +3076,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/runtime/windows_runner.cpp" line="32" />
+        
+        
         
         
         <location filename="../src/core/runtime/windows_runner.cpp" line="152" />
@@ -2368,7 +3090,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/runtime/windows_runner.cpp" line="40" />
+        
+        
         
         
         <location filename="../src/core/runtime/windows_runner.cpp" line="162" />
@@ -2378,11 +3104,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/runtime/windows_runner.cpp" line="99" />
         <source>launch cancelled (UAC)</source>
         <translation>запуск отменён (UAC)</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/runtime/windows_runner.cpp" line="101" />
@@ -2392,11 +3122,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/runtime/windows_runner.cpp" line="134" />
         <source>Failed to start %1: %2</source>
         <translation>Не удалось запустить %1: %2</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/runtime/windows_runner.cpp" line="142" />
@@ -2406,10 +3140,16 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/library/library_controller.cpp" line="222" />
         
         
+        
+        
         <location filename="../src/core/library/library_controller.cpp" line="243" />
+        
+        
         
         
         <location filename="../src/core/facade/core_wiring_services.cpp" line="155" />
@@ -2419,11 +3159,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/library/library_controller.cpp" line="230" />
         <source>Removing “%1”…</source>
         <translation>Удаление «%1»…</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../src/core/library/library_controller.cpp" line="368" />
@@ -2433,10 +3177,14 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../src/core/library/library_controller.cpp" line="373" />
         <source>Drive removed</source>
         <translation>Диск убран</translation>
     </message>
+
+
 
 
 </context>
@@ -2445,16 +3193,22 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/CrashReportDialog.qml" line="14" />
         <source>Application crashed</source>
         <translation>Приложение аварийно завершилось</translation>
     </message>
 
 
+
+
 </context>
 <context>
     <name>CrashReportPanel</name>
     <message>
+        
+        
         
         
         <location filename="../qml/components/CrashReportPanel.qml" line="28" />
@@ -2464,7 +3218,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/CrashReportPanel.qml" line="35" />
+        
+        
         
         
         <location filename="../qml/components/CrashReportPanel.qml" line="47" />
@@ -2474,7 +3232,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/CrashReportPanel.qml" line="36" />
+        
+        
         
         
         <location filename="../qml/components/CrashReportPanel.qml" line="48" />
@@ -2484,11 +3246,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/CrashReportPanel.qml" line="93" />
         <source>Report file: %1</source>
         <translation>Файл отчёта: %1</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/components/CrashReportPanel.qml" line="106" />
@@ -2498,11 +3264,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/CrashReportPanel.qml" line="112" />
         <source>Open folder</source>
         <translation>Открыть папку</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/components/CrashReportPanel.qml" line="118" />
@@ -2512,10 +3282,14 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/CrashReportPanel.qml" line="126" />
         <source>Create GitHub issue</source>
         <translation>Создать issue на GitHub</translation>
     </message>
+
+
 
 
 </context>
@@ -2524,16 +3298,22 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/CrashReportWindow.qml" line="16" />
         <source>Application crashed</source>
         <translation>Приложение аварийно завершилось</translation>
     </message>
 
 
+
+
 </context>
 <context>
     <name>DownloadJobCard</name>
     <message>
+        
+        
         
         
         <location filename="../qml/components/DownloadJobCard.qml" line="81" />
@@ -2543,16 +3323,22 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/DownloadJobCard.qml" line="98" />
         <source>Install failed</source>
         <translation>Ошибка установки</translation>
     </message>
 
 
+
+
 </context>
 <context>
     <name>DownloadJobGroupCard</name>
     <message>
+        
+        
         
         
         <location filename="../qml/components/DownloadJobGroupCard.qml" line="48" />
@@ -2562,11 +3348,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/DownloadJobGroupCard.qml" line="50" />
         <source>%1 add-ons · done</source>
         <translation>%1 доп. · готово</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/components/DownloadJobGroupCard.qml" line="51" />
@@ -2576,16 +3366,22 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/DownloadJobGroupCard.qml" line="196" />
         <source>Add-ons</source>
         <translation>Дополнения</translation>
     </message>
 
 
+
+
 </context>
 <context>
     <name>DownloadProgressButton</name>
     <message>
+        
+        
         
         
         <location filename="../qml/components/DownloadProgressButton.qml" line="19" />
@@ -2595,11 +3391,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/DownloadProgressButton.qml" line="151" />
         <source>Installing…</source>
         <translation>Установка…</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/components/DownloadProgressButton.qml" line="153" />
@@ -2609,11 +3409,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/DownloadProgressButton.qml" line="155" />
         <source>Install</source>
         <translation>Установить</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/components/DownloadProgressButton.qml" line="157" />
@@ -2623,11 +3427,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/DownloadProgressButton.qml" line="159" />
         <source>Paused · %1%</source>
         <translation>Пауза · %1%</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/components/DownloadProgressButton.qml" line="161" />
@@ -2636,10 +3444,14 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
 
 
+
+
 </context>
 <context>
     <name>DownloadsPage</name>
     <message>
+        
+        
         
         
         <location filename="../qml/app/DownloadsPage.qml" line="125" />
@@ -2649,11 +3461,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/DownloadsPage.qml" line="158" />
         <source>Downloads</source>
         <translation>Загрузки</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/DownloadsPage.qml" line="167" />
@@ -2663,11 +3479,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/DownloadsPage.qml" line="170" />
         <source>%1 active · resume after restart</source>
         <translation>%1 активных · продолжатся после перезапуска</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/DownloadsPage.qml" line="172" />
@@ -2677,11 +3497,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/DownloadsPage.qml" line="173" />
         <source>Torrents resume after restart</source>
         <translation>Торренты докачиваются после перезапуска</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/DownloadsPage.qml" line="183" />
@@ -2690,10 +3514,14 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
 
 
+
+
 </context>
 <context>
     <name>GameDetailsContent</name>
     <message>
+        
+        
         
         
         <location filename="../qml/app/GameDetailsContent.qml" line="39" />
@@ -2703,17 +3531,23 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/GameDetailsContent.qml" line="66" />
         <source>Game not found</source>
         <translation>Игра не найдена</translation>
     </message>
     <message>
         
+        
+        
         <location filename="../qml/app/GameDetailsContent.qml" line="138" />
         <source>DRM</source>
         <translation>DRM</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/GameDetailsContent.qml" line="129" />
@@ -2723,11 +3557,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/GameDetailsContent.qml" line="138" />
         <source>Steam CDN · Online Fix</source>
         <translation>Steam CDN · Online Fix</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/GameDetailsContent.qml" line="149" />
@@ -2737,11 +3575,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/GameDetailsContent.qml" line="165" />
         <source>Source page</source>
         <translation>Страница на источнике</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/GameDetailsContent.qml" line="166" />
@@ -2751,11 +3593,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/GameDetailsContent.qml" line="177" />
         <source>Steam</source>
         <translation>Steam</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/GameDetailsContent.qml" line="207" />
@@ -2765,11 +3611,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/GameDetailsContent.qml" line="221" />
         <source>Stop</source>
         <translation>Остановить</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/GameDetailsContent.qml" line="225" />
@@ -2779,6 +3629,8 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/GameDetailsContent.qml" line="226" />
         <source>Play</source>
         <translation>Играть</translation>
@@ -2786,7 +3638,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/GameDetailsContent.qml" line="268" />
+        
+        
         
         
         <location filename="../qml/app/GameDetailsContent.qml" line="388" />
@@ -2796,11 +3652,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/GameDetailsContent.qml" line="285" />
         <source>Update</source>
         <translation>Обновление</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/GameDetailsContent.qml" line="337" />
@@ -2810,11 +3670,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/GameDetailsContent.qml" line="343" />
         <source>Description is not available yet.</source>
         <translation>Описание пока недоступно.</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/GameDetailsContent.qml" line="360" />
@@ -2824,11 +3688,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/GameDetailsContent.qml" line="382" />
         <source>Cancel</source>
         <translation>Отмена</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/GameDetailsContent.qml" line="198" />
@@ -2837,10 +3705,14 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
 
 
+
+
 </context>
 <context>
     <name>GameDetailsMediaPreview</name>
     <message>
+        
+        
         
         
         <location filename="../qml/components/GameDetailsMediaPreview.qml" line="75" />
@@ -2850,7 +3722,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/GameDetailsMediaPreview.qml" line="189" />
+        
+        
         
         
         <location filename="../qml/components/GameDetailsMediaPreview.qml" line="362" />
@@ -2860,7 +3736,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/GameDetailsMediaPreview.qml" line="207" />
+        
+        
         
         
         <location filename="../qml/components/GameDetailsMediaPreview.qml" line="371" />
@@ -2870,11 +3750,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/GameDetailsMediaPreview.qml" line="253" />
         <source>Screenshot %1 of %2</source>
         <translation>Скриншот %1 из %2</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/components/GameDetailsMediaPreview.qml" line="256" />
@@ -2883,10 +3767,14 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
 
 
+
+
 </context>
 <context>
     <name>GameDetailsMediaSection</name>
     <message>
+        
+        
         
         
         <location filename="../qml/components/GameDetailsMediaSection.qml" line="77" />
@@ -2895,10 +3783,14 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
 
 
+
+
 </context>
 <context>
     <name>GameSettingsRuntimePanel</name>
     <message>
+        
+        
         
         
         <location filename="../qml/app/GameSettingsRuntimePanel.qml" line="35" />
@@ -2908,11 +3800,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/GameSettingsRuntimePanel.qml" line="41" />
         <source>Proton prefix and redistributables for this game (Linux only).</source>
         <translation>Prefix Proton и redistributables для этой игры (только Linux).</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/GameSettingsRuntimePanel.qml" line="53" />
@@ -2922,11 +3818,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/GameSettingsRuntimePanel.qml" line="79" />
         <source>Prefix</source>
         <translation>Prefix</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/GameSettingsRuntimePanel.qml" line="91" />
@@ -2936,11 +3836,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/GameSettingsRuntimePanel.qml" line="105" />
         <source>Steam App ID</source>
         <translation>Steam App ID</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/GameSettingsRuntimePanel.qml" line="124" />
@@ -2950,11 +3854,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/GameSettingsRuntimePanel.qml" line="125" />
         <source>Dependencies: %1 / %2 installed</source>
         <translation>Зависимости: %1 / %2 установлено</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/GameSettingsRuntimePanel.qml" line="146" />
@@ -2964,16 +3872,22 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/GameSettingsRuntimePanel.qml" line="146" />
         <source>Missing</source>
         <translation>Нет</translation>
     </message>
 
 
+
+
 </context>
 <context>
     <name>GameSettingsSheet</name>
     <message>
+        
+        
         
         
         <location filename="../qml/app/GameSettingsSheet.qml" line="87" />
@@ -2983,11 +3897,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/GameSettingsSheet.qml" line="119" />
         <source>Auto-update this game</source>
         <translation>Автообновление этой игры</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/GameSettingsSheet.qml" line="125" />
@@ -2997,11 +3915,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/GameSettingsSheet.qml" line="191" />
         <source>Proton</source>
         <translation>Proton</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/GameSettingsSheet.qml" line="197" />
@@ -3011,11 +3933,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/GameSettingsSheet.qml" line="208" />
         <source>Default</source>
         <translation>По умолчанию</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/GameSettingsSheet.qml" line="247" />
@@ -3025,11 +3951,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/GameSettingsSheet.qml" line="254" />
         <source>Extra launch arguments for this game</source>
         <translation>Доп. аргументы запуска для этой игры</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/GameSettingsSheet.qml" line="265" />
@@ -3039,11 +3969,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/GameSettingsSheet.qml" line="310" />
         <source>Information</source>
         <translation>Информация</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/GameSettingsSheet.qml" line="316" />
@@ -3053,11 +3987,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/GameSettingsSheet.qml" line="317" />
         <source>Version</source>
         <translation>Версия</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/GameSettingsSheet.qml" line="318" />
@@ -3067,11 +4005,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/GameSettingsSheet.qml" line="319" />
         <source>Install type</source>
         <translation>Тип установки</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/GameSettingsSheet.qml" line="327" />
@@ -3081,11 +4023,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/GameSettingsSheet.qml" line="331" />
         <source>Installing…</source>
         <translation>Установка…</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/GameSettingsSheet.qml" line="333" />
@@ -3095,11 +4041,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/GameSettingsSheet.qml" line="334" />
         <source>—</source>
         <translation>—</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/GameSettingsSheet.qml" line="337" />
@@ -3109,11 +4059,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/GameSettingsSheet.qml" line="371" />
         <source>Done</source>
         <translation>Готово</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/GameSettingsSheet.qml" line="149" />
@@ -3123,11 +4077,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/GameSettingsSheet.qml" line="155" />
         <source>When disabled, SteamFix/winmm overlay DLLs are renamed so the game runs without the fix.</source>
         <translation>Если выключить, DLL оверлея SteamFix/winmm переименуются — игра запустится без фикса.</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/GameSettingsSheet.qml" line="321" />
@@ -3137,11 +4095,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/GameSettingsSheet.qml" line="323" />
         <source>Not installed</source>
         <translation>Не установлен</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/GameSettingsSheet.qml" line="324" />
@@ -3150,10 +4112,14 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
 
 
+
+
 </context>
 <context>
     <name>InstallAddonSelectionSheet</name>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/InstallAddonSelectionSheet.qml" line="63" />
@@ -3163,11 +4129,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/InstallAddonSelectionSheet.qml" line="73" />
         <source>Choose add-ons to download together with the game.</source>
         <translation>Выберите дополнения для совместной загрузки с игрой.</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/InstallAddonSelectionSheet.qml" line="87" />
@@ -3177,11 +4147,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/InstallAddonSelectionSheet.qml" line="93" />
         <source>Deselect</source>
         <translation>Снять</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/InstallAddonSelectionSheet.qml" line="174" />
@@ -3191,11 +4165,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/InstallAddonSelectionSheet.qml" line="211" />
         <source>Cancel</source>
         <translation>Отмена</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/InstallAddonSelectionSheet.qml" line="218" />
@@ -3204,13 +4182,19 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
 
 
+
+
 </context>
 <context>
     <name>InstallLocationSheet</name>
     <message>
         
         
+        
+        
         <location filename="../qml/settings/InstallLocationSheet.qml" line="37" />
+        
+        
         
         
         <location filename="../qml/settings/InstallLocationSheet.qml" line="151" />
@@ -3220,11 +4204,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/InstallLocationSheet.qml" line="45" />
         <source>Choose a drive for installation</source>
         <translation>Выберите диск для установки</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/InstallLocationSheet.qml" line="55" />
@@ -3234,16 +4222,22 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/InstallLocationSheet.qml" line="144" />
         <source>Cancel</source>
         <translation>Отмена</translation>
     </message>
 
 
+
+
 </context>
 <context>
     <name>LibraryContent</name>
     <message>
+        
+        
         
         
         <location filename="../qml/app/LibraryContent.qml" line="114" />
@@ -3253,11 +4247,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/LibraryContent.qml" line="153" />
         <source>Play</source>
         <translation>Играть</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/LibraryContent.qml" line="164" />
@@ -3267,11 +4265,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/LibraryContent.qml" line="172" />
         <source>Update</source>
         <translation>Обновление</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/LibraryContent.qml" line="210" />
@@ -3281,11 +4283,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/LibraryContent.qml" line="217" />
         <source>Sources</source>
         <translation>Источники</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/LibraryContent.qml" line="224" />
@@ -3295,11 +4301,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/LibraryContent.qml" line="231" />
         <source>Updates</source>
         <translation>Обновления</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/LibraryContent.qml" line="263" />
@@ -3309,11 +4319,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/LibraryContent.qml" line="270" />
         <source>Downloads continue after restart</source>
         <translation>Загрузки продолжаются после перезапуска</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/LibraryContent.qml" line="277" />
@@ -3323,11 +4337,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/LibraryContent.qml" line="294" />
         <source>My library</source>
         <translation>Моя библиотека</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/LibraryContent.qml" line="299" />
@@ -3336,10 +4354,14 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
 
 
+
+
 </context>
 <context>
     <name>LibraryEmptyState</name>
     <message>
+        
+        
         
         
         <location filename="../qml/app/LibraryEmptyState.qml" line="75" />
@@ -3349,11 +4371,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/LibraryEmptyState.qml" line="95" />
         <source>Open catalog</source>
         <translation>Открыть каталог</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/LibraryEmptyState.qml" line="96" />
@@ -3363,11 +4389,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/LibraryEmptyState.qml" line="111" />
         <source>Settings</source>
         <translation>Настройки</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/LibraryEmptyState.qml" line="119" />
@@ -3377,11 +4407,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/LibraryEmptyState.qml" line="135" />
         <source>Step 1</source>
         <translation>Шаг 1</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/LibraryEmptyState.qml" line="136" />
@@ -3391,11 +4425,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/LibraryEmptyState.qml" line="141" />
         <source>Step 2</source>
         <translation>Шаг 2</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/LibraryEmptyState.qml" line="142" />
@@ -3405,11 +4443,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/LibraryEmptyState.qml" line="147" />
         <source>Step 3</source>
         <translation>Шаг 3</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/LibraryEmptyState.qml" line="148" />
@@ -3418,13 +4460,19 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
 
 
+
+
 </context>
 <context>
     <name>LibraryGameCard</name>
     <message>
         
         
+        
+        
         <location filename="../qml/components/LibraryGameCard.qml" line="25" />
+        
+        
         
         
         <location filename="../qml/components/LibraryGameCard.qml" line="28" />
@@ -3434,11 +4482,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/LibraryGameCard.qml" line="27" />
         <source>%1/%2 add-ons</source>
         <translation>%1/%2 доп.</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/components/LibraryGameCard.qml" line="60" />
@@ -3448,11 +4500,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/LibraryGameCard.qml" line="63" />
         <source>Installing…</source>
         <translation>Установка…</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/components/LibraryGameCard.qml" line="65" />
@@ -3462,11 +4518,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/LibraryGameCard.qml" line="66" />
         <source>Downloading %1%</source>
         <translation>Загрузка %1%</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/components/LibraryGameCard.qml" line="124" />
@@ -3476,11 +4536,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/LibraryGameCard.qml" line="143" />
         <source>Updating</source>
         <translation>Обновление</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/components/LibraryGameCard.qml" line="195" />
@@ -3489,10 +4553,14 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
 
 
+
+
 </context>
 <context>
     <name>LibraryPage</name>
     <message>
+        
+        
         
         
         <location filename="../qml/app/LibraryPage.qml" line="31" />
@@ -3502,11 +4570,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/LibraryPage.qml" line="32" />
         <source>Recently played</source>
         <translation>Недавно играли</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/LibraryPage.qml" line="36" />
@@ -3516,11 +4588,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/LibraryPage.qml" line="43" />
         <source>Launch a game from your library — it will appear here.</source>
         <translation>Запустите игру из библиотеки — она появится здесь.</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/LibraryPage.qml" line="75" />
@@ -3530,11 +4606,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/LibraryPage.qml" line="78" />
         <source>Installing…</source>
         <translation>Установка…</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/app/LibraryPage.qml" line="80" />
@@ -3544,16 +4624,22 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/app/LibraryPage.qml" line="81" />
         <source>Downloading %1%</source>
         <translation>Загрузка %1%</translation>
     </message>
 
 
+
+
 </context>
 <context>
     <name>NotificationsPopup</name>
     <message>
+        
+        
         
         
         <location filename="../qml/components/NotificationsPopup.qml" line="46" />
@@ -3563,11 +4649,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/NotificationsPopup.qml" line="88" />
         <source>Empty for now</source>
         <translation>Пока пусто</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/components/NotificationsPopup.qml" line="97" />
@@ -3576,10 +4666,14 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
 
 
+
+
 </context>
 <context>
     <name>OnboardingBasicsStep</name>
     <message>
+        
+        
         
         
         <location filename="../qml/onboarding/OnboardingBasicsStep.qml" line="28" />
@@ -3589,11 +4683,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/onboarding/OnboardingBasicsStep.qml" line="34" />
         <source>A quick setup: language, storage, plugins, and a few defaults. Change anything later in Settings.</source>
         <translation>Короткая настройка: язык, хранилище, плагины и несколько значений по умолчанию. Всё можно изменить потом в Настройках.</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/onboarding/OnboardingBasicsStep.qml" line="48" />
@@ -3603,11 +4701,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/onboarding/OnboardingBasicsStep.qml" line="53" />
         <source>Choose the interface language.</source>
         <translation>Выберите язык интерфейса.</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/onboarding/OnboardingBasicsStep.qml" line="81" />
@@ -3617,11 +4719,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/onboarding/OnboardingBasicsStep.qml" line="86" />
         <source>Pick light or dark theme, palette, and accent color. Change later in Settings.</source>
         <translation>Светлая или тёмная тема, палитра и акцентный цвет. Потом можно изменить в Настройках.</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/onboarding/OnboardingBasicsStep.qml" line="96" />
@@ -3631,11 +4737,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/onboarding/OnboardingBasicsStep.qml" line="102" />
         <source>Light</source>
         <translation>Светлая</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/onboarding/OnboardingBasicsStep.qml" line="110" />
@@ -3645,16 +4755,22 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/onboarding/OnboardingBasicsStep.qml" line="141" />
         <source>Primary</source>
         <translation>Основной</translation>
     </message>
 
 
+
+
 </context>
 <context>
     <name>OnboardingFinalSteps</name>
     <message>
+        
+        
         
         
         <location filename="../qml/onboarding/OnboardingFinalSteps.qml" line="23" />
@@ -3664,11 +4780,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/onboarding/OnboardingFinalSteps.qml" line="26" />
         <source>Recommended defaults — change anytime in Settings → Updates.</source>
         <translation>Рекомендуемые значения — потом можно изменить в Настройки → Обновления.</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/onboarding/OnboardingFinalSteps.qml" line="34" />
@@ -3678,11 +4798,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/onboarding/OnboardingFinalSteps.qml" line="35" />
         <source>Notify you when a newer build is available.</source>
         <translation>Сообщать, когда доступна более новая сборка.</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/onboarding/OnboardingFinalSteps.qml" line="40" />
@@ -3692,11 +4816,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/onboarding/OnboardingFinalSteps.qml" line="41" />
         <source>Check for new Arachnel versions automatically.</source>
         <translation>Автоматически проверять новые версии Arachnel.</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/onboarding/OnboardingFinalSteps.qml" line="76" />
@@ -3706,11 +4834,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/onboarding/OnboardingFinalSteps.qml" line="79" />
         <source>Windows games need Proton on Linux. Install it now or later in Settings → Launch.</source>
         <translation>Windows-играм на Linux нужен Proton. Установите сейчас или позже в Настройки → Запуск.</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/onboarding/OnboardingFinalSteps.qml" line="87" />
@@ -3720,11 +4852,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/onboarding/OnboardingFinalSteps.qml" line="96" />
         <source>Downloading Proton… %1%</source>
         <translation>Загрузка Proton… %1%</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/onboarding/OnboardingFinalSteps.qml" line="104" />
@@ -3734,11 +4870,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/onboarding/OnboardingFinalSteps.qml" line="105" />
         <source>Download Proton-GE %1</source>
         <translation>Скачать Proton-GE %1</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/onboarding/OnboardingFinalSteps.qml" line="106" />
@@ -3748,11 +4888,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/onboarding/OnboardingFinalSteps.qml" line="115" />
         <source>I'll do this later</source>
         <translation>Сделаю позже</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/onboarding/OnboardingFinalSteps.qml" line="125" />
@@ -3762,11 +4906,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/onboarding/OnboardingFinalSteps.qml" line="128" />
         <source>Open Catalog to browse games. Change language, storage, and plugins anytime in Settings.</source>
         <translation>Откройте Каталог, чтобы выбрать игры. Язык, хранилище и плагины — в Настройках.</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/onboarding/OnboardingFinalSteps.qml" line="135" />
@@ -3775,10 +4923,14 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
 
 
+
+
 </context>
 <context>
     <name>OnboardingSheet</name>
     <message>
+        
+        
         
         
         <location filename="../qml/onboarding/OnboardingSheet.qml" line="142" />
@@ -3788,11 +4940,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/onboarding/OnboardingSheet.qml" line="148" />
         <source>Step %1 of %2</source>
         <translation>Шаг %1 из %2</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/onboarding/OnboardingSheet.qml" line="155" />
@@ -3802,11 +4958,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/onboarding/OnboardingSheet.qml" line="227" />
         <source>Back</source>
         <translation>Назад</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/onboarding/OnboardingSheet.qml" line="236" />
@@ -3816,16 +4976,22 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/onboarding/OnboardingSheet.qml" line="236" />
         <source>Next</source>
         <translation>Далее</translation>
     </message>
 
 
+
+
 </context>
 <context>
     <name>OnboardingStoragePluginsStep</name>
     <message>
+        
+        
         
         
         <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="27" />
@@ -3835,11 +5001,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="32" />
         <source>Choose where games are installed. Downloads go to a subfolder on the same drive.</source>
         <translation>Выберите, куда ставить игры. Загрузки попадают в подпапку на том же диске.</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="90" />
@@ -3849,11 +5019,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="103" />
         <source>Or keep the default path already listed above.</source>
         <translation>Или оставьте путь по умолчанию из списка выше.</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="116" />
@@ -3863,11 +5037,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="121" />
         <source>Plugins enable automatic install and Play (e.g. FreeTP). Without one, you can still browse catalogs and install manually.</source>
         <translation>Плагины включают автоустановку и «Играть» (например FreeTP). Без плагина можно смотреть каталоги и ставить игры вручную.</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="144" />
@@ -3877,11 +5055,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="149" />
         <source>Refresh list</source>
         <translation>Обновить список</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="157" />
@@ -3891,11 +5073,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="174" />
         <source>No official plugins available for this platform.</source>
         <translation>Для этой платформы нет официальных плагинов.</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="207" />
@@ -3905,11 +5091,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="214" />
         <source>Installed</source>
         <translation>Установлен</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="214" />
@@ -3919,11 +5109,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="214" />
         <source>Install</source>
         <translation>Установить</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="222" />
@@ -3933,11 +5127,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="249" />
         <source>v%1 · %2</source>
         <translation>v%1 · %2</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="264" />
@@ -3947,10 +5145,14 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="270" />
         <source>Skip for now</source>
         <translation>Пока пропустить</translation>
     </message>
+
+
 
 
 </context>
@@ -3958,16 +5160,28 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <name>PluginInstallOverlay</name>
     <message>
         
+        
+        
         <location filename="../qml/app/PluginInstallOverlay.qml" line="45" />
         <source>Updating plugins…</source>
         <translation>Обновление плагинов…</translation>
     </message>
+    <message>
+        
+        <location filename="../qml/app/PluginInstallOverlay.qml" line="46" />
+        <source>Installing plugins…</source>
+        <translation>Установка плагинов…</translation>
+    </message>
+
+
 
 
 </context>
 <context>
     <name>ProtonRequiredDialog</name>
     <message>
+        
+        
         
         
         <location filename="../qml/components/ProtonRequiredDialog.qml" line="13" />
@@ -3977,11 +5191,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/ProtonRequiredDialog.qml" line="19" />
         <source>latest Proton-GE</source>
         <translation>последний Proton-GE</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/components/ProtonRequiredDialog.qml" line="33" />
@@ -3991,11 +5209,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/ProtonRequiredDialog.qml" line="35" />
         <source>Games run through Proton on Linux. Install Proton-GE before downloading.</source>
         <translation>На Linux игры запускаются через Proton. Установите Proton-GE перед скачиванием.</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/components/ProtonRequiredDialog.qml" line="43" />
@@ -4005,11 +5227,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/ProtonRequiredDialog.qml" line="61" />
         <source>Cancel</source>
         <translation>Отмена</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/components/ProtonRequiredDialog.qml" line="68" />
@@ -4019,11 +5245,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/ProtonRequiredDialog.qml" line="78" />
         <source>Downloading…</source>
         <translation>Загрузка…</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/components/ProtonRequiredDialog.qml" line="79" />
@@ -4032,10 +5262,14 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
 
 
+
+
 </context>
 <context>
     <name>RunningGameBar</name>
     <message>
+        
+        
         
         
         <location filename="../qml/components/RunningGameBar.qml" line="65" />
@@ -4045,16 +5279,22 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/RunningGameBar.qml" line="83" />
         <source>Stop</source>
         <translation>Остановить</translation>
     </message>
 
 
+
+
 </context>
 <context>
     <name>SettingsAboutPage</name>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsAboutPage.qml" line="16" />
@@ -4064,11 +5304,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsAboutPage.qml" line="18" />
         <source>Linux</source>
         <translation>Linux</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsAboutPage.qml" line="20" />
@@ -4078,11 +5322,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsAboutPage.qml" line="42" />
         <source>Browse catalogs, download games, and launch from your library.</source>
         <translation>Каталоги, загрузка игр и запуск из библиотеки.</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsAboutPage.qml" line="72" />
@@ -4092,11 +5340,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsAboutPage.qml" line="92" />
         <source>Version</source>
         <translation>Версия</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsAboutPage.qml" line="98" />
@@ -4106,11 +5358,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsAboutPage.qml" line="112" />
         <source>Platform</source>
         <translation>Платформа</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsAboutPage.qml" line="131" />
@@ -4120,11 +5376,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsAboutPage.qml" line="156" />
         <source>Delete application data</source>
         <translation>Удалить данные приложения</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsAboutPage.qml" line="162" />
@@ -4134,11 +5394,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsAboutPage.qml" line="179" />
         <source>Delete application data…</source>
         <translation>Удалить данные приложения…</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsAboutPage.qml" line="190" />
@@ -4148,11 +5412,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsAboutPage.qml" line="198" />
         <source>This cannot be undone. Settings, plugins, caches, and library records will be removed. Game files on disk stay in place.</source>
         <translation>Это нельзя отменить. Настройки, плагины, кэши и записи библиотеки будут удалены. Файлы игр на диске останутся.</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsAboutPage.qml" line="215" />
@@ -4162,16 +5430,22 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsAboutPage.qml" line="222" />
         <source>Delete and quit</source>
         <translation>Удалить и выйти</translation>
     </message>
 
 
+
+
 </context>
 <context>
     <name>SettingsAppearancePage</name>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsAppearancePage.qml" line="15" />
@@ -4181,11 +5455,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsAppearancePage.qml" line="16" />
         <source>Russian</source>
         <translation>Русский</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsAppearancePage.qml" line="46" />
@@ -4195,11 +5473,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsAppearancePage.qml" line="59" />
         <source>Dark theme</source>
         <translation>Тёмная тема</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsAppearancePage.qml" line="59" />
@@ -4209,11 +5491,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsAppearancePage.qml" line="81" />
         <source>Palette</source>
         <translation>Палитра</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsAppearancePage.qml" line="124" />
@@ -4223,11 +5509,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsAppearancePage.qml" line="159" />
         <source>Language</source>
         <translation>Язык</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsAppearancePage.qml" line="194" />
@@ -4237,16 +5527,22 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsAppearancePage.qml" line="210" />
         <source>Help translate</source>
         <translation>Помочь с переводом</translation>
     </message>
 
 
+
+
 </context>
 <context>
     <name>SettingsHubPage</name>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsHubPage.qml" line="18" />
@@ -4256,11 +5552,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsHubPage.qml" line="23" />
         <source>Hydra catalogs</source>
         <translation>Каталоги Hydra</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsHubPage.qml" line="19" />
@@ -4270,11 +5570,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsHubPage.qml" line="24" />
         <source>Catalog links — import from Hydra or elsewhere</source>
         <translation>Ссылки на каталоги — из Hydra или других источников</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsHubPage.qml" line="28" />
@@ -4284,11 +5588,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsHubPage.qml" line="29" />
         <source>Library and download folders</source>
         <translation>Папки библиотеки и загрузок</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsHubPage.qml" line="33" />
@@ -4298,11 +5606,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsHubPage.qml" line="34" />
         <source>Game and launcher updates</source>
         <translation>Обновления игр и лаунчера</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsHubPage.qml" line="39" />
@@ -4312,11 +5624,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsHubPage.qml" line="44" />
         <source>Theme, colors, and language</source>
         <translation>Тема, цвета и язык</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsHubPage.qml" line="49" />
@@ -4326,11 +5642,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsHubPage.qml" line="38" />
         <source>Launch</source>
         <translation>Запуск</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsHubPage.qml" line="43" />
@@ -4340,16 +5660,22 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsHubPage.qml" line="48" />
         <source>About</source>
         <translation>О приложении</translation>
     </message>
 
 
+
+
 </context>
 <context>
     <name>SettingsLaunchPage</name>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsLaunchPage.qml" line="59" />
@@ -4359,11 +5685,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsLaunchPage.qml" line="91" />
         <source>Default: %1</source>
         <translation>По умолчанию: %1</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsLaunchPage.qml" line="101" />
@@ -4373,11 +5703,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsLaunchPage.qml" line="102" />
         <source>Install Proton-GE before downloading games.</source>
         <translation>Установите Proton-GE перед скачиванием игр.</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsLaunchPage.qml" line="110" />
@@ -4387,11 +5721,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsLaunchPage.qml" line="122" />
         <source>Download %1</source>
         <translation>Скачать %1</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsLaunchPage.qml" line="130" />
@@ -4401,11 +5739,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsLaunchPage.qml" line="228" />
         <source>No Proton found. Download Proton-GE or install Proton in Steam.</source>
         <translation>Proton не найден. Скачайте Proton-GE или установите Proton в Steam.</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsLaunchPage.qml" line="84" />
@@ -4415,11 +5757,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsLaunchPage.qml" line="38" />
         <source>Extra options added to every game launch.</source>
         <translation>Дополнительные параметры для каждого запуска игры.</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsLaunchPage.qml" line="49" />
@@ -4429,10 +5775,14 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsLaunchPage.qml" line="123" />
         <source>Download Proton-GE</source>
         <translation>Скачать Proton-GE</translation>
     </message>
+
+
 
 
 </context>
@@ -4441,10 +5791,16 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsPage.qml" line="25" />
         
         
+        
+        
         <location filename="../qml/settings/SettingsPage.qml" line="28" />
+        
+        
         
         
         <location filename="../qml/settings/SettingsPage.qml" line="131" />
@@ -4454,11 +5810,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsPage.qml" line="140" />
         <source>Plugins</source>
         <translation>Плагины</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsPage.qml" line="149" />
@@ -4468,11 +5828,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsPage.qml" line="157" />
         <source>Hydra catalogs</source>
         <translation>Каталоги Hydra</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsPage.qml" line="169" />
@@ -4482,11 +5846,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsPage.qml" line="169" />
         <source>New Hydra catalog</source>
         <translation>Новый каталог Hydra</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsPage.qml" line="179" />
@@ -4496,11 +5864,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsPage.qml" line="187" />
         <source>Updates</source>
         <translation>Обновления</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsPage.qml" line="195" />
@@ -4510,11 +5882,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsPage.qml" line="203" />
         <source>Appearance</source>
         <translation>Оформление</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsPage.qml" line="211" />
@@ -4524,11 +5900,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsPage.qml" line="265" />
         <source>Back</source>
         <translation>Назад</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsPage.qml" line="278" />
@@ -4537,10 +5917,14 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
 
 
+
+
 </context>
 <context>
     <name>SettingsPluginStorePage</name>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsPluginStorePage.qml" line="54" />
@@ -4550,11 +5934,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsPluginStorePage.qml" line="68" />
         <source>Available</source>
         <translation>Доступные</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsPluginStorePage.qml" line="74" />
@@ -4564,11 +5952,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsPluginStorePage.qml" line="85" />
         <source>Loading official plugins…</source>
         <translation>Загрузка официальных плагинов…</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsPluginStorePage.qml" line="108" />
@@ -4578,11 +5970,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsPluginStorePage.qml" line="174" />
         <source>v%1</source>
         <translation>v%1</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsPluginStorePage.qml" line="182" />
@@ -4592,11 +5988,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsPluginStorePage.qml" line="183" />
         <source>Installing…</source>
         <translation>Установка…</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsPluginStorePage.qml" line="183" />
@@ -4605,10 +6005,14 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
 
 
+
+
 </context>
 <context>
     <name>SettingsPluginsPage</name>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsPluginsPage.qml" line="167" />
@@ -4618,11 +6022,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsPluginsPage.qml" line="56" />
         <source>Plugin store</source>
         <translation>Магазин плагинов</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsPluginsPage.qml" line="82" />
@@ -4632,11 +6040,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsPluginsPage.qml" line="89" />
         <source>Open the plugin store or install a plugin file you already have.</source>
         <translation>Откройте магазин плагинов или установите файл плагина, если он уже есть.</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsPluginsPage.qml" line="105" />
@@ -4646,6 +6058,8 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsPluginsPage.qml" line="166" />
         <source>v%1 · %2 — not loaded</source>
         <translation>v%1 · %2 — не загружен</translation>
@@ -4653,7 +6067,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsPluginsPage.qml" line="185" />
+        
+        
         
         
         <location filename="../qml/settings/SettingsPluginsPage.qml" line="294" />
@@ -4663,11 +6081,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsPluginsPage.qml" line="219" />
         <source>Install from file…</source>
         <translation>Установить из файла…</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsPluginsPage.qml" line="230" />
@@ -4677,11 +6099,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsPluginsPage.qml" line="237" />
         <source>Refresh</source>
         <translation>Обновить</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsPluginsPage.qml" line="247" />
@@ -4691,11 +6117,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsPluginsPage.qml" line="261" />
         <source>Remove plugin?</source>
         <translation>Удалить плагин?</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsPluginsPage.qml" line="269" />
@@ -4705,16 +6135,22 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsPluginsPage.qml" line="287" />
         <source>Cancel</source>
         <translation>Отмена</translation>
     </message>
 
 
+
+
 </context>
 <context>
     <name>SettingsSourceFormPage</name>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsSourceFormPage.qml" line="61" />
@@ -4724,11 +6160,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsSourceFormPage.qml" line="71" />
         <source>Validating catalog…</source>
         <translation>Проверка каталога…</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsSourceFormPage.qml" line="86" />
@@ -4738,11 +6178,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsSourceFormPage.qml" line="92" />
         <source>Could not add catalog.</source>
         <translation>Не удалось добавить каталог.</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsSourceFormPage.qml" line="113" />
@@ -4752,11 +6196,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsSourceFormPage.qml" line="117" />
         <source>Games found: %1</source>
         <translation>Найдено игр: %1</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsSourceFormPage.qml" line="143" />
@@ -4766,11 +6214,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsSourceFormPage.qml" line="152" />
         <source>Catalog URL</source>
         <translation>URL каталога</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsSourceFormPage.qml" line="161" />
@@ -4780,11 +6232,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsSourceFormPage.qml" line="186" />
         <source>Cancel</source>
         <translation>Отмена</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsSourceFormPage.qml" line="193" />
@@ -4794,11 +6250,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsSourceFormPage.qml" line="194" />
         <source>Save</source>
         <translation>Сохранить</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsSourceFormPage.qml" line="194" />
@@ -4807,10 +6267,14 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
 
 
+
+
 </context>
 <context>
     <name>SettingsSourcesPage</name>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsSourcesPage.qml" line="28" />
@@ -4820,11 +6284,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsSourcesPage.qml" line="29" />
         <source>Games: %1</source>
         <translation>Игры: %1</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsSourcesPage.qml" line="85" />
@@ -4834,11 +6302,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsSourcesPage.qml" line="171" />
         <source>Plugin · v%1</source>
         <translation>Плагин · v%1</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsSourcesPage.qml" line="201" />
@@ -4848,11 +6320,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsSourcesPage.qml" line="203" />
         <source>Active in catalog</source>
         <translation>Активен в каталоге</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsSourcesPage.qml" line="204" />
@@ -4862,11 +6338,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsSourcesPage.qml" line="214" />
         <source>Edit</source>
         <translation>Изменить</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsSourcesPage.qml" line="226" />
@@ -4876,16 +6356,22 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsSourcesPage.qml" line="241" />
         <source>Add Hydra catalog</source>
         <translation>Добавить каталог Hydra</translation>
     </message>
 
 
+
+
 </context>
 <context>
     <name>SettingsStoragePage</name>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsStoragePage.qml" line="191" />
@@ -4895,11 +6381,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsStoragePage.qml" line="394" />
         <source>Remove drive?</source>
         <translation>Удалить диск?</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsStoragePage.qml" line="403" />
@@ -4909,11 +6399,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsStoragePage.qml" line="406" />
         <source>Remove “%1” from Arachnel? Files on disk are not deleted.</source>
         <translation>Убрать «%1» из Arachnel? Файлы на диске не удаляются.</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsStoragePage.qml" line="432" />
@@ -4923,11 +6417,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsStoragePage.qml" line="203" />
         <source>Scan for installed games</source>
         <translation>Найти установленные игры</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsStoragePage.qml" line="220" />
@@ -4937,11 +6435,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsStoragePage.qml" line="307" />
         <source>No games on this drive yet</source>
         <translation>На этом диске пока нет игр</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsStoragePage.qml" line="325" />
@@ -4951,11 +6453,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsStoragePage.qml" line="339" />
         <source>Move…</source>
         <translation>Переместить…</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsStoragePage.qml" line="358" />
@@ -4965,11 +6471,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsStoragePage.qml" line="425" />
         <source>Cancel</source>
         <translation>Отмена</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsStoragePage.qml" line="432" />
@@ -4978,10 +6488,14 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
 
 
+
+
 </context>
 <context>
     <name>SettingsUpdatesPage</name>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsUpdatesPage.qml" line="38" />
@@ -4991,11 +6505,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsUpdatesPage.qml" line="54" />
         <source>Check for updates on launch</source>
         <translation>Проверять обновления при запуске</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsUpdatesPage.qml" line="85" />
@@ -5005,11 +6523,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsUpdatesPage.qml" line="28" />
         <source>Check for game updates and new Arachnel versions.</source>
         <translation>Проверка обновлений игр и новых версий Arachnel.</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsUpdatesPage.qml" line="60" />
@@ -5019,11 +6541,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsUpdatesPage.qml" line="91" />
         <source>Downloads updates once at startup. You can turn this off per game.</source>
         <translation>Скачивает обновления один раз при запуске. Можно отключить для отдельной игры.</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsUpdatesPage.qml" line="111" />
@@ -5033,11 +6559,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsUpdatesPage.qml" line="129" />
         <source>Arachnel</source>
         <translation>Arachnel</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsUpdatesPage.qml" line="137" />
@@ -5047,11 +6577,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsUpdatesPage.qml" line="200" />
         <source>Check for Arachnel updates on startup</source>
         <translation>Проверять обновления Arachnel при запуске</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsUpdatesPage.qml" line="206" />
@@ -5061,11 +6595,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsUpdatesPage.qml" line="232" />
         <source>Check for Arachnel updates</source>
         <translation>Проверять обновления Arachnel</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SettingsUpdatesPage.qml" line="241" />
@@ -5075,16 +6613,22 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SettingsUpdatesPage.qml" line="252" />
         <source>Open release page</source>
         <translation>Открыть страницу релиза</translation>
     </message>
 
 
+
+
 </context>
 <context>
     <name>Setup</name>
     <message>
+        
+        
         
         
         <location filename="../setup/src/self_extractor.cpp" line="140" />
@@ -5094,11 +6638,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../setup/src/setup_backend.cpp" line="411" />
         <source>Updating uninstaller…</source>
         <translation>Обновление деинсталлятора…</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../setup/src/setup_backend.cpp" line="412" />
@@ -5108,11 +6656,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../setup/src/setup_backend.cpp" line="424" />
         <source>Refreshing shortcuts…</source>
         <translation>Обновление ярлыков…</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../setup/src/setup_backend.cpp" line="425" />
@@ -5122,11 +6674,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../setup/src/setup_backend.cpp" line="430" />
         <source>Update complete</source>
         <translation>Обновление завершено</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../setup/src/setup_backend.cpp" line="431" />
@@ -5136,7 +6692,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../setup/src/setup_backend.cpp" line="449" />
+        
+        
         
         
         <location filename="../setup/src/setup_backend.cpp" line="492" />
@@ -5146,7 +6706,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../setup/src/setup_backend.cpp" line="450" />
+        
+        
         
         
         <location filename="../setup/src/setup_backend.cpp" line="493" />
@@ -5156,11 +6720,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../setup/src/setup_backend.cpp" line="484" />
         <source>Waiting for Arachnel to close…</source>
         <translation>Ожидание закрытия Arachnel…</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../setup/src/setup_backend.cpp" line="486" />
@@ -5170,11 +6738,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../setup/src/setup_backend.cpp" line="499" />
         <source>Clearing install folder…</source>
         <translation>Очистка папки установки…</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../setup/src/setup_backend.cpp" line="501" />
@@ -5184,11 +6756,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../setup/src/setup_backend.cpp" line="507" />
         <source>Creating install folder…</source>
         <translation>Создание папки установки…</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../setup/src/setup_backend.cpp" line="510" />
@@ -5198,10 +6774,14 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../setup/src/setup_backend.cpp" line="524" />
         <source>Finalizing…</source>
         <translation>Завершение…</translation>
     </message>
+
+
 
 
 </context>
@@ -5210,16 +6790,22 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../setup/qml/components/SetupTitleBar.qml" line="42" />
         <source>Arachnel Setup</source>
         <translation type="unfinished" />
     </message>
 
 
+
+
 </context>
 <context>
     <name>SetupWindow</name>
     <message>
+        
+        
         
         
         <location filename="../setup/qml/SetupWindow.qml" line="15" />
@@ -5229,11 +6815,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../setup/qml/SetupWindow.qml" line="66" />
         <source>Choose language</source>
         <translation>Выберите язык</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../setup/qml/SetupWindow.qml" line="72" />
@@ -5243,11 +6833,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../setup/qml/SetupWindow.qml" line="99" />
         <source>Install Arachnel</source>
         <translation>Установка Arachnel</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../setup/qml/SetupWindow.qml" line="105" />
@@ -5257,11 +6851,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../setup/qml/SetupWindow.qml" line="114" />
         <source>No embedded app payload found. Build the installer with run.ps1 --installer.</source>
         <translation>Нет встроенного пакета приложения. Соберите установщик через run.ps1 --installer.</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../setup/qml/SetupWindow.qml" line="128" />
@@ -5271,11 +6869,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../setup/qml/SetupWindow.qml" line="140" />
         <source>Install folder</source>
         <translation>Папка установки</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../setup/qml/SetupWindow.qml" line="156" />
@@ -5285,11 +6887,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../setup/qml/SetupWindow.qml" line="161" />
         <source>Create desktop shortcut</source>
         <translation>Ярлык на рабочем столе</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../setup/qml/SetupWindow.qml" line="167" />
@@ -5299,11 +6905,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../setup/qml/SetupWindow.qml" line="180" />
         <source>Updating Arachnel…</source>
         <translation>Обновление Arachnel…</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../setup/qml/SetupWindow.qml" line="180" />
@@ -5313,11 +6923,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../setup/qml/SetupWindow.qml" line="187" />
         <source>Please wait while Arachnel is updated. Do not close this window.</source>
         <translation>Подождите, пока Arachnel обновится. Не закрывайте это окно.</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../setup/qml/SetupWindow.qml" line="188" />
@@ -5327,11 +6941,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../setup/qml/SetupWindow.qml" line="246" />
         <source>Arachnel is up to date</source>
         <translation>Arachnel обновлён</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../setup/qml/SetupWindow.qml" line="246" />
@@ -5341,6 +6959,8 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../setup/qml/SetupWindow.qml" line="269" />
         <source>Back</source>
         <translation>Назад</translation>
@@ -5348,7 +6968,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../setup/qml/SetupWindow.qml" line="276" />
+        
+        
         
         
         <location filename="../setup/qml/SetupWindow.qml" line="283" />
@@ -5358,11 +6982,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../setup/qml/SetupWindow.qml" line="291" />
         <source>Install</source>
         <translation>Установить</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../setup/qml/SetupWindow.qml" line="299" />
@@ -5372,11 +7000,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../setup/qml/SetupWindow.qml" line="306" />
         <source>Launch</source>
         <translation>Запуск</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../setup/qml/SetupWindow.qml" line="316" />
@@ -5385,10 +7017,14 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
 
 
+
+
 </context>
 <context>
     <name>SourceHelpDialog</name>
     <message>
+        
+        
         
         
         <location filename="../qml/components/SourceHelpDialog.qml" line="12" />
@@ -5398,11 +7034,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/SourceHelpDialog.qml" line="19" />
         <source>Step 1</source>
         <translation>Шаг 1</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/components/SourceHelpDialog.qml" line="20" />
@@ -5412,11 +7052,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/SourceHelpDialog.qml" line="25" />
         <source>Step 2</source>
         <translation>Шаг 2</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/components/SourceHelpDialog.qml" line="26" />
@@ -5426,11 +7070,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/components/SourceHelpDialog.qml" line="31" />
         <source>Step 3</source>
         <translation>Шаг 3</translation>
     </message>
     <message>
+        
+        
         
         
         <location filename="../qml/components/SourceHelpDialog.qml" line="32" />
@@ -5439,10 +7087,14 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
 
 
+
+
 </context>
 <context>
     <name>SteamidraTrustSheet</name>
     <message>
+        
+        
         
         
         <location filename="../qml/settings/SteamidraTrustSheet.qml" line="25" />
@@ -5452,10 +7104,14 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         
         
+        
+        
         <location filename="../qml/settings/SteamidraTrustSheet.qml" line="59" />
         <source>Got it</source>
         <translation>Понятно</translation>
     </message>
+
+
 
 
 </context>

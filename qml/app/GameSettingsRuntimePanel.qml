@@ -4,153 +4,179 @@ import Arachnel.Core 1.0
 import Qcm.Material as MD
 
 Item {
+    id: root
     required property var page
-    implicitHeight: runtimePanel.implicitHeight
+    Layout.fillWidth: true
+    implicitHeight: runtimePanel.visible ? runtimePanel.height : 0
 
-        MD.ElevationRectangle {
-            id: runtimePanel
-            Layout.fillWidth: true
-            Layout.leftMargin: MD.Token.spacing.large
-            Layout.rightMargin: MD.Token.spacing.large
-            visible: page.onLinux && page.installed && page.gameId.length > 0
-            Layout.preferredHeight: runtimeCol.implicitHeight + 2 * MD.Token.spacing.medium
-            radius: MD.Token.shape.corner.large
-            color: MD.Token.color.surface_container_low
-            elevation: MD.Token.elevation.level0
+    property var containerInfo: ({})
 
-            ColumnLayout {
-                id: runtimeCol
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.top: parent.top
-                anchors.margins: MD.Token.spacing.medium
-                spacing: MD.Token.spacing.small
+    function refreshContainerInfo() {
+        if (!page || !page.gameId || page.gameId.length === 0) {
+            root.containerInfo = ({})
+            return
+        }
+        // Local-only C++ path (no network). Do not call from a binding — that caused
+        // a binding loop + nested event-loop abort on Linux.
+        root.containerInfo = Core.gameRuntimeContainerInfo(page.gameId)
+    }
 
-                readonly property var containerInfo: {
-                    const _rev = page.detailsRevision
-                    return page.gameId.length ? Core.gameRuntimeContainerInfo(page.gameId) : ({})
-                }
+    Component.onCompleted: refreshContainerInfo()
+
+    Connections {
+        target: root.page
+        function onGameIdChanged() { root.refreshContainerInfo() }
+        function onDetailsRevisionChanged() { root.refreshContainerInfo() }
+        function onInstalledChanged() { root.refreshContainerInfo() }
+    }
+
+    Connections {
+        target: Core
+        function onRuntimeSetupChanged() {
+            if (!Core.runtimeSetupInProgress)
+                root.refreshContainerInfo()
+        }
+    }
+
+    MD.ElevationRectangle {
+        id: runtimePanel
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
+        visible: page.onLinux && page.installed && page.gameId.length > 0
+        height: runtimeCol.implicitHeight + 2 * MD.Token.spacing.medium
+        radius: MD.Token.shape.corner.large
+        color: MD.Token.color.surface_container_low
+        elevation: MD.Token.elevation.level0
+
+        ColumnLayout {
+            id: runtimeCol
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.margins: MD.Token.spacing.medium
+            spacing: MD.Token.spacing.small
+
+            MD.Label {
+                text: qsTr("Runtime container")
+                typescale: MD.Token.typescale.title_small
+            }
+
+            MD.Label {
+                Layout.fillWidth: true
+                text: qsTr("Proton prefix and redistributables for this game (Linux only).")
+                color: MD.Token.color.on_surface_variant
+                typescale: MD.Token.typescale.body_small
+                wrapMode: Text.WordWrap
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: MD.Token.spacing.medium
 
                 MD.Label {
-                    text: qsTr("Runtime container")
-                    typescale: MD.Token.typescale.title_small
-                }
-
-                MD.Label {
-                    Layout.fillWidth: true
-                    text: qsTr("Proton prefix and redistributables for this game (Linux only).")
+                    Layout.preferredWidth: 140
+                    text: qsTr("Container")
                     color: MD.Token.color.on_surface_variant
-                    typescale: MD.Token.typescale.body_small
-                    wrapMode: Text.WordWrap
-                }
-
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: MD.Token.spacing.medium
-
-                    MD.Label {
-                        Layout.preferredWidth: 140
-                        text: qsTr("Container")
-                        color: MD.Token.color.on_surface_variant
-                        typescale: MD.Token.typescale.body_medium
-                    }
-
-                    MD.Label {
-                        Layout.fillWidth: true
-                        text: runtimeCol.containerInfo.containerPath || "—"
-                        typescale: MD.Token.typescale.body_medium
-                        elide: Text.ElideMiddle
-                    }
-
-                    MD.IconButton {
-                        mdState.type: MD.Enum.IBtStandard
-                        icon.name: MD.Token.icon.folder_open
-                        enabled: !!(runtimeCol.containerInfo.containerPath)
-                        onClicked: Core.openGameRuntimeContainer(page.gameId)
-                    }
-                }
-
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: MD.Token.spacing.medium
-
-                    MD.Label {
-                        Layout.preferredWidth: 140
-                        text: qsTr("Prefix")
-                        color: MD.Token.color.on_surface_variant
-                        typescale: MD.Token.typescale.body_medium
-                    }
-
-                    MD.Label {
-                        Layout.fillWidth: true
-                        text: {
-                            const path = runtimeCol.containerInfo.prefixPath || ""
-                            if (!path.length)
-                                return "—"
-                            const exists = runtimeCol.containerInfo.prefixExists === true
-                            return exists ? path : qsTr("%1 (not created yet)").arg(path)
-                        }
-                        typescale: MD.Token.typescale.body_medium
-                        elide: Text.ElideMiddle
-                    }
-                }
-
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: MD.Token.spacing.medium
-                    visible: !!(runtimeCol.containerInfo.steamAppId)
-
-                    MD.Label {
-                        Layout.preferredWidth: 140
-                        text: qsTr("Steam App ID")
-                        color: MD.Token.color.on_surface_variant
-                        typescale: MD.Token.typescale.body_medium
-                    }
-
-                    MD.Label {
-                        Layout.fillWidth: true
-                        text: runtimeCol.containerInfo.steamAppId || "—"
-                        typescale: MD.Token.typescale.body_medium
-                    }
-                }
-
-                MD.Label {
-                    Layout.fillWidth: true
-                    Layout.topMargin: MD.Token.spacing.small
-                    text: {
-                        const total = runtimeCol.containerInfo.totalCount ?? 0
-                        const done = runtimeCol.containerInfo.installedCount ?? 0
-                        if (total <= 0)
-                            return qsTr("No runtime dependencies detected for this game.")
-                        return qsTr("Dependencies: %1 / %2 installed").arg(done).arg(total)
-                    }
                     typescale: MD.Token.typescale.body_medium
                 }
 
-                Repeater {
-                    model: runtimeCol.containerInfo.dependencies ?? []
+                MD.Label {
+                    Layout.fillWidth: true
+                    text: root.containerInfo.containerPath || "—"
+                    typescale: MD.Token.typescale.body_medium
+                    elide: Text.ElideMiddle
+                }
 
-                    RowLayout {
-                        required property var modelData
+                MD.IconButton {
+                    mdState.type: MD.Enum.IBtStandard
+                    icon.name: MD.Token.icon.folder_open
+                    enabled: !!(root.containerInfo.containerPath)
+                    onClicked: Core.openGameRuntimeContainer(page.gameId)
+                }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: MD.Token.spacing.medium
+
+                MD.Label {
+                    Layout.preferredWidth: 140
+                    text: qsTr("Prefix")
+                    color: MD.Token.color.on_surface_variant
+                    typescale: MD.Token.typescale.body_medium
+                }
+
+                MD.Label {
+                    Layout.fillWidth: true
+                    text: {
+                        const path = root.containerInfo.prefixPath || ""
+                        if (!path.length)
+                            return "—"
+                        const exists = root.containerInfo.prefixExists === true
+                        return exists ? path : qsTr("%1 (not created yet)").arg(path)
+                    }
+                    typescale: MD.Token.typescale.body_medium
+                    elide: Text.ElideMiddle
+                }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: MD.Token.spacing.medium
+                visible: !!(root.containerInfo.steamAppId)
+
+                MD.Label {
+                    Layout.preferredWidth: 140
+                    text: qsTr("Steam App ID")
+                    color: MD.Token.color.on_surface_variant
+                    typescale: MD.Token.typescale.body_medium
+                }
+
+                MD.Label {
+                    Layout.fillWidth: true
+                    text: root.containerInfo.steamAppId || "—"
+                    typescale: MD.Token.typescale.body_medium
+                }
+            }
+
+            MD.Label {
+                Layout.fillWidth: true
+                Layout.topMargin: MD.Token.spacing.small
+                text: {
+                    const total = root.containerInfo.totalCount ?? 0
+                    const done = root.containerInfo.installedCount ?? 0
+                    if (total <= 0)
+                        return qsTr("No runtime dependencies detected for this game.")
+                    return qsTr("Dependencies: %1 / %2 installed").arg(done).arg(total)
+                }
+                typescale: MD.Token.typescale.body_medium
+            }
+
+            Repeater {
+                model: root.containerInfo.dependencies ?? []
+
+                RowLayout {
+                    required property var modelData
+                    Layout.fillWidth: true
+                    spacing: MD.Token.spacing.medium
+
+                    MD.Label {
                         Layout.fillWidth: true
-                        spacing: MD.Token.spacing.medium
+                        text: modelData.label || modelData.depotId || ""
+                        typescale: MD.Token.typescale.body_medium
+                        elide: Text.ElideRight
+                    }
 
-                        MD.Label {
-                            Layout.fillWidth: true
-                            text: modelData.label || modelData.depotId || ""
-                            typescale: MD.Token.typescale.body_medium
-                            elide: Text.ElideRight
-                        }
-
-                        MD.Label {
-                            text: modelData.installed ? qsTr("Installed") : qsTr("Missing")
-                            color: modelData.installed
-                                   ? MD.Token.color.primary
-                                   : MD.Token.color.error
-                            typescale: MD.Token.typescale.label_medium
-                        }
+                    MD.Label {
+                        text: modelData.installed ? qsTr("Installed") : qsTr("Missing")
+                        color: modelData.installed
+                               ? MD.Token.color.primary
+                               : MD.Token.color.error
+                        typescale: MD.Token.typescale.label_medium
                     }
                 }
             }
         }
+    }
 }
