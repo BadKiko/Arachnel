@@ -171,6 +171,8 @@ EN_TO_RU: dict[str, str] = {
     "Enabled": "Включён",
     "Disabled": "Отключён",
     "Online Fix overlay not found in this install": "Online Fix оверлей не найден в этой установке",
+    "Game is not installed yet": "Игра ещё не установлена",
+    "Start the Steam client before launching Online Fix games so the Steam overlay can attach.": "Запустите клиент Steam перед запуском игр с Online Fix, чтобы подтянуть Steam overlay.",
     "Failed to enable Online Fix: %1": "Не удалось включить Online Fix: %1",
     "Failed to disable Online Fix: %1": "Не удалось отключить Online Fix: %1",
     "Application crashed": "Приложение аварийно завершилось",

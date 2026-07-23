@@ -293,9 +293,9 @@ MD.BottomSheet {
             Layout.fillWidth: true
             Layout.leftMargin: MD.Token.spacing.large
             Layout.rightMargin: MD.Token.spacing.large
-            Layout.preferredHeight: metaCol.implicitHeight + 2 * MD.Token.spacing.large
+            Layout.preferredHeight: metaCol.implicitHeight + 2 * MD.Token.spacing.medium
             radius: MD.Token.shape.corner.large
-            color: MD.Token.color.surface_container
+            color: MD.Token.color.surface_container_low
             elevation: MD.Token.elevation.level0
 
             ColumnLayout {
@@ -303,12 +303,12 @@ MD.BottomSheet {
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.top: parent.top
-                anchors.margins: MD.Token.spacing.large
+                anchors.margins: MD.Token.spacing.medium
                 spacing: MD.Token.spacing.small
 
                 MD.Label {
                     text: qsTr("Information")
-                    typescale: MD.Token.typescale.title_medium
+                    typescale: MD.Token.typescale.title_small
                 }
 
                 Repeater {
@@ -342,10 +342,11 @@ MD.BottomSheet {
                     RowLayout {
                         required property var modelData
                         Layout.fillWidth: true
-                        spacing: MD.Token.spacing.medium
+                        spacing: MD.Token.spacing.small
 
                         MD.Label {
-                            Layout.preferredWidth: 140
+                            Layout.preferredWidth: 120
+                            Layout.alignment: Qt.AlignTop
                             text: modelData.label
                             color: MD.Token.color.on_surface_variant
                             typescale: MD.Token.typescale.body_medium
@@ -355,7 +356,9 @@ MD.BottomSheet {
                             Layout.fillWidth: true
                             text: modelData.value
                             typescale: MD.Token.typescale.body_medium
-                            elide: Text.ElideMiddle
+                            wrapMode: Text.WrapAnywhere
+                            maximumLineCount: 3
+                            elide: Text.ElideRight
                         }
                     }
                 }

@@ -1,5 +1,7 @@
 #include "core_controller_impl.h"
 
+#include "online_fix_overlay.h"
+
 namespace arachnel::core {
 
 void CoreController::touchLastPlayed(const QString& gameId)
@@ -97,6 +99,16 @@ void CoreController::launchGameAfterRuntimeSetup(const QString& gameId)
         if (!found.isEmpty())
             info.executable = found;
     }
+
+    applyOnlineFixLaunchInfo(game->installPath, &info);
+#if defined(Q_OS_LINUX)
+    if (detectOnlineFixOverlay(game->installPath).enabled
+        && !info.environmentExtras.contains(QStringLiteral("LD_PRELOAD"))) {
+        showNotice(QCoreApplication::translate(
+            "Core",
+            "Start the Steam client before launching Online Fix games so the Steam overlay can attach."));
+    }
+#endif
 
     const ResolvedLaunch resolved = resolveLaunch(info, *game, m_settings);
     if (resolved.program.isEmpty()) {

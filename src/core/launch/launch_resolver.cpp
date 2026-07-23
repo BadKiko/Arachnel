@@ -107,8 +107,19 @@ ResolvedLaunch resolveLaunch(const LaunchInfo& pluginInfo, const LibraryGame& ga
 
         for (auto it = pluginInfo.environmentExtras.constBegin();
              it != pluginInfo.environmentExtras.constEnd(); ++it) {
-            if (!it.key().isEmpty())
+            if (it.key().isEmpty())
+                continue;
+            if (it.key() == QStringLiteral("LD_PRELOAD")) {
+                const QString existing = resolved.environment.value(QStringLiteral("LD_PRELOAD"));
+                QString added = it.value().trimmed();
+                while (added.startsWith(QLatin1Char(':')))
+                    added.remove(0, 1);
+                resolved.environment.insert(QStringLiteral("LD_PRELOAD"),
+                                            existing.isEmpty() ? added
+                                                               : existing + QLatin1Char(':') + added);
+            } else {
                 resolved.environment.insert(it.key(), it.value());
+            }
         }
         return resolved;
     }
@@ -119,8 +130,19 @@ ResolvedLaunch resolveLaunch(const LaunchInfo& pluginInfo, const LibraryGame& ga
     resolved.environment = QProcessEnvironment::systemEnvironment();
     for (auto it = pluginInfo.environmentExtras.constBegin();
          it != pluginInfo.environmentExtras.constEnd(); ++it) {
-        if (!it.key().isEmpty())
+        if (it.key().isEmpty())
+            continue;
+        if (it.key() == QStringLiteral("LD_PRELOAD")) {
+            const QString existing = resolved.environment.value(QStringLiteral("LD_PRELOAD"));
+            QString added = it.value().trimmed();
+            while (added.startsWith(QLatin1Char(':')))
+                added.remove(0, 1);
+            resolved.environment.insert(QStringLiteral("LD_PRELOAD"),
+                                        existing.isEmpty() ? added
+                                                           : existing + QLatin1Char(':') + added);
+        } else {
             resolved.environment.insert(it.key(), it.value());
+        }
     }
     if (!pluginInfo.wineDllOverrides.trimmed().isEmpty()) {
         const QString existing = resolved.environment.value(QStringLiteral("WINEDLLOVERRIDES"));

@@ -2,6 +2,7 @@
 
 #include "launch_resolver.h"
 #include "install_heuristics.h"
+#include "online_fix_overlay.h"
 #include "plugin_host.h"
 #include "plugin_interface.h"
 #include "process_launcher.h"
@@ -78,6 +79,15 @@ void LaunchController::launchGame(const QString& gameId)
             info = plugin->launchInfo(gameCopy);
         if (info.executable.isEmpty() && gameCopy.executableOverride.isEmpty())
             info.executable = findGameExecutableInTree(gameCopy.installPath);
+        applyOnlineFixLaunchInfo(gameCopy.installPath, &info);
+#if defined(Q_OS_LINUX)
+        if (detectOnlineFixOverlay(gameCopy.installPath).enabled
+            && !info.environmentExtras.contains(QStringLiteral("LD_PRELOAD")) && m_hooks.notice) {
+            m_hooks.notice(QCoreApplication::translate(
+                "Core",
+                "Start the Steam client before launching Online Fix games so the Steam overlay can attach."));
+        }
+#endif
         const ResolvedLaunch resolved = resolveLaunch(info, gameCopy, *m_settings);
         if (resolved.program.isEmpty()) {
             if (m_hooks.notice)

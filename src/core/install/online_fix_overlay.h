@@ -1,5 +1,7 @@
 #pragma once
 
+#include "plugin_interface.h"
+
 #include <QString>
 #include <QVariantMap>
 
@@ -17,5 +19,13 @@ OnlineFixOverlayState detectOnlineFixOverlay(const QString& installPath);
 bool setOnlineFixOverlayEnabled(const QString& installPath, bool enabled, QString* error = nullptr);
 /** Labels + flags for Game Settings / entryDetails. */
 QVariantMap onlineFixOverlayInfo(const QString& installPath);
+
+/**
+ * Proton / Wine launch extras for SteamFix / Online-Fix overlays.
+ * Sets WINEDLLOVERRIDES (winmm inject + SteamFix/OnlineFix DLLs) and, on Linux when
+ * the Steam client is running, LD_PRELOAD / overlay env so the in-game overlay works.
+ * Safe no-op when overlay files are missing or disabled.
+ */
+void applyOnlineFixLaunchInfo(const QString& installPath, LaunchInfo* info);
 
 } // namespace arachnel::core
