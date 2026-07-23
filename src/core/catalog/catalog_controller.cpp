@@ -227,8 +227,10 @@ void CatalogController::loadCatalogSourceNow(const QString& sourceId)
     if (m_pluginHost) {
         if (ISourcePlugin* plugin = m_pluginHost->plugin(sourceId)) {
             auto* watcher = new QFutureWatcher<QVector<CatalogEntry>>(this);
+            m_inFlightPluginCatalogWatchers.append(watcher);
             connect(watcher, &QFutureWatcher<QVector<CatalogEntry>>::finished, this,
                     [this, watcher, sourceId]() {
+                        m_inFlightPluginCatalogWatchers.removeAll(watcher);
                         const QVector<CatalogEntry> entries = watcher->result();
                         watcher->deleteLater();
                         if (!entries.isEmpty()) {
@@ -365,8 +367,10 @@ void CatalogController::prefetchPluginCatalogCount(const QString& sourceId)
         return;
     }
     auto* watcher = new QFutureWatcher<QVector<CatalogEntry>>(this);
+    m_inFlightPluginCatalogWatchers.append(watcher);
     connect(watcher, &QFutureWatcher<QVector<CatalogEntry>>::finished, this,
             [this, watcher, sourceId]() {
+                m_inFlightPluginCatalogWatchers.removeAll(watcher);
                 const QVector<CatalogEntry> entries = watcher->result();
                 watcher->deleteLater();
                 if (!entries.isEmpty()) {
@@ -397,4 +401,17 @@ void CatalogController::startNextCatalogPrefetch()
     emit catalogCountsChanged();
     m_probeLoader->loadFeed(QUrl(url), QStringLiteral("count:%1").arg(sourceId));
 }
+
+void CatalogController::waitForInFlightPluginCatalogLoads()
+{
+    // Snapshot — finished handlers may mutate the list while we wait.
+    const QList<QObject*> watchers = m_inFlightPluginCatalogWatchers;
+    for (QObject* obj : watchers) {
+        auto* watcher = dynamic_cast<QFutureWatcher<QVector<CatalogEntry>>*>(obj);
+        if (!watcher)
+            continue;
+        watcher->waitForFinished();
+    }
+}
+
 } // namespace arachnel::core

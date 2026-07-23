@@ -445,6 +445,7 @@ EN_TO_RU: dict[str, str] = {
     "Downloading… %1%": "Скачивание… %1%",
     "Installing plugin…": "Установка плагина…",
     "Installing plugin “%1”…": "Установка плагина «%1»…",
+    "Updating plugins…": "Обновление плагинов…",
     "Downloading and unpacking. The UI stays responsive — please wait.":
         "Скачивание и распаковка. Интерфейс не зависает — подождите.",
     "Plugins updated": "Плагины обновлены",
