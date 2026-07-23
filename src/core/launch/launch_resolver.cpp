@@ -89,10 +89,22 @@ ResolvedLaunch resolveLaunch(const LaunchInfo& pluginInfo, const LibraryGame& ga
         if (proton.isEmpty())
             return resolved;
 
-        resolved.program = proton;
-        resolved.arguments = pluginInfo.argumentsPrefix;
-        resolved.arguments += QStringList{QStringLiteral("run"), executable};
-        resolved.arguments += arguments;
+        QStringList protonArgs = pluginInfo.argumentsPrefix;
+        protonArgs += QStringList{QStringLiteral("run"), executable};
+        protonArgs += arguments;
+
+        // SOFL-style: SteamLinuxRuntime wraps Proton so the Steam IPC/overlay can attach.
+        const bool wantRuntime =
+            pluginInfo.environmentExtras.value(QStringLiteral("ARACHNEL_USE_STEAM_RUNTIME"))
+            == QStringLiteral("1");
+        const QString steamRuntime = wantRuntime ? manager.findSteamLinuxRuntime() : QString();
+        if (!steamRuntime.isEmpty()) {
+            resolved.program = steamRuntime;
+            resolved.arguments = QStringList{proton} + protonArgs;
+        } else {
+            resolved.program = proton;
+            resolved.arguments = protonArgs;
+        }
         resolved.workingDirectory = workDir;
         resolved.environment =
             buildProtonEnvironment(game.id, manager.installDirForId(protonId), manager);
@@ -105,9 +117,10 @@ ResolvedLaunch resolveLaunch(const LaunchInfo& pluginInfo, const LibraryGame& ga
             resolved.environment.insert(QStringLiteral("WINEDLLOVERRIDES"), merged);
         }
 
+        // Skip internal launch hints when applying env extras.
         for (auto it = pluginInfo.environmentExtras.constBegin();
              it != pluginInfo.environmentExtras.constEnd(); ++it) {
-            if (it.key().isEmpty())
+            if (it.key().isEmpty() || it.key() == QStringLiteral("ARACHNEL_USE_STEAM_RUNTIME"))
                 continue;
             if (it.key() == QStringLiteral("LD_PRELOAD")) {
                 const QString existing = resolved.environment.value(QStringLiteral("LD_PRELOAD"));
@@ -130,7 +143,7 @@ ResolvedLaunch resolveLaunch(const LaunchInfo& pluginInfo, const LibraryGame& ga
     resolved.environment = QProcessEnvironment::systemEnvironment();
     for (auto it = pluginInfo.environmentExtras.constBegin();
          it != pluginInfo.environmentExtras.constEnd(); ++it) {
-        if (it.key().isEmpty())
+        if (it.key().isEmpty() || it.key() == QStringLiteral("ARACHNEL_USE_STEAM_RUNTIME"))
             continue;
         if (it.key() == QStringLiteral("LD_PRELOAD")) {
             const QString existing = resolved.environment.value(QStringLiteral("LD_PRELOAD"));

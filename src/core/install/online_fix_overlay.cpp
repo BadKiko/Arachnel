@@ -43,7 +43,7 @@ QString readDllListOverrides(const QString& listPath)
         if (!line.endsWith(QStringLiteral(".dll"), Qt::CaseInsensitive))
             continue;
         const QString stem = QFileInfo(line).completeBaseName().toLower();
-        overrides = appendDllOverride(overrides, stem, QStringLiteral("=n"));
+        overrides = appendDllOverride(overrides, stem, QStringLiteral("=n,b"));
     }
     return overrides;
 }
@@ -61,7 +61,12 @@ QString readIniAppId(const QString& iniPath, const QString& key)
 
 QString buildOverlayWineDllOverrides(const QString& overlayDir)
 {
-    QString overrides;
+    // SOFL default Online-Fix overrides (=n,b). Scanned game DLLs are merged on top.
+    QString overrides = QStringLiteral(
+        "d3d11=n;d3d10=n;d3d10core=n;dxgi=n;openvr_api_dxvk=n;d3d12=n;d3d12core=n;d3d9=n;d3d8=n;"
+        "onlinefix64=n,b;steamoverlay64=n,b;winmm=n,b;dnet=n,b;steam_api64=n,b;steam_api=n,b;"
+        "winhttp=n,b;steamfix64=n,b;steamfix32=n,b;epicfix64=n,b");
+
     const QDir dir(overlayDir);
     if (!dir.exists())
         return overrides;
@@ -69,80 +74,80 @@ QString buildOverlayWineDllOverrides(const QString& overlayDir)
     for (const QString& listName :
          {QStringLiteral("winmm.txt"), QStringLiteral("dlllist.txt")}) {
         const QString listPath = dir.filePath(listName);
-        if (QFileInfo::exists(listPath))
-            overrides += readDllListOverrides(listPath);
+        if (QFileInfo::exists(listPath)) {
+            for (const QString& token :
+                 readDllListOverrides(listPath).split(QLatin1Char(';'), Qt::SkipEmptyParts)) {
+                const QString stem = token.section(QLatin1Char('='), 0, 0).trimmed();
+                const QString mode = QLatin1Char('=') + token.section(QLatin1Char('='), 1).trimmed();
+                if (!stem.isEmpty())
+                    overrides = appendDllOverride(overrides, stem, mode);
+            }
+        }
     }
 
     const QStringList dlls = dir.entryList({QStringLiteral("*.dll")}, QDir::Files);
     for (const QString& name : dlls) {
         const QString lower = name.toLower();
         const QString stem = QFileInfo(name).completeBaseName().toLower();
-        // winmm inject: native first, then builtin. Other fix DLLs: native only.
-        if (lower.startsWith(QStringLiteral("win")))
+        if (lower.startsWith(QStringLiteral("win")) || lower.contains(QStringLiteral("fix"))
+            || lower.contains(QStringLiteral("overlay")) || lower.startsWith(QStringLiteral("steam"))
+            || lower.startsWith(QStringLiteral("online")) || lower.startsWith(QStringLiteral("epic"))
+            || lower.startsWith(QStringLiteral("custom")) || lower.startsWith(QStringLiteral("dnet"))
+            || lower.startsWith(QStringLiteral("emp")))
             overrides = appendDllOverride(overrides, stem, QStringLiteral("=n,b"));
-        else if (lower.contains(QStringLiteral("fix")) || lower.contains(QStringLiteral("overlay"))
-                 || lower.startsWith(QStringLiteral("steam"))
-                 || lower.startsWith(QStringLiteral("online"))
-                 || lower.startsWith(QStringLiteral("epic"))
-                 || lower.startsWith(QStringLiteral("custom"))
-                 || lower.startsWith(QStringLiteral("dnet"))
-                 || lower.startsWith(QStringLiteral("emp")))
-            overrides = appendDllOverride(overrides, stem, QStringLiteral("=n"));
-    }
-
-    // Community Proton baseline (Heroic / Online-Fix Linux guides).
-    const QStringList baseline = {
-        QStringLiteral("winmm=n,b"),
-        QStringLiteral("steamoverlay64=n"),
-        QStringLiteral("winhttp=n,b"),
-    };
-    for (const QString& token : baseline) {
-        const QString stem = token.section(QLatin1Char('='), 0, 0);
-        const QString mode = QLatin1Char('=') + token.section(QLatin1Char('='), 1);
-        overrides = appendDllOverride(overrides, stem, mode);
-    }
-    for (const QString& stem : {QStringLiteral("steamfix64"), QStringLiteral("steamfix32"),
-                                QStringLiteral("onlinefix64"), QStringLiteral("epicfix64")}) {
-        if (dir.exists(stem + QStringLiteral(".dll")))
-            overrides = appendDllOverride(overrides, stem, QStringLiteral("=n"));
     }
     return overrides;
 }
 
 #if defined(Q_OS_LINUX)
-bool isSteamClientRunning()
-{
-    QProcess process;
-    process.start(QStringLiteral("pidof"), {QStringLiteral("steam")});
-    if (process.waitForFinished(3000) && process.exitStatus() == QProcess::NormalExit
-        && process.exitCode() == 0)
-        return true;
-    process.start(QStringLiteral("pgrep"), {QStringLiteral("-x"), QStringLiteral("steam")});
-    return process.waitForFinished(3000) && process.exitStatus() == QProcess::NormalExit
-        && process.exitCode() == 0;
-}
-
 QString steamClientRoot()
 {
     const QString home = QDir::homePath();
     const QStringList candidates = {
-        home + QStringLiteral("/.steam/steam"),
         home + QStringLiteral("/.local/share/Steam"),
+        home + QStringLiteral("/.steam/steam"),
+        home + QStringLiteral("/.steam/root"),
         home + QStringLiteral("/.var/app/com.valvesoftware.Steam/data/Steam"),
+        home + QStringLiteral("/.var/app/com.valvesoftware.Steam/.local/share/Steam"),
     };
     for (const QString& candidate : candidates) {
         if (QDir(candidate).exists())
             return candidate;
     }
-    return home + QStringLiteral("/.steam/steam");
+    return home + QStringLiteral("/.local/share/Steam");
+}
+
+QString gameOverlayPreloadPaths()
+{
+    // SOFL hardcodes ~/.local/share/Steam; also try other Steam roots if .so lives there.
+    QStringList soPaths;
+    const QString home = QDir::homePath();
+    const QStringList roots = {
+        home + QStringLiteral("/.local/share/Steam"),
+        steamClientRoot(),
+        home + QStringLiteral("/.steam/steam"),
+    };
+    for (const QString& root : roots) {
+        const QString so32 = root + QStringLiteral("/ubuntu12_32/gameoverlayrenderer.so");
+        const QString so64 = root + QStringLiteral("/ubuntu12_64/gameoverlayrenderer.so");
+        if (QFileInfo::exists(so32) && !soPaths.contains(so32))
+            soPaths.append(so32);
+        if (QFileInfo::exists(so64) && !soPaths.contains(so64))
+            soPaths.append(so64);
+        if (soPaths.size() >= 2)
+            break;
+    }
+    if (soPaths.isEmpty()) {
+        const QString root = steamClientRoot();
+        soPaths = {root + QStringLiteral("/ubuntu12_32/gameoverlayrenderer.so"),
+                   root + QStringLiteral("/ubuntu12_64/gameoverlayrenderer.so")};
+    }
+    return soPaths.join(QLatin1Char(':'));
 }
 
 void appendSteamOverlayEnvironment(LaunchInfo* info, const QString& fakeSteamId)
 {
-    const QString steamRoot = steamClientRoot();
-    const QString preload =
-        QStringLiteral("%1/ubuntu12_32/gameoverlayrenderer.so:%1/ubuntu12_64/gameoverlayrenderer.so")
-            .arg(steamRoot);
+    const QString preload = gameOverlayPreloadPaths();
     const QString existing = info->environmentExtras.value(QStringLiteral("LD_PRELOAD"));
     info->environmentExtras.insert(QStringLiteral("LD_PRELOAD"),
                                    existing.isEmpty() ? preload : existing + QLatin1Char(':') + preload);
@@ -150,13 +155,6 @@ void appendSteamOverlayEnvironment(LaunchInfo* info, const QString& fakeSteamId)
                                    QStringLiteral("true"));
     const QString overlayId = fakeSteamId.isEmpty() ? QStringLiteral("480") : fakeSteamId;
     info->environmentExtras.insert(QStringLiteral("SteamOverlayGameId"), overlayId);
-    // umu / Proton helpers used by Online-Fix Linux guides (Spacewar / FakeAppId).
-    if (!info->environmentExtras.contains(QStringLiteral("GAMEID")))
-        info->environmentExtras.insert(QStringLiteral("GAMEID"), overlayId);
-    if (!info->environmentExtras.contains(QStringLiteral("SteamAppId")))
-        info->environmentExtras.insert(QStringLiteral("SteamAppId"), overlayId);
-    if (!info->environmentExtras.contains(QStringLiteral("SteamGameId")))
-        info->environmentExtras.insert(QStringLiteral("SteamGameId"), overlayId);
 }
 #endif
 
@@ -309,6 +307,37 @@ void updateMarkerEnabled(const QString& installPath, bool enabled)
 
 } // namespace
 
+#if defined(Q_OS_LINUX)
+bool isSteamClientRunning()
+{
+    QProcess process;
+    process.start(QStringLiteral("pidof"), {QStringLiteral("steam")});
+    if (process.waitForFinished(3000) && process.exitStatus() == QProcess::NormalExit
+        && process.exitCode() == 0 && !process.readAllStandardOutput().trimmed().isEmpty())
+        return true;
+    process.start(QStringLiteral("pgrep"), {QStringLiteral("-x"), QStringLiteral("steam")});
+    return process.waitForFinished(3000) && process.exitStatus() == QProcess::NormalExit
+        && process.exitCode() == 0;
+}
+
+bool tryStartSteamClient()
+{
+    const QStringList candidates = {
+        QStringLiteral("steam"),
+        QDir::homePath() + QStringLiteral("/.local/share/Steam/steam.sh"),
+        QDir::homePath() + QStringLiteral("/.steam/steam/steam.sh"),
+        QStringLiteral("/usr/bin/steam"),
+    };
+    for (const QString& cmd : candidates) {
+        if (cmd != QStringLiteral("steam") && !QFileInfo::exists(cmd))
+            continue;
+        if (QProcess::startDetached(cmd, {}))
+            return true;
+    }
+    return false;
+}
+#endif
+
 OnlineFixOverlayState detectOnlineFixOverlay(const QString& installPath)
 {
     OnlineFixOverlayState state;
@@ -395,8 +424,10 @@ void applyOnlineFixLaunchInfo(const QString& installPath, LaunchInfo* info)
         overlayDir = info->workingDirectory.isEmpty() ? installPath : info->workingDirectory;
 
     QString overrides = buildOverlayWineDllOverrides(overlayDir);
-    if (overrides.isEmpty())
-        overrides = QStringLiteral("winmm=n,b;steamfix64=n;steamoverlay64=n;winhttp=n,b");
+    if (overrides.isEmpty()) {
+        overrides = QStringLiteral(
+            "onlinefix64=n,b;steamoverlay64=n,b;winmm=n,b;dnet=n,b;steam_api64=n,b;winhttp=n,b");
+    }
 
     if (info->wineDllOverrides.trimmed().isEmpty()) {
         info->wineDllOverrides = overrides;
@@ -408,6 +439,9 @@ void applyOnlineFixLaunchInfo(const QString& installPath, LaunchInfo* info)
                 info->wineDllOverrides = appendDllOverride(info->wineDllOverrides, stem, mode);
         }
     }
+
+    info->environmentExtras.insert(QStringLiteral("ARACHNEL_USE_STEAM_RUNTIME"),
+                                   QStringLiteral("1"));
 
     QString fakeAppId = QStringLiteral("480");
     const QString steamFixIni = QDir(overlayDir).filePath(QStringLiteral("SteamFix.ini"));
@@ -426,12 +460,6 @@ void applyOnlineFixLaunchInfo(const QString& installPath, LaunchInfo* info)
     if (!info->environmentExtras.contains(QStringLiteral("SteamOverlayGameId"))
         && isSteamClientRunning()) {
         appendSteamOverlayEnvironment(info, fakeAppId);
-    } else if (!info->environmentExtras.contains(QStringLiteral("SteamAppId"))) {
-        // Without a running Steam client the fake overlay cannot attach; still force
-        // FakeAppId so SteamFix can talk Spacewar when the user starts Steam later.
-        info->environmentExtras.insert(QStringLiteral("SteamAppId"), fakeAppId);
-        if (!info->environmentExtras.contains(QStringLiteral("GAMEID")))
-            info->environmentExtras.insert(QStringLiteral("GAMEID"), fakeAppId);
     }
 #else
     Q_UNUSED(fakeAppId);

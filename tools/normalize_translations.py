@@ -173,6 +173,8 @@ EN_TO_RU: dict[str, str] = {
     "Online Fix overlay not found in this install": "Online Fix оверлей не найден в этой установке",
     "Game is not installed yet": "Игра ещё не установлена",
     "Start the Steam client before launching Online Fix games so the Steam overlay can attach.": "Запустите клиент Steam перед запуском игр с Online Fix, чтобы подтянуть Steam overlay.",
+    "Steam must be running for Online Fix. Starting Steam — launch the game again once it is open.": "Для Online Fix нужен запущенный Steam. Запускаем Steam — откройте игру ещё раз, когда клиент будет готов.",
+    "Steam Linux Runtime (Sniper) not found. Install it from Steam for Online Fix overlay support.": "Steam Linux Runtime (Sniper) не найден. Установите его в Steam для поддержки Online Fix overlay.",
     "Failed to enable Online Fix: %1": "Не удалось включить Online Fix: %1",
     "Failed to disable Online Fix: %1": "Не удалось отключить Online Fix: %1",
     "Application crashed": "Приложение аварийно завершилось",

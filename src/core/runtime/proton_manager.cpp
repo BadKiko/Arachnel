@@ -96,16 +96,20 @@ QStringList ProtonManager::steamRoots() const
     return {};
 #else
     QStringList roots;
+    // Prefer paths SOFL / Steam client use for COMPAT_CLIENT + overlay libs.
     const QStringList candidates = {
+        QDir::homePath() + QStringLiteral("/.steam/steam"),
         QDir::homePath() + QStringLiteral("/.steam/root"),
         QDir::homePath() + QStringLiteral("/.local/share/Steam"),
         QDir::homePath()
         + QStringLiteral("/.var/app/com.valvesoftware.Steam/.local/share/Steam"),
+        QDir::homePath()
+        + QStringLiteral("/.var/app/com.valvesoftware.Steam/data/Steam"),
     };
 
     for (const QString& candidate : candidates) {
         const QString normalized = normalizePath(candidate);
-        if (!normalized.isEmpty() && !roots.contains(normalized))
+        if (!normalized.isEmpty() && QDir(normalized).exists() && !roots.contains(normalized))
             roots.append(normalized);
     }
     return roots;
@@ -387,6 +391,32 @@ QString ProtonManager::compatDataPathForGame(const QString& gameId) const
     const QString path = compatDataRoot() + QLatin1Char('/') + safeId;
     QDir().mkpath(path);
     return path;
+}
+
+QString ProtonManager::findSteamLinuxRuntime() const
+{
+#if !defined(Q_OS_LINUX)
+    return {};
+#else
+    // Prefer Sniper (1628350), then Soldier — same order SOFL looks for.
+    const QStringList runtimeNames = {
+        QStringLiteral("SteamLinuxRuntime_sniper"),
+        QStringLiteral("SteamLinuxRuntime_soldier"),
+        QStringLiteral("SteamLinuxRuntime"),
+    };
+    for (const QString& steamRoot : steamRoots()) {
+        for (const QString& libraryRoot : steamLibraryRoots(steamRoot)) {
+            for (const QString& name : runtimeNames) {
+                const QString runPath =
+                    libraryRoot + QStringLiteral("/steamapps/common/") + name
+                    + QStringLiteral("/run");
+                if (QFileInfo::exists(runPath) && QFileInfo(runPath).isExecutable())
+                    return runPath;
+            }
+        }
+    }
+    return {};
+#endif
 }
 
 } // namespace arachnel::core
