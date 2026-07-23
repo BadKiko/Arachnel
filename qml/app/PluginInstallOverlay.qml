@@ -42,7 +42,8 @@ Item {
 
                 MD.Label {
                     Layout.fillWidth: true
-                    text: qsTr("Updating plugins…")
+                    text: Core.pluginAutoUpdating ? qsTr("Updating plugins…")
+                                                  : qsTr("Installing plugins…")
                     typescale: MD.Token.typescale.title_medium
                     wrapMode: Text.WordWrap
                     horizontalAlignment: Text.AlignHCenter

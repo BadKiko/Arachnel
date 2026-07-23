@@ -62,28 +62,43 @@ void LaunchController::launchGame(const QString& gameId)
     }
     if (gameRunning() && m_gameId == gameId)
         return;
-    if (m_hooks.ensureRuntime && !m_hooks.ensureRuntime(*game))
-        return;
-    LaunchInfo info;
-    if (ISourcePlugin* plugin = m_plugins->plugin(game->sourceId))
-        info = plugin->launchInfo(*game);
-    if (info.executable.isEmpty() && game->executableOverride.isEmpty())
-        info.executable = findGameExecutableInTree(game->installPath);
-    const ResolvedLaunch resolved = resolveLaunch(info, *game, *m_settings);
-    if (resolved.program.isEmpty()) {
-        if (m_hooks.notice)
-            m_hooks.notice(QCoreApplication::translate("Core", "Executable not found for %1").arg(game->title));
-        return;
-    }
-    QString error;
-    qint64 processId = 0;
-    if (!ProcessLauncher::launch(resolved, &error, &processId)) {
-        if (m_hooks.notice)
-            m_hooks.notice(error.isEmpty() ? QCoreApplication::translate("Core", "Failed to launch game") : error);
-        return;
-    }
-    const LibraryGame launched = *game;
-    QTimer::singleShot(0, this, [this, launched, processId]() { markRunning(launched, processId); });
+
+    // Leave QML Button.onClicked before any blocking runtime work (steamcmd / installers).
+    // Nested event loops on the GUI thread abort with QML "object destroyed while handler
+    // is in progress" (seen on Linux AppImage when launching via GameDetailsContent).
+    const LibraryGame gameCopy = *game;
+    QTimer::singleShot(0, this, [this, gameId, gameCopy]() {
+        if (m_library->gameById(gameId) == nullptr)
+            return;
+        if (m_hooks.ensureRuntime && !m_hooks.ensureRuntime(gameCopy))
+            return;
+
+        LaunchInfo info;
+        if (ISourcePlugin* plugin = m_plugins->plugin(gameCopy.sourceId))
+            info = plugin->launchInfo(gameCopy);
+        if (info.executable.isEmpty() && gameCopy.executableOverride.isEmpty())
+            info.executable = findGameExecutableInTree(gameCopy.installPath);
+        const ResolvedLaunch resolved = resolveLaunch(info, gameCopy, *m_settings);
+        if (resolved.program.isEmpty()) {
+            if (m_hooks.notice)
+                m_hooks.notice(QCoreApplication::translate("Core", "Executable not found for %1")
+                                   .arg(gameCopy.title));
+            return;
+        }
+        QString error;
+        qint64 processId = 0;
+        if (!ProcessLauncher::launch(resolved, &error, &processId)) {
+            if (m_hooks.notice) {
+                m_hooks.notice(error.isEmpty()
+                                   ? QCoreApplication::translate("Core", "Failed to launch game")
+                                   : error);
+            }
+            return;
+        }
+        QTimer::singleShot(0, this, [this, gameCopy, processId]() {
+            markRunning(gameCopy, processId);
+        });
+    });
 }
 
 void LaunchController::stopRunningGame()

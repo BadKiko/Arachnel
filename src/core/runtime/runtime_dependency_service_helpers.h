@@ -10,28 +10,64 @@ void hideProcessWindow(QProcess& process)
 }
 #endif
 
-QByteArray httpGetBlocking(QNetworkAccessManager* network, const QUrl& url, int timeoutMs,
+// Blocking GET that must NOT run a nested event loop on the GUI/QML thread.
+// Nested QEventLoop::exec() from Button.onClicked / property bindings aborts with:
+// "Object destroyed while one of its QML signal handlers is in progress".
+QByteArray httpGetBlocking(QNetworkAccessManager* /*network*/, const QUrl& url, int timeoutMs,
                            QString* errorOut)
 {
-    QNetworkRequest request(url);
-    request.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("Arachnel/0.1"));
-    request.setTransferTimeout(timeoutMs);
+    struct Result {
+        QMutex mutex;
+        QWaitCondition done;
+        QByteArray body;
+        QString error;
+        bool finished = false;
+    };
+    const auto result = std::make_shared<Result>();
 
-    QEventLoop loop;
-    QNetworkReply* reply = network->get(request);
-    QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
-    loop.exec();
+    QThread* thread = QThread::create([result, url, timeoutMs]() {
+        QNetworkAccessManager nam;
+        QNetworkRequest request(url);
+        request.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("Arachnel/0.1"));
+        request.setTransferTimeout(timeoutMs);
 
-    if (reply->error() != QNetworkReply::NoError) {
-        if (errorOut)
-            *errorOut = reply->errorString();
+        QEventLoop loop;
+        QNetworkReply* reply = nam.get(request);
+        QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+        QTimer::singleShot(timeoutMs + 2000, &loop, &QEventLoop::quit);
+        loop.exec();
+
+        QByteArray body;
+        QString error;
+        if (!reply->isFinished()) {
+            reply->abort();
+            error = QStringLiteral("Request timed out");
+        } else if (reply->error() != QNetworkReply::NoError) {
+            error = reply->errorString();
+        } else {
+            body = reply->readAll();
+        }
         reply->deleteLater();
-        return {};
-    }
 
-    const QByteArray body = reply->readAll();
-    reply->deleteLater();
-    return body;
+        QMutexLocker lock(&result->mutex);
+        result->body = std::move(body);
+        result->error = std::move(error);
+        result->finished = true;
+        result->done.wakeAll();
+    });
+
+    thread->start();
+    {
+        QMutexLocker lock(&result->mutex);
+        while (!result->finished)
+            result->done.wait(&result->mutex);
+    }
+    thread->wait();
+    delete thread;
+
+    if (errorOut && !result->error.isEmpty())
+        *errorOut = result->error;
+    return result->body;
 }
 
 bool downloadFileBlocking(QNetworkAccessManager* network, const QUrl& url,

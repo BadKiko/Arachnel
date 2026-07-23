@@ -153,10 +153,15 @@ Flickable {
                                 }
                             }
 
-                            MD.Switch {
-                                visible: modelData.loaded !== false
-                                checked: modelData.sourceEnabled
-                                onToggled: Core.sources.setSourceEnabled(modelData.pluginId, checked)
+                            MD.Button {
+                                mdState.type: MD.Enum.BtText
+                                text: qsTr("Delete")
+                                icon.name: MD.Token.icon.delete
+                                onClicked: {
+                                    removeDialog.pluginId = modelData.pluginId
+                                    removeDialog.pluginName = modelData.name
+                                    removeDialog.open()
+                                }
                             }
                         }
 
@@ -177,18 +182,6 @@ Flickable {
                             elide: Text.ElideMiddle
                             maximumLineCount: 2
                             wrapMode: Text.WordWrap
-                        }
-
-                        MD.Button {
-                            Layout.alignment: Qt.AlignLeft
-                            mdState.type: MD.Enum.BtText
-                            text: qsTr("Delete")
-                            icon.name: MD.Token.icon.delete
-                            onClicked: {
-                                removeDialog.pluginId = modelData.pluginId
-                                removeDialog.pluginName = modelData.name
-                                removeDialog.open()
-                            }
                         }
                     }
                 }

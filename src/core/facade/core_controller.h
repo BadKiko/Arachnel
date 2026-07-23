@@ -68,6 +68,7 @@ class CoreController : public QObject
     Q_PROPERTY(QString pluginsBundleDir READ pluginsBundleDir CONSTANT)
     Q_PROPERTY(QString lastPluginError READ lastPluginError NOTIFY lastPluginErrorChanged)
     Q_PROPERTY(bool pluginInstallBusy READ pluginInstallBusy NOTIFY pluginInstallBusyChanged)
+    Q_PROPERTY(bool pluginAutoUpdating READ pluginAutoUpdating NOTIFY pluginAutoUpdatingChanged)
     Q_PROPERTY(bool gameRunning READ gameRunning NOTIFY runningGameChanged)
     Q_PROPERTY(QString runningGameId READ runningGameId NOTIFY runningGameChanged)
     Q_PROPERTY(QString runningGameTitle READ runningGameTitle NOTIFY runningGameChanged)
@@ -120,6 +121,7 @@ public:
     QString pluginsBundleDir() const;
     QString lastPluginError() const { return m_lastPluginError; }
     bool pluginInstallBusy() const { return m_pluginInstallBusy; }
+    bool pluginAutoUpdating() const { return m_autoUpdatingOfficialPlugins; }
     bool gameRunning() const;
     QString runningGameId() const;
     QString runningGameTitle() const;
@@ -165,6 +167,7 @@ signals:
     void pluginsChanged();
     void lastPluginErrorChanged();
     void pluginInstallBusyChanged();
+    void pluginAutoUpdatingChanged();
     void runningGameChanged();
     void runtimeSetupChanged();
     void protonDownloadChanged();

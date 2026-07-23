@@ -16,14 +16,20 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QMutex>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QProcess>
 #include <QSettings>
 #include <QStandardPaths>
+#include <QThread>
+#include <QTimer>
 #include <QUrl>
 #include <QUrlQuery>
+#include <QWaitCondition>
+
+#include <memory>
 
 #if defined(Q_OS_WIN)
 #include <qt_windows.h>
@@ -222,14 +228,19 @@ QVariantMap RuntimeDependencyService::containerInfoForGame(const RuntimeEnsureRe
     out.insert(QStringLiteral("prefixExists"),
                QDir(containers.prefixDirForGame(gameId)).exists());
 
-    QString steamAppId = request.steamAppId.trimmed();
-    if (steamAppId.isEmpty())
-        steamAppId = resolveSteamAppIdFromTitle(network(), request.title);
+    // UI-only: never hit the network here. Binding/settings must stay sync-safe on the
+    // GUI thread (no nested event loops / steamcmd / store search).
+    const QString steamAppId = request.steamAppId.trimmed();
     out.insert(QStringLiteral("steamAppId"), steamAppId);
 
     QVector<RuntimeDepotRef> deps;
-    if (!steamAppId.isEmpty())
-        deps = resolveFromSteamCmd(steamAppId, nullptr);
+    for (const QString& depotId : containers.installedDepotIds(gameId)) {
+        RuntimeDepotRef ref;
+        ref.depotId = depotId;
+        ref.label = RuntimeDepotCatalog::labelForDepotId(depotId);
+        ref.osList = QStringLiteral("windows");
+        deps.append(ref);
+    }
 
     if (!request.installPath.isEmpty()) {
         const QString executable = findGameExecutableInTree(request.installPath);
@@ -237,15 +248,6 @@ QVariantMap RuntimeDependencyService::containerInfoForGame(const RuntimeEnsureRe
             const ManifestRuntimeNeeds needs = probeExecutableManifest(executable);
             deps = mergeDependencies(deps, depotsFromManifestNeeds(needs));
         }
-    }
-
-    // Also surface depots already recorded in state.json.
-    for (const QString& depotId : containers.installedDepotIds(gameId)) {
-        RuntimeDepotRef ref;
-        ref.depotId = depotId;
-        ref.label = RuntimeDepotCatalog::labelForDepotId(depotId);
-        ref.osList = QStringLiteral("windows");
-        deps = mergeDependencies(deps, {ref});
     }
 
     QVariantList depRows;
