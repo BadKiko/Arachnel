@@ -1148,27 +1148,27 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/install/install_session_service_install.cpp" line="26"/>
+        <location filename="../../src/core/install/install_session_service_install.cpp" line="71"/>
         <source>Add-on installation is already in progress</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/install/install_session_service_install.cpp" line="33"/>
+        <location filename="../../src/core/install/install_session_service_install.cpp" line="78"/>
         <source>Install the game first</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/install/install_session_service_install.cpp" line="39"/>
+        <location filename="../../src/core/install/install_session_service_install.cpp" line="84"/>
         <source>Plugin not found for %1 — install it in Settings → Plugins</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/install/install_session_service_install.cpp" line="85"/>
+        <location filename="../../src/core/install/install_session_service_install.cpp" line="135"/>
         <source>Add-on install failed for %1: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/install/install_session_service_install.cpp" line="99"/>
+        <location filename="../../src/core/install/install_session_service_install.cpp" line="150"/>
         <source>Add-on installed: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1194,7 +1194,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/library/library_facade_1.cpp" line="290"/>
+        <location filename="../../src/core/library/library_facade_1.cpp" line="295"/>
         <source>%1 update(s) available</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1865,88 +1865,88 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="99"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="129"/>
         <source>%1 add-ons</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="108"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="138"/>
         <source>Steam CDN · Online Fix</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="119"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="149"/>
         <source>Update available</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="135"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="165"/>
         <source>Source page</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="136"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="166"/>
         <source>Source website</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="147"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="177"/>
         <source>Steam</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="168"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="198"/>
         <source>Ready to download from Steam CDN. Online Fix can be included when needed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="177"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="207"/>
         <source>Install failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="191"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="221"/>
         <source>Stop</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="195"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="225"/>
         <source>PreparingтАж</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="196"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="226"/>
         <source>Play</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="238"/>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="358"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="268"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="388"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="255"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="285"/>
         <source>Update</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="307"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="337"/>
         <source>Description</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="313"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="343"/>
         <source>Description is not available yet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="330"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="360"/>
         <source>Remove game?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="352"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="382"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3481,23 +3481,23 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/settings/SettingsUpdatesPage.qml" line="54"/>
-        <source>Check for updates when loading the catalog</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../qml/settings/SettingsUpdatesPage.qml" line="60"/>
-        <source>Shows when a newer build is available in the catalog.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../../qml/settings/SettingsUpdatesPage.qml" line="85"/>
         <source>Install updates automatically on launch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../qml/settings/SettingsUpdatesPage.qml" line="54"/>
+        <source>Check for updates on launch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/settings/SettingsUpdatesPage.qml" line="60"/>
+        <source>Shows once at startup when a newer build is available in the catalog.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../../qml/settings/SettingsUpdatesPage.qml" line="91"/>
-        <source>Downloads updates when you open the catalog. You can turn this off per game.</source>
+        <source>Downloads updates once at startup. You can turn this off per game.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
