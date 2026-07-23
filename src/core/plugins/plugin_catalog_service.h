@@ -16,6 +16,7 @@ class PluginCatalogService : public QObject
     Q_PROPERTY(bool loading READ loading NOTIFY loadingChanged)
     Q_PROPERTY(bool installing READ installing NOTIFY installingChanged)
     Q_PROPERTY(QString installingPluginId READ installingPluginId NOTIFY installingChanged)
+    Q_PROPERTY(int downloadProgress READ downloadProgress NOTIFY downloadProgressChanged)
     Q_PROPERTY(QString error READ error NOTIFY errorChanged)
     Q_PROPERTY(QString catalogUrl READ catalogUrl CONSTANT)
 
@@ -26,6 +27,7 @@ public:
     bool loading() const { return m_loading; }
     bool installing() const { return m_installing; }
     QString installingPluginId() const { return m_installingPluginId; }
+    int downloadProgress() const { return m_downloadProgress; }
     QString error() const { return m_error; }
     QString catalogUrl() const;
 
@@ -36,6 +38,7 @@ signals:
     void pluginsChanged();
     void loadingChanged();
     void installingChanged();
+    void downloadProgressChanged();
     void errorChanged();
     /// On success, pathOrError is the downloaded .arach path; on failure it is an error message.
     void installFinished(const QString& pluginId, bool ok, const QString& pathOrError);
@@ -45,6 +48,7 @@ signals:
 private:
     void setLoading(bool value);
     void setInstalling(const QString& pluginId);
+    void setDownloadProgress(int percent);
     void setError(const QString& message);
     void downloadAndInstall(const QVariantMap& entry);
     void finishInstallAttempt(const QString& pluginId, bool ok, const QString& pathOrError);
@@ -60,6 +64,7 @@ private:
     QStringList m_installQueue;
     bool m_loading = false;
     bool m_installing = false;
+    int m_downloadProgress = 0;
     QString m_installingPluginId;
     QString m_error;
     QString m_pendingInstallId;

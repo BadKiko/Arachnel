@@ -10,6 +10,7 @@
 #include <QDesktopServices>
 #include <QDir>
 #include <QDirIterator>
+#include <QEventLoop>
 #include <QFile>
 #include <QFileInfo>
 #include <QJsonDocument>
@@ -73,11 +74,17 @@ bool PluginHost::extractArachArchive(const QString& archivePath, const QString& 
         }
         return false;
     }
-    if (!process.waitForFinished(300000)) {
-        process.kill();
-        if (errorOut)
-            *errorOut = QCoreApplication::translate("Core", "Archive extraction timed out");
-        return false;
+    // Keep the UI event loop alive while PowerShell/unzip works (large .arach packages).
+    qint64 waitedMs = 0;
+    while (!process.waitForFinished(100)) {
+        waitedMs += 100;
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+        if (waitedMs >= 300000) {
+            process.kill();
+            if (errorOut)
+                *errorOut = QCoreApplication::translate("Core", "Archive extraction timed out");
+            return false;
+        }
     }
     if (process.exitStatus() != QProcess::NormalExit || process.exitCode() != 0) {
         if (errorOut) {
@@ -203,6 +210,7 @@ bool PluginHost::installFromArach(const QString& archivePath)
                     *errorOut = QCoreApplication::translate("Core", "Failed to copy %1").arg(fileName);
                 return false;
             }
+            QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
         }
 
         const QStringList subdirs = bundleDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
@@ -210,6 +218,7 @@ bool PluginHost::installFromArach(const QString& archivePath)
             const QString srcSubdir = bundleDir.absoluteFilePath(subdir);
             const QString dstSubdir = dstRoot + QLatin1Char('/') + subdir;
             QDirIterator it(srcSubdir, QDir::Files, QDirIterator::Subdirectories);
+            int copied = 0;
             while (it.hasNext()) {
                 it.next();
                 const QString relativePath = QDir(srcSubdir).relativeFilePath(it.filePath());
@@ -226,6 +235,8 @@ bool PluginHost::installFromArach(const QString& archivePath)
                             QCoreApplication::translate("Core", "Failed to copy %1").arg(relativePath);
                     return false;
                 }
+                if ((++copied % 8) == 0)
+                    QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
             }
         }
         return true;

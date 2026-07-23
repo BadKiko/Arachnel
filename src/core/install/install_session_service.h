@@ -83,6 +83,9 @@ private:
 
     void syncInstallSessionPhase(const QString& entryId);
     void clearSession(const QString& entryId);
+    /** Delete torrent/installer payload under downloads after a successful install. */
+    void cleanupDownloadArtifact(const QString& artifactPath, const QString& installPath,
+                                 const QString& libraryId) const;
 
     SettingsStore* m_settings = nullptr;
     LibraryStore* m_libraryStore = nullptr;

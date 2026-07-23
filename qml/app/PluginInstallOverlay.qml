@@ -5,10 +5,13 @@ import Qcm.Material as MD
 
 Item {
     id: root
-    z: 3000
-    visible: Core.appUpdater && Core.appUpdater.downloading
+    z: 2900
 
-    // Catch clicks so the rest of the UI cannot be used mid-download.
+    readonly property bool busy: (Core.pluginCatalog && Core.pluginCatalog.installing)
+                                 || Core.pluginInstallBusy
+
+    visible: busy
+
     MouseArea {
         anchors.fill: parent
         acceptedButtons: Qt.AllButtons
@@ -18,19 +21,19 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        color: MD.Util.transparent(MD.Token.color.scrim, 0.55)
+        color: MD.Util.transparent(MD.Token.color.scrim, 0.45)
 
         Rectangle {
             anchors.centerIn: parent
-            width: Math.min(420, parent.width - 48)
+            width: Math.min(400, parent.width - 48)
             radius: MD.Token.shape.corner.large
             color: MD.Token.color.surface_container_high
             border.width: 1
             border.color: MD.Token.color.outline_variant
-            implicitHeight: updateColumn.implicitHeight + MD.Token.spacing.large * 2
+            implicitHeight: col.implicitHeight + MD.Token.spacing.large * 2
 
             ColumnLayout {
-                id: updateColumn
+                id: col
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
@@ -39,13 +42,22 @@ Item {
 
                 MD.Label {
                     Layout.fillWidth: true
-                    text: qsTr("Downloading Arachnel update…")
+                    text: {
+                        if (Core.pluginCatalog && Core.pluginCatalog.installing) {
+                            const id = Core.pluginCatalog.installingPluginId
+                            return id.length
+                                   ? qsTr("Installing plugin “%1”…").arg(id)
+                                   : qsTr("Installing plugin…")
+                        }
+                        return qsTr("Installing plugin…")
+                    }
                     typescale: MD.Token.typescale.title_medium
+                    wrapMode: Text.WordWrap
                 }
 
                 MD.Label {
                     Layout.fillWidth: true
-                    text: qsTr("Please wait. The installer will open automatically.")
+                    text: qsTr("Downloading and unpacking. The UI stays responsive — please wait.")
                     wrapMode: Text.WordWrap
                     color: MD.Token.color.on_surface_variant
                     typescale: MD.Token.typescale.body_medium
@@ -54,6 +66,8 @@ Item {
                 Item {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 8
+                    visible: Core.pluginCatalog && Core.pluginCatalog.installing
+                             && Core.pluginCatalog.downloadProgress >= 0
                     clip: true
 
                     Rectangle {
@@ -66,7 +80,7 @@ Item {
                         anchors.top: parent.top
                         anchors.bottom: parent.bottom
                         anchors.left: parent.left
-                        width: parent.width * Math.max(0, Math.min(1, Core.appUpdater.downloadProgress / 100))
+                        width: parent.width * Math.max(0, Math.min(1, Core.pluginCatalog.downloadProgress / 100))
                         radius: 4
                         color: MD.Token.color.primary
                     }
@@ -75,11 +89,19 @@ Item {
                 MD.Label {
                     Layout.fillWidth: true
                     horizontalAlignment: Text.AlignHCenter
-                    text: (Core.appUpdater.downloadProgress > 0
-                           ? (Core.appUpdater.downloadProgress + "%")
-                           : qsTr("Starting…"))
+                    visible: Core.pluginCatalog && Core.pluginCatalog.installing
+                             && Core.pluginCatalog.downloadProgress > 0
+                    text: Core.pluginCatalog.downloadProgress + "%"
                     color: MD.Token.color.on_surface_variant
                     typescale: MD.Token.typescale.title_small
+                }
+
+                MD.BusyIndicator {
+                    Layout.alignment: Qt.AlignHCenter
+                    visible: root.visible && !(Core.pluginCatalog && Core.pluginCatalog.installing
+                               && Core.pluginCatalog.downloadProgress > 0)
+                    running: visible
+                    showDelay: 0
                 }
             }
         }

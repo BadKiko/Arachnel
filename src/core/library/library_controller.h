@@ -3,6 +3,7 @@
 #include "catalog_types.h"
 #include "library_model.h"
 
+#include <QStringList>
 #include <functional>
 
 namespace arachnel::core {
@@ -22,6 +23,8 @@ public:
         std::function<void()> syncLibrary;
         std::function<void(const QString&)> removeJobs;
         std::function<void(const QString&)> notice;
+        /** Delete game folders off the UI thread. Paths are unique; title for notices. */
+        std::function<void(const QStringList& paths, const QString& title)> deleteGameFilesAsync;
         std::function<const CatalogEntry*(const QString&)> findCatalogEntry;
         std::function<const JobEntry*(const QString&)> findLatestJob;
         std::function<QString(const QString&)> sourceWebsiteFor;
@@ -45,6 +48,9 @@ public:
     void removeEntry(const QString& entryId, bool deleteFiles);
     void moveGame(const QString& gameId, const QString& targetLibraryId);
     QVariantList gamesOnLibrary(const QString& libraryId) const;
+    /** Remove a storage drive. If games remain and force is false, returns false.
+     *  With force, reassigns games to another drive (no file moves) then removes the drive. */
+    bool removeStorageLibrary(const QString& libraryId, bool force);
     /** Scan storage roots for on-disk installs missing from library.json. Returns newly added count. */
     int scanInstalledGames();
 

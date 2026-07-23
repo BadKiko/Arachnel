@@ -109,8 +109,12 @@ EN_TO_RU: dict[str, str] = {
     "Remove drive?": "Удалить диск?",
     "Remove “%1” from Arachnel? Files on disk are not deleted.":
         "Убрать «%1» из Arachnel? Файлы на диске не удаляются.",
-    "“%1” still has games. Move or delete them first.":
-        "На «%1» ещё есть игры. Сначала перенесите или удалите их.",
+    "“%1” still has games (%2). Remove the drive from Arachnel anyway? Files stay on disk; games stay in the library under another drive.":
+        "На «%1» ещё есть игры (%2). Убрать диск из Arachnel всё равно? Файлы на диске останутся; игры останутся в библиотеке на другом диске.",
+    "Remove anyway": "Убрать всё равно",
+    "Drive removed": "Диск убран",
+    "Drive removed. %1 game(s) kept on disk and listed under another drive.":
+        "Диск убран. Игр оставлено на диске и в библиотеке (на другом диске): %1",
     "Remove": "Убрать",
     "Installed": "Установлено",
     "Download complete": "Загрузка завершена",
@@ -215,6 +219,7 @@ EN_TO_RU: dict[str, str] = {
     "Folder picker is only available on Windows": "Выбор папки пока доступен только в Windows",
     "Game not found in library": "Игра не найдена в библиотеке",
     "Game removed: %1": "Игра удалена: %1",
+    "Removing “%1”…": "Удаление «%1»…",
     "No destination library selected": "Не выбран диск назначения",
     "Game is already on this library": "Игра уже на этом диске",
     "Could not move: %1": "Не удалось перенести: %1",
@@ -433,6 +438,15 @@ EN_TO_RU: dict[str, str] = {
     "Remove \"%1\"? Catalogs from this plugin will stop working until you install it again.": "Удалить «%1»? Каталоги этого плагина перестанут работать, пока вы не установите его снова.",
     "Plugin removed": "Плагин удалён",
     "Could not remove plugin: %1": "Не удалось удалить плагин: %1",
+    "Downloading Arachnel update…": "Скачивание обновления Arachnel…",
+    "Please wait. The installer will open automatically.":
+        "Подождите. Установщик откроется автоматически.",
+    "Starting…": "Запуск…",
+    "Downloading… %1%": "Скачивание… %1%",
+    "Installing plugin…": "Установка плагина…",
+    "Installing plugin “%1”…": "Установка плагина «%1»…",
+    "Downloading and unpacking. The UI stays responsive — please wait.":
+        "Скачивание и распаковка. Интерфейс не зависает — подождите.",
     "Plugins updated": "Плагины обновлены",
     "v%1 · %2 — not loaded": "v%1 · %2 — не загружен",
     "Invalid plugin id": "Некорректный id плагина",

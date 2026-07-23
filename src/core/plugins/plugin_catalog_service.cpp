@@ -10,6 +10,7 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
+#include <QScopeGuard>
 #include <QStandardPaths>
 #include <QUrl>
 #include <QVariantMap>
@@ -62,7 +63,18 @@ void PluginCatalogService::setInstalling(const QString& pluginId)
         return;
     m_installing = next;
     m_installingPluginId = pluginId;
+    if (next)
+        setDownloadProgress(0);
     emit installingChanged();
+}
+
+void PluginCatalogService::setDownloadProgress(int percent)
+{
+    const int clamped = qBound(0, percent, 100);
+    if (m_downloadProgress == clamped)
+        return;
+    m_downloadProgress = clamped;
+    emit downloadProgressChanged();
 }
 
 void PluginCatalogService::setError(const QString& message)
@@ -236,6 +248,25 @@ void PluginCatalogService::downloadAndInstall(const QVariantMap& entry)
     const QString expectedSha = entry.value(QStringLiteral("sha256")).toString().trimmed().toLower();
     const QString pluginId = entry.value(QStringLiteral("id")).toString();
 
+    const QString dir =
+        QStandardPaths::writableLocation(QStandardPaths::TempLocation)
+        + QStringLiteral("/arachnel-plugins");
+    QDir().mkpath(dir);
+    const QString path = dir + QLatin1Char('/') + pluginId + QStringLiteral(".arach");
+    QFile::remove(path);
+
+    auto* outFile = new QFile(path, this);
+    if (!outFile->open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        const QString err = QCoreApplication::translate("Core", "Could not save plugin file");
+        setError(err);
+        outFile->deleteLater();
+        finishInstallAttempt(pluginId, false, err);
+        return;
+    }
+
+    auto* hasher = new QCryptographicHash(QCryptographicHash::Sha256);
+    setDownloadProgress(0);
+
     QNetworkRequest request{QUrl(url)};
     request.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
                          QNetworkRequest::NoLessSafeRedirectPolicy);
@@ -243,18 +274,51 @@ void PluginCatalogService::downloadAndInstall(const QVariantMap& entry)
                       QStringLiteral("Arachnel/%1").arg(QCoreApplication::applicationVersion()));
 
     m_downloadReply = m_network->get(request);
+    connect(m_downloadReply, &QNetworkReply::downloadProgress, this,
+            [this](qint64 received, qint64 total) {
+                if (total > 0)
+                    setDownloadProgress(static_cast<int>((received * 100) / total));
+            });
+    connect(m_downloadReply, &QNetworkReply::readyRead, this, [this, outFile, hasher]() {
+        if (!m_downloadReply || !outFile)
+            return;
+        const QByteArray chunk = m_downloadReply->readAll();
+        if (chunk.isEmpty())
+            return;
+        hasher->addData(chunk);
+        outFile->write(chunk);
+    });
     connect(m_downloadReply, &QNetworkReply::finished, this,
-            [this, expectedSha, pluginId]() {
+            [this, expectedSha, pluginId, outFile, hasher, path]() {
                 QNetworkReply* reply = m_downloadReply;
                 m_downloadReply = nullptr;
+                const auto cleanup = qScopeGuard([outFile, hasher, reply]() {
+                    if (outFile) {
+                        outFile->close();
+                        outFile->deleteLater();
+                    }
+                    delete hasher;
+                    if (reply)
+                        reply->deleteLater();
+                });
+
                 if (!reply) {
+                    QFile::remove(path);
                     finishInstallAttempt(pluginId, false,
                                          QCoreApplication::translate("Core", "Download failed"));
                     return;
                 }
-                reply->deleteLater();
+
+                // Flush any remaining buffered bytes.
+                const QByteArray rest = reply->readAll();
+                if (!rest.isEmpty()) {
+                    hasher->addData(rest);
+                    outFile->write(rest);
+                }
+                outFile->close();
 
                 if (reply->error() != QNetworkReply::NoError) {
+                    QFile::remove(path);
                     const QString err =
                         QCoreApplication::translate("Core", "Download failed: %1")
                             .arg(reply->errorString());
@@ -263,8 +327,8 @@ void PluginCatalogService::downloadAndInstall(const QVariantMap& entry)
                     return;
                 }
 
-                const QByteArray payload = reply->readAll();
-                if (payload.isEmpty()) {
+                if (outFile->size() <= 0) {
+                    QFile::remove(path);
                     const QString err =
                         QCoreApplication::translate("Core", "Downloaded plugin file is empty");
                     setError(err);
@@ -274,10 +338,9 @@ void PluginCatalogService::downloadAndInstall(const QVariantMap& entry)
 
                 if (!expectedSha.isEmpty()) {
                     const QString actual =
-                        QString::fromLatin1(
-                            QCryptographicHash::hash(payload, QCryptographicHash::Sha256).toHex())
-                            .toLower();
+                        QString::fromLatin1(hasher->result().toHex()).toLower();
                     if (actual != expectedSha) {
+                        QFile::remove(path);
                         const QString err = QCoreApplication::translate(
                             "Core", "Plugin file checksum mismatch");
                         setError(err);
@@ -286,23 +349,7 @@ void PluginCatalogService::downloadAndInstall(const QVariantMap& entry)
                     }
                 }
 
-                const QString dir =
-                    QStandardPaths::writableLocation(QStandardPaths::TempLocation)
-                    + QStringLiteral("/arachnel-plugins");
-                QDir().mkpath(dir);
-                const QString path =
-                    dir + QLatin1Char('/') + pluginId + QStringLiteral(".arach");
-                QFile out(path);
-                if (!out.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-                    const QString err =
-                        QCoreApplication::translate("Core", "Could not save plugin file");
-                    setError(err);
-                    finishInstallAttempt(pluginId, false, err);
-                    return;
-                }
-                out.write(payload);
-                out.close();
-
+                setDownloadProgress(100);
                 finishInstallAttempt(pluginId, true, path);
             });
 }

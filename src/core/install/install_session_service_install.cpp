@@ -1,5 +1,6 @@
 #include "install_session_service.h"
 
+#include "file_utils.h"
 #include "install_marker.h"
 #include "job_model.h"
 #include "job_orchestrator.h"
@@ -11,8 +12,52 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QFileInfo>
+#include <QtConcurrent>
 
 namespace arachnel::core {
+
+namespace {
+
+bool pathIsUnderRoot(const QString& path, const QString& root)
+{
+    if (path.isEmpty() || root.isEmpty())
+        return false;
+    const QString cleanPath = QDir::cleanPath(path);
+    const QString cleanRoot = QDir::cleanPath(root);
+    if (cleanPath.compare(cleanRoot, Qt::CaseInsensitive) == 0)
+        return true;
+    const QString prefix = cleanRoot.endsWith(QLatin1Char('/')) ? cleanRoot
+                                                                : cleanRoot + QLatin1Char('/');
+    return cleanPath.startsWith(prefix, Qt::CaseInsensitive);
+}
+
+} // namespace
+
+void InstallSessionService::cleanupDownloadArtifact(const QString& artifactPath,
+                                                    const QString& installPath,
+                                                    const QString& libraryId) const
+{
+    if (!m_settings || artifactPath.isEmpty())
+        return;
+
+    const QString artifact = QDir::cleanPath(artifactPath);
+    const QString install = QDir::cleanPath(installPath);
+    if (artifact.isEmpty() || !QFileInfo::exists(artifact))
+        return;
+    // Never wipe the live install tree (steamidra writes straight into target).
+    if (!install.isEmpty()
+        && (artifact.compare(install, Qt::CaseInsensitive) == 0
+            || pathIsUnderRoot(install, artifact) || pathIsUnderRoot(artifact, install)))
+        return;
+
+    const QString downloadsRoot =
+        QDir::cleanPath(m_settings->resolvedDownloadsRoot(libraryId));
+    if (!pathIsUnderRoot(artifact, downloadsRoot))
+        return;
+
+    // Large FreeTP payloads — don't block the UI thread.
+    (void)QtConcurrent::run([artifact]() { removePathRecursive(artifact); });
+}
 
 void InstallSessionService::startPluginAddonInstall(const CatalogEntry& parent,
                                                     const CatalogComponent& addon,
@@ -67,8 +112,13 @@ void InstallSessionService::startPluginAddonInstall(const CatalogEntry& parent,
         parent.id, m_settings->resolvedProtonId(QString(), *m_protonManager),
         &ctx.protonExecutable, &ctx.compatDataPath, &ctx.steamCompatClientPath);
 
+    const QString gameInstallPath = game->installPath;
+    const QString gameLibraryId = game->libraryId;
+
     m_pluginHost->runAddonInstallAsync(
-        plugin, ctx, [this, parent, addon, progressJobId, installKey, done](const InstallResult& result) {
+        plugin, ctx,
+        [this, parent, addon, progressJobId, installKey, done, artifactPath, gameInstallPath,
+         gameLibraryId](const InstallResult& result) {
             m_installingAddons.remove(installKey);
             if (!result.success) {
                 const QString detail = result.error.isEmpty()
@@ -91,6 +141,7 @@ void InstallSessionService::startPluginAddonInstall(const CatalogEntry& parent,
             }
 
             m_hooks.markAddonInstalled(parent.id, addon.id, addon.uploadDate);
+            cleanupDownloadArtifact(artifactPath, gameInstallPath, gameLibraryId);
             const QVariantMap successJobMap = m_jobs->jobForAddon(parent.id, addon.id);
             const QString successJobId = successJobMap.value(QStringLiteral("jobId")).toString();
             if (!successJobId.isEmpty())
@@ -175,6 +226,14 @@ void InstallSessionService::commitInstalledCatalogGame(const CatalogEntry& entry
 
     if (!game.installPath.isEmpty() && QFileInfo::exists(game.installPath))
         writeInstallMarker(game.installPath, game.id, game.sourceId);
+
+    // Drop installer/torrent payload once the game is in the library.
+    cleanupDownloadArtifact(savePath, game.installPath, libId);
+    if (!savePath.isEmpty()
+        && QDir::cleanPath(savePath).compare(QDir::cleanPath(game.installPath),
+                                             Qt::CaseInsensitive)
+            != 0)
+        game.downloadPath.clear();
 
     m_libraryStore->upsertGame(game);
     m_hooks.syncLibrary();

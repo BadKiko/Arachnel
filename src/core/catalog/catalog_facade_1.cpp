@@ -149,8 +149,16 @@ void CoreController::applyMetadataToEntry(CatalogEntry& entry,
 {
     if (!metadata.description.isEmpty())
         entry.description = metadata.description;
-    if (!metadata.genres.isEmpty())
+    if (!metadata.genres.isEmpty()) {
+        // Keep Ryuu DRM token when Steam store genres replace the catalog string.
+        const bool hadDrm = entry.genres.contains(QStringLiteral("DRM"), Qt::CaseInsensitive);
         entry.genres = metadata.genres;
+        if (hadDrm && !entry.genres.contains(QStringLiteral("DRM"), Qt::CaseInsensitive)) {
+            if (!entry.genres.isEmpty())
+                entry.genres += QStringLiteral(", ");
+            entry.genres += QStringLiteral("DRM");
+        }
+    }
     if (!metadata.steamAppId.isEmpty())
         entry.steamAppId = metadata.steamAppId;
     if (!metadata.trailerUrl.isEmpty())

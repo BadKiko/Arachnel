@@ -53,16 +53,10 @@ Item {
         anchors.top: parent.top
         anchors.bottom: parent.bottom
         anchors.left: parent.left
+        // No Behavior: model remounts / width flicker would re-animate 0→N every tick.
         width: parent.width * root.fillRatio
         radius: height / 2
         color: page.isPaused ? MD.Token.color.on_surface_variant
                              : (page.isFailed ? MD.Token.color.error : MD.Token.color.primary)
-
-        Behavior on width {
-            NumberAnimation {
-                duration: MD.Token.duration.short4
-                easing: MD.Token.easing.standard
-            }
-        }
     }
 }

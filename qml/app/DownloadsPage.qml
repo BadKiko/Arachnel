@@ -9,34 +9,58 @@ Item {
     id: root
 
     readonly property int pageMargin: MD.Token.spacing.large
-    property var jobGroups: []
     property var expandedGroups: ({})
-    readonly property bool downloadsEmpty: jobGroups.length === 0
+    readonly property bool downloadsEmpty: groupsModel.count === 0
+
+    ListModel {
+        id: groupsModel
+    }
 
     function refreshGroups() {
         refreshDebounce.restart()
     }
 
     function applyGroups(nextGroups) {
+        const next = nextGroups || []
         const list = jobsList
-        const restore = list.visible && list.count > 0
-                && !list.moving && !list.flicking && !list.dragging
-        const y = restore ? list.contentY : 0
-        jobGroups = nextGroups
-        if (!restore)
-            return
-        // Model swap resets contentY; restore after layout settles
-        // (delegate heights can change on the next frame).
-        function restoreY() {
-            if (!list || list.moving || list.flicking || list.dragging)
-                return
-            const maxY = Math.max(0, list.contentHeight - list.height)
-            list.contentY = Math.min(Math.max(0, y), maxY)
+
+        let structural = groupsModel.count !== next.length
+        if (!structural) {
+            for (let i = 0; i < next.length; ++i) {
+                if ((groupsModel.get(i).jobId ?? "") !== (next[i].jobId ?? "")) {
+                    structural = true
+                    break
+                }
+            }
         }
-        Qt.callLater(function () {
-            restoreY()
-            Qt.callLater(restoreY)
-        })
+
+        if (structural) {
+            const restore = list.visible && list.count > 0
+                    && !list.moving && !list.flicking && !list.dragging
+            const y = restore ? list.contentY : 0
+            groupsModel.clear()
+            for (let i = 0; i < next.length; ++i)
+                groupsModel.append({ group: next[i], jobId: next[i].jobId ?? "" })
+            if (!restore)
+                return
+            function restoreY() {
+                if (!list || list.moving || list.flicking || list.dragging)
+                    return
+                const maxY = Math.max(0, list.contentHeight - list.height)
+                list.contentY = Math.min(Math.max(0, y), maxY)
+            }
+            Qt.callLater(function () {
+                restoreY()
+                Qt.callLater(restoreY)
+            })
+            return
+        }
+
+        // Same job rows — update in place so progress bars don't remount / re-animate.
+        for (let i = 0; i < next.length; ++i) {
+            groupsModel.setProperty(i, "group", next[i])
+            groupsModel.setProperty(i, "jobId", next[i].jobId ?? "")
+        }
     }
 
     Timer {
@@ -175,27 +199,26 @@ Item {
             boundsBehavior: Flickable.StopAtBounds
             reuseItems: true
             cacheBuffer: height * 2
-            model: root.jobGroups
+            model: groupsModel
 
             ScrollBar.vertical: MD.ScrollBar {
                 policy: ScrollBar.AsNeeded
             }
 
-            // Stable identity so progress ticks don't reshuffle delegates.
-            // (JS array models still recreate items; contentY restore handles scroll.)
             delegate: Item {
                 id: rowRoot
                 width: jobsList.width
                 height: Math.ceil(card.implicitHeight)
-                required property var modelData
+                required property var group
+                required property string jobId
 
                 DownloadJobGroupCard {
                     id: card
                     width: parent.width
-                    group: rowRoot.modelData
-                    expanded: root.isGroupExpanded(rowRoot.modelData.entryId ?? "")
+                    group: rowRoot.group
+                    expanded: root.isGroupExpanded(rowRoot.group.entryId ?? "")
                     onExpansionToggled: function (value) {
-                        root.setGroupExpanded(rowRoot.modelData.entryId ?? "", value)
+                        root.setGroupExpanded(rowRoot.group.entryId ?? "", value)
                     }
                     onOpenDetails: function (entryId) { root.openGame(entryId) }
                 }

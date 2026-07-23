@@ -23,7 +23,10 @@ void JobOrchestrator::reportPluginProgress(const QString& jobId,
         job.status = progress.status;
     else if (job.status == QStringLiteral("starting"))
         job.status = QStringLiteral("downloading");
-    job.progress = qBound(0, progress.percent, 100);
+
+    const int previousProgress = job.progress;
+    const qint64 previousDownloaded = job.bytesDownloaded;
+    int nextProgress = qBound(0, progress.percent, 100);
     qint64 downloaded = progress.bytesDownloaded;
     qint64 total = progress.totalBytes;
     if (total <= 0) {
@@ -43,15 +46,24 @@ void JobOrchestrator::reportPluginProgress(const QString& jobId,
     // an explicit plugin total (Steam ACF BytesToDownload is trusted).
     if (progress.totalBytes <= 0 && total > 0 && downloaded > 0 && total > downloaded * 2)
         total = 0;
-    job.bytesDownloaded = downloaded;
-    job.totalBytes = total;
 
     if (total > 0 && downloaded > 0) {
         const int bytePercent =
             static_cast<int>(qMin<qint64>(99, downloaded * 100 / total));
-        if (bytePercent > job.progress)
-            job.progress = bytePercent;
+        if (bytePercent > nextProgress)
+            nextProgress = bytePercent;
     }
+
+    // Status-only ticks often send percent=0 — never rewind the bar mid-download.
+    if (nextProgress < previousProgress && previousProgress < 100) {
+        const bool statusOnly = progress.percent <= 0 && downloaded <= previousDownloaded;
+        const bool noRealRegression = downloaded + 64 * 1024 >= previousDownloaded;
+        if (statusOnly || noRealRegression)
+            nextProgress = previousProgress;
+    }
+    job.progress = nextProgress;
+    job.bytesDownloaded = downloaded;
+    job.totalBytes = total;
 
     if (total > 0)
         m_pluginEstimatedTotal.insert(jobId, total);

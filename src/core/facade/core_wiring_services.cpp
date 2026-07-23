@@ -1,5 +1,8 @@
 #include "core_controller_impl.h"
 
+#include <QFutureWatcher>
+#include <QtConcurrent>
+
 namespace arachnel::core {
 
 void CoreController::initializeServices()
@@ -139,6 +142,28 @@ void CoreController::initializeServices()
     libraryHooks.syncLibrary = [this]() { syncLibraryFromStore(); };
     libraryHooks.removeJobs = [this](const QString& entryId) { removeJobsForEntry(entryId); };
     libraryHooks.notice = [this](const QString& message) { showNotice(message); };
+    libraryHooks.deleteGameFilesAsync = [this](const QStringList& paths, const QString& title) {
+        auto* watcher = new QFutureWatcher<QString>(this);
+        QObject::connect(watcher, &QFutureWatcher<QString>::finished, this,
+                         [this, watcher, title]() {
+                             const QString error = watcher->result();
+                             watcher->deleteLater();
+                             if (!error.isEmpty()) {
+                                 showNotice(error);
+                                 return;
+                             }
+                             showNotice(QCoreApplication::translate("Core", "Game removed: %1")
+                                            .arg(title));
+                         });
+        watcher->setFuture(QtConcurrent::run([paths]() -> QString {
+            QString error;
+            for (const QString& path : paths) {
+                if (!removePathRecursive(path, &error))
+                    return error;
+            }
+            return {};
+        }));
+    };
     libraryHooks.findCatalogEntry = [this](const QString& entryId) {
         return findCatalogEntry(entryId);
     };

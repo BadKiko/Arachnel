@@ -172,9 +172,12 @@ Flickable {
                                 mdState.type: MD.Enum.IBtStandard
                                 icon.name: MD.Token.icon.delete
                                 onClicked: {
-                                    removeDriveDialog.libraryId = libraryId
-                                    removeDriveDialog.libraryLabel = label
-                                    removeDriveDialog.gameCount = Core.gamesOnLibrary(libraryId).length
+                                    const id = libraryId
+                                    const name = label
+                                    const games = Core.gamesOnLibrary(id)
+                                    removeDriveDialog.libraryId = id
+                                    removeDriveDialog.libraryLabel = name
+                                    removeDriveDialog.gameCount = games ? games.length : 0
                                     removeDriveDialog.open()
                                 }
                             }
@@ -384,6 +387,7 @@ Flickable {
         id: removeDriveDialog
         parent: Overlay.overlay
         modal: true
+        width: Math.min(440, Overlay.overlay ? Overlay.overlay.width - 48 : 440)
         property string libraryId: ""
         property string libraryLabel: ""
         property int gameCount: 0
@@ -391,17 +395,19 @@ Flickable {
 
         contentItem: ColumnLayout {
             spacing: MD.Token.spacing.medium
-            width: parent ? parent.width : implicitWidth
+            width: removeDriveDialog.width - removeDriveDialog.horizontalPadding * 2
 
             MD.Label {
                 Layout.fillWidth: true
                 text: removeDriveDialog.gameCount > 0
-                      ? qsTr("“%1” still has games. Move or delete them first.")
+                      ? qsTr("“%1” still has games (%2). Remove the drive from Arachnel anyway? Files stay on disk; games stay in the library under another drive.")
                             .arg(removeDriveDialog.libraryLabel)
+                            .arg(removeDriveDialog.gameCount)
                       : qsTr("Remove “%1” from Arachnel? Files on disk are not deleted.")
                             .arg(removeDriveDialog.libraryLabel)
                 wrapMode: Text.WordWrap
                 typescale: MD.Token.typescale.body_medium
+                color: MD.Token.color.on_surface_variant
             }
         }
 
@@ -416,20 +422,20 @@ Flickable {
 
                 MD.Button {
                     mdState.type: MD.Enum.BtText
-                    text: removeDriveDialog.gameCount > 0 ? qsTr("OK") : qsTr("Cancel")
+                    text: qsTr("Cancel")
                     DialogButtonBox.buttonRole: DialogButtonBox.RejectRole
                     onClicked: removeDriveDialog.close()
                 }
 
                 MD.Button {
-                    visible: removeDriveDialog.gameCount === 0
                     mdState.type: MD.Enum.BtFilled
-                    text: qsTr("Remove")
+                    text: removeDriveDialog.gameCount > 0 ? qsTr("Remove anyway") : qsTr("Remove")
                     DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole
                     onClicked: {
                         const id = removeDriveDialog.libraryId
+                        const force = removeDriveDialog.gameCount > 0
                         removeDriveDialog.close()
-                        if (!Core.settings.storageLibraries.removeLibrary(id))
+                        if (!Core.removeStorageLibrary(id, force))
                             return
                         if (root.selectedLibraryId === id)
                             root.selectedLibraryId = Core.settings.storageLibraries.defaultLibraryId

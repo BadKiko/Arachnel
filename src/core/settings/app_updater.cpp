@@ -228,9 +228,32 @@ void AppUpdater::startDownload(const QUrl& url)
     emit downloadProgressChanged();
     setStatusText(QCoreApplication::translate("Core", "Downloading Arachnel update…"));
 
+    const QString tempDir = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
+    QDir().mkpath(tempDir);
+    const QString fileName =
+        QStringLiteral("Arachnel-%1-Setup.exe").arg(m_latestVersion.isEmpty()
+                                                        ? QStringLiteral("update")
+                                                        : m_latestVersion);
+    const QString targetPath = QDir(tempDir).absoluteFilePath(fileName);
+    QFile::remove(targetPath);
+
+    auto* outFile = new QFile(targetPath, this);
+    if (!outFile->open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        outFile->deleteLater();
+        setDownloading(false);
+        const QString error =
+            QCoreApplication::translate("Core", "Could not save the downloaded installer");
+        setLastError(error);
+        setStatusText(error);
+        emit updateFailed(error);
+        return;
+    }
+
     QNetworkRequest request(url);
     request.setHeader(QNetworkRequest::UserAgentHeader,
                       QStringLiteral("Arachnel/%1").arg(currentVersion()));
+    request.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
+                         QNetworkRequest::NoLessSafeRedirectPolicy);
 
     if (m_activeReply) {
         m_activeReply->abort();
@@ -248,35 +271,37 @@ void AppUpdater::startDownload(const QUrl& url)
                     m_downloadProgress = 0;
                 emit downloadProgressChanged();
             });
+    connect(m_activeReply, &QNetworkReply::readyRead, this, [this, outFile]() {
+        if (!m_activeReply || !outFile)
+            return;
+        outFile->write(m_activeReply->readAll());
+    });
 
-    connect(m_activeReply, &QNetworkReply::finished, this, [this]() {
+    connect(m_activeReply, &QNetworkReply::finished, this, [this, outFile, targetPath]() {
         QNetworkReply* reply = m_activeReply;
         m_activeReply = nullptr;
-        reply->deleteLater();
 
-        if (reply->error() != QNetworkReply::NoError) {
+        if (reply)
+            outFile->write(reply->readAll());
+        outFile->close();
+        outFile->deleteLater();
+        if (reply)
+            reply->deleteLater();
+
+        if (!reply || reply->error() != QNetworkReply::NoError) {
+            QFile::remove(targetPath);
             setDownloading(false);
             const QString error = QCoreApplication::translate("Core", "Download failed: %1")
-                                      .arg(reply->errorString());
+                                      .arg(reply ? reply->errorString()
+                                                 : QCoreApplication::translate("Core", "Unknown error"));
             setLastError(error);
             setStatusText(error);
             emit updateFailed(error);
             return;
         }
 
-        const QByteArray data = reply->readAll();
-        const QString tempDir =
-            QStandardPaths::writableLocation(QStandardPaths::TempLocation);
-        QDir().mkpath(tempDir);
-        const QString fileName =
-            QStringLiteral("Arachnel-%1-Setup.exe").arg(m_latestVersion.isEmpty()
-                                                            ? QStringLiteral("update")
-                                                            : m_latestVersion);
-        const QString targetPath = QDir(tempDir).absoluteFilePath(fileName);
-
-        QFile::remove(targetPath);
-        QFile file(targetPath);
-        if (!file.open(QIODevice::WriteOnly) || file.write(data) != data.size()) {
+        if (QFileInfo(targetPath).size() <= 0) {
+            QFile::remove(targetPath);
             setDownloading(false);
             const QString error =
                 QCoreApplication::translate("Core", "Could not save the downloaded installer");
@@ -285,7 +310,6 @@ void AppUpdater::startDownload(const QUrl& url)
             emit updateFailed(error);
             return;
         }
-        file.close();
 
         m_downloadProgress = 100;
         emit downloadProgressChanged();
