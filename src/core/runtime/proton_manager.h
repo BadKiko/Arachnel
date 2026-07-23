@@ -39,6 +39,8 @@ public:
     QString latestGeReleaseName() const { return m_latestGeReleaseName; }
     QString steamCompatClientPath() const;
     QString compatDataPathForGame(const QString& gameId) const;
+    /** Path to SteamLinuxRuntime_sniper/run (or soldier) when installed; empty otherwise. */
+    QString findSteamLinuxRuntime() const;
 
     bool isDownloading() const { return m_downloading; }
     int downloadProgress() const { return m_downloadProgress; }

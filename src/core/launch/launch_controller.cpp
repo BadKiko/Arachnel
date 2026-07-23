@@ -7,6 +7,7 @@
 #include "plugin_interface.h"
 #include "process_launcher.h"
 #include "process_tracker.h"
+#include "proton_manager.h"
 #include "settings_store.h"
 
 #include <QCoreApplication>
@@ -82,10 +83,23 @@ void LaunchController::launchGame(const QString& gameId)
         applyOnlineFixLaunchInfo(gameCopy.installPath, &info);
 #if defined(Q_OS_LINUX)
         if (detectOnlineFixOverlay(gameCopy.installPath).enabled
-            && !info.environmentExtras.contains(QStringLiteral("LD_PRELOAD")) && m_hooks.notice) {
-            m_hooks.notice(QCoreApplication::translate(
-                "Core",
-                "Start the Steam client before launching Online Fix games so the Steam overlay can attach."));
+            || info.environmentExtras.value(QStringLiteral("ARACHNEL_USE_STEAM_RUNTIME"))
+                   == QStringLiteral("1")) {
+            if (!isSteamClientRunning()) {
+                tryStartSteamClient();
+                if (m_hooks.notice) {
+                    m_hooks.notice(QCoreApplication::translate(
+                        "Core",
+                        "Steam must be running for Online Fix. Starting Steam — launch the game again once it is open."));
+                }
+                return;
+            }
+            ProtonManager protonMgr;
+            if (protonMgr.findSteamLinuxRuntime().isEmpty() && m_hooks.notice) {
+                m_hooks.notice(QCoreApplication::translate(
+                    "Core",
+                    "Steam Linux Runtime (Sniper) not found. Install it from Steam for Online Fix overlay support."));
+            }
         }
 #endif
         const ResolvedLaunch resolved = resolveLaunch(info, gameCopy, *m_settings);

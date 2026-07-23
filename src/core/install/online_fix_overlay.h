@@ -21,11 +21,16 @@ bool setOnlineFixOverlayEnabled(const QString& installPath, bool enabled, QStrin
 QVariantMap onlineFixOverlayInfo(const QString& installPath);
 
 /**
- * Proton / Wine launch extras for SteamFix / Online-Fix overlays.
- * Sets WINEDLLOVERRIDES (winmm inject + SteamFix/OnlineFix DLLs) and, on Linux when
- * the Steam client is running, LD_PRELOAD / overlay env so the in-game overlay works.
- * Safe no-op when overlay files are missing or disabled.
+ * Proton / Wine launch extras for SteamFix / Online-Fix overlays (SOFL-compatible).
+ * Sets WINEDLLOVERRIDES, requests Steam Runtime, and when Steam is running attaches
+ * LD_PRELOAD gameoverlayrenderer. Safe no-op when overlay files are missing/disabled.
  */
 void applyOnlineFixLaunchInfo(const QString& installPath, LaunchInfo* info);
+
+#if defined(Q_OS_LINUX)
+bool isSteamClientRunning();
+/** Best-effort: spawn `steam` detached. Returns true if the process was started. */
+bool tryStartSteamClient();
+#endif
 
 } // namespace arachnel::core
