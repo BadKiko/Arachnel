@@ -96,10 +96,12 @@ QStringList ProtonManager::steamRoots() const
     return {};
 #else
     QStringList roots;
-    // Prefer paths SOFL / Steam client use for COMPAT_CLIENT + overlay libs.
+    // Prefer installs that have the Steam client / overlay libs (not an empty
+    // ~/.local/share/Steam that only holds compatibilitytools.d).
     const QStringList candidates = {
         QDir::homePath() + QStringLiteral("/.steam/steam"),
         QDir::homePath() + QStringLiteral("/.steam/root"),
+        QDir::homePath() + QStringLiteral("/.steam/debian-installation"),
         QDir::homePath() + QStringLiteral("/.local/share/Steam"),
         QDir::homePath()
         + QStringLiteral("/.var/app/com.valvesoftware.Steam/.local/share/Steam"),
@@ -107,10 +109,24 @@ QStringList ProtonManager::steamRoots() const
         + QStringLiteral("/.var/app/com.valvesoftware.Steam/data/Steam"),
     };
 
+    QStringList weak;
     for (const QString& candidate : candidates) {
         const QString normalized = normalizePath(candidate);
-        if (!normalized.isEmpty() && QDir(normalized).exists() && !roots.contains(normalized))
+        if (normalized.isEmpty() || !QDir(normalized).exists() || roots.contains(normalized)
+            || weak.contains(normalized))
+            continue;
+        const bool hasClient =
+            QFileInfo::exists(normalized + QStringLiteral("/ubuntu12_64/gameoverlayrenderer.so"))
+            || QFileInfo::exists(normalized + QStringLiteral("/steam.sh"))
+            || QFileInfo::exists(normalized + QStringLiteral("/ubuntu12_32/steam"));
+        if (hasClient)
             roots.append(normalized);
+        else
+            weak.append(normalized);
+    }
+    for (const QString& path : weak) {
+        if (!roots.contains(path))
+            roots.append(path);
     }
     return roots;
 #endif
@@ -393,12 +409,61 @@ QString ProtonManager::compatDataPathForGame(const QString& gameId) const
     return path;
 }
 
+bool ProtonManager::steamLinuxRuntimeUsable() const
+{
+#if !defined(Q_OS_LINUX)
+    return false;
+#else
+    // Ubuntu 23.10+: apparmor_restrict_unprivileged_userns=1 blocks bwrap userns for
+    // apps without an AppArmor profile (Steam itself is exempt). Online Fix then fails
+    // inside pressure-vessel; launch Proton directly instead.
+    const auto readSysctl = [](const char* path) -> QByteArray {
+        QFile file(QString::fromUtf8(path));
+        if (!file.open(QIODevice::ReadOnly))
+            return {};
+        return file.readAll().trimmed();
+    };
+    if (readSysctl("/proc/sys/kernel/apparmor_restrict_unprivileged_userns") == "1")
+        return false;
+    if (readSysctl("/proc/sys/kernel/unprivileged_userns_clone") == "0")
+        return false;
+    return true;
+#endif
+}
+
+bool ProtonManager::canAaExecSteamProfile() const
+{
+#if !defined(Q_OS_LINUX)
+    return false;
+#else
+    // Borrow Steam's AppArmor profile (userns allowed) so pressure-vessel can start.
+    return QFileInfo::exists(QStringLiteral("/usr/bin/aa-exec"))
+        && QFileInfo::exists(QStringLiteral("/etc/apparmor.d/steam"));
+#endif
+}
+
+QString ProtonManager::findLegacySteamRuntime() const
+{
+#if !defined(Q_OS_LINUX)
+    return {};
+#else
+    // SOFL online-fix-use-steam-runtime: <steam>/ubuntu12_32/steam-runtime/run.sh
+    for (const QString& steamRoot : steamRoots()) {
+        const QString runPath =
+            steamRoot + QStringLiteral("/ubuntu12_32/steam-runtime/run.sh");
+        if (QFileInfo::exists(runPath) && QFileInfo(runPath).isExecutable())
+            return runPath;
+    }
+    return {};
+#endif
+}
+
 QString ProtonManager::findSteamLinuxRuntime() const
 {
 #if !defined(Q_OS_LINUX)
     return {};
 #else
-    // Prefer Sniper (1628350), then Soldier — same order SOFL looks for.
+    // Prefer Sniper (1628350), then Soldier — used only when explicitly requested.
     const QStringList runtimeNames = {
         QStringLiteral("SteamLinuxRuntime_sniper"),
         QStringLiteral("SteamLinuxRuntime_soldier"),

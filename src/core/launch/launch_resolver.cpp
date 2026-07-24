@@ -93,14 +93,34 @@ ResolvedLaunch resolveLaunch(const LaunchInfo& pluginInfo, const LibraryGame& ga
         protonArgs += QStringList{QStringLiteral("run"), executable};
         protonArgs += arguments;
 
-        // SOFL-style: SteamLinuxRuntime wraps Proton so the Steam IPC/overlay can attach.
-        const bool wantRuntime =
-            pluginInfo.environmentExtras.value(QStringLiteral("ARACHNEL_USE_STEAM_RUNTIME"))
-            == QStringLiteral("1");
-        const QString steamRuntime = wantRuntime ? manager.findSteamLinuxRuntime() : QString();
-        if (!steamRuntime.isEmpty()) {
-            resolved.program = steamRuntime;
-            resolved.arguments = QStringList{proton} + protonArgs;
+        // SOFL Online-Fix: proton run <exe>, optionally prefixed with legacy steam-runtime/run.sh.
+        // Do not use SteamLinuxRuntime_sniper here — pressure-vessel needs userns Arachnel lacks.
+        const QString runtimeMode =
+            pluginInfo.environmentExtras.value(QStringLiteral("ARACHNEL_USE_STEAM_RUNTIME"));
+        if (runtimeMode == QStringLiteral("legacy")) {
+            const QString legacyRuntime = manager.findLegacySteamRuntime();
+            if (!legacyRuntime.isEmpty()) {
+                resolved.program = legacyRuntime;
+                resolved.arguments = QStringList{proton} + protonArgs;
+            } else {
+                resolved.program = proton;
+                resolved.arguments = protonArgs;
+            }
+        } else if (runtimeMode == QStringLiteral("1")) {
+            const QString steamRuntime = manager.findSteamLinuxRuntime();
+            if (!steamRuntime.isEmpty() && manager.steamLinuxRuntimeUsable()) {
+                resolved.program = steamRuntime;
+                resolved.arguments = QStringList{proton} + protonArgs;
+            } else if (!steamRuntime.isEmpty() && manager.canAaExecSteamProfile()) {
+                resolved.program = QStringLiteral("/usr/bin/aa-exec");
+                resolved.arguments =
+                    QStringList{QStringLiteral("-p"), QStringLiteral("steam"), QStringLiteral("--"),
+                                steamRuntime, proton}
+                    + protonArgs;
+            } else {
+                resolved.program = proton;
+                resolved.arguments = protonArgs;
+            }
         } else {
             resolved.program = proton;
             resolved.arguments = protonArgs;

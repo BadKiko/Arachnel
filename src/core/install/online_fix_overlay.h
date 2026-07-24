@@ -22,8 +22,8 @@ QVariantMap onlineFixOverlayInfo(const QString& installPath);
 
 /**
  * Proton / Wine launch extras for SteamFix / Online-Fix overlays (SOFL-compatible).
- * Sets WINEDLLOVERRIDES, requests Steam Runtime, and when Steam is running attaches
- * LD_PRELOAD gameoverlayrenderer. Safe no-op when overlay files are missing/disabled.
+ * Sets WINEDLLOVERRIDES, optional legacy steam-runtime/run.sh, and LD_PRELOAD
+ * gameoverlayrenderer (+ SteamAppId/SteamGameId). Safe no-op when overlay is missing/disabled.
  */
 void applyOnlineFixLaunchInfo(const QString& installPath, LaunchInfo* info);
 

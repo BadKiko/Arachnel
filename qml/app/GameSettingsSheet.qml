@@ -181,7 +181,9 @@ MD.BottomSheet {
 
             ColumnLayout {
                 id: protonPickCol
-                anchors.fill: parent
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
                 anchors.margins: MD.Token.spacing.medium
                 spacing: MD.Token.spacing.small
 
@@ -235,34 +237,37 @@ MD.BottomSheet {
 
             ColumnLayout {
                 id: launchCol
-                anchors.fill: parent
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
                 anchors.margins: MD.Token.spacing.medium
-                spacing: MD.Token.spacing.small
+                spacing: MD.Token.spacing.medium
 
                 MD.Label {
+                    Layout.fillWidth: true
                     text: qsTr("Launch options")
                     typescale: MD.Token.typescale.title_small
                 }
 
+                // Filled + body_large (M3 text field input). Outlined defaults to title_large in QmlMaterial.
                 MD.TextField {
                     id: launchArgsField
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 56
-                    Layout.maximumHeight: 56
+                    type: MD.Enum.TextFieldFilled
+                    mdState.dense: true
                     placeholderText: qsTr("Extra launch arguments for this game")
                     onEditingFinished: Core.setGameLaunchArgs(root.gameId, text)
                 }
 
                 RowLayout {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 56
                     spacing: MD.Token.spacing.small
 
                     MD.TextField {
                         id: exeField
                         Layout.fillWidth: true
-                        Layout.preferredHeight: 56
-                        Layout.maximumHeight: 56
+                        type: MD.Enum.TextFieldFilled
+                        mdState.dense: true
                         placeholderText: qsTr("Custom executable (optional)")
                         onEditingFinished: Core.setGameExecutableOverride(root.gameId, text)
                     }
@@ -302,7 +307,9 @@ MD.BottomSheet {
 
             ColumnLayout {
                 id: metaCol
-                anchors.fill: parent
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
                 anchors.margins: MD.Token.spacing.medium
                 spacing: MD.Token.spacing.small
 

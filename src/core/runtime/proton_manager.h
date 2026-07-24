@@ -41,6 +41,15 @@ public:
     QString compatDataPathForGame(const QString& gameId) const;
     /** Path to SteamLinuxRuntime_sniper/run (or soldier) when installed; empty otherwise. */
     QString findSteamLinuxRuntime() const;
+    /** SOFL-style: ubuntu12_32/steam-runtime/run.sh (not Sniper/pressure-vessel). */
+    QString findLegacySteamRuntime() const;
+    /**
+     * False when the kernel/AppArmor blocks unprivileged user namespaces
+     * (pressure-vessel then fails with "bwrap: setting up uid map: Permission denied").
+     */
+    bool steamLinuxRuntimeUsable() const;
+    /** Ubuntu: aa-exec -p steam can borrow Steam's AppArmor userns permission. */
+    bool canAaExecSteamProfile() const;
 
     bool isDownloading() const { return m_downloading; }
     int downloadProgress() const { return m_downloadProgress; }
