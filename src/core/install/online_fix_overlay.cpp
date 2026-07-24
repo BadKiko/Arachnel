@@ -17,8 +17,11 @@ constexpr auto kDisabledSuffix = ".arachnel-off";
 
 const QStringList& overlayDllNames()
 {
-    static const QStringList names = {QStringLiteral("winmm.dll"), QStringLiteral("SteamFix64.dll"),
-                                      QStringLiteral("SteamFix32.dll"), QStringLiteral("EpicFix64.dll")};
+    // FreeTP-style (SteamFix/EpicFix) and Ryuu Online-Fix (OnlineFix64) — same pipeline.
+    static const QStringList names = {
+        QStringLiteral("winmm.dll"),         QStringLiteral("SteamFix64.dll"),
+        QStringLiteral("SteamFix32.dll"),    QStringLiteral("EpicFix64.dll"),
+        QStringLiteral("OnlineFix64.dll"),   QStringLiteral("OnlineFix32.dll")};
     return names;
 }
 
@@ -102,32 +105,46 @@ QString buildOverlayWineDllOverrides(const QString& overlayDir)
 #if defined(Q_OS_LINUX)
 QString steamClientRoot()
 {
+    // Prefer a root that actually has Steam client libs (Debian/.steam often wins over
+    // an empty ~/.local/share/Steam that only holds GE-Proton tools).
     const QString home = QDir::homePath();
     const QStringList candidates = {
-        home + QStringLiteral("/.local/share/Steam"),
         home + QStringLiteral("/.steam/steam"),
         home + QStringLiteral("/.steam/root"),
+        home + QStringLiteral("/.local/share/Steam"),
         home + QStringLiteral("/.var/app/com.valvesoftware.Steam/data/Steam"),
         home + QStringLiteral("/.var/app/com.valvesoftware.Steam/.local/share/Steam"),
     };
+    QString fallback;
     for (const QString& candidate : candidates) {
-        if (QDir(candidate).exists())
-            return candidate;
+        if (!QDir(candidate).exists())
+            continue;
+        if (fallback.isEmpty())
+            fallback = candidate;
+        if (QFileInfo::exists(candidate + QStringLiteral("/ubuntu12_64/gameoverlayrenderer.so"))
+            || QFileInfo::exists(candidate + QStringLiteral("/steam.sh"))
+            || QFileInfo::exists(candidate + QStringLiteral("/ubuntu12_32/steam")))
+            return QFileInfo(candidate).canonicalFilePath().isEmpty()
+                       ? candidate
+                       : QFileInfo(candidate).canonicalFilePath();
     }
-    return home + QStringLiteral("/.local/share/Steam");
+    return fallback.isEmpty() ? home + QStringLiteral("/.local/share/Steam") : fallback;
 }
 
 QString gameOverlayPreloadPaths()
 {
-    // SOFL hardcodes ~/.local/share/Steam; also try other Steam roots if .so lives there.
+    // SOFL: LD_PRELOAD both 32/64 gameoverlayrenderer from the real Steam install.
     QStringList soPaths;
     const QString home = QDir::homePath();
     const QStringList roots = {
-        home + QStringLiteral("/.local/share/Steam"),
         steamClientRoot(),
         home + QStringLiteral("/.steam/steam"),
+        home + QStringLiteral("/.steam/debian-installation"),
+        home + QStringLiteral("/.local/share/Steam"),
     };
     for (const QString& root : roots) {
+        if (root.isEmpty() || !QDir(root).exists())
+            continue;
         const QString so32 = root + QStringLiteral("/ubuntu12_32/gameoverlayrenderer.so");
         const QString so64 = root + QStringLiteral("/ubuntu12_64/gameoverlayrenderer.so");
         if (QFileInfo::exists(so32) && !soPaths.contains(so32))
@@ -155,6 +172,9 @@ void appendSteamOverlayEnvironment(LaunchInfo* info, const QString& fakeSteamId)
                                    QStringLiteral("true"));
     const QString overlayId = fakeSteamId.isEmpty() ? QStringLiteral("480") : fakeSteamId;
     info->environmentExtras.insert(QStringLiteral("SteamOverlayGameId"), overlayId);
+    // Help SteamFix/IPC find the same client SOFL uses.
+    info->environmentExtras.insert(QStringLiteral("SteamAppId"), overlayId);
+    info->environmentExtras.insert(QStringLiteral("SteamGameId"), overlayId);
 }
 #endif
 
@@ -164,7 +184,8 @@ bool dirHasActiveOverlay(const QDir& dir)
         if (dir.exists(name))
             return true;
     }
-    return dir.exists(QStringLiteral("SteamFix.ini")) || dir.exists(QStringLiteral("winmm.txt"));
+    return dir.exists(QStringLiteral("SteamFix.ini")) || dir.exists(QStringLiteral("OnlineFix.ini"))
+        || dir.exists(QStringLiteral("winmm.txt")) || dir.exists(QStringLiteral("dlllist.txt"));
 }
 
 bool dirHasDisabledOverlay(const QDir& dir)
@@ -238,7 +259,10 @@ QStringList findOverlayDirs(const QString& installPath)
         const QString fileName = fi.fileName();
         const bool match = fileName == QLatin1String("winmm.dll")
             || fileName == QLatin1String("SteamFix64.dll")
+            || fileName == QLatin1String("OnlineFix64.dll")
             || fileName == QLatin1String("SteamFix.ini")
+            || fileName == QLatin1String("OnlineFix.ini")
+            || fileName == QLatin1String("dlllist.txt")
             || fileName.endsWith(QLatin1String(kDisabledSuffix));
         if (!match)
             continue;
@@ -350,7 +374,9 @@ OnlineFixOverlayState detectOnlineFixOverlay(const QString& installPath)
     for (const QString& path : dirs) {
         const QDir dir(path);
         if (dir.exists(QStringLiteral("winmm.dll")) || dir.exists(QStringLiteral("SteamFix64.dll"))
-            || dir.exists(QStringLiteral("SteamFix32.dll"))) {
+            || dir.exists(QStringLiteral("SteamFix32.dll"))
+            || dir.exists(QStringLiteral("OnlineFix64.dll"))
+            || dir.exists(QStringLiteral("OnlineFix.ini"))) {
             state.enabled = true;
             state.overlayDir = path;
             break;
@@ -440,8 +466,10 @@ void applyOnlineFixLaunchInfo(const QString& installPath, LaunchInfo* info)
         }
     }
 
+    // SOFL: Proton + WINEDLLOVERRIDES + LD_PRELOAD. Optional legacy steam-runtime/run.sh —
+    // never SteamLinuxRuntime_sniper (bwrap/userns breaks under Ubuntu AppArmor).
     info->environmentExtras.insert(QStringLiteral("ARACHNEL_USE_STEAM_RUNTIME"),
-                                   QStringLiteral("1"));
+                                   QStringLiteral("legacy"));
 
     QString fakeAppId = QStringLiteral("480");
     const QString steamFixIni = QDir(overlayDir).filePath(QStringLiteral("SteamFix.ini"));
@@ -457,9 +485,14 @@ void applyOnlineFixLaunchInfo(const QString& installPath, LaunchInfo* info)
     }
 
 #if defined(Q_OS_LINUX)
-    if (!info->environmentExtras.contains(QStringLiteral("SteamOverlayGameId"))
-        && isSteamClientRunning()) {
-        appendSteamOverlayEnvironment(info, fakeAppId);
+    // Always attach overlay preload when OF is on (SOFL default use-steam-overlay).
+    appendSteamOverlayEnvironment(info, fakeAppId);
+    // Proton/Steam pick up AppID from steam_appid.txt next to the exe (SpaceWar = 480).
+    const QString appIdFile = QDir(overlayDir).filePath(QStringLiteral("steam_appid.txt"));
+    if (!QFileInfo::exists(appIdFile)) {
+        QFile out(appIdFile);
+        if (out.open(QIODevice::WriteOnly | QIODevice::Truncate))
+            out.write(fakeAppId.toUtf8());
     }
 #else
     Q_UNUSED(fakeAppId);

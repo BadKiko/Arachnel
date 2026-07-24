@@ -84,21 +84,16 @@ void LaunchController::launchGame(const QString& gameId)
 #if defined(Q_OS_LINUX)
         if (detectOnlineFixOverlay(gameCopy.installPath).enabled
             || info.environmentExtras.value(QStringLiteral("ARACHNEL_USE_STEAM_RUNTIME"))
+                   == QStringLiteral("legacy")
+            || info.environmentExtras.value(QStringLiteral("ARACHNEL_USE_STEAM_RUNTIME"))
                    == QStringLiteral("1")) {
             if (!isSteamClientRunning()) {
                 tryStartSteamClient();
                 if (m_hooks.notice) {
                     m_hooks.notice(QCoreApplication::translate(
                         "Core",
-                        "Steam must be running for Online Fix. Starting Steam — launch the game again once it is open."));
+                        "Steam is not running — Online Fix needs it for SpaceWar/overlay. Starting Steam…"));
                 }
-                return;
-            }
-            ProtonManager protonMgr;
-            if (protonMgr.findSteamLinuxRuntime().isEmpty() && m_hooks.notice) {
-                m_hooks.notice(QCoreApplication::translate(
-                    "Core",
-                    "Steam Linux Runtime (Sniper) not found. Install it from Steam for Online Fix overlay support."));
             }
         }
 #endif
