@@ -2321,6 +2321,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>Массив downloads пуст</translation>
     </message>
     <message>
+        <location filename="../src/core/catalog/catalog_parser.cpp" line="386" />
+        <source>Catalog entries array is empty</source>
+        <translation>Массив записей каталога пуст</translation>
+    </message>
+    <message>
         
         
         <location filename="../src/core/catalog/catalog_parser.cpp" line="314" />
