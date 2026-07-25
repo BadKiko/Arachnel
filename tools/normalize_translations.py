@@ -83,6 +83,7 @@ EN_TO_RU: dict[str, str] = {
     "Empty server response": "Пустой ответ сервера",
     "Invalid JSON": "Некорректный JSON",
     "No downloads array — not a Hydra catalog": "Нет массива downloads — это не каталог Hydra",
+    "Catalog entries array is empty": "Массив записей каталога пуст",
     "downloads array is empty": "Массив downloads пуст",
     "Catalog is empty or format not recognized": "Каталог пуст или формат не распознан",
     "FreeTP torrent catalog — magnet links and add-ons": "Торрент-каталог FreeTP — magnet-ссылки и дополнения",

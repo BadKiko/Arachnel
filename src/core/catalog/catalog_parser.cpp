@@ -99,6 +99,55 @@ CatalogEntry parseDownloadObject(const QJsonObject& obj, const QString& sourceId
     return entry;
 }
 
+/** Arachnel Ryuu / steamidra relay catalog entry (not Hydra downloads[]). */
+CatalogEntry parseRyuuEntryObject(const QJsonObject& obj, const QString& sourceId)
+{
+    CatalogEntry entry;
+    entry.title = obj.value(QStringLiteral("title")).toString();
+    entry.id = obj.value(QStringLiteral("id")).toString();
+    entry.sourceId = sourceId;
+    entry.steamAppId = obj.value(QStringLiteral("steamAppId")).toString();
+    entry.coverUrl = obj.value(QStringLiteral("coverUrl")).toString();
+    entry.description = obj.value(QStringLiteral("description")).toString();
+    entry.genres = obj.value(QStringLiteral("genres")).toString();
+    entry.sizeLabel = obj.value(QStringLiteral("sizeLabel")).toString();
+    if (entry.sizeLabel.isEmpty())
+        entry.sizeLabel = obj.value(QStringLiteral("fileSize")).toString();
+    entry.uploadDate = obj.value(QStringLiteral("uploadDate")).toString();
+    entry.version = obj.value(QStringLiteral("version")).toString();
+    if (entry.version.isEmpty() && !entry.uploadDate.isEmpty())
+        entry.version = entry.uploadDate.left(10);
+    entry.itemKind = CatalogItemKind::Game;
+    entry.metadataPending = false;
+
+    const int rawInstallKind = obj.value(QStringLiteral("installKind")).toInt(-1);
+    if (rawInstallKind >= static_cast<int>(InstallKind::PortableArchive)
+        && rawInstallKind <= static_cast<int>(InstallKind::FixDownload)) {
+        entry.installKind = static_cast<InstallKind>(rawInstallKind);
+    } else if (obj.value(QStringLiteral("needsOnlineFix")).toBool()) {
+        entry.installKind = InstallKind::BundledFix;
+    }
+
+    if (entry.id.isEmpty() && !entry.steamAppId.isEmpty())
+        entry.id = QStringLiteral("steam-%1").arg(entry.steamAppId);
+    if (entry.id.isEmpty())
+        entry.id = slugifyCatalogId(entry.title, sourceId);
+    if (entry.coverUrl.isEmpty() && !entry.steamAppId.isEmpty()) {
+        entry.coverUrl =
+            QStringLiteral("https://cdn.akamai.steamstatic.com/steam/apps/%1/header.jpg")
+                .arg(entry.steamAppId);
+    }
+
+    const QJsonArray addons = obj.value(QStringLiteral("addons")).toArray();
+    entry.addons.reserve(addons.size());
+    for (const QJsonValue& addonValue : addons) {
+        if (!addonValue.isObject())
+            continue;
+        entry.addons.append(parseComponent(addonValue.toObject(), sourceId, entry.id));
+    }
+    return entry;
+}
+
 QString normalizeMagnetBtih(QString btih)
 {
     btih = btih.trimmed();
@@ -261,27 +310,43 @@ QVector<CatalogEntry> parseCatalogFeed(const QByteArray& payload, const QString&
         return {};
 
     const QJsonObject root = document.object();
-    const QJsonArray downloads = root.value(QStringLiteral("downloads")).toArray();
     QVector<CatalogEntry> entries;
-    entries.reserve(downloads.size());
 
-    for (const QJsonValue& value : downloads) {
-        if (!value.isObject())
-            continue;
-        entries.append(parseDownloadObject(value.toObject(), sourceId));
+    // Hydra-compatible games.json
+    const QJsonArray downloads = root.value(QStringLiteral("downloads")).toArray();
+    if (!downloads.isEmpty()) {
+        entries.reserve(downloads.size());
+        for (const QJsonValue& value : downloads) {
+            if (!value.isObject())
+                continue;
+            entries.append(parseDownloadObject(value.toObject(), sourceId));
+        }
+        attachOrphanAddons(entries);
+        entries.erase(std::remove_if(entries.begin(), entries.end(),
+                                     [](const CatalogEntry& entry) {
+                                         return entry.itemKind != CatalogItemKind::Game;
+                                     }),
+                      entries.end());
+        deduplicateCatalogEntriesImpl(entries);
+        return entries;
     }
 
-    attachOrphanAddons(entries);
+    // Arachnel Ryuu relay / steamidra catalog ({ "entries": [ ... ] }).
+    QJsonArray ryuu = root.value(QStringLiteral("entries")).toArray();
+    if (ryuu.isEmpty())
+        ryuu = root.value(QStringLiteral("games")).toArray();
+    if (!ryuu.isEmpty()) {
+        entries.reserve(ryuu.size());
+        for (const QJsonValue& value : ryuu) {
+            if (!value.isObject())
+                continue;
+            entries.append(parseRyuuEntryObject(value.toObject(), sourceId));
+        }
+        deduplicateCatalogEntriesImpl(entries);
+        return entries;
+    }
 
-    entries.erase(std::remove_if(entries.begin(), entries.end(),
-                                 [](const CatalogEntry& entry) {
-                                     return entry.itemKind != CatalogItemKind::Game;
-                                 }),
-                  entries.end());
-
-    deduplicateCatalogEntriesImpl(entries);
-
-    return entries;
+    return {};
 }
 
 QString catalogFeedValidationError(const QByteArray& payload)
@@ -302,12 +367,24 @@ QString catalogFeedValidationError(const QByteArray& payload)
         return QCoreApplication::translate("Core", "Invalid JSON");
 
     const QJsonObject root = document.object();
-    if (!root.contains(QStringLiteral("downloads")))
+    const bool hydra = root.contains(QStringLiteral("downloads"));
+    const bool ryuu = root.contains(QStringLiteral("entries")) || root.contains(QStringLiteral("games"))
+        || root.value(QStringLiteral("catalogKind")).toString().contains(QStringLiteral("ryuu"),
+                                                                         Qt::CaseInsensitive);
+    if (!hydra && !ryuu)
         return QCoreApplication::translate("Core", "No downloads array — not a Hydra catalog");
 
-    const QJsonArray downloads = root.value(QStringLiteral("downloads")).toArray();
-    if (downloads.isEmpty())
-        return QCoreApplication::translate("Core", "downloads array is empty");
+    if (hydra) {
+        const QJsonArray downloads = root.value(QStringLiteral("downloads")).toArray();
+        if (downloads.isEmpty())
+            return QCoreApplication::translate("Core", "downloads array is empty");
+    } else {
+        QJsonArray entries = root.value(QStringLiteral("entries")).toArray();
+        if (entries.isEmpty())
+            entries = root.value(QStringLiteral("games")).toArray();
+        if (entries.isEmpty())
+            return QCoreApplication::translate("Core", "Catalog entries array is empty");
+    }
 
     const QVector<CatalogEntry> entries = parseCatalogFeed(payload, QStringLiteral("probe"));
     if (entries.isEmpty())
