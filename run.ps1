@@ -474,6 +474,39 @@ function Test-QtRuntimeDeployed {
     return $true
 }
 
+function Assert-QmlModulePluginsPresent {
+    param([string]$QmlModulesDir)
+
+    if (-not (Test-Path -LiteralPath $QmlModulesDir)) { return }
+
+    $missing = @()
+    Get-ChildItem -LiteralPath $QmlModulesDir -Recurse -Filter "qmldir" -File | ForEach-Object {
+        $dir = $_.Directory.FullName
+        foreach ($line in Get-Content -LiteralPath $_.FullName) {
+            if ($line -match '^\s*plugin\s+(\S+)') {
+                $name = $Matches[1]
+                $candidates = @(
+                    (Join-Path $dir "$name.dll"),
+                    (Join-Path $dir "lib$name.dll"),
+                    (Join-Path $dir "lib$name.so"),
+                    (Join-Path $dir "$name.so")
+                )
+                $found = $false
+                foreach ($c in $candidates) {
+                    if (Test-Path -LiteralPath $c) { $found = $true; break }
+                }
+                if (-not $found) {
+                    $missing += "$($_.FullName): plugin '$name' not found next to qmldir"
+                }
+            }
+        }
+    }
+
+    if ($missing.Count -gt 0) {
+        throw ("QML module plugin(s) missing from package:`n  " + ($missing -join "`n  "))
+    }
+}
+
 function Deploy-QtRuntime {
     param(
         [hashtable]$Qt,
@@ -551,6 +584,7 @@ Imports=qml
     $qmlModulesBuilt = Join-Path $BUILD_DIR "qml_modules"
     if (Test-Path -LiteralPath $qmlModulesBuilt) {
         Copy-Item -LiteralPath $qmlModulesBuilt -Destination (Join-Path $DIST_DIR "qml_modules") -Recurse -Force
+        Assert-QmlModulePluginsPresent -QmlModulesDir (Join-Path $DIST_DIR "qml_modules")
     }
 
     $windeployqt = Join-Path $plan.Qt.Prefix "bin\windeployqt.exe"

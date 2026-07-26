@@ -156,6 +156,31 @@ if (Test-Path -LiteralPath $qmlModulesBuilt) {
     Copy-Item -LiteralPath $qmlModulesBuilt -Destination (Join-Path $RUNTIME_DIR "qml_modules") -Recurse -Force
 }
 
+# Fail packaging if a qmldir references a plugin DLL that was not copied (see v0.1.31 Layouts break).
+$packagedQmlModules = Join-Path $RUNTIME_DIR "qml_modules"
+if (Test-Path -LiteralPath $packagedQmlModules) {
+    $missing = @()
+    Get-ChildItem -LiteralPath $packagedQmlModules -Recurse -Filter "qmldir" -File | ForEach-Object {
+        $dir = $_.Directory.FullName
+        foreach ($line in Get-Content -LiteralPath $_.FullName) {
+            if ($line -match '^\s*plugin\s+(\S+)') {
+                $name = $Matches[1]
+                $candidates = @(
+                    (Join-Path $dir "$name.dll"),
+                    (Join-Path $dir "lib$name.dll"),
+                    (Join-Path $dir "lib$name.so")
+                )
+                $ok = $false
+                foreach ($c in $candidates) { if (Test-Path -LiteralPath $c) { $ok = $true; break } }
+                if (-not $ok) { $missing += "$($_.FullName): missing plugin $name" }
+            }
+        }
+    }
+    if ($missing.Count -gt 0) {
+        throw ("QML module plugin(s) missing from installer runtime:`n  " + ($missing -join "`n  "))
+    }
+}
+
 $runtimeExe = Join-Path $RUNTIME_DIR "arachnel_setup.exe"
 Write-Host "Deploying Qt runtime for installer ..."
 & $windeployqt --qmldir $SETUP_QML --qmldir $qmlModulesBuilt --no-translations $runtimeExe
