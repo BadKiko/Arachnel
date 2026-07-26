@@ -220,6 +220,9 @@ void CoreController::initializeServices()
     updateHooks.entryHasActiveJob = [this](const QString& entryId) {
         return entryHasActiveJob(entryId);
     };
+    updateHooks.updateCatalogEntry = [this](const QString& entryId) {
+        updateCatalogEntry(entryId);
+    };
     m_gameUpdates = new GameUpdateService(&m_libraryStore, &m_settings, m_pluginHost,
                                           m_jobOrchestrator, &m_catalogCache, std::move(updateHooks));
 

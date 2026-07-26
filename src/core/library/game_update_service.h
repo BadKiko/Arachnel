@@ -21,6 +21,7 @@ public:
         std::function<void()> refreshCatalog;
         std::function<bool(const QString&)> entryPlayable;
         std::function<bool(const QString&)> entryHasActiveJob;
+        std::function<void(const QString&)> updateCatalogEntry;
     };
 
     GameUpdateService(LibraryStore* store, SettingsStore* settings, PluginHost* plugins,

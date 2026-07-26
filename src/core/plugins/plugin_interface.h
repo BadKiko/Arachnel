@@ -37,7 +37,7 @@ struct InstallContext {
     QString protonExecutable;
     QString compatDataPath;
     QString steamCompatClientPath;
-    /** Optional plugin hint (unused by current plugins; reserved). */
+    /** Plugin hint: "update" forces re-download for owns_download sources. */
     QString installMode;
 };
 

@@ -188,7 +188,6 @@ void CoreController::installCatalogEntry(const QString& entryId, const QString& 
                                          const QVariantList& addonIdsVariant,
                                          const QString& installMode)
 {
-    Q_UNUSED(installMode);
     if (!ensureProtonReady())
         return;
 
@@ -228,11 +227,16 @@ void CoreController::installCatalogEntry(const QString& entryId, const QString& 
             return;
         }
 
-        const QString jobId =
-            m_jobOrchestrator->startPluginOwnedDownload(entry, JobKind::Download, libId);
+        const bool isUpdate =
+            installMode.compare(QStringLiteral("update"), Qt::CaseInsensitive) == 0;
+        const JobKind kind = isUpdate ? JobKind::Update : JobKind::Download;
+        const QString jobId = m_jobOrchestrator->startPluginOwnedDownload(entry, kind, libId);
         if (jobId.isEmpty()) {
-            showNotice(
-                QCoreApplication::translate("Core", "Could not start download for %1").arg(entry.title));
+            showNotice(isUpdate
+                           ? QCoreApplication::translate("Core", "Could not start update for %1")
+                                 .arg(entry.title)
+                           : QCoreApplication::translate("Core", "Could not start download for %1")
+                                 .arg(entry.title));
             return;
         }
 
@@ -248,18 +252,24 @@ void CoreController::installCatalogEntry(const QString& entryId, const QString& 
             m_jobOrchestrator->startAddonDownload(entry, *addon);
         }
 
+        const LibraryGame* existing = m_libraryStore.gameById(entry.id);
         InstallContext ctx;
         ctx.jobId = jobId;
         ctx.entryId = entry.id;
         ctx.sourceId = entry.sourceId;
         ctx.title = entry.title;
-        ctx.targetPath = m_settings.resolvedLibraryRoot(libId) + QLatin1Char('/') + entry.id;
+        ctx.targetPath =
+            existing && !existing->installPath.isEmpty() && QDir(existing->installPath).exists()
+                ? existing->installPath
+                : m_settings.gameDirFor(libId, entry.id);
         ctx.downloadsPath = m_settings.resolvedDownloadsRoot(libId);
-        ctx.downloadPath = ctx.downloadsPath + QLatin1Char('/') + QStringLiteral("install/") + entry.id;
+        ctx.downloadPath =
+            ctx.downloadsPath + QLatin1Char('/')
+            + (isUpdate ? QStringLiteral("update/") : QStringLiteral("install/")) + entry.id;
         ctx.magnetUri = entry.steamAppId;
         ctx.uploadDate = entry.uploadDate;
         ctx.installKind = entry.installKind;
-        ctx.installMode.clear();
+        ctx.installMode = isUpdate ? QStringLiteral("update") : installMode;
 
         m_pluginHost->runOwnedDownloadAsync(
             plugin, ctx,
@@ -338,7 +348,7 @@ void CoreController::updateCatalogEntry(const QString& entryId)
                                                             : m_settings.defaultLibraryId();
 
     if (m_pluginHost && m_pluginHost->pluginOwnsDownload(entry->sourceId)) {
-        installCatalogEntry(entryId, libId, {});
+        installCatalogEntry(entryId, libId, {}, QStringLiteral("update"));
         return;
     }
 
