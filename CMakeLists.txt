@@ -54,11 +54,14 @@ if(Python3_FOUND)
 endif()
 
 include(FetchContent)
+# Pin QmlMaterial: floating `main` pulled Qcm.Material.Layouts (Jul 2026) without
+# packaging the layouts plugin DLL into Setup/AppImage → QML fail on startup.
+# 7bb1dcd is the last known-good revision used by v0.1.30b-era builds.
 FetchContent_Declare(
     qml_material
     GIT_REPOSITORY https://github.com/hypengw/QmlMaterial.git
-    GIT_TAG main
-    GIT_SHALLOW TRUE
+    GIT_TAG 7bb1dcd008a941909df958e92be5212764a857f6
+    GIT_SHALLOW FALSE
     EXCLUDE_FROM_ALL
     PATCH_COMMAND ${CMAKE_COMMAND} -DSRC=<SOURCE_DIR> -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/patch-qml-material-win.cmake
 )
