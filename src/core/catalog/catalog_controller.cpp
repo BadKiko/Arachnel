@@ -75,7 +75,8 @@ CatalogController::CatalogController(CatalogModel* catalog, SourcePluginModel* s
 
 bool CatalogController::catalogLoading() const
 {
-    return !m_loadingSourceIds.isEmpty() || m_catalogHttpLoadActive;
+    return !m_loadingSourceIds.isEmpty() || m_catalogHttpLoadActive
+           || !m_inFlightPluginCatalogWatchers.isEmpty();
 }
 QString CatalogController::catalogStatus() const { return m_catalogStatus; }
 QString CatalogController::activeCatalogSourceId() const { return m_activeSourceIds.value(0); }
@@ -404,14 +405,27 @@ void CatalogController::startNextCatalogPrefetch()
 
 void CatalogController::waitForInFlightPluginCatalogLoads()
 {
+    // Stop scheduling more plugin->catalog() work before we block.
+    m_catalogPrefetchQueue.clear();
+
     // Snapshot — finished handlers may mutate the list while we wait.
     const QList<QObject*> watchers = m_inFlightPluginCatalogWatchers;
     for (QObject* obj : watchers) {
         auto* watcher = dynamic_cast<QFutureWatcher<QVector<CatalogEntry>>*>(obj);
         if (!watcher)
             continue;
+        // Drop queued finished handlers so they cannot start the next prefetch after unload.
+        QObject::disconnect(watcher, &QFutureWatcher<QVector<CatalogEntry>>::finished, this,
+                            nullptr);
         watcher->waitForFinished();
+        m_inFlightPluginCatalogWatchers.removeAll(watcher);
+        watcher->deleteLater();
     }
+}
+
+bool CatalogController::hasInFlightPluginCatalogLoads() const
+{
+    return !m_inFlightPluginCatalogWatchers.isEmpty();
 }
 
 } // namespace arachnel::core
