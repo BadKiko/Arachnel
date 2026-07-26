@@ -95,12 +95,22 @@ void GameUpdateService::runAutoInstallUpdates()
             || (m_hooks.entryHasActiveJob && m_hooks.entryHasActiveJob(game.id)))
             continue;
         for (const CatalogEntry& entry : *m_catalog) {
-            if (entry.id == game.id) {
-                started += !m_jobs->startCatalogDownload(
-                    entry, JobKind::Update,
-                    game.libraryId.isEmpty() ? m_settings->defaultLibraryId() : game.libraryId).isEmpty();
-                break;
+            if (entry.id != game.id)
+                continue;
+            const QString libId =
+                game.libraryId.isEmpty() ? m_settings->defaultLibraryId() : game.libraryId;
+            if (m_plugins && m_plugins->pluginOwnsDownload(entry.sourceId)) {
+                if (m_hooks.updateCatalogEntry) {
+                    m_hooks.updateCatalogEntry(entry.id);
+                    ++started;
+                }
+            } else {
+                started +=
+                    !m_jobs
+                         ->startCatalogDownload(entry, JobKind::Update, libId)
+                         .isEmpty();
             }
+            break;
         }
     }
     if (started && m_hooks.notice)
