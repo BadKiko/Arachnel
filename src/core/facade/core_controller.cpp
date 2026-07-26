@@ -229,6 +229,10 @@ CoreController::CoreController(QObject* parent)
     }
 
     QTimer::singleShot(5000, this, [this]() { scheduleOfficialPluginAutoUpdate(); });
+    connect(&m_settings, &SettingsStore::onboardingCompletedChanged, this, [this]() {
+        if (m_settings.onboardingCompleted())
+            QTimer::singleShot(1500, this, [this]() { scheduleOfficialPluginAutoUpdate(); });
+    });
 }
 
 

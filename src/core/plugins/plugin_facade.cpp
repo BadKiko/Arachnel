@@ -196,6 +196,10 @@ void CoreController::scheduleOfficialPluginAutoUpdate()
 {
     if (!m_pluginCatalog || !m_pluginHost)
         return;
+    // Onboarding already refreshes the official catalog; overlapping refresh() used to
+    // abort the in-flight QNetworkReply while its finished handler still ran (null write).
+    if (!m_settings.onboardingCompleted())
+        return;
 
     connect(m_pluginCatalog, &PluginCatalogService::pluginsChanged, this,
             &CoreController::runOfficialPluginAutoUpdate, Qt::SingleShotConnection);
@@ -208,7 +212,9 @@ void CoreController::runOfficialPluginAutoUpdate()
         return;
 
     // Don't unload plugin DLLs while QtConcurrent is still inside plugin->catalog().
-    if (m_catalogController && m_catalogController->catalogLoading()) {
+    if (m_catalogController
+        && (m_catalogController->catalogLoading()
+            || m_catalogController->hasInFlightPluginCatalogLoads())) {
         QTimer::singleShot(1500, this, &CoreController::runOfficialPluginAutoUpdate);
         return;
     }

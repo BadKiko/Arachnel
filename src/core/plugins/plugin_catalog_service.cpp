@@ -88,6 +88,8 @@ void PluginCatalogService::setError(const QString& message)
 void PluginCatalogService::refresh()
 {
     if (m_catalogReply) {
+        // Capture-by-reply below; disconnect so an aborted reply cannot steal the new one.
+        QObject::disconnect(m_catalogReply, nullptr, this, nullptr);
         m_catalogReply->abort();
         m_catalogReply->deleteLater();
         m_catalogReply = nullptr;
@@ -102,16 +104,18 @@ void PluginCatalogService::refresh()
     request.setHeader(QNetworkRequest::UserAgentHeader,
                       QStringLiteral("Arachnel/%1").arg(QCoreApplication::applicationVersion()));
 
-    m_catalogReply = m_network->get(request);
-    connect(m_catalogReply, &QNetworkReply::finished, this, [this]() {
-        QNetworkReply* reply = m_catalogReply;
-        m_catalogReply = nullptr;
+    QNetworkReply* reply = m_network->get(request);
+    m_catalogReply = reply;
+    connect(reply, &QNetworkReply::finished, this, [this, reply]() {
+        if (m_catalogReply == reply)
+            m_catalogReply = nullptr;
         setLoading(false);
-        if (!reply)
-            return;
-
         reply->deleteLater();
+
         if (reply->error() != QNetworkReply::NoError) {
+            // Superseded/aborted refresh — keep current list, don't wipe UI.
+            if (reply->error() == QNetworkReply::OperationCanceledError)
+                return;
             setError(QCoreApplication::translate("Core", "Could not load plugin list: %1")
                          .arg(reply->errorString()));
             m_plugins.clear();
@@ -239,6 +243,7 @@ void PluginCatalogService::processInstallQueue()
 void PluginCatalogService::downloadAndInstall(const QVariantMap& entry)
 {
     if (m_downloadReply) {
+        QObject::disconnect(m_downloadReply, nullptr, this, nullptr);
         m_downloadReply->abort();
         m_downloadReply->deleteLater();
         m_downloadReply = nullptr;
@@ -273,41 +278,36 @@ void PluginCatalogService::downloadAndInstall(const QVariantMap& entry)
     request.setHeader(QNetworkRequest::UserAgentHeader,
                       QStringLiteral("Arachnel/%1").arg(QCoreApplication::applicationVersion()));
 
-    m_downloadReply = m_network->get(request);
-    connect(m_downloadReply, &QNetworkReply::downloadProgress, this,
-            [this](qint64 received, qint64 total) {
+    QNetworkReply* reply = m_network->get(request);
+    m_downloadReply = reply;
+    connect(reply, &QNetworkReply::downloadProgress, this,
+            [this, reply](qint64 received, qint64 total) {
+                if (m_downloadReply != reply)
+                    return;
                 if (total > 0)
                     setDownloadProgress(static_cast<int>((received * 100) / total));
             });
-    connect(m_downloadReply, &QNetworkReply::readyRead, this, [this, outFile, hasher]() {
-        if (!m_downloadReply || !outFile)
+    connect(reply, &QNetworkReply::readyRead, this, [this, reply, outFile, hasher]() {
+        if (m_downloadReply != reply || !outFile)
             return;
-        const QByteArray chunk = m_downloadReply->readAll();
+        const QByteArray chunk = reply->readAll();
         if (chunk.isEmpty())
             return;
         hasher->addData(chunk);
         outFile->write(chunk);
     });
-    connect(m_downloadReply, &QNetworkReply::finished, this,
-            [this, expectedSha, pluginId, outFile, hasher, path]() {
-                QNetworkReply* reply = m_downloadReply;
-                m_downloadReply = nullptr;
+    connect(reply, &QNetworkReply::finished, this,
+            [this, reply, expectedSha, pluginId, outFile, hasher, path]() {
+                if (m_downloadReply == reply)
+                    m_downloadReply = nullptr;
                 const auto cleanup = qScopeGuard([outFile, hasher, reply]() {
                     if (outFile) {
                         outFile->close();
                         outFile->deleteLater();
                     }
                     delete hasher;
-                    if (reply)
-                        reply->deleteLater();
+                    reply->deleteLater();
                 });
-
-                if (!reply) {
-                    QFile::remove(path);
-                    finishInstallAttempt(pluginId, false,
-                                         QCoreApplication::translate("Core", "Download failed"));
-                    return;
-                }
 
                 // Flush any remaining buffered bytes.
                 const QByteArray rest = reply->readAll();
@@ -319,6 +319,11 @@ void PluginCatalogService::downloadAndInstall(const QVariantMap& entry)
 
                 if (reply->error() != QNetworkReply::NoError) {
                     QFile::remove(path);
+                    if (reply->error() == QNetworkReply::OperationCanceledError) {
+                        finishInstallAttempt(pluginId, false,
+                                             QCoreApplication::translate("Core", "Download failed"));
+                        return;
+                    }
                     const QString err =
                         QCoreApplication::translate("Core", "Download failed: %1")
                             .arg(reply->errorString());
