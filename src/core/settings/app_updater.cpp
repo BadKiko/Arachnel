@@ -122,19 +122,23 @@ void AppUpdater::checkForUpdates(bool notifyIfUpToDate)
     request.setRawHeader("Accept", "application/vnd.github+json");
 
     if (m_activeReply) {
+        QObject::disconnect(m_activeReply, nullptr, this, nullptr);
         m_activeReply->abort();
         m_activeReply->deleteLater();
         m_activeReply = nullptr;
     }
 
-    m_activeReply = m_network->get(request);
-    connect(m_activeReply, &QNetworkReply::finished, this, [this, notifyIfUpToDate]() {
-        QNetworkReply* reply = m_activeReply;
-        m_activeReply = nullptr;
+    QNetworkReply* reply = m_network->get(request);
+    m_activeReply = reply;
+    connect(reply, &QNetworkReply::finished, this, [this, reply, notifyIfUpToDate]() {
+        if (m_activeReply == reply)
+            m_activeReply = nullptr;
         reply->deleteLater();
         setChecking(false);
 
         if (reply->error() != QNetworkReply::NoError) {
+            if (reply->error() == QNetworkReply::OperationCanceledError)
+                return;
             const QString error = QCoreApplication::translate("Core", "Update check failed: %1")
                                       .arg(reply->errorString());
             setLastError(error);
@@ -256,14 +260,18 @@ void AppUpdater::startDownload(const QUrl& url)
                          QNetworkRequest::NoLessSafeRedirectPolicy);
 
     if (m_activeReply) {
+        QObject::disconnect(m_activeReply, nullptr, this, nullptr);
         m_activeReply->abort();
         m_activeReply->deleteLater();
         m_activeReply = nullptr;
     }
 
-    m_activeReply = m_network->get(request);
-    connect(m_activeReply, &QNetworkReply::downloadProgress, this,
-            [this](qint64 received, qint64 total) {
+    QNetworkReply* reply = m_network->get(request);
+    m_activeReply = reply;
+    connect(reply, &QNetworkReply::downloadProgress, this,
+            [this, reply](qint64 received, qint64 total) {
+                if (m_activeReply != reply)
+                    return;
                 m_downloadBytesTotal = total;
                 if (total > 0)
                     m_downloadProgress = static_cast<int>((received * 100) / total);
@@ -271,29 +279,28 @@ void AppUpdater::startDownload(const QUrl& url)
                     m_downloadProgress = 0;
                 emit downloadProgressChanged();
             });
-    connect(m_activeReply, &QNetworkReply::readyRead, this, [this, outFile]() {
-        if (!m_activeReply || !outFile)
+    connect(reply, &QNetworkReply::readyRead, this, [this, reply, outFile]() {
+        if (m_activeReply != reply || !outFile)
             return;
-        outFile->write(m_activeReply->readAll());
+        outFile->write(reply->readAll());
     });
 
-    connect(m_activeReply, &QNetworkReply::finished, this, [this, outFile, targetPath]() {
-        QNetworkReply* reply = m_activeReply;
-        m_activeReply = nullptr;
+    connect(reply, &QNetworkReply::finished, this, [this, reply, outFile, targetPath]() {
+        if (m_activeReply == reply)
+            m_activeReply = nullptr;
 
-        if (reply)
-            outFile->write(reply->readAll());
+        outFile->write(reply->readAll());
         outFile->close();
         outFile->deleteLater();
-        if (reply)
-            reply->deleteLater();
+        reply->deleteLater();
 
-        if (!reply || reply->error() != QNetworkReply::NoError) {
+        if (reply->error() != QNetworkReply::NoError) {
             QFile::remove(targetPath);
             setDownloading(false);
+            if (reply->error() == QNetworkReply::OperationCanceledError)
+                return;
             const QString error = QCoreApplication::translate("Core", "Download failed: %1")
-                                      .arg(reply ? reply->errorString()
-                                                 : QCoreApplication::translate("Core", "Unknown error"));
+                                      .arg(reply->errorString());
             setLastError(error);
             setStatusText(error);
             emit updateFailed(error);

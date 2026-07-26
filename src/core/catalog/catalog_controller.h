@@ -63,6 +63,7 @@ public:
     void prefetchCatalogCounts();
     /** Block until in-flight plugin->catalog() futures finish (call before unloading DLLs). */
     void waitForInFlightPluginCatalogLoads();
+    bool hasInFlightPluginCatalogLoads() const;
 
 signals:
     void catalogLoadingChanged(bool loading);
