@@ -6,6 +6,7 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
+#include <QSet>
 #include <QUrl>
 #include <QVariant>
 
@@ -119,16 +120,32 @@ QVector<int> CatalogDiscoveryService::indicesForEntryIds(const QStringList& entr
         return indices;
 
     QHash<QString, int> idToIndex;
+    QHash<QString, int> steamToIndex;
     idToIndex.reserve(m_cache->size());
-    for (int i = 0; i < m_cache->size(); ++i)
-        idToIndex.insert(m_cache->at(i).id, i);
+    steamToIndex.reserve(m_cache->size());
+    for (int i = 0; i < m_cache->size(); ++i) {
+        const CatalogEntry& entry = m_cache->at(i);
+        idToIndex.insert(entry.id, i);
+        if (!entry.steamAppId.isEmpty())
+            steamToIndex.insert(entry.steamAppId, i);
+    }
 
     indices.reserve(entryIds.size());
+    QSet<int> seen;
     for (const QString& id : entryIds) {
+        int index = -1;
         const auto it = idToIndex.constFind(id);
-        if (it == idToIndex.cend())
+        if (it != idToIndex.cend()) {
+            index = it.value();
+        } else if (id.startsWith(QLatin1String("steam-"))) {
+            const auto sit = steamToIndex.constFind(id.mid(6));
+            if (sit != steamToIndex.cend())
+                index = sit.value();
+        }
+        if (index < 0 || seen.contains(index))
             continue;
-        indices.append(it.value());
+        seen.insert(index);
+        indices.append(index);
     }
     return indices;
 }

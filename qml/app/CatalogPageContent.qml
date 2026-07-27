@@ -154,18 +154,8 @@ Item {
                     }
 
                     footer: Item {
-                        width: discoveryList.width - discoveryList.leftMargin - discoveryList.rightMargin
-                        height: showDiscoveryShelves ? browseAllFooter.implicitHeight + MD.Token.spacing.medium : 0
-
-                        MD.Button {
-                            id: browseAllFooter
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            anchors.bottom: parent.bottom
-                            visible: showDiscoveryShelves
-                            mdState.type: MD.Enum.BtOutlined
-                            text: qsTr("All games")
-                            onClicked: page.browseAllMode = true
-                        }
+                        width: 1
+                        height: 0
                     }
                 }
 

@@ -130,21 +130,11 @@ Item {
                     typescale: MD.Token.typescale.body_medium
                 }
 
-                RowLayout {
-                    spacing: MD.Token.spacing.small
+                MD.Button {
                     Layout.topMargin: MD.Token.spacing.extra_small
-
-                    MD.Button {
-                        mdState.type: MD.Enum.BtFilled
-                        text: qsTr("View game")
-                        onClicked: if (featured) root.openGame(featured.entryId)
-                    }
-
-                    MD.Button {
-                        mdState.type: MD.Enum.BtTonal
-                        text: qsTr("All games")
-                        onClicked: page.browseAllMode = true
-                    }
+                    mdState.type: MD.Enum.BtFilled
+                    text: qsTr("View game")
+                    onClicked: if (featured) root.openGame(featured.entryId)
                 }
             }
 

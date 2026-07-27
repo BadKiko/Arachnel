@@ -56,7 +56,9 @@ void CatalogCoverCoordinator::warmCatalogCovers(const QString& sourceId, const Q
     for (CatalogEntry& entry : m_entries()) {
         if (entry.sourceId != sourceId || (!needle.isEmpty() && !entry.titleLower.contains(needle)))
             continue;
-        if (entry.coverUrl.startsWith(QStringLiteral("file:"))) {
+        if (!entry.steamAppId.isEmpty()) {
+            requestCatalogCover(entry.id);
+        } else if (entry.coverUrl.startsWith(QStringLiteral("file:"))) {
             m_catalog->notifyEntryChanged(entry.id);
         } else if (entry.coverUrl.isEmpty()) {
             requestCatalogCover(entry.id);
@@ -123,7 +125,24 @@ void CatalogCoverCoordinator::ensureDiskCover(const QString& entryId, const QStr
 void CatalogCoverCoordinator::requestCatalogCover(const QString& entryId)
 {
     CatalogEntry* entry = m_findEntry ? m_findEntry(entryId) : nullptr;
-    if (!entry || entry->coverUrl.startsWith(QStringLiteral("file:")))
+    if (!entry)
+        return;
+
+    // Prefer Steam library capsule whenever we know the app id (skip plugin covers).
+    if (!entry->steamAppId.isEmpty()) {
+        const QString steamCover =
+            QStringLiteral(
+                "https://cdn.akamai.steamstatic.com/steam/apps/%1/library_600x900_2x.jpg")
+                .arg(entry->steamAppId);
+        if (!entry->metadataPending) {
+            entry->metadataPending = true;
+            m_catalog->notifyEntryChanged(entryId);
+        }
+        ensureDiskCover(entryId, steamCover);
+        return;
+    }
+
+    if (entry->coverUrl.startsWith(QStringLiteral("file:")))
         return;
 
     if (isRemoteLibraryCover(entry->coverUrl)) {
