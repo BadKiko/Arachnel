@@ -37,6 +37,52 @@ Item {
         }) })
     }
 
+    function pickRandomFromShelves() {
+        const shelves = [
+            Core.catalogDiscovery.onFireShelf,
+            Core.catalogDiscovery.friendsShelf,
+            Core.catalogDiscovery.newShelf
+        ]
+        const pool = []
+        for (let s = 0; s < shelves.length; ++s) {
+            const shelf = shelves[s]
+            if (!shelf || shelf.count <= 0)
+                continue
+            for (let i = 0; i < shelf.count; ++i)
+                pool.push(shelf.entryInfo(i))
+        }
+        if (!pool.length)
+            return
+        const pick = pool[Math.floor(Math.random() * pool.length)]
+        if (pick && pick.entryId)
+            page.openGame(pick.entryId)
+    }
+
+    function openShortInstallCatalog() {
+        // Size band 2 = 1–5 GB in catalog filters (closest “short install” preset).
+        Core.applyCatalogPresentation(Core.catalog.sortMode, -1, 2, 0, false, "", 0)
+        page.openFullCatalog("")
+    }
+
+    function showFriendsMood() {
+        Core.catalogDiscovery.moodId = "friends"
+        discoveryFlick.contentY = 0
+    }
+
+    readonly property bool discoveryShelvesEmpty:
+        Core.catalogDiscovery.onFireShelf.count === 0
+        && Core.catalogDiscovery.friendsShelf.count === 0
+        && Core.catalogDiscovery.newShelf.count === 0
+    readonly property bool discoveryShowSkeleton: Core.catalogDiscovery.loading
+                                                  || (Core.catalogLoading && discoveryShelvesEmpty)
+    readonly property bool discoveryNoFeed: !Core.catalogDiscovery.feedLoaded
+                                            && !Core.catalogDiscovery.loading
+                                            && !Core.catalogLoading
+    readonly property bool discoveryEmptyShelves: Core.catalogDiscovery.feedLoaded
+                                                  && discoveryShelvesEmpty
+                                                  && !Core.catalogDiscovery.loading
+                                                  && !Core.catalogLoading
+
     Loader {
         id: catalogIntroHeightProbe
         visible: false
@@ -62,14 +108,16 @@ Item {
             anchors.topMargin: MD.Token.spacing.medium
             z: 4
             layer.enabled: true
+            visible: !page.discoveryMode
+            height: visible ? implicitHeight : 0
             page: content.page
             pageMargin: page.pageMargin
         }
 
         Item {
             id: catalogScrollClip
-            anchors.top: catalogStickyToolbar.bottom
-            anchors.topMargin: MD.Token.spacing.small
+            anchors.top: page.discoveryMode ? parent.top : catalogStickyToolbar.bottom
+            anchors.topMargin: page.discoveryMode ? MD.Token.spacing.medium : MD.Token.spacing.small
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.bottom: parent.bottom
@@ -89,20 +137,104 @@ Item {
                     width: discoveryFlick.width
                     height: contentHeight
                     interactive: false
-                    spacing: MD.Token.spacing.large
+                    spacing: MD.Token.spacing.extra_large
                     leftMargin: page.pageMargin
                     rightMargin: page.pageMargin
                     topMargin: MD.Token.spacing.small
-                    bottomMargin: MD.Token.spacing.large
+                    bottomMargin: MD.Token.spacing.extra_large
 
                     header: Column {
                         width: discoveryList.width - discoveryList.leftMargin - discoveryList.rightMargin
-                        spacing: MD.Token.spacing.small
+                        spacing: MD.Token.spacing.large
 
                         CatalogDiscoveryHeader {
                             width: parent.width
                             page: content.page
                             onBrowseAllRequested: page.openFullCatalog("")
+                            onHelpMePickRequested: content.openPlayPicker()
+                            onSurpriseRequested: content.pickRandomFromShelves()
+                            onShortSessionRequested: content.openShortInstallCatalog()
+                            onFriendsRequested: content.showFriendsMood()
+                        }
+
+                        CatalogDiscoveryHero {
+                            width: parent.width
+                            visible: !content.discoveryShowSkeleton && !content.discoveryNoFeed
+                                     && Core.catalogDiscovery.onFireShelf.count > 0
+                                     && !Core.catalogDiscovery.moodActive
+                            page: content.page
+                            shelfModel: Core.catalogDiscovery.onFireShelf
+                            onOpenGame: function (id) { page.openGame(id) }
+                            onSurpriseRequested: content.pickRandomFromShelves()
+                        }
+
+                        CatalogDiscoverySkeleton {
+                            width: parent.width
+                            visible: content.discoveryShowSkeleton
+                            page: content.page
+                        }
+
+                        Column {
+                            width: parent.width
+                            visible: content.discoveryNoFeed
+                            spacing: MD.Token.spacing.small
+
+                            MD.Label {
+                                width: parent.width
+                                text: qsTr("Couldn't load discovery")
+                                typescale: MD.Token.typescale.title_medium
+                            }
+
+                            MD.Label {
+                                width: parent.width
+                                text: qsTr("Check your connection, or open All games.")
+                                wrapMode: Text.WordWrap
+                                color: MD.Token.color.on_surface_variant
+                                typescale: MD.Token.typescale.body_medium
+                            }
+
+                            MD.Button {
+                                mdState.type: MD.Enum.BtFilledTonal
+                                text: qsTr("All games")
+                                onClicked: page.openFullCatalog("")
+                            }
+                        }
+
+                        Column {
+                            width: parent.width
+                            visible: content.discoveryEmptyShelves
+                            spacing: MD.Token.spacing.small
+
+                            MD.Label {
+                                width: parent.width
+                                text: qsTr("No matching games in your catalog")
+                                typescale: MD.Token.typescale.title_medium
+                            }
+
+                            MD.Label {
+                                width: parent.width
+                                text: qsTr("Discovery loaded, but none of these titles are in your enabled sources yet.")
+                                wrapMode: Text.WordWrap
+                                color: MD.Token.color.on_surface_variant
+                                typescale: MD.Token.typescale.body_medium
+                            }
+                        }
+
+                        MD.Label {
+                            width: parent.width
+                            visible: !content.discoveryShowSkeleton && !content.discoveryNoFeed
+                                     && !content.discoveryEmptyShelves
+                                     && !Core.catalogDiscovery.moodActive
+                            text: qsTr("Or browse the shelves")
+                            typescale: MD.Token.typescale.title_large
+                        }
+
+                        MD.Label {
+                            width: parent.width
+                            visible: Core.catalogDiscovery.moodActive
+                                     && Core.catalogDiscovery.onFireShelf.count > 0
+                            text: qsTr("Filtered picks")
+                            typescale: MD.Token.typescale.title_large
                         }
                     }
 
@@ -111,26 +243,36 @@ Item {
                                                                      || Core.catalogDiscovery.newShelf.count > 0
                                                                      || Core.catalogDiscovery.friendsShelf.count > 0)
 
-                    readonly property var discoveryShelfSections: [
-                        {
-                            title: qsTr("Hits"),
-                            subtitle: qsTr("What's buzzing right now"),
-                            iconName: MD.Token.icon.local_fire_department,
-                            shelfModel: Core.catalogDiscovery.onFireShelf
-                        },
-                        {
-                            title: qsTr("With friends"),
-                            subtitle: qsTr("Chaotic co-op and party games"),
-                            iconName: MD.Token.icon.groups,
-                            shelfModel: Core.catalogDiscovery.friendsShelf
-                        },
-                        {
-                            title: qsTr("New games"),
-                            subtitle: qsTr("Fresh releases"),
-                            iconName: MD.Token.icon.fiber_new,
-                            shelfModel: Core.catalogDiscovery.newShelf
+                    readonly property var discoveryShelfSections: {
+                        if (Core.catalogDiscovery.moodActive) {
+                            return [{
+                                title: qsTr("Matches your mood"),
+                                subtitle: qsTr("Tap a cover to open details"),
+                                iconName: MD.Token.icon.auto_awesome,
+                                shelfModel: Core.catalogDiscovery.onFireShelf
+                            }]
                         }
-                    ]
+                        return [
+                            {
+                                title: qsTr("Hits"),
+                                subtitle: qsTr("What's buzzing right now"),
+                                iconName: MD.Token.icon.local_fire_department,
+                                shelfModel: Core.catalogDiscovery.onFireShelf
+                            },
+                            {
+                                title: qsTr("With friends"),
+                                subtitle: qsTr("Chaotic co-op and party games"),
+                                iconName: MD.Token.icon.groups,
+                                shelfModel: Core.catalogDiscovery.friendsShelf
+                            },
+                            {
+                                title: qsTr("New games"),
+                                subtitle: qsTr("Fresh releases"),
+                                iconName: MD.Token.icon.fiber_new,
+                                shelfModel: Core.catalogDiscovery.newShelf
+                            }
+                        ]
+                    }
 
                     model: showDiscoveryShelves ? discoveryShelfSections : []
 
@@ -144,11 +286,56 @@ Item {
                         iconName: modelData.iconName
                         shelfModel: modelData.shelfModel
                         page: content.page
+                        onSurpriseFromShelf: function (entryId) { page.openGame(entryId) }
                     }
 
                     footer: Item {
-                        width: 1
-                        height: 0
+                        width: discoveryList.width - discoveryList.leftMargin - discoveryList.rightMargin
+                        height: footerCol.implicitHeight + MD.Token.spacing.large
+                        visible: !content.discoveryShowSkeleton && !content.discoveryNoFeed
+
+                        Column {
+                            id: footerCol
+                            width: parent.width
+                            spacing: MD.Token.spacing.small
+                            topPadding: MD.Token.spacing.medium
+
+                            MD.Label {
+                                width: parent.width
+                                text: qsTr("Still undecided?")
+                                typescale: MD.Token.typescale.title_medium
+                            }
+
+                            MD.Label {
+                                width: parent.width
+                                text: qsTr("Search the full catalog, or let us narrow it down.")
+                                wrapMode: Text.WordWrap
+                                color: MD.Token.color.on_surface_variant
+                                typescale: MD.Token.typescale.body_medium
+                            }
+
+                            Row {
+                                spacing: MD.Token.spacing.small
+
+                                MD.Button {
+                                    mdState.type: MD.Enum.BtFilled
+                                    text: qsTr("Surprise me")
+                                    onClicked: content.pickRandomFromShelves()
+                                }
+
+                                MD.Button {
+                                    mdState.type: MD.Enum.BtFilledTonal
+                                    text: qsTr("Help me pick")
+                                    onClicked: content.openPlayPicker()
+                                }
+
+                                MD.Button {
+                                    mdState.type: MD.Enum.BtOutlined
+                                    text: qsTr("All games")
+                                    onClicked: page.openFullCatalog("")
+                                }
+                            }
+                        }
                     }
                 }
 

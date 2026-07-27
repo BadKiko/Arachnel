@@ -106,59 +106,122 @@
 <context>
     <name>CatalogDiscoveryHeader</name>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="41"/>
-        <source>Discover something to play</source>
+        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="49"/>
+        <source>Don&apos;t know what to play?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="47"/>
-        <source>Curated shelves from your catalogs — covers and live stats via Steam.</source>
+        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="55"/>
+        <source>Answer in one tap — or scroll the shelves below.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="56"/>
+        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="71"/>
         <source>All games</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="83"/>
-        <source>Couldn&apos;t load discovery</source>
+        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="115"/>
+        <source>Jump back in</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="89"/>
-        <source>Check your connection, or open All games.</source>
+        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="131"/>
+        <source>Continue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="103"/>
-        <source>No matching games in your catalog</source>
+        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="154"/>
+        <source>Surprise me</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="109"/>
-        <source>Discovery loaded, but none of these titles are in your enabled sources yet.</source>
+        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="155"/>
+        <source>Open a random hit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="160"/>
+        <source>Help me pick</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="161"/>
+        <source>3 quick questions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="166"/>
+        <source>Short install</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="167"/>
+        <source>About 1–5 GB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="172"/>
+        <source>With friends</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="173"/>
+        <source>Co-op &amp; party</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>CatalogDiscoveryHero</name>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="44"/>
-        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="46"/>
-        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="47"/>
+        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="60"/>
+        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="62"/>
+        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="63"/>
         <source>playing now</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="103"/>
-        <source>Trending pick</source>
-        <translation></translation>
+        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="125"/>
+        <source>Tonight&apos;s pick</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="136"/>
-        <source>View game</source>
-        <translation></translation>
+        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="156"/>
+        <source>Open game</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="162"/>
+        <source>Another pick</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="169"/>
+        <source>Surprise me</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>CatalogDiscoveryMoodRow</name>
+    <message>
+        <location filename="../qml/components/CatalogDiscoveryMoodRow.qml" line="14"/>
+        <source>For you</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CatalogDiscoveryMoodRow.qml" line="15"/>
+        <source>With friends</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CatalogDiscoveryMoodRow.qml" line="16"/>
+        <source>Something new</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CatalogDiscoveryMoodRow.qml" line="21"/>
+        <source>Browse by mood</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -578,33 +641,99 @@
 <context>
     <name>CatalogPageContent</name>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="116"/>
+        <location filename="../qml/app/CatalogPageContent.qml" line="257"/>
         <source>Hits</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="128"/>
+        <location filename="../qml/app/CatalogPageContent.qml" line="269"/>
         <source>New games</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="122"/>
+        <location filename="../qml/app/CatalogPageContent.qml" line="263"/>
         <source>With friends</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="117"/>
+        <location filename="../qml/app/CatalogPageContent.qml" line="184"/>
+        <source>Couldn&apos;t load discovery</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/app/CatalogPageContent.qml" line="190"/>
+        <source>Check your connection, or open All games.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/app/CatalogPageContent.qml" line="198"/>
+        <location filename="../qml/app/CatalogPageContent.qml" line="334"/>
+        <source>All games</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/app/CatalogPageContent.qml" line="210"/>
+        <source>No matching games in your catalog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/app/CatalogPageContent.qml" line="216"/>
+        <source>Discovery loaded, but none of these titles are in your enabled sources yet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/app/CatalogPageContent.qml" line="228"/>
+        <source>Or browse the shelves</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/app/CatalogPageContent.qml" line="236"/>
+        <source>Filtered picks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/app/CatalogPageContent.qml" line="249"/>
+        <source>Matches your mood</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/app/CatalogPageContent.qml" line="250"/>
+        <source>Tap a cover to open details</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/app/CatalogPageContent.qml" line="258"/>
         <source>What&apos;s buzzing right now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="123"/>
+        <location filename="../qml/app/CatalogPageContent.qml" line="264"/>
         <source>Chaotic co-op and party games</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="129"/>
+        <location filename="../qml/app/CatalogPageContent.qml" line="270"/>
         <source>Fresh releases</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/app/CatalogPageContent.qml" line="305"/>
+        <source>Still undecided?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/app/CatalogPageContent.qml" line="311"/>
+        <source>Search the full catalog, or let us narrow it down.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/app/CatalogPageContent.qml" line="322"/>
+        <source>Surprise me</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/app/CatalogPageContent.qml" line="328"/>
+        <source>Help me pick</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -712,6 +841,14 @@
         <location filename="../qml/components/CatalogScrollHeader.qml" line="35"/>
         <source>Found: %1</source>
         <translation></translation>
+    </message>
+</context>
+<context>
+    <name>CatalogShelfRow</name>
+    <message>
+        <location filename="../qml/components/CatalogShelfRow.qml" line="53"/>
+        <source>Random</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

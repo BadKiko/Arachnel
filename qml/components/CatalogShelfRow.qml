@@ -14,6 +14,8 @@ ColumnLayout {
     required property var shelfModel
     required property var page
 
+    signal surpriseFromShelf(string entryId)
+
     spacing: MD.Token.spacing.small
     visible: shelfModel && shelfModel.count > 0
 
@@ -43,6 +45,18 @@ ColumnLayout {
                 text: root.subtitle
                 color: MD.Token.color.on_surface_variant
                 typescale: MD.Token.typescale.body_small
+            }
+        }
+
+        MD.Button {
+            mdState.type: MD.Enum.BtText
+            text: qsTr("Random")
+            visible: shelfModel && shelfModel.count > 1
+            onClicked: {
+                const i = Math.floor(Math.random() * shelfModel.count)
+                const info = shelfModel.entryInfo(i)
+                if (info && info.entryId)
+                    root.surpriseFromShelf(info.entryId)
             }
         }
 
