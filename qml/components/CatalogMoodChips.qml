@@ -12,15 +12,13 @@ ColumnLayout {
     signal whatToPlayRequested()
 
     readonly property var moods: [
-        { id: "", label: qsTr("All shelves"), icon: MD.Token.icon.auto_awesome, hint: qsTr("Hits, new, friends, solo") },
-        { id: "solo", label: qsTr("Solo"), icon: MD.Token.icon.person, hint: qsTr("Single-player") },
+        { id: "", label: qsTr("All shelves"), icon: MD.Token.icon.auto_awesome, hint: qsTr("Hits, friends, new") },
         { id: "friends", label: qsTr("With friends"), icon: MD.Token.icon.groups, hint: qsTr("Co-op & party") },
         { id: "new", label: qsTr("New games"), icon: MD.Token.icon.new_releases, hint: qsTr("Recently added") }
     ]
 
     readonly property var moodLabels: ({
         "": qsTr("All shelves"),
-        "solo": qsTr("Solo"),
         "friends": qsTr("With friends"),
         "new": qsTr("New games")
     })

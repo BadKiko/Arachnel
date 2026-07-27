@@ -13,6 +13,7 @@
   <a href="https://hosted.weblate.org/engage/arachnel/">
     <img src="https://hosted.weblate.org/widget/arachnel/application/ru/svg-badge.svg" alt="Состояние перевода">
   </a>
+  <img src="https://img.shields.io/badge/ИИ-помогал_писать-8E8E93?style=for-the-badge&labelColor=161618" alt="ИИ помогал писать">
 </p>
 
 <br>

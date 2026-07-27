@@ -13,6 +13,7 @@
   <a href="https://hosted.weblate.org/engage/arachnel/">
     <img src="https://hosted.weblate.org/widget/arachnel/application/svg-badge.svg" alt="Translation status">
   </a>
+  <img src="https://img.shields.io/badge/AI-assisted-8E8E93?style=for-the-badge&labelColor=161618" alt="AI assisted">
 </p>
 
 <br>

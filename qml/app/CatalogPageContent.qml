@@ -109,8 +109,7 @@ Item {
                     readonly property bool showDiscoveryShelves: Core.catalogDiscovery.feedLoaded
                                                                  && (Core.catalogDiscovery.onFireShelf.count > 0
                                                                      || Core.catalogDiscovery.newShelf.count > 0
-                                                                     || Core.catalogDiscovery.friendsShelf.count > 0
-                                                                     || Core.catalogDiscovery.soloShelf.count > 0)
+                                                                     || Core.catalogDiscovery.friendsShelf.count > 0)
 
                     readonly property var discoveryShelfSections: [
                         {
@@ -124,12 +123,6 @@ Item {
                             subtitle: qsTr("Chaotic co-op and party games"),
                             iconName: MD.Token.icon.groups,
                             shelfModel: Core.catalogDiscovery.friendsShelf
-                        },
-                        {
-                            title: qsTr("Solo"),
-                            subtitle: qsTr("Single-player picks worth trying"),
-                            iconName: MD.Token.icon.person,
-                            shelfModel: Core.catalogDiscovery.soloShelf
                         },
                         {
                             title: qsTr("New games"),

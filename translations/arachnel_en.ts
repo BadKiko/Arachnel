@@ -101,28 +101,38 @@
 <context>
     <name>CatalogDiscoveryHeader</name>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="29"/>
+        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="41"/>
         <source>Discover</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="35"/>
+        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="47"/>
         <source>A few shelves to browse. Open the full catalog anytime.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="44"/>
+        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="56"/>
         <source>All games</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="75"/>
+        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="87"/>
         <source>Couldn&apos;t load discovery</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="81"/>
+        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="93"/>
         <source>Check your connection, or open All games.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="107"/>
+        <source>No matching games in your catalog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="113"/>
+        <source>Discovery loaded, but none of these titles are in your enabled sources yet.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -141,14 +151,9 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="139"/>
+        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="136"/>
         <source>View game</source>
         <translation></translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="145"/>
-        <source>All games</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -352,75 +357,64 @@
     <name>CatalogMoodChips</name>
     <message>
         <location filename="../qml/components/CatalogMoodChips.qml" line="15"/>
-        <location filename="../qml/components/CatalogMoodChips.qml" line="22"/>
+        <location filename="../qml/components/CatalogMoodChips.qml" line="21"/>
         <source>All shelves</source>
         <translation></translation>
     </message>
     <message>
         <location filename="../qml/components/CatalogMoodChips.qml" line="16"/>
-        <location filename="../qml/components/CatalogMoodChips.qml" line="23"/>
-        <source>Solo</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogMoodChips.qml" line="16"/>
-        <source>Single-player</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogMoodChips.qml" line="17"/>
-        <location filename="../qml/components/CatalogMoodChips.qml" line="24"/>
+        <location filename="../qml/components/CatalogMoodChips.qml" line="22"/>
         <source>With friends</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogMoodChips.qml" line="17"/>
+        <location filename="../qml/components/CatalogMoodChips.qml" line="16"/>
         <source>Co-op &amp; party</source>
         <translation></translation>
     </message>
     <message>
         <location filename="../qml/components/CatalogMoodChips.qml" line="15"/>
-        <source>Hits, new, friends, solo</source>
-        <translation></translation>
+        <source>Hits, friends, new</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogMoodChips.qml" line="18"/>
-        <location filename="../qml/components/CatalogMoodChips.qml" line="25"/>
+        <location filename="../qml/components/CatalogMoodChips.qml" line="17"/>
+        <location filename="../qml/components/CatalogMoodChips.qml" line="23"/>
         <source>New games</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogMoodChips.qml" line="18"/>
+        <location filename="../qml/components/CatalogMoodChips.qml" line="17"/>
         <source>Recently added</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogMoodChips.qml" line="36"/>
+        <location filename="../qml/components/CatalogMoodChips.qml" line="34"/>
         <source>Filter discovery</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogMoodChips.qml" line="43"/>
+        <location filename="../qml/components/CatalogMoodChips.qml" line="41"/>
         <source>Showing matches only — pick All shelves to see every category again.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogMoodChips.qml" line="44"/>
+        <location filename="../qml/components/CatalogMoodChips.qml" line="42"/>
         <source>Tap a filter to narrow the list, or use Help me pick for a wizard.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogMoodChips.qml" line="64"/>
+        <location filename="../qml/components/CatalogMoodChips.qml" line="62"/>
         <source>Clear filter</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogMoodChips.qml" line="71"/>
+        <location filename="../qml/components/CatalogMoodChips.qml" line="69"/>
         <source>games</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogMoodChips.qml" line="86"/>
+        <location filename="../qml/components/CatalogMoodChips.qml" line="84"/>
         <source>Help me pick</source>
         <translation></translation>
     </message>
@@ -579,48 +573,33 @@
 <context>
     <name>CatalogPageContent</name>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="117"/>
+        <location filename="../qml/app/CatalogPageContent.qml" line="116"/>
         <source>Hits</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="135"/>
+        <location filename="../qml/app/CatalogPageContent.qml" line="128"/>
         <source>New games</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="123"/>
+        <location filename="../qml/app/CatalogPageContent.qml" line="122"/>
         <source>With friends</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="118"/>
+        <location filename="../qml/app/CatalogPageContent.qml" line="117"/>
         <source>What&apos;s buzzing right now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="124"/>
+        <location filename="../qml/app/CatalogPageContent.qml" line="123"/>
         <source>Chaotic co-op and party games</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/app/CatalogPageContent.qml" line="129"/>
-        <source>Solo</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="130"/>
-        <source>Single-player picks worth trying</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="136"/>
         <source>Fresh releases</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="166"/>
-        <source>All games</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1767,32 +1746,32 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_parser.cpp" line="356"/>
+        <location filename="../src/core/catalog/catalog_parser.cpp" line="358"/>
         <source>Empty server response</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_parser.cpp" line="367"/>
+        <location filename="../src/core/catalog/catalog_parser.cpp" line="369"/>
         <source>Invalid JSON</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_parser.cpp" line="375"/>
+        <location filename="../src/core/catalog/catalog_parser.cpp" line="377"/>
         <source>No downloads array — not a Hydra catalog</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_parser.cpp" line="380"/>
+        <location filename="../src/core/catalog/catalog_parser.cpp" line="382"/>
         <source>downloads array is empty</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_parser.cpp" line="386"/>
+        <location filename="../src/core/catalog/catalog_parser.cpp" line="388"/>
         <source>Catalog entries array is empty</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_parser.cpp" line="391"/>
+        <location filename="../src/core/catalog/catalog_parser.cpp" line="393"/>
         <source>Failed to parse games from catalog</source>
         <translation></translation>
     </message>
@@ -3882,6 +3861,218 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <location filename="../qml/settings/SettingsUpdatesPage.qml" line="252"/>
         <source>Open release page</source>
         <translation></translation>
+    </message>
+</context>
+<context>
+    <name>Setup</name>
+    <message>
+        <location filename="../setup/src/self_extractor.cpp" line="140"/>
+        <source>Extracting files…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/src/setup_backend.cpp" line="411"/>
+        <source>Updating uninstaller…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/src/setup_backend.cpp" line="412"/>
+        <source>Registering uninstaller…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/src/setup_backend.cpp" line="424"/>
+        <source>Refreshing shortcuts…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/src/setup_backend.cpp" line="425"/>
+        <source>Creating shortcuts…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/src/setup_backend.cpp" line="430"/>
+        <source>Update complete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/src/setup_backend.cpp" line="431"/>
+        <source>Installation complete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/src/setup_backend.cpp" line="449"/>
+        <location filename="../setup/src/setup_backend.cpp" line="492"/>
+        <source>Please wait — updating Arachnel…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/src/setup_backend.cpp" line="450"/>
+        <location filename="../setup/src/setup_backend.cpp" line="493"/>
+        <source>Preparing…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/src/setup_backend.cpp" line="484"/>
+        <source>Waiting for Arachnel to close…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/src/setup_backend.cpp" line="486"/>
+        <source>Arachnel is still running. Close it and try again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/src/setup_backend.cpp" line="499"/>
+        <source>Clearing install folder…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/src/setup_backend.cpp" line="501"/>
+        <source>Could not clear existing install folder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/src/setup_backend.cpp" line="507"/>
+        <source>Creating install folder…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/src/setup_backend.cpp" line="510"/>
+        <source>Could not create install folder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/src/setup_backend.cpp" line="524"/>
+        <source>Finalizing…</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SetupTitleBar</name>
+    <message>
+        <location filename="../setup/qml/components/SetupTitleBar.qml" line="42"/>
+        <source>Arachnel Setup</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SetupWindow</name>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="15"/>
+        <source>Arachnel Setup</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="66"/>
+        <source>Choose language</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="72"/>
+        <source>Select the installer language.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="99"/>
+        <source>Install Arachnel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="105"/>
+        <source>Game launcher with plugin-based sources. This wizard unpacks Arachnel to your computer.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="114"/>
+        <source>No embedded app payload found. Build the installer with run.ps1 --installer.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="128"/>
+        <source>Choose install location</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="140"/>
+        <source>Install folder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="156"/>
+        <source>Shortcuts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="161"/>
+        <source>Create desktop shortcut</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="167"/>
+        <source>Create Start Menu shortcut</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="180"/>
+        <source>Updating Arachnel…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="180"/>
+        <source>Installing…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="187"/>
+        <source>Please wait while Arachnel is updated. Do not close this window.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="188"/>
+        <source>Arachnel is being installed on your computer.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="246"/>
+        <source>Arachnel is up to date</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="246"/>
+        <source>Arachnel is ready</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="269"/>
+        <source>Back</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="276"/>
+        <location filename="../setup/qml/SetupWindow.qml" line="283"/>
+        <source>Continue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="291"/>
+        <source>Install</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="299"/>
+        <source>Open folder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="306"/>
+        <source>Launch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="316"/>
+        <source>Finish</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

@@ -15,7 +15,6 @@ ColumnLayout {
     readonly property bool shelvesEmpty:
         Core.catalogDiscovery.onFireShelf.count === 0
         && Core.catalogDiscovery.friendsShelf.count === 0
-        && Core.catalogDiscovery.soloShelf.count === 0
         && Core.catalogDiscovery.newShelf.count === 0
 
     // Keep skeleton while discovery OR catalog is still loading so we don't flash an empty void.
