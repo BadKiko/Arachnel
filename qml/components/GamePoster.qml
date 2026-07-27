@@ -15,9 +15,9 @@ Item {
     property bool hovered: mouseArea.containsMouse
     // 0–100: color fills left-to-right over grayscale; <0 disables the effect.
     property real fillProgress: -1
-
-    readonly property int decodeWidth: 300
-    readonly property int decodeHeight: 450
+    property bool enableShimmer: true
+    property int decodeWidth: 300
+    property int decodeHeight: 450
     readonly property real fillRatio: Math.max(0, Math.min(1, fillProgress / 100))
 
     readonly property bool hasSource: source.toString().length > 0
@@ -26,7 +26,7 @@ Item {
     readonly property bool imageLoading: hasSource
                                          && (coverProbe.status === Image.Loading
                                              || coverProbe.status === Image.Null)
-    readonly property bool showShimmer: !coverReady && (awaiting || imageLoading)
+    readonly property bool showShimmer: root.enableShimmer && !coverReady && (awaiting || imageLoading)
 
     readonly property string monogram: {
         const s = (seed || fallbackText || "?").trim()

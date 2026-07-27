@@ -23,6 +23,11 @@ struct GameMetadata {
     QString trailerUrl;
     QString trailerThumbnailUrl;
     QStringList screenshotUrls;
+    int recommendationsTotal = 0;
+    int metacriticScore = 0;
+    QString releaseDate; // ISO or Steam raw date string
+    int currentPlayers = -1;
+    qint64 playersFetchedAt = 0;
 };
 
 enum class MetadataFetchMode {
@@ -54,6 +59,9 @@ public:
     void clearCachedCover(const QString& title);
     GameMetadata metadataForTitle(const QString& title) const;
 
+    /** Queue a lightweight CCU refresh for an already-known Steam app (discovery shelves). */
+    void queuePlayersRefresh(const QString& entryId, const QString& title, const QString& steamAppId);
+
 signals:
     void coverReady(const QString& entryId, const QString& coverUrl);
     void metadataReady(const QString& entryId, const GameMetadata& metadata);
@@ -67,6 +75,7 @@ private:
         MetadataFetchMode mode = MetadataFetchMode::CoverOnly;
         QString languageCode = QStringLiteral("en");
         QString knownSteamAppId;
+        bool playersOnly = false;
     };
 
     void requestNext();
@@ -76,6 +85,7 @@ private:
     void handleAssetsFinished(QNetworkReply* reply);
     void handleDetailsFinished(QNetworkReply* reply);
     void handleDepotSizeFinished(QNetworkReply* reply);
+    void handlePlayersFinished(QNetworkReply* reply);
     void finishCover(const QString& entryId, const QString& title, const GameMetadata& metadata);
     void requestStoreAssets(const QString& entryId, const QString& title, const QString& appId,
                             MetadataFetchMode mode, const QStringList& remainingParentTerms = {},
@@ -84,6 +94,7 @@ private:
                            const QString& coverUrl, MetadataFetchMode mode,
                            const QString& languageCode);
     void requestDepotSize(const QString& entryId, const QString& title, const QString& appId);
+    void requestCurrentPlayers(const QString& entryId, const QString& title, const QString& appId);
     void startKnownAppFetch(const QString& entryId, const QString& title, const QString& appId,
                             MetadataFetchMode mode, const QString& languageCode,
                             const GameMetadata& cached);

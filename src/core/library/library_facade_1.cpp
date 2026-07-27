@@ -285,6 +285,8 @@ int CoreController::recalculateLibraryUpdates(bool notify)
 void CoreController::onCatalogReady()
 {
     const int updates = recalculateLibraryUpdates(false);
+    if (m_catalogDiscovery)
+        m_catalogDiscovery->onCatalogCacheRebuilt();
 
     // Recalc on every catalog ready (source switch), but notify / auto-install only once per session.
     if (m_startupLibraryUpdatesHandled)

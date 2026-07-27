@@ -17,6 +17,7 @@ function(arachnel_plugin_sdk_init ARACHNEL_ROOT)
     set(_ARACHNEL_PLUGIN_SDK_SOURCES
         ${ARACHNEL_ROOT}/src/core/catalog/catalog_parser.cpp
         ${ARACHNEL_ROOT}/src/core/catalog/catalog_types.cpp
+        ${ARACHNEL_ROOT}/src/core/catalog/catalog_genre_normalize.cpp
         ${ARACHNEL_ROOT}/src/core/install/install_kind.cpp
         ${ARACHNEL_ROOT}/src/core/install/install_analysis.cpp
         ${ARACHNEL_ROOT}/src/core/install/install_heuristics.cpp

@@ -28,6 +28,7 @@ namespace arachnel::core {
 struct GameMetadata;
 
 class CatalogFilterService;
+class CatalogDiscoveryService;
 class CatalogController;
 class CatalogCoverCoordinator;
 class CatalogFeedLoader;
@@ -95,6 +96,7 @@ class CoreController : public QObject
     Q_PROPERTY(int catalogPlayModeFilter READ catalogPlayModeFilter WRITE setCatalogPlayModeFilter NOTIFY catalogFiltersChanged)
     Q_PROPERTY(int catalogActiveFilterCount READ catalogActiveFilterCount NOTIFY catalogFiltersChanged)
     Q_PROPERTY(QStringList availableCatalogGenres READ availableCatalogGenres NOTIFY availableCatalogGenresChanged)
+    Q_PROPERTY(CatalogDiscoveryService* catalogDiscovery READ catalogDiscovery CONSTANT)
 
 public:
     static CoreController* create(QQmlEngine*, QJSEngine*);
@@ -109,6 +111,7 @@ public:
     SettingsStore* settings() { return &m_settings; }
     AppUpdater* appUpdater() { return m_appUpdater; }
     PluginCatalogService* pluginCatalog() { return m_pluginCatalog; }
+    CatalogDiscoveryService* catalogDiscovery() { return m_catalogDiscovery; }
 
     QString userNotice() const { return m_userNotice; }
     int userNoticeSerial() const { return m_userNoticeSerial; }

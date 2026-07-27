@@ -5,31 +5,29 @@ alwaysApply: true
 
 # i18n (Arachnel)
 
-**English** — язык исходника. **Russian** — основной перевод в `translations/arachnel_ru.ts`.
+**English** — язык исходника в коде (`qsTr` / `translate`). **Russian** — `translations/arachnel_ru.ts`.
 
 ## При добавлении любой пользовательской строки
 
 1. **QML** — `qsTr("English text")`, не хардкод на русском.
 2. **C++** — `QCoreApplication::translate("Core", "English text")`.
-3. **Длинные тексты** (подсказки, help) — `qml/i18n/Messages.qml` + `qsTrId("short.id")` и `//% "English"`.
-4. **Сразу после изменений** — обновить переводы и закоммитить `.ts`:
+3. **Длинные / общие тексты** — `qml/i18n/Messages.qml` через `qsTr("...")` (тот же механизм).
+4. **Сразу после изменений**:
 
 ```bash
 cmake --build build --target update_translations
-python3 tools/normalize_translations.py
+# заполнить русский в translations/arachnel_ru.ts (Linguist или руками, без type="unfinished")
 cmake --build build --target release_translations
 ```
-
-5. Новые строки для `normalize_translations.py`: добавить пару `English → Русский` в `EN_TO_RU`, либо вручную заполнить `<translation>` в `arachnel_ru.ts` (без `type="unfinished"`).
 
 ## Нельзя
 
 - Оставлять новые строки только на русском в коде.
 - Завершать задачу с `type="unfinished"` в `arachnel_ru.ts` для добавленных строк.
-- Пропускать `update_translations` + `normalize` при изменении `qsTr` / `translate` / `Messages.qml`.
+- Использовать `qsTrId` / отдельные id-каталоги / Python-словари переводов.
 
 ## Файлы
 
-- `translations/arachnel_en.ts` — шаблон (только `<source>`)
+- `translations/arachnel_en.ts` — каталог источников (английский)
 - `translations/arachnel_ru.ts` — русский
 - `docs/TRANSLATING.md` — подробности

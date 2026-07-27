@@ -1,5 +1,6 @@
 #include "game_metadata_service.h"
 
+#include <QDateTime>
 #include <QDir>
 #include <QFile>
 #include <QJsonArray>
@@ -249,6 +250,21 @@ void GameMetadataService::handleDetailsFinished(QNetworkReply* reply)
             const QString moviesThumbnail = pickTrailerThumbnailFromMovies(movies);
             if (metadata.trailerThumbnailUrl.isEmpty() && !moviesThumbnail.isEmpty())
                 metadata.trailerThumbnailUrl = moviesThumbnail;
+
+            const QJsonObject recommendations = data.value(QStringLiteral("recommendations")).toObject();
+            const int recTotal = recommendations.value(QStringLiteral("total")).toInt();
+            if (recTotal > 0)
+                metadata.recommendationsTotal = recTotal;
+
+            const QJsonObject metacritic = data.value(QStringLiteral("metacritic")).toObject();
+            const int metaScore = metacritic.value(QStringLiteral("score")).toInt();
+            if (metaScore > 0)
+                metadata.metacriticScore = metaScore;
+
+            const QJsonObject release = data.value(QStringLiteral("release_date")).toObject();
+            const QString releaseDate = release.value(QStringLiteral("date")).toString().trimmed();
+            if (!releaseDate.isEmpty())
+                metadata.releaseDate = releaseDate;
         }
     }
 
@@ -259,6 +275,11 @@ void GameMetadataService::handleDetailsFinished(QNetworkReply* reply)
 
     if (!appId.isEmpty() && metadata.sizeLabel.isEmpty()) {
         requestDepotSize(entryId, entryTitle, appId);
+        return;
+    }
+
+    if (!appId.isEmpty()) {
+        requestCurrentPlayers(entryId, entryTitle, appId);
         return;
     }
 
@@ -377,6 +398,69 @@ void GameMetadataService::handleDepotSizeFinished(QNetworkReply* reply)
                 [this, fallback]() { handleDepotSizeFinished(fallback); });
         ++m_activeRequests;
         return;
+    }
+
+    reply->deleteLater();
+    m_cache.insert(entryTitle, metadata);
+    m_saveTimer->start();
+    emit metadataReady(entryId, metadata);
+
+    if (!appId.isEmpty()) {
+        requestCurrentPlayers(entryId, entryTitle, appId);
+        return;
+    }
+
+    m_inFlight.remove(entryId);
+    tryDeferredFull(entryId);
+    requestNext();
+}
+
+void GameMetadataService::requestCurrentPlayers(const QString& entryId, const QString& title,
+                                                const QString& appId)
+{
+    if (entryId.isEmpty() || appId.isEmpty()) {
+        m_inFlight.remove(entryId);
+        tryDeferredFull(entryId);
+        requestNext();
+        return;
+    }
+
+    QUrl url(QStringLiteral("https://api.steampowered.com/ISteamUserStats/GetNumberOfCurrentPlayers/v1/"));
+    QUrlQuery query;
+    query.addQueryItem(QStringLiteral("appid"), appId);
+    url.setQuery(query);
+
+    QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("Arachnel/0.1"));
+    request.setTransferTimeout(12000);
+    QNetworkReply* reply = m_network->get(request);
+    reply->setProperty("entryId", entryId);
+    reply->setProperty("entryTitle", title);
+    reply->setProperty("steamAppId", appId);
+    connect(reply, &QNetworkReply::finished, this,
+            [this, reply]() { handlePlayersFinished(reply); });
+    ++m_activeRequests;
+}
+
+void GameMetadataService::handlePlayersFinished(QNetworkReply* reply)
+{
+    --m_activeRequests;
+
+    const QString entryId = reply->property("entryId").toString();
+    const QString entryTitle = reply->property("entryTitle").toString();
+    const QString appId = reply->property("steamAppId").toString();
+
+    GameMetadata metadata = m_cache.value(entryTitle);
+    if (metadata.steamAppId.isEmpty())
+        metadata.steamAppId = appId;
+
+    if (reply->error() == QNetworkReply::NoError) {
+        const QJsonObject root = QJsonDocument::fromJson(reply->readAll()).object();
+        const QJsonObject response = root.value(QStringLiteral("response")).toObject();
+        if (response.value(QStringLiteral("result")).toInt() == 1) {
+            metadata.currentPlayers = response.value(QStringLiteral("player_count")).toInt(0);
+            metadata.playersFetchedAt = QDateTime::currentSecsSinceEpoch();
+        }
     }
 
     reply->deleteLater();

@@ -67,11 +67,24 @@ Item {
         "3": qsTr("Last 90 days"),
         "4": qsTr("Last year")
     })
+    readonly property var playModeFilterLabels: ({
+        "0": qsTr("Any players"),
+        "1": qsTr("Single-player"),
+        "2": qsTr("Co-op"),
+        "3": qsTr("Multiplayer")
+    })
 
     property string searchQuery: ""
     property real savedGridScrollY: 0
     property real savedListScrollY: 0
     property bool restoringFilters: false
+    property bool browseAllMode: false
+
+    readonly property bool discoveryMode: !root.browseAllMode
+                                         && root.searchQuery.length === 0
+                                         && Core.catalogActiveFilterCount === 0
+                                         && !root.noSources
+                                         && !root.noSourceSelected
 
     signal openGame(string entryId)
     signal openSettings()
@@ -125,6 +138,10 @@ Item {
         catalogFilterSheet.openSheet()
     }
 
+    function openPlayPicker() {
+        catalogContent.openPlayPicker()
+    }
+
     function resetScroll() { catalogContent.resetScroll() }
 
     function saveAndResetScroll() {
@@ -158,6 +175,10 @@ Item {
         if (!Core.activeCatalogSourceIds.length)
             return
         root.searchQuery = query
+        if (query.length > 0)
+            root.browseAllMode = true
+        else if (Core.catalogActiveFilterCount === 0)
+            root.browseAllMode = false
         Core.applyCatalogSearch(query)
         catalogContent.resetScroll()
     }
@@ -165,8 +186,12 @@ Item {
     Component.onCompleted: {
         Core.catalog.sortMode = catalogPrefs.sortMode
         root.restoreCatalogFilters()
+        if (Core.catalogActiveFilterCount > 0)
+            root.browseAllMode = true
         Core.prefetchCatalogCounts()
         root.ensureValidSource()
+        if (Core.catalogDiscovery)
+            Core.catalogDiscovery.refresh()
     }
 
     onEnabledChanged: {
@@ -183,6 +208,10 @@ Item {
         }
         function onCatalogFiltersChanged() {
             root.persistCatalogFilters()
+            if (Core.catalogActiveFilterCount > 0)
+                root.browseAllMode = true
+            else if (root.searchQuery.length === 0)
+                root.browseAllMode = false
         }
     }
 

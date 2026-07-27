@@ -1,5 +1,7 @@
 #include "core_controller_impl.h"
 
+#include <QDate>
+
 namespace arachnel::core {
 
 void CoreController::showNotice(const QString& message, bool addToHistory)
@@ -178,6 +180,25 @@ void CoreController::applyMetadataToEntry(CatalogEntry& entry,
         entry.trailerThumbnailUrl = metadata.trailerThumbnailUrl;
     if (!metadata.screenshotUrls.isEmpty())
         entry.screenshotUrls = metadata.screenshotUrls;
+    if (metadata.recommendationsTotal > 0)
+        entry.recommendationsTotal = metadata.recommendationsTotal;
+    if (metadata.metacriticScore > 0)
+        entry.metacriticScore = metadata.metacriticScore;
+    if (!metadata.releaseDate.isEmpty()) {
+        const QDate release = QDate::fromString(metadata.releaseDate.left(10), Qt::ISODate);
+        if (release.isValid()) {
+            entry.releaseDay = release.toJulianDay();
+        } else {
+            // Steam often uses "1 Jan, 2020" — keep score via prepare only.
+            const QDate parsed = QDate::fromString(metadata.releaseDate, QStringLiteral("d MMM, yyyy"));
+            if (parsed.isValid())
+                entry.releaseDay = parsed.toJulianDay();
+        }
+    }
+    if (metadata.currentPlayers >= 0) {
+        entry.currentPlayers = metadata.currentPlayers;
+        entry.playersFetchedAt = metadata.playersFetchedAt;
+    }
     prepareCatalogEntry(entry);
 }
 

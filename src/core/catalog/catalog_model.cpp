@@ -130,6 +130,10 @@ QVariant CatalogModel::data(const QModelIndex& index, int role) const
         return !entry->addons.isEmpty();
     case MetadataPendingRole:
         return entry->metadataPending;
+    case CurrentPlayersRole:
+        return entry->currentPlayers;
+    case HypeScoreRole:
+        return entry->hypeScore;
     default:
         return {};
     }
@@ -154,6 +158,8 @@ QHash<int, QByteArray> CatalogModel::roleNames() const
         {AddonCountRole, "addonCount"},
         {HasAddonsRole, "hasAddons"},
         {MetadataPendingRole, "metadataPending"},
+        {CurrentPlayersRole, "currentPlayers"},
+        {HypeScoreRole, "hypeScore"},
     };
 }
 
@@ -279,6 +285,8 @@ QVariantMap CatalogModel::toMap(const CatalogEntry& entry) const
         {QStringLiteral("addonCount"), entry.addons.size()},
         {QStringLiteral("hasAddons"), !entry.addons.isEmpty()},
         {QStringLiteral("metadataPending"), entry.metadataPending},
+        {QStringLiteral("currentPlayers"), entry.currentPlayers},
+        {QStringLiteral("hypeScore"), entry.hypeScore},
         {QStringLiteral("hasUpdate"), false},
         {QStringLiteral("installed"), false},
     };

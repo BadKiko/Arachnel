@@ -43,16 +43,6 @@ qt_standard_project_setup(REQUIRES 6.8)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/ArachnelLibtorrent.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/ArachnelTranslations.cmake)
 
-# Optional Weblate helper — not part of the app build (needs Python).
-find_package(Python3 COMPONENTS Interpreter QUIET)
-if(Python3_FOUND)
-    add_custom_target(arachnel_normalize_translations
-        COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/normalize_translations.py
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        COMMENT "Normalize translations/*.ts for Weblate"
-    )
-endif()
-
 include(FetchContent)
 # Pin QmlMaterial: floating `main` pulled Qcm.Material.Layouts (Jul 2026) without
 # packaging the layouts plugin DLL into Setup/AppImage → QML fail on startup.

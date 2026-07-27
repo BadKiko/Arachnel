@@ -346,7 +346,10 @@ void CoreController::initializeServices()
                         continue;
                     applyMetadataToEntry(entry, metadata);
                     syncEntryToCatalogModel(entryId);
-                    if (m_catalogFilters && !m_catalogFilters->genreFilter().isEmpty())
+                    if (m_catalogFilters
+                        && (!m_catalogFilters->genreFilter().isEmpty()
+                            || m_catalogFilters->sizeFilter() > 0
+                            || m_catalogFilters->playModeFilter() > 0))
                         scheduleCatalogRefilter();
                     break;
                 }
@@ -355,6 +358,8 @@ void CoreController::initializeServices()
                 else
                     m_catalogCovers->applyCover(entryId, {});
                 emit entryMetadataChanged(entryId);
+                if (m_catalogDiscovery)
+                    m_catalogDiscovery->onEntryMetadataChanged(entryId);
                 if (!metadata.genres.isEmpty())
                     rebuildAvailableCatalogGenres();
             });

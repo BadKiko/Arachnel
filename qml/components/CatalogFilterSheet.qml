@@ -17,6 +17,7 @@ MD.BottomSheet {
     property bool draftHasAddons: false
     property string draftGenre: ""
     property int draftPlayMode: 0
+    property string genreSearch: ""
 
     property var sortOptions: []
 
@@ -52,6 +53,25 @@ MD.BottomSheet {
         { value: 4, label: qsTr("Last year") }
     ]
 
+    readonly property var visibleGenres: {
+        const needle = root.genreSearch.trim().toLowerCase()
+        const all = Core.availableCatalogGenres
+        if (!needle.length) {
+            const capped = []
+            for (let i = 0; i < all.length && capped.length < 24; ++i)
+                capped.push(all[i])
+            return capped
+        }
+        const filtered = []
+        for (let i = 0; i < all.length; ++i) {
+            if (String(all[i]).toLowerCase().indexOf(needle) >= 0)
+                filtered.push(all[i])
+            if (filtered.length >= 40)
+                break
+        }
+        return filtered
+    }
+
     function openSheet() {
         draftSortMode = Core.catalog.sortMode
         draftType = Core.catalogTypeFilter
@@ -60,6 +80,7 @@ MD.BottomSheet {
         draftHasAddons = Core.catalogHasAddonsFilter
         draftGenre = Core.catalogGenreFilter
         draftPlayMode = Core.catalogPlayModeFilter
+        genreSearch = ""
         open()
     }
 
@@ -78,6 +99,7 @@ MD.BottomSheet {
         draftHasAddons = false
         draftGenre = ""
         draftPlayMode = 0
+        genreSearch = ""
     }
 
     ColumnLayout {
@@ -304,6 +326,13 @@ MD.BottomSheet {
                         color: MD.Token.color.primary
                     }
 
+                    MD.TextField {
+                        Layout.fillWidth: true
+                        placeholderText: qsTr("Search genres")
+                        text: root.genreSearch
+                        onTextEdited: root.genreSearch = text
+                    }
+
                     Flow {
                         Layout.fillWidth: true
                         spacing: MD.Token.spacing.small
@@ -317,7 +346,7 @@ MD.BottomSheet {
                         }
 
                         Repeater {
-                            model: Core.availableCatalogGenres
+                            model: root.visibleGenres
 
                             MD.FilterChip {
                                 required property string modelData
@@ -328,6 +357,15 @@ MD.BottomSheet {
                                 onClicked: root.draftGenre = modelData
                             }
                         }
+                    }
+
+                    MD.Label {
+                        visible: Core.availableCatalogGenres.length > root.visibleGenres.length
+                                 && root.genreSearch.trim().length === 0
+                        Layout.fillWidth: true
+                        text: qsTr("Showing top genres — type to search more")
+                        color: MD.Token.color.on_surface_variant
+                        typescale: MD.Token.typescale.body_small
                     }
                 }
 

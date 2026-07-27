@@ -38,8 +38,6 @@ scripts/deploy-media.ps1
 /_meccha_*
 /_progress_*
 
-translations/generated/*.qm
-
 __pycache__/
 *.py[cod]
 
