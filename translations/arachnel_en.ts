@@ -101,19 +101,29 @@
 <context>
     <name>CatalogDiscoveryHeader</name>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="49"/>
-        <source>Discovery feed not installed yet</source>
-        <translation></translation>
+        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="29"/>
+        <source>Discover</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="55"/>
-        <source>Shelves will come from a backend feed (discovery-feed.json). Use Browse all games for now.</source>
-        <translation></translation>
+        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="35"/>
+        <source>A few shelves to browse. Open the full catalog anytime.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="63"/>
-        <source>Browse all games</source>
-        <translation></translation>
+        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="44"/>
+        <source>All games</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="75"/>
+        <source>Couldn&apos;t load discovery</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="81"/>
+        <source>Check your connection, or open All games.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -137,8 +147,8 @@
     </message>
     <message>
         <location filename="../qml/components/CatalogDiscoveryHero.qml" line="145"/>
-        <source>Browse all</source>
-        <translation></translation>
+        <source>All games</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -569,23 +579,8 @@
 <context>
     <name>CatalogPageContent</name>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="122"/>
-        <source>Matches your filter</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="123"/>
-        <source>Sorted by buzz and freshness</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="129"/>
+        <location filename="../qml/app/CatalogPageContent.qml" line="117"/>
         <source>Hits</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="130"/>
-        <source>Trending right now</source>
         <translation></translation>
     </message>
     <message>
@@ -594,34 +589,39 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="141"/>
+        <location filename="../qml/app/CatalogPageContent.qml" line="123"/>
         <source>With friends</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="147"/>
+        <location filename="../qml/app/CatalogPageContent.qml" line="118"/>
+        <source>What&apos;s buzzing right now</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/app/CatalogPageContent.qml" line="124"/>
+        <source>Chaotic co-op and party games</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/app/CatalogPageContent.qml" line="129"/>
         <source>Solo</source>
         <translation></translation>
     </message>
     <message>
+        <location filename="../qml/app/CatalogPageContent.qml" line="130"/>
+        <source>Single-player picks worth trying</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../qml/app/CatalogPageContent.qml" line="136"/>
-        <source>Recently added to your sources</source>
-        <translation></translation>
+        <source>Fresh releases</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="142"/>
-        <source>Co-op and multiplayer</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="148"/>
-        <source>Single-player adventures</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="170"/>
-        <source>Browse all games</source>
-        <translation></translation>
+        <location filename="../qml/app/CatalogPageContent.qml" line="166"/>
+        <source>All games</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2782,24 +2782,6 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <location filename="../qml/i18n/Messages.qml" line="51"/>
         <source>Game files will be deleted from disk. This cannot be undone.</source>
         <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>NotificationsPopup</name>
-    <message>
-        <location filename="../qml/components/NotificationsPopup.qml" line="46"/>
-        <source>Notifications</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../qml/components/NotificationsPopup.qml" line="88"/>
-        <source>Empty for now</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../qml/components/NotificationsPopup.qml" line="97"/>
-        <source>Installs, errors, and other events will appear here.</source>
-        <translation></translation>
     </message>
 </context>
 <context>

@@ -8,14 +8,47 @@ ColumnLayout {
     id: root
 
     required property var page
-    spacing: MD.Token.spacing.large
+    spacing: MD.Token.spacing.medium
 
     signal browseAllRequested()
-    signal whatToPlayRequested()
 
     readonly property bool showSkeleton: Core.catalogDiscovery.loading
     readonly property bool noFeed: !Core.catalogDiscovery.feedLoaded
                                    && !Core.catalogDiscovery.loading
+
+    RowLayout {
+        Layout.fillWidth: true
+        spacing: MD.Token.spacing.medium
+
+        ColumnLayout {
+            Layout.fillWidth: true
+            spacing: MD.Token.spacing.extra_small
+
+            MD.Label {
+                Layout.fillWidth: true
+                text: qsTr("Discover")
+                typescale: MD.Token.typescale.headline_medium
+            }
+
+            MD.Label {
+                Layout.fillWidth: true
+                text: qsTr("A few shelves to browse. Open the full catalog anytime.")
+                wrapMode: Text.WordWrap
+                color: MD.Token.color.on_surface_variant
+                typescale: MD.Token.typescale.body_medium
+            }
+        }
+
+        MD.Button {
+            mdState.type: MD.Enum.BtFilled
+            text: qsTr("All games")
+            onClicked: root.browseAllRequested()
+        }
+    }
+
+    CatalogSourceChips {
+        Layout.fillWidth: true
+    }
 
     CatalogDiscoveryHero {
         Layout.fillWidth: true
@@ -24,13 +57,6 @@ ColumnLayout {
         page: root.page
         shelfModel: Core.catalogDiscovery.onFireShelf
         onOpenGame: function (id) { page.openGame(id) }
-    }
-
-    CatalogMoodChips {
-        Layout.fillWidth: true
-        visible: !root.noFeed
-        page: root.page
-        onWhatToPlayRequested: root.whatToPlayRequested()
     }
 
     CatalogDiscoverySkeleton {
@@ -46,22 +72,16 @@ ColumnLayout {
 
         MD.Label {
             Layout.fillWidth: true
-            text: qsTr("Discovery feed not installed yet")
+            text: qsTr("Couldn't load discovery")
             typescale: MD.Token.typescale.title_medium
         }
 
         MD.Label {
             Layout.fillWidth: true
-            text: qsTr("Shelves will come from a backend feed (discovery-feed.json). Use Browse all games for now.")
+            text: qsTr("Check your connection, or open All games.")
             wrapMode: Text.WordWrap
             color: MD.Token.color.on_surface_variant
             typescale: MD.Token.typescale.body_medium
-        }
-
-        MD.Button {
-            mdState.type: MD.Enum.BtOutlined
-            text: qsTr("Browse all games")
-            onClicked: root.browseAllRequested()
         }
     }
 }

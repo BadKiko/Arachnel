@@ -5,14 +5,17 @@
 
 #include <QJsonObject>
 #include <QObject>
+#include <QPointer>
 #include <QString>
 #include <QVector>
+
+class QNetworkAccessManager;
+class QNetworkReply;
 
 namespace arachnel::core {
 
 /**
- * Discovery shelves from a precomputed feed JSON (backend later).
- * Does not scrape Steam or rebuild shelves from live metadata.
+ * Discovery shelves from a remote feed JSON (fetched on each refresh).
  */
 class CatalogDiscoveryService : public QObject
 {
@@ -44,7 +47,7 @@ public:
     CatalogShelfModel* soloShelf() const { return m_solo; }
     CatalogShelfModel* onlineFixShelf() const { return m_onlineFix; }
 
-    /** Reload discovery-feed.json from AppDataLocation (if present). */
+    /** Fetch discovery feed from the backend (no local cache). */
     Q_INVOKABLE void refresh();
     void onEntryMetadataChanged(const QString& entryId);
     void onCatalogCacheRebuilt();
@@ -60,7 +63,10 @@ private:
     void bindShelves();
     void clearShelves();
     void reapplyFeed();
-    bool loadFeedFromDisk();
+    void fetchFeed();
+    void cancelActive();
+    void handleFeedFinished(QNetworkReply* reply);
+    bool applyFeedJson(const QByteArray& payload);
     QVector<int> indicesForEntryIds(const QStringList& entryIds) const;
     QStringList entryIdsForShelf(const QString& shelfId) const;
     QStringList entryIdsForMood(const QString& moodId) const;
@@ -70,6 +76,10 @@ private:
     QString m_moodId;
     bool m_loading = false;
     bool m_feedLoaded = false;
+    quint64 m_requestSerial = 0;
+
+    QNetworkAccessManager* m_network = nullptr;
+    QPointer<QNetworkReply> m_activeReply;
 
     CatalogShelfModel* m_onFire = nullptr;
     CatalogShelfModel* m_new = nullptr;

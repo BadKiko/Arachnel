@@ -1,20 +1,19 @@
 #include "catalog_discovery_service.h"
 
-#include <QFile>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QStandardPaths>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
+#include <QUrl>
+#include <QVariant>
 
 namespace arachnel::core {
 
 namespace {
 
-QString discoveryFeedPath()
-{
-    return QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
-        + QStringLiteral("/discovery-feed.json");
-}
+constexpr auto kDiscoveryFeedUrl = "https://discover.badkiko.ru/discovery-feed.json";
 
 QStringList stringListFromJson(const QJsonValue& value)
 {
@@ -40,6 +39,7 @@ QStringList stringListFromJson(const QJsonValue& value)
 
 CatalogDiscoveryService::CatalogDiscoveryService(QObject* parent)
     : QObject(parent)
+    , m_network(new QNetworkAccessManager(this))
     , m_onFire(new CatalogShelfModel(QStringLiteral("onFire"), this))
     , m_new(new CatalogShelfModel(QStringLiteral("new"), this))
     , m_friends(new CatalogShelfModel(QStringLiteral("friends"), this))
@@ -52,10 +52,7 @@ void CatalogDiscoveryService::setCache(QVector<CatalogEntry>* cache)
 {
     m_cache = cache;
     bindShelves();
-    if (!m_feedLoaded)
-        loadFeedFromDisk();
-    else
-        reapplyFeed();
+    fetchFeed();
 }
 
 void CatalogDiscoveryService::setMoodId(const QString& moodId)
@@ -78,23 +75,18 @@ void CatalogDiscoveryService::setLoading(bool loading)
 
 void CatalogDiscoveryService::refresh()
 {
-    setLoading(true);
-    loadFeedFromDisk();
-    setLoading(false);
+    fetchFeed();
 }
 
 void CatalogDiscoveryService::onCatalogCacheRebuilt()
 {
     bindShelves();
-    if (!m_feedLoaded)
-        loadFeedFromDisk();
-    else
-        reapplyFeed();
+    reapplyFeed();
 }
 
 void CatalogDiscoveryService::onEntryMetadataChanged(const QString& entryId)
 {
-    // Update card fields only — never reshuffle shelf membership.
+    // Update card fields only. Never reshuffle shelf membership.
     m_onFire->notifyEntryChanged(entryId);
     m_new->notifyEntryChanged(entryId);
     m_friends->notifyEntryChanged(entryId);
@@ -185,11 +177,57 @@ void CatalogDiscoveryService::reapplyFeed()
     emit shelvesChanged();
 }
 
-bool CatalogDiscoveryService::loadFeedFromDisk()
+void CatalogDiscoveryService::cancelActive()
 {
-    const QString path = discoveryFeedPath();
-    QFile file(path);
-    if (!file.exists() || !file.open(QIODevice::ReadOnly)) {
+    if (!m_activeReply)
+        return;
+    QNetworkReply* reply = m_activeReply.data();
+    m_activeReply.clear();
+    if (!reply)
+        return;
+    reply->disconnect(this);
+    reply->abort();
+    reply->deleteLater();
+}
+
+void CatalogDiscoveryService::fetchFeed()
+{
+    cancelActive();
+    setLoading(true);
+
+    const quint64 serial = ++m_requestSerial;
+    QNetworkRequest request(QUrl(QString::fromUtf8(kDiscoveryFeedUrl)));
+    request.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("Arachnel/0.1"));
+    request.setAttribute(QNetworkRequest::CacheLoadControlAttribute,
+                         QNetworkRequest::AlwaysNetwork);
+    request.setRawHeader("Cache-Control", "no-cache");
+    request.setTransferTimeout(30000);
+
+    QNetworkReply* reply = m_network->get(request);
+    reply->setProperty("requestSerial", QVariant::fromValue(serial));
+    m_activeReply = reply;
+    connect(reply, &QNetworkReply::finished, this, [this, reply]() { handleFeedFinished(reply); });
+}
+
+void CatalogDiscoveryService::handleFeedFinished(QNetworkReply* reply)
+{
+    const quint64 serial = reply->property("requestSerial").toULongLong();
+    const bool isActive = (m_activeReply == reply);
+    if (isActive)
+        m_activeReply.clear();
+
+    if (serial != m_requestSerial || !isActive) {
+        reply->deleteLater();
+        return;
+    }
+
+    if (reply->error() == QNetworkReply::OperationCanceledError) {
+        reply->deleteLater();
+        setLoading(false);
+        return;
+    }
+
+    if (reply->error() != QNetworkReply::NoError) {
         m_feed = {};
         if (m_feedLoaded) {
             m_feedLoaded = false;
@@ -197,20 +235,33 @@ bool CatalogDiscoveryService::loadFeedFromDisk()
         }
         clearShelves();
         emit shelvesChanged();
-        return false;
+        reply->deleteLater();
+        setLoading(false);
+        return;
     }
 
-    QJsonParseError err;
-    const QJsonDocument doc = QJsonDocument::fromJson(file.readAll(), &err);
-    file.close();
-    if (err.error != QJsonParseError::NoError || !doc.isObject()) {
+    const QByteArray payload = reply->readAll();
+    reply->deleteLater();
+
+    if (!applyFeedJson(payload)) {
         m_feed = {};
-        m_feedLoaded = false;
-        emit feedChanged();
+        if (m_feedLoaded) {
+            m_feedLoaded = false;
+            emit feedChanged();
+        }
         clearShelves();
         emit shelvesChanged();
-        return false;
     }
+
+    setLoading(false);
+}
+
+bool CatalogDiscoveryService::applyFeedJson(const QByteArray& payload)
+{
+    QJsonParseError err;
+    const QJsonDocument doc = QJsonDocument::fromJson(payload, &err);
+    if (err.error != QJsonParseError::NoError || !doc.isObject())
+        return false;
 
     m_feed = doc.object();
     m_feedLoaded = true;

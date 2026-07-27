@@ -99,15 +99,10 @@ Item {
                         width: discoveryList.width - discoveryList.leftMargin - discoveryList.rightMargin
                         spacing: MD.Token.spacing.small
 
-                        CatalogIntroHeader {
-                            width: parent.width
-                        }
-
                         CatalogDiscoveryHeader {
                             width: parent.width
                             page: content.page
                             onBrowseAllRequested: page.browseAllMode = true
-                            onWhatToPlayRequested: page.openPlayPicker()
                         }
                     }
 
@@ -117,45 +112,40 @@ Item {
                                                                      || Core.catalogDiscovery.friendsShelf.count > 0
                                                                      || Core.catalogDiscovery.soloShelf.count > 0)
 
-                    readonly property var discoveryShelfSections: Core.catalogDiscovery.moodActive
-                        ? [{
-                            title: qsTr("Matches your filter"),
-                            subtitle: qsTr("Sorted by buzz and freshness"),
-                            iconName: MD.Token.icon.filter_alt,
+                    readonly property var discoveryShelfSections: [
+                        {
+                            title: qsTr("Hits"),
+                            subtitle: qsTr("What's buzzing right now"),
+                            iconName: MD.Token.icon.local_fire_department,
                             shelfModel: Core.catalogDiscovery.onFireShelf
-                        }]
-                        : [
-                            {
-                                title: qsTr("Hits"),
-                                subtitle: qsTr("Trending right now"),
-                                iconName: MD.Token.icon.local_fire_department,
-                                shelfModel: Core.catalogDiscovery.onFireShelf
-                            },
-                            {
-                                title: qsTr("New games"),
-                                subtitle: qsTr("Recently added to your sources"),
-                                iconName: MD.Token.icon.fiber_new,
-                                shelfModel: Core.catalogDiscovery.newShelf
-                            },
-                            {
-                                title: qsTr("With friends"),
-                                subtitle: qsTr("Co-op and multiplayer"),
-                                iconName: MD.Token.icon.groups,
-                                shelfModel: Core.catalogDiscovery.friendsShelf
-                            },
-                            {
-                                title: qsTr("Solo"),
-                                subtitle: qsTr("Single-player adventures"),
-                                iconName: MD.Token.icon.person,
-                                shelfModel: Core.catalogDiscovery.soloShelf
-                            }
-                        ]
+                        },
+                        {
+                            title: qsTr("With friends"),
+                            subtitle: qsTr("Chaotic co-op and party games"),
+                            iconName: MD.Token.icon.groups,
+                            shelfModel: Core.catalogDiscovery.friendsShelf
+                        },
+                        {
+                            title: qsTr("Solo"),
+                            subtitle: qsTr("Single-player picks worth trying"),
+                            iconName: MD.Token.icon.person,
+                            shelfModel: Core.catalogDiscovery.soloShelf
+                        },
+                        {
+                            title: qsTr("New games"),
+                            subtitle: qsTr("Fresh releases"),
+                            iconName: MD.Token.icon.fiber_new,
+                            shelfModel: Core.catalogDiscovery.newShelf
+                        }
+                    ]
 
                     model: showDiscoveryShelves ? discoveryShelfSections : []
 
                     delegate: CatalogShelfRow {
                         required property var modelData
                         width: discoveryList.width - discoveryList.leftMargin - discoveryList.rightMargin
+                        visible: modelData.shelfModel && modelData.shelfModel.count > 0
+                        height: visible ? implicitHeight : 0
                         title: modelData.title
                         subtitle: modelData.subtitle
                         iconName: modelData.iconName
@@ -163,12 +153,19 @@ Item {
                         page: content.page
                     }
 
-                    footer: MD.Button {
+                    footer: Item {
                         width: discoveryList.width - discoveryList.leftMargin - discoveryList.rightMargin
-                        visible: showDiscoveryShelves
-                        mdState.type: MD.Enum.BtOutlined
-                        text: qsTr("Browse all games")
-                        onClicked: page.browseAllMode = true
+                        height: showDiscoveryShelves ? browseAllFooter.implicitHeight + MD.Token.spacing.medium : 0
+
+                        MD.Button {
+                            id: browseAllFooter
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.bottom: parent.bottom
+                            visible: showDiscoveryShelves
+                            mdState.type: MD.Enum.BtOutlined
+                            text: qsTr("All games")
+                            onClicked: page.browseAllMode = true
+                        }
                     }
                 }
 

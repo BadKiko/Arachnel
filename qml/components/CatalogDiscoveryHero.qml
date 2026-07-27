@@ -142,7 +142,7 @@ Item {
 
                     MD.Button {
                         mdState.type: MD.Enum.BtTonal
-                        text: qsTr("Browse all")
+                        text: qsTr("All games")
                         onClicked: page.browseAllMode = true
                     }
                 }
