@@ -102,7 +102,7 @@ Item {
                         CatalogDiscoveryHeader {
                             width: parent.width
                             page: content.page
-                            onBrowseAllRequested: page.browseAllMode = true
+                            onBrowseAllRequested: page.openFullCatalog("")
                         }
                     }
 
@@ -204,8 +204,11 @@ Item {
     CatalogPlayPickerSheet {
         id: playPickerSheet
         onApplied: {
-            page.browseAllMode = true
             page.persistCatalogFilters()
+            if (page.browseOnly)
+                page.browseAllMode = true
+            else
+                page.openFullCatalog("")
         }
     }
 

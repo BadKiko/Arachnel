@@ -65,17 +65,22 @@
         <translation>Arachnel</translation>
     </message>
     <message>
-        <location filename="../qml/app/AppWindow.qml" line="111"/>
+        <location filename="../qml/app/AppWindow.qml" line="120"/>
         <source>Library</source>
         <translation>Библиотека</translation>
     </message>
     <message>
-        <location filename="../qml/app/AppWindow.qml" line="115"/>
+        <location filename="../qml/app/AppWindow.qml" line="124"/>
+        <source>Discover</source>
+        <translation>Подборки</translation>
+    </message>
+    <message>
+        <location filename="../qml/app/AppWindow.qml" line="128"/>
         <source>Catalog</source>
         <translation>Каталог</translation>
     </message>
     <message>
-        <location filename="../qml/app/AppWindow.qml" line="119"/>
+        <location filename="../qml/app/AppWindow.qml" line="132"/>
         <source>Downloads</source>
         <translation>Загрузки</translation>
     </message>
@@ -101,19 +106,19 @@
 <context>
     <name>CatalogDiscoveryHeader</name>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="87"/>
+        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="83"/>
         <source>Couldn&apos;t load discovery</source>
         <translation>Не удалось загрузить discovery</translation>
     </message>
     <message>
         <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="41"/>
-        <source>Discover</source>
-        <translation>Подборки</translation>
+        <source>Discover something to play</source>
+        <translation>Найди, во что поиграть</translation>
     </message>
     <message>
         <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="47"/>
-        <source>A few shelves to browse. Open the full catalog anytime.</source>
-        <translation>Несколько полок, чтобы полистать. Весь каталог всегда рядом.</translation>
+        <source>Curated shelves from your catalogs — covers and live stats via Steam.</source>
+        <translation>Подборки из ваших каталогов — обложки и онлайн через Steam.</translation>
     </message>
     <message>
         <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="56"/>
@@ -121,19 +126,19 @@
         <translation>Все игры</translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="93"/>
+        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="89"/>
         <source>Check your connection, or open All games.</source>
         <translation>Проверь интернет или открой «Все игры».</translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="107"/>
+        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="103"/>
         <source>No matching games in your catalog</source>
-        <translation type="unfinished"></translation>
+        <translation>В каталоге нет подходящих игр</translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="113"/>
+        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="109"/>
         <source>Discovery loaded, but none of these titles are in your enabled sources yet.</source>
-        <translation type="unfinished"></translation>
+        <translation>Подборки загружены, но этих игр ещё нет во включённых источниках.</translation>
     </message>
 </context>
 <context>
@@ -344,13 +349,13 @@
     <name>CatalogIntroHeader</name>
     <message>
         <location filename="../qml/components/CatalogIntroHeader.qml" line="11"/>
-        <source>Discover something to play</source>
-        <translation>Найди, во что поиграть</translation>
+        <source>Browse the catalog</source>
+        <translation>Каталог игр</translation>
     </message>
     <message>
         <location filename="../qml/components/CatalogIntroHeader.qml" line="17"/>
-        <source>Curated shelves from your catalogs — covers and live stats via Steam.</source>
-        <translation>Подборки из ваших каталогов — обложки и онлайн через Steam.</translation>
+        <source>Search and filter every game from your enabled sources.</source>
+        <translation>Поиск и фильтры по всем играм из включённых источников.</translation>
     </message>
 </context>
 <context>
@@ -1012,12 +1017,12 @@
     <message>
         <location filename="../src/core/jobs/job_display.cpp" line="35"/>
         <location filename="../src/core/jobs/job_status.cpp" line="37"/>
-        <location filename="../src/core/catalog/catalog_facade_2.cpp" line="285"/>
+        <location filename="../src/core/catalog/catalog_facade_2.cpp" line="309"/>
         <source>Install failed</source>
         <translation>Ошибка установки</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_controller.cpp" line="50"/>
+        <location filename="../src/core/catalog/catalog_controller.cpp" line="60"/>
         <source>Catalog error: %1</source>
         <translation>Ошибка каталога: %1</translation>
     </message>
@@ -1094,7 +1099,7 @@
         <translation>Игра не найдена</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_facade_2.cpp" line="327"/>
+        <location filename="../src/core/catalog/catalog_facade_2.cpp" line="351"/>
         <location filename="../src/core/jobs/job_facade_1.cpp" line="107"/>
         <source>Add-on not found</source>
         <translation>Дополнение не найдено</translation>
@@ -1120,7 +1125,7 @@
         <translation>Установите %1 (Proton-GE) в Настройки → Запуск перед скачиванием игр</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_facade_2.cpp" line="211"/>
+        <location filename="../src/core/catalog/catalog_facade_2.cpp" line="235"/>
         <source>No download link for %1</source>
         <translation>Нет ссылки для загрузки: %1</translation>
     </message>
@@ -1202,27 +1207,27 @@
         <translation>Исполняемые (*.exe *.sh *.x86_64);;Все файлы (*)</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_controller.cpp" line="165"/>
+        <location filename="../src/core/catalog/catalog_controller.cpp" line="307"/>
         <source>%1 · %2 games</source>
         <translation>%1 · %2 игр</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_controller.cpp" line="169"/>
+        <location filename="../src/core/catalog/catalog_controller.cpp" line="311"/>
         <source>%1 sources · %2 games</source>
         <translation>%1 источников · %2 игр</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_controller.cpp" line="250"/>
+        <location filename="../src/core/catalog/catalog_controller.cpp" line="434"/>
         <source>Catalog empty or unavailable: %1</source>
         <translation>Каталог пуст или недоступен: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_controller.cpp" line="269"/>
+        <location filename="../src/core/catalog/catalog_controller.cpp" line="453"/>
         <source>No catalog URL configured for source %1</source>
         <translation>Для источника %1 не задан URL каталога</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_facade_2.cpp" line="321"/>
+        <location filename="../src/core/catalog/catalog_facade_2.cpp" line="345"/>
         <source>Game not found: %1</source>
         <translation>Игра не найдена: %1</translation>
     </message>
@@ -1326,17 +1331,18 @@
         <translation>Некорректный URL — нужен http или https</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_facade_2.cpp" line="201"/>
+        <location filename="../src/core/catalog/catalog_facade_2.cpp" line="205"/>
+        <location filename="../src/core/catalog/catalog_facade_2.cpp" line="225"/>
         <source>Catalog entry not found: %1</source>
         <translation>Запись каталога не найдена: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_facade_2.cpp" line="216"/>
+        <location filename="../src/core/catalog/catalog_facade_2.cpp" line="240"/>
         <source>No Steam App ID for %1</source>
         <translation>Нет Steam App ID для %1</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_facade_2.cpp" line="226"/>
+        <location filename="../src/core/catalog/catalog_facade_2.cpp" line="250"/>
         <source>Plugin not loaded: %1</source>
         <translation>Плагин не загружен: %1</translation>
     </message>
@@ -1361,24 +1367,24 @@
         <translation>Файлы плагинов (*.arach)</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_facade_2.cpp" line="238"/>
-        <location filename="../src/core/catalog/catalog_facade_2.cpp" line="293"/>
+        <location filename="../src/core/catalog/catalog_facade_2.cpp" line="262"/>
+        <location filename="../src/core/catalog/catalog_facade_2.cpp" line="317"/>
         <source>Could not start download for %1</source>
         <translation>Не удалось начать загрузку %1</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_facade_2.cpp" line="333"/>
+        <location filename="../src/core/catalog/catalog_facade_2.cpp" line="357"/>
         <source>Could not start add-on download</source>
         <translation>Не удалось начать загрузку дополнения</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_facade_2.cpp" line="342"/>
+        <location filename="../src/core/catalog/catalog_facade_2.cpp" line="366"/>
         <source>Entry not found: %1</source>
         <translation>Запись не найдена: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_facade_2.cpp" line="236"/>
-        <location filename="../src/core/catalog/catalog_facade_2.cpp" line="357"/>
+        <location filename="../src/core/catalog/catalog_facade_2.cpp" line="260"/>
+        <location filename="../src/core/catalog/catalog_facade_2.cpp" line="381"/>
         <source>Could not start update for %1</source>
         <translation>Не удалось начать обновление %1</translation>
     </message>
@@ -2411,6 +2417,29 @@
     </message>
     <message>
         <location filename="../qml/settings/InstallLocationSheet.qml" line="144"/>
+        <source>Cancel</source>
+        <translation>Отмена</translation>
+    </message>
+</context>
+<context>
+    <name>InstallSourceSheet</name>
+    <message>
+        <location filename="../qml/settings/InstallSourceSheet.qml" line="34"/>
+        <source>Choose download source</source>
+        <translation>Выберите источник загрузки</translation>
+    </message>
+    <message>
+        <location filename="../qml/settings/InstallSourceSheet.qml" line="42"/>
+        <source>Select which catalog to download from</source>
+        <translation>Выберите каталог, из которого скачать игру</translation>
+    </message>
+    <message>
+        <location filename="../qml/settings/InstallSourceSheet.qml" line="93"/>
+        <source>Unknown source</source>
+        <translation>Неизвестный источник</translation>
+    </message>
+    <message>
+        <location filename="../qml/settings/InstallSourceSheet.qml" line="122"/>
         <source>Cancel</source>
         <translation>Отмена</translation>
     </message>

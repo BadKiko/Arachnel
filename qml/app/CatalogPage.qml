@@ -78,17 +78,21 @@ Item {
     property real savedGridScrollY: 0
     property real savedListScrollY: 0
     property bool restoringFilters: false
+    /** When true (Catalog tab), always show the full game list — never discovery shelves. */
+    property bool browseOnly: false
     property bool browseAllMode: false
 
-    readonly property bool discoveryMode: !root.browseAllMode
+    readonly property bool discoveryMode: !root.browseOnly
+                                         && !root.browseAllMode
                                          && root.searchQuery.length === 0
-                                         && Core.catalogActiveFilterCount === 0
                                          && !root.noSources
                                          && !root.noSourceSelected
 
     signal openGame(string entryId)
     signal openSettings()
     signal addSourceRequested()
+    /** Discover tab: open the Catalog tab (optionally with a search query). */
+    signal openFullCatalog(string searchQuery)
 
     Settings {
         id: catalogPrefs
@@ -174,23 +178,43 @@ Item {
     function applyCatalogSearch(query) {
         if (!Core.activeCatalogSourceIds.length)
             return
+        // Discover tab: searching belongs in the full Catalog tab.
+        if (!root.browseOnly && query.length > 0) {
+            root.searchQuery = ""
+            catalogContent.searchText = ""
+            root.openFullCatalog(query)
+            return
+        }
         root.searchQuery = query
-        if (query.length > 0)
+        if (root.browseOnly) {
             root.browseAllMode = true
-        else if (Core.catalogActiveFilterCount === 0)
+        } else if (query.length > 0) {
+            root.browseAllMode = true
+        } else if (Core.catalogActiveFilterCount === 0) {
             root.browseAllMode = false
+        }
         Core.applyCatalogSearch(query)
+        catalogContent.resetScroll()
+    }
+
+    function showBrowseAll(query) {
+        root.browseAllMode = true
+        if (query && query.length) {
+            root.searchQuery = query
+            catalogContent.searchText = query
+            Core.applyCatalogSearch(query)
+        }
         catalogContent.resetScroll()
     }
 
     Component.onCompleted: {
         Core.catalog.sortMode = catalogPrefs.sortMode
         root.restoreCatalogFilters()
-        if (Core.catalogActiveFilterCount > 0)
+        if (root.browseOnly || Core.catalogActiveFilterCount > 0)
             root.browseAllMode = true
         Core.prefetchCatalogCounts()
         root.ensureValidSource()
-        if (Core.catalogDiscovery)
+        if (Core.catalogDiscovery && !root.browseOnly)
             Core.catalogDiscovery.refresh()
     }
 
@@ -208,9 +232,16 @@ Item {
         }
         function onCatalogFiltersChanged() {
             root.persistCatalogFilters()
-            if (Core.catalogActiveFilterCount > 0)
+            if (root.browseOnly) {
                 root.browseAllMode = true
-            else if (root.searchQuery.length === 0)
+                return
+            }
+            // Discover tab: filters belong on the Catalog tab.
+            if (Core.catalogActiveFilterCount > 0) {
+                root.openFullCatalog(root.searchQuery)
+                return
+            }
+            if (root.searchQuery.length === 0)
                 root.browseAllMode = false
         }
     }

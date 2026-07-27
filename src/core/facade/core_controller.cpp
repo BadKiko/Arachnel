@@ -222,9 +222,8 @@ CoreController::CoreController(QObject* parent)
         m_catalogDiscovery->setCache(&m_catalogCache);
     }
 
-    const QString firstSource = m_sources.firstEnabledId();
-    if (!firstSource.isEmpty() && m_catalogController)
-        m_catalogController->setActiveCatalogSource(firstSource);
+    if (m_catalogController)
+        m_catalogController->selectAllEnabledSources();
 
     if (m_settings.autoCheckAppUpdates() && m_appUpdater) {
         QTimer::singleShot(4000, this, [this]() {

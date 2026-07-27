@@ -70,7 +70,7 @@ Item {
                 text: qsTr("Refresh")
                 icon.name: MD.Token.icon.refresh
                 mdState.type: MD.Enum.BtFilledTonal
-                onClicked: Core.refreshCatalog(Core.activeCatalogSourceId)
+                onClicked: Core.refreshSelectedCatalogs()
             }
         }
     }

@@ -8,20 +8,16 @@ ColumnLayout {
 
     MD.Label {
         Layout.fillWidth: true
-        text: qsTr("Discover something to play")
+        text: qsTr("Browse the catalog")
         typescale: MD.Token.typescale.headline_medium
     }
 
     MD.Label {
         Layout.fillWidth: true
-        text: qsTr("Curated shelves from your catalogs — covers and live stats via Steam.")
+        text: qsTr("Search and filter every game from your enabled sources.")
         wrapMode: Text.WordWrap
         color: MD.Token.color.on_surface_variant
         typescale: MD.Token.typescale.body_medium
-    }
-
-    CatalogSourceChips {
-        Layout.fillWidth: true
     }
 
     Item {

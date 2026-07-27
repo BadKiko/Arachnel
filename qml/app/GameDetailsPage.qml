@@ -160,6 +160,7 @@ Item {
     }
 
     onGameIdChanged: {
+        root.pendingInstallEntryId = ""
         refreshDownloadJob()
         syncMediaLoading()
         maybeEnrich()
@@ -206,10 +207,18 @@ Item {
     }
 
     signal backRequested()
+    signal openSourcePicker(string entryId, string title)
     signal openAddonPicker(string entryId, string title)
     signal openInstallPicker(string entryId, string title, var selectedAddonIds)
     signal openSteamidraTrust()
     signal protonRequired()
+
+    /** Catalog entry id for the chosen install source (may differ from showcase gameId). */
+    property string pendingInstallEntryId: ""
+
+    function resolveInstallEntryId() {
+        return root.pendingInstallEntryId.length ? root.pendingInstallEntryId : root.gameId
+    }
 
     function needsProtonCheck() {
         return root.onLinux && Core.needsProtonOnPlatform() && !Core.protonReady
@@ -221,10 +230,24 @@ Item {
             return
         }
         const ids = selectedAddonIds || []
+        const installId = root.resolveInstallEntryId()
+        const details = Core.entryDetails(installId)
+        const title = (details.title || root.info.title || "")
         if (Core.needsInstallLocationChoice())
-            root.openInstallPicker(root.gameId, root.info.title || "", ids)
+            root.openInstallPicker(installId, title, ids)
         else
-            Core.installCatalogEntry(root.gameId, "", ids)
+            Core.installCatalogEntry(installId, "", ids)
+    }
+
+    function continueAfterSourceChosen() {
+        const installId = root.resolveInstallEntryId()
+        const details = Core.entryDetails(installId)
+        const addonCount = details.addonCount ?? 0
+        if (addonCount > 0) {
+            root.openAddonPicker(installId, details.title || root.info.title || "")
+            return
+        }
+        root.afterAddonsSelected([])
     }
 
     function beginInstall() {
@@ -232,12 +255,22 @@ Item {
             root.protonRequired()
             return
         }
-        const addonCount = root.info.addonCount ?? 0
-        if (addonCount > 0) {
-            root.openAddonPicker(root.gameId, root.info.title || "")
+        root.pendingInstallEntryId = ""
+        const offers = Core.installOffersForEntry(root.gameId)
+        if (offers.length > 1) {
+            root.openSourcePicker(root.gameId, root.info.title || "")
             return
         }
-        root.afterAddonsSelected([])
+        if (offers.length === 1 && (offers[0].entryId || "").length)
+            root.pendingInstallEntryId = offers[0].entryId
+        else
+            root.pendingInstallEntryId = root.gameId
+        root.continueAfterSourceChosen()
+    }
+
+    function afterSourceSelected(offerEntryId, _sourceId) {
+        root.pendingInstallEntryId = (offerEntryId && offerEntryId.length) ? offerEntryId : root.gameId
+        root.continueAfterSourceChosen()
     }
 
     function afterAddonsSelected(selectedAddonIds) {

@@ -38,13 +38,13 @@ ColumnLayout {
 
             MD.Label {
                 Layout.fillWidth: true
-                text: qsTr("Discover")
+                text: qsTr("Discover something to play")
                 typescale: MD.Token.typescale.headline_medium
             }
 
             MD.Label {
                 Layout.fillWidth: true
-                text: qsTr("A few shelves to browse. Open the full catalog anytime.")
+                text: qsTr("Curated shelves from your catalogs — covers and live stats via Steam.")
                 wrapMode: Text.WordWrap
                 color: MD.Token.color.on_surface_variant
                 typescale: MD.Token.typescale.body_medium
@@ -56,10 +56,6 @@ ColumnLayout {
             text: qsTr("All games")
             onClicked: root.browseAllRequested()
         }
-    }
-
-    CatalogSourceChips {
-        Layout.fillWidth: true
     }
 
     CatalogDiscoveryHero {
