@@ -1,14 +1,30 @@
 <div align="center">
 
-<img src="resources/icons/arachnel-github.svg" width="96" alt="Arachnel" />
+<img src="resources/icons/arachnel-github.svg" width="128" alt="Arachnel logo" />
 
-# Arachnel
+<h1>Arachnel</h1>
 
-[English](README.md) · [Русский](README.ru.md)
+<p>
+  <a href="README.md"><img src="https://img.shields.io/badge/README-English-8E8E93?style=for-the-badge&labelColor=161618" alt="English README"></a>
+  <a href="README.ru.md"><img src="https://img.shields.io/badge/README-Русский-8E8E93?style=for-the-badge&labelColor=161618" alt="Russian README"></a>
+</p>
 
-<img src="images/demo.gif" width="720" alt="Демо Arachnel">
+<p>
+  <a href="https://hosted.weblate.org/engage/arachnel/">
+    <img src="https://hosted.weblate.org/widget/arachnel/application/svg-badge.svg" alt="Translation status">
+  </a>
+</p>
+
+<br>
+
+<img src="docs/readme-carousel.svg" width="960" alt="Arachnel UI previews">
 
 </div>
+
+<br>
+
+<img src="images/demo.gif" width="800" alt="Arachnel demo — catalog, downloads, library">
+
 
 Лаунчер игр под Windows и Linux.
 
