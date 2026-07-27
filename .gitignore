@@ -10,6 +10,9 @@ compile_commands.json
 CMakeUserPresets.json
 libs/
 
+# Local IDE
+.vscode/
+
 # run.ps1 --package (deploy staging + release zip)
 dist-win/
 Arachnel-win64-*.zip
@@ -27,6 +30,10 @@ setup/staging/
 build_dlls.txt
 dist_dlls.txt
 qml-test-err.txt
+
+# Local plugin packages / catalog dumps (not part of the launcher repo)
+*.arach
+freetp/
 
 # Local deploy helper (Cursor /deploy-local)
 scripts/deploy-media.ps1
