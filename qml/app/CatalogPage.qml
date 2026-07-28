@@ -214,11 +214,6 @@ Item {
             Core.catalogDiscovery.refresh()
     }
 
-    onEnabledChanged: {
-        if (enabled)
-            root.ensureValidSource()
-    }
-
     Connections {
         target: Core
         function onActiveCatalogSourceIdsChanged() {

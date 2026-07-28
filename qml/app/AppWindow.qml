@@ -135,6 +135,9 @@ MD.ApplicationWindow {
         }
     ]
 
+    // Main rail tabs stay mounted; keep the crossfade short so Discover/Catalog feel instant.
+    readonly property int mainTabDuration: MD.Token.duration.short4
+
     Component {
         id: mainPagesComponent
         Item {
@@ -161,15 +164,14 @@ MD.ApplicationWindow {
 
                 Behavior on opacity {
                     NumberAnimation {
-                        duration: pageStack.enterDuration
+                        duration: root.mainTabDuration
                         easing: MD.Token.easing.emphasized_decelerate
                     }
                 }
                 Behavior on scale {
                     NumberAnimation {
-                        duration: pageStack.enterDuration
-                        easing.type: Easing.OutBack
-                        easing.overshoot: 1.2
+                        duration: root.mainTabDuration
+                        easing: MD.Token.easing.emphasized_decelerate
                     }
                 }
             }
@@ -188,15 +190,14 @@ MD.ApplicationWindow {
 
                 Behavior on opacity {
                     NumberAnimation {
-                        duration: pageStack.enterDuration
+                        duration: root.mainTabDuration
                         easing: MD.Token.easing.emphasized_decelerate
                     }
                 }
                 Behavior on scale {
                     NumberAnimation {
-                        duration: pageStack.enterDuration
-                        easing.type: Easing.OutBack
-                        easing.overshoot: 1.2
+                        duration: root.mainTabDuration
+                        easing: MD.Token.easing.emphasized_decelerate
                     }
                 }
             }
@@ -215,15 +216,14 @@ MD.ApplicationWindow {
 
                 Behavior on opacity {
                     NumberAnimation {
-                        duration: pageStack.enterDuration
+                        duration: root.mainTabDuration
                         easing: MD.Token.easing.emphasized_decelerate
                     }
                 }
                 Behavior on scale {
                     NumberAnimation {
-                        duration: pageStack.enterDuration
-                        easing.type: Easing.OutBack
-                        easing.overshoot: 1.2
+                        duration: root.mainTabDuration
+                        easing: MD.Token.easing.emphasized_decelerate
                     }
                 }
             }
@@ -238,15 +238,14 @@ MD.ApplicationWindow {
 
                 Behavior on opacity {
                     NumberAnimation {
-                        duration: pageStack.enterDuration
+                        duration: root.mainTabDuration
                         easing: MD.Token.easing.emphasized_decelerate
                     }
                 }
                 Behavior on scale {
                     NumberAnimation {
-                        duration: pageStack.enterDuration
-                        easing.type: Easing.OutBack
-                        easing.overshoot: 1.2
+                        duration: root.mainTabDuration
+                        easing: MD.Token.easing.emphasized_decelerate
                     }
                 }
             }

@@ -216,6 +216,37 @@ Flickable {
             }
         }
 
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.leftMargin: contentMargin
+            Layout.rightMargin: contentMargin
+            spacing: MD.Token.spacing.medium
+
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 2
+
+                MD.Label {
+                    Layout.fillWidth: true
+                    text: qsTr("Include pre-releases")
+                    typescale: MD.Token.typescale.body_large
+                }
+
+                MD.Label {
+                    Layout.fillWidth: true
+                    text: qsTr("Offer beta and RC builds from GitHub.")
+                    color: MD.Token.color.on_surface_variant
+                    typescale: MD.Token.typescale.body_small
+                    wrapMode: Text.WordWrap
+                }
+            }
+
+            MD.Switch {
+                checked: Core.settings.includeAppPreReleases
+                onToggled: Core.settings.includeAppPreReleases = checked
+            }
+        }
+
         ColumnLayout {
             Layout.fillWidth: true
             Layout.leftMargin: contentMargin

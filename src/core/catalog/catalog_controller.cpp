@@ -508,10 +508,8 @@ void CatalogController::selectAllEnabledSources()
         if (source.enabled)
             enabled.append(source.id);
     }
-    if (enabled == m_activeSourceIds) {
-        rebuildMergedCatalog();
+    if (enabled == m_activeSourceIds)
         return;
-    }
     m_activeSourceIds = enabled;
     emit activeCatalogSourcesChanged();
     rebuildMergedCatalog();

@@ -868,28 +868,28 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="403"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="408"/>
         <source>Game not found for add-on</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="408"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="413"/>
         <source>Add-on not found in catalog</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="390"/>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="419"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="395"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="424"/>
         <source>Could not find game to install: %1</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="449"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="454"/>
         <source>Download complete - install manually</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="455"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="460"/>
         <source>Download error: %1</source>
         <translation></translation>
     </message>
@@ -1021,22 +1021,22 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="260"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="265"/>
         <source>Plugin install failed</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="274"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="279"/>
         <source>Plugin installed: %1</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="315"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="320"/>
         <source>Proton-GE installed</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="317"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="322"/>
         <source>Proton-GE download failed: %1</source>
         <translation></translation>
     </message>
@@ -1467,49 +1467,55 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/settings/app_updater.cpp" line="45"/>
+        <location filename="../src/core/settings/app_updater.cpp" line="47"/>
         <source>Not checked yet</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/settings/app_updater.cpp" line="117"/>
+        <location filename="../src/core/settings/app_updater.cpp" line="127"/>
         <source>Checking for Arachnel updates…</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/settings/app_updater.cpp" line="142"/>
+        <location filename="../src/core/settings/app_updater.cpp" line="154"/>
         <source>Update check failed: %1</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/settings/app_updater.cpp" line="166"/>
+        <location filename="../src/core/settings/app_updater.cpp" line="190"/>
+        <location filename="../src/core/settings/app_updater.cpp" line="210"/>
+        <location filename="../src/core/settings/app_updater.cpp" line="232"/>
         <source>Could not parse GitHub release information</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/settings/app_updater.cpp" line="193"/>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="289"/>
+        <location filename="../src/core/settings/app_updater.cpp" line="248"/>
+        <source>Arachnel %1 (pre-release) is available</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/core/settings/app_updater.cpp" line="251"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="294"/>
         <source>Arachnel %1 is available</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/settings/app_updater.cpp" line="195"/>
-        <location filename="../src/core/settings/app_updater.cpp" line="197"/>
+        <location filename="../src/core/settings/app_updater.cpp" line="254"/>
         <source>Arachnel is up to date (%1)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/settings/app_updater.cpp" line="199"/>
+        <location filename="../src/core/settings/app_updater.cpp" line="258"/>
         <source>Update found, but no installer package is available for this platform</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/settings/app_updater.cpp" line="218"/>
+        <location filename="../src/core/settings/app_updater.cpp" line="277"/>
         <source>Open the release page to download the latest package for your platform</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/settings/app_updater.cpp" line="233"/>
+        <location filename="../src/core/settings/app_updater.cpp" line="292"/>
         <source>Downloading Arachnel update…</source>
         <translation></translation>
     </message>
@@ -1540,7 +1546,7 @@
     </message>
     <message>
         <location filename="../src/core/plugins/plugin_catalog_service.cpp" line="332"/>
-        <location filename="../src/core/settings/app_updater.cpp" line="302"/>
+        <location filename="../src/core/settings/app_updater.cpp" line="361"/>
         <source>Download failed: %1</source>
         <translation></translation>
     </message>
@@ -1560,23 +1566,23 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/settings/app_updater.cpp" line="249"/>
-        <location filename="../src/core/settings/app_updater.cpp" line="314"/>
+        <location filename="../src/core/settings/app_updater.cpp" line="308"/>
+        <location filename="../src/core/settings/app_updater.cpp" line="373"/>
         <source>Could not save the downloaded installer</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/settings/app_updater.cpp" line="323"/>
+        <location filename="../src/core/settings/app_updater.cpp" line="382"/>
         <source>Starting updater…</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/settings/app_updater.cpp" line="344"/>
+        <location filename="../src/core/settings/app_updater.cpp" line="403"/>
         <source>Could not start the Arachnel installer</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/settings/app_updater.cpp" line="353"/>
+        <location filename="../src/core/settings/app_updater.cpp" line="412"/>
         <source>Automatic installer launch is only available on Windows</source>
         <translation></translation>
     </message>
@@ -1767,7 +1773,7 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/settings/settings_store_persistence.cpp" line="108"/>
+        <location filename="../src/core/settings/settings_store_persistence.cpp" line="110"/>
         <source>FreeTP torrent catalog - magnet links and add-ons</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3881,17 +3887,27 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="232"/>
+        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="231"/>
+        <source>Include pre-releases</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="237"/>
+        <source>Offer beta and RC builds from GitHub.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="263"/>
         <source>Check for Arachnel updates</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="241"/>
+        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="272"/>
         <source>Download and install</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="252"/>
+        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="283"/>
         <source>Open release page</source>
         <translation></translation>
     </message>

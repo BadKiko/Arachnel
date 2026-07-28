@@ -210,6 +210,15 @@ void SettingsStore::setAutoCheckAppUpdates(bool enabled)
     save();
 }
 
+void SettingsStore::setIncludeAppPreReleases(bool enabled)
+{
+    if (m_includeAppPreReleases == enabled)
+        return;
+    m_includeAppPreReleases = enabled;
+    emit includeAppPreReleasesChanged();
+    save();
+}
+
 void SettingsStore::setUiLanguage(const QString& languageCode)
 {
     const QString normalized = languageCode.trimmed().toLower();

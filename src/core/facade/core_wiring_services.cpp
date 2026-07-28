@@ -252,6 +252,11 @@ void CoreController::initializeServices()
     connect(m_launchController, &LaunchController::runningGameChanged, this,
             &CoreController::runningGameChanged);
     m_appUpdater = new AppUpdater(this);
+    m_appUpdater->setIncludePreReleases(m_settings.includeAppPreReleases());
+    connect(&m_settings, &SettingsStore::includeAppPreReleasesChanged, this, [this]() {
+        if (m_appUpdater)
+            m_appUpdater->setIncludePreReleases(m_settings.includeAppPreReleases());
+    });
     m_pluginCatalog = new PluginCatalogService(this);
     connect(m_pluginCatalog, &PluginCatalogService::installFinished, this,
             [this](const QString& pluginId, bool ok, const QString& detail) {

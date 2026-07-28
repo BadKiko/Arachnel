@@ -220,6 +220,8 @@ void CatalogModel::rebuildIdMap()
 
 void CatalogModel::setVisibleIndices(QVector<int> indices)
 {
+    if (indices == m_indices)
+        return;
     beginResetModel();
     m_indices = std::move(indices);
     sortIndices();

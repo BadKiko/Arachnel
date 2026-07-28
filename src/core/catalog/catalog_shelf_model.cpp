@@ -88,6 +88,8 @@ void CatalogShelfModel::bindSource(const QVector<CatalogEntry>* source)
 
 void CatalogShelfModel::setVisibleIndices(QVector<int> indices)
 {
+    if (indices == m_indices)
+        return;
     beginResetModel();
     m_indices = std::move(indices);
     m_idToRow.clear();

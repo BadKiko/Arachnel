@@ -22,6 +22,8 @@ namespace {
 
 const char* kGithubLatestRelease =
     "https://api.github.com/repos/BadKiko/Arachnel/releases/latest";
+const char* kGithubReleasesList =
+    "https://api.github.com/repos/BadKiko/Arachnel/releases?per_page=30";
 const char* kGithubReleasesPage = "https://github.com/BadKiko/Arachnel/releases/latest";
 
 QString preferredAssetNameHint()
@@ -48,6 +50,14 @@ AppUpdater::AppUpdater(QObject* parent)
 QString AppUpdater::currentVersion() const
 {
     return normalizeVersion(QCoreApplication::applicationVersion());
+}
+
+void AppUpdater::setIncludePreReleases(bool enabled)
+{
+    if (m_includePreReleases == enabled)
+        return;
+    m_includePreReleases = enabled;
+    emit includePreReleasesChanged();
 }
 
 QString AppUpdater::normalizeVersion(const QString& version)
@@ -116,7 +126,9 @@ void AppUpdater::checkForUpdates(bool notifyIfUpToDate)
     setChecking(true);
     setStatusText(QCoreApplication::translate("Core", "Checking for Arachnel updates…"));
 
-    QNetworkRequest request(QUrl(QString::fromUtf8(kGithubLatestRelease)));
+    const QUrl apiUrl(QString::fromUtf8(m_includePreReleases ? kGithubReleasesList
+                                                             : kGithubLatestRelease));
+    QNetworkRequest request(apiUrl);
     request.setHeader(QNetworkRequest::UserAgentHeader,
                       QStringLiteral("Arachnel/%1").arg(currentVersion()));
     request.setRawHeader("Accept", "application/vnd.github+json");
@@ -147,13 +159,67 @@ void AppUpdater::checkForUpdates(bool notifyIfUpToDate)
             return;
         }
 
-        handleReleasePayload(reply->readAll(), notifyIfUpToDate);
+        const QByteArray payload = reply->readAll();
+        if (m_includePreReleases)
+            handleReleasesListPayload(payload, notifyIfUpToDate);
+        else
+            handleReleasePayload(payload, notifyIfUpToDate);
     });
+}
+
+QString AppUpdater::assetDownloadUrl(const QJsonObject& release)
+{
+    const QString hint = preferredAssetNameHint();
+    for (const QJsonValue& value : release.value(QStringLiteral("assets")).toArray()) {
+        const QJsonObject asset = value.toObject();
+        const QString name = asset.value(QStringLiteral("name")).toString();
+        const QString url = asset.value(QStringLiteral("browser_download_url")).toString();
+        if (name.isEmpty() || url.isEmpty())
+            continue;
+        if (!hint.isEmpty() && name.contains(hint, Qt::CaseInsensitive))
+            return url;
+    }
+    return {};
+}
+
+void AppUpdater::handleReleasesListPayload(const QByteArray& payload, bool notifyIfUpToDate)
+{
+    const QJsonArray releases = QJsonDocument::fromJson(payload).array();
+    if (releases.isEmpty()) {
+        const QString error =
+            QCoreApplication::translate("Core", "Could not parse GitHub release information");
+        setLastError(error);
+        setStatusText(error);
+        emit updateFailed(error);
+        return;
+    }
+
+    for (const QJsonValue& value : releases) {
+        if (!value.isObject())
+            continue;
+        const QJsonObject release = value.toObject();
+        if (release.value(QStringLiteral("draft")).toBool(false))
+            continue;
+        if (assetDownloadUrl(release).isEmpty())
+            continue;
+        handleReleaseObject(release, notifyIfUpToDate);
+        return;
+    }
+
+    const QString error =
+        QCoreApplication::translate("Core", "Could not parse GitHub release information");
+    setLastError(error);
+    setStatusText(error);
+    emit updateFailed(error);
 }
 
 void AppUpdater::handleReleasePayload(const QByteArray& payload, bool notifyIfUpToDate)
 {
-    const QJsonObject release = QJsonDocument::fromJson(payload).object();
+    handleReleaseObject(QJsonDocument::fromJson(payload).object(), notifyIfUpToDate);
+}
+
+void AppUpdater::handleReleaseObject(const QJsonObject& release, bool notifyIfUpToDate)
+{
     const QString tag = normalizeVersion(release.value(QStringLiteral("tag_name")).toString());
     const QString htmlUrl = release.value(QStringLiteral("html_url")).toString();
     if (!htmlUrl.isEmpty())
@@ -171,30 +237,23 @@ void AppUpdater::handleReleasePayload(const QByteArray& payload, bool notifyIfUp
     }
 
     m_latestVersion = tag;
-    m_downloadUrl.clear();
-
-    const QString hint = preferredAssetNameHint();
-    for (const QJsonValue& value : release.value(QStringLiteral("assets")).toArray()) {
-        const QJsonObject asset = value.toObject();
-        const QString name = asset.value(QStringLiteral("name")).toString();
-        const QString url = asset.value(QStringLiteral("browser_download_url")).toString();
-        if (name.isEmpty() || url.isEmpty())
-            continue;
-        if (!hint.isEmpty() && name.contains(hint, Qt::CaseInsensitive)) {
-            m_downloadUrl = url;
-            break;
-        }
-    }
+    m_downloadUrl = assetDownloadUrl(release);
 
     const bool available = compareVersions(currentVersion(), tag) < 0 && !m_downloadUrl.isEmpty();
     m_updateAvailable = available;
 
     if (available) {
-        setStatusText(QCoreApplication::translate("Core", "Arachnel %1 is available").arg(tag));
+        if (release.value(QStringLiteral("prerelease")).toBool(false)) {
+            setStatusText(
+                QCoreApplication::translate("Core", "Arachnel %1 (pre-release) is available")
+                    .arg(tag));
+        } else {
+            setStatusText(QCoreApplication::translate("Core", "Arachnel %1 is available").arg(tag));
+        }
     } else if (compareVersions(currentVersion(), tag) >= 0) {
-        setStatusText(QCoreApplication::translate("Core", "Arachnel is up to date (%1)").arg(currentVersion()));
-        if (!notifyIfUpToDate)
-            setStatusText(QCoreApplication::translate("Core", "Arachnel is up to date (%1)").arg(currentVersion()));
+        setStatusText(QCoreApplication::translate("Core", "Arachnel is up to date (%1)")
+                          .arg(currentVersion()));
+        Q_UNUSED(notifyIfUpToDate);
     } else {
         setStatusText(QCoreApplication::translate(
             "Core", "Update found, but no installer package is available for this platform"));
