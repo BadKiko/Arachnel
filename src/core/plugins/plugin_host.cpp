@@ -4,6 +4,7 @@
 #include "catalog_types.h"
 #include "file_utils.h"
 #include "plugin_api.h"
+#include "plugin_catalog_json.h"
 #include "plugin_urls.h"
 
 #include <QCoreApplication>
@@ -59,8 +60,13 @@ void PluginHost::unloadAll()
         if (loaded->instance && loaded->destroyFn)
             loaded->destroyFn(loaded->instance);
         loaded->instance = nullptr;
-        if (loaded->library.isLoaded())
-            loaded->library.unload();
+        if (loaded->library.isLoaded()) {
+            const QString path = loaded->library.fileName();
+            if (!loaded->library.unload()) {
+                logDiagnostic(QStringLiteral("Plugin unload failed for %1: %2")
+                                  .arg(path, loaded->library.errorString()));
+            }
+        }
         delete loaded;
     }
     m_plugins.clear();
@@ -146,10 +152,18 @@ void PluginHost::scan()
         if (!rootDir.exists())
             continue;
 
+        // Finish delayed uninstalls from a previous session (DLL was still locked).
+        const QStringList leftover =
+            rootDir.entryList({QStringLiteral("*.deleted-*")}, QDir::Dirs | QDir::NoDotAndDotDot);
+        for (const QString& name : leftover)
+            removePathRecursive(rootDir.absoluteFilePath(name));
+
         const QStringList entries =
             rootDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
         for (const QString& entry : entries) {
             if (entry.endsWith(QStringLiteral(".staging")) || entry.endsWith(QStringLiteral(".bak")))
+                continue;
+            if (entry.contains(QStringLiteral(".deleted-")))
                 continue;
             const QString pluginDir = rootDir.absoluteFilePath(entry);
             loadPluginDir(pluginDir);
@@ -236,9 +250,11 @@ bool PluginHost::loadPluginDir(const QString& dirPath)
     auto resolvePluginFn = [&](const char* name) -> QFunctionPointer {
         QFunctionPointer symbol = loaded->library.resolve(name);
 #if defined(Q_OS_WIN)
+        // QLibrary already loaded the module - never LoadLibraryW again (leaks a ref and
+        // blocks uninstall/replace while the DLL stays locked).
         if (!symbol) {
             const HMODULE module =
-                LoadLibraryW(reinterpret_cast<LPCWSTR>(libraryPath.utf16()));
+                GetModuleHandleW(reinterpret_cast<LPCWSTR>(libraryPath.utf16()));
             if (module)
                 symbol = reinterpret_cast<QFunctionPointer>(GetProcAddress(module, name));
         }
@@ -253,6 +269,10 @@ bool PluginHost::loadPluginDir(const QString& dirPath)
         resolvePluginFn("arachnel_plugin_create"));
     auto* destroyFn = reinterpret_cast<void (*)(ISourcePlugin*)>(
         resolvePluginFn("arachnel_plugin_destroy"));
+    auto* catalogJsonFn = reinterpret_cast<int (*)(ISourcePlugin*, char**, size_t*)>(
+        resolvePluginFn("arachnel_plugin_catalog_json"));
+    auto* catalogJsonFreeFn =
+        reinterpret_cast<void (*)(char*)>(resolvePluginFn("arachnel_plugin_catalog_json_free"));
 
     if (!apiVersionFn || !createFn || !destroyFn) {
         loaded->library.unload();
@@ -266,17 +286,31 @@ bool PluginHost::loadPluginDir(const QString& dirPath)
         delete loaded;
         return false;
     }
-    if (catalogEntrySizeFn) {
+
+    // API 4+: catalog crosses as JSON; sizeof(CatalogEntry) is irrelevant.
+    if (exportedApi >= 4) {
+        if (!catalogJsonFn || !catalogJsonFreeFn) {
+            logDiagnostic(QStringLiteral(
+                              "Plugin rejected (API 4 requires catalog_json exports): %1 from %2")
+                              .arg(id, libraryPath));
+            loaded->library.unload();
+            delete loaded;
+            return false;
+        }
+        loaded->catalogJsonFn = catalogJsonFn;
+        loaded->catalogJsonFreeFn = catalogJsonFreeFn;
+    } else if (catalogEntrySizeFn) {
         const int pluginEntrySize = catalogEntrySizeFn();
         const int coreEntrySize = static_cast<int>(sizeof(CatalogEntry));
-        logDiagnostic(QStringLiteral("Plugin %1 CatalogEntry size: plugin=%2 core=%3")
+        logDiagnostic(QStringLiteral("Plugin %1 CatalogEntry size: plugin=%2 core=%3 (legacy API %4)")
                           .arg(id)
                           .arg(pluginEntrySize)
-                          .arg(coreEntrySize));
+                          .arg(coreEntrySize)
+                          .arg(exportedApi));
         if (pluginEntrySize != coreEntrySize) {
             logDiagnostic(QStringLiteral(
                               "Plugin rejected (CatalogEntry size mismatch): %1 plugin=%2 core=%3 "
-                              "from %4 - rebuild plugins with run.ps1")
+                              "from %4 - rebuild with matching SDK or migrate to API v4")
                               .arg(id)
                               .arg(pluginEntrySize)
                               .arg(coreEntrySize)
@@ -285,6 +319,10 @@ bool PluginHost::loadPluginDir(const QString& dirPath)
             delete loaded;
             return false;
         }
+        logDiagnostic(QStringLiteral(
+                          "Plugin %1 uses legacy CatalogEntry ABI (API %2); prefer API v4 JSON")
+                          .arg(id)
+                          .arg(exportedApi));
     } else {
         logDiagnostic(QStringLiteral(
                           "Plugin %1: catalog_entry_size export not resolved from %2 (library loaded=%3)")
@@ -320,10 +358,42 @@ bool PluginHost::loadPluginDir(const QString& dirPath)
     loaded->apiVersion = exportedApi;
 
     m_plugins.insert(id, loaded);
-    logDiagnostic(QStringLiteral("Plugin loaded: %1 v%2 from %3 (CatalogEntry=%4 bytes)")
-                      .arg(info.id, info.pluginVersion, libraryPath)
-                      .arg(sizeof(CatalogEntry)));
+    if (exportedApi >= 4) {
+        logDiagnostic(QStringLiteral("Plugin loaded: %1 v%2 from %3 (API %4, JSON catalog)")
+                          .arg(info.id, info.pluginVersion, libraryPath)
+                          .arg(exportedApi));
+    } else {
+        logDiagnostic(QStringLiteral("Plugin loaded: %1 v%2 from %3 (API %4, CatalogEntry=%5 bytes)")
+                          .arg(info.id, info.pluginVersion, libraryPath)
+                          .arg(exportedApi)
+                          .arg(sizeof(CatalogEntry)));
+    }
     return true;
+}
+
+QVector<CatalogEntry> PluginHost::loadPluginCatalog(const QString& id) const
+{
+    const auto it = m_plugins.constFind(id);
+    if (it == m_plugins.constEnd() || !it.value() || !it.value()->instance)
+        return {};
+
+    LoadedPlugin* loaded = it.value();
+    if (loaded->apiVersion >= 4 && loaded->catalogJsonFn && loaded->catalogJsonFreeFn) {
+        char* buf = nullptr;
+        size_t len = 0;
+        const int rc = loaded->catalogJsonFn(loaded->instance, &buf, &len);
+        if (rc != 0 || !buf) {
+            if (buf)
+                loaded->catalogJsonFreeFn(buf);
+            logDiagnostic(QStringLiteral("Plugin %1 catalog_json failed (rc=%2)").arg(id).arg(rc));
+            return {};
+        }
+        const QByteArray bytes(buf, static_cast<int>(len));
+        loaded->catalogJsonFreeFn(buf);
+        return parsePluginCatalogJson(bytes, id);
+    }
+
+    return loaded->instance->catalog();
 }
 
 QVector<SourcePluginInfo> PluginHost::pluginInfos() const

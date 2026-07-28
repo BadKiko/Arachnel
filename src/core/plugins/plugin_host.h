@@ -8,6 +8,7 @@
 #include <QLibrary>
 #include <QString>
 #include <QVector>
+#include <cstddef>
 #include <functional>
 
 namespace arachnel::core {
@@ -18,6 +19,8 @@ struct LoadedPlugin {
     QLibrary library;
     ISourcePlugin* instance = nullptr;
     void (*destroyFn)(ISourcePlugin*) = nullptr;
+    int (*catalogJsonFn)(ISourcePlugin*, char**, size_t*) = nullptr;
+    void (*catalogJsonFreeFn)(char*) = nullptr;
     int apiVersion = 0;
 };
 
@@ -33,6 +36,12 @@ public:
     void shutdownPlugins();
     QVector<SourcePluginInfo> pluginInfos() const;
     ISourcePlugin* plugin(const QString& id) const;
+    /**
+     * Load catalog entries for a plugin.
+     * API 4+: JSON across the DLL boundary (no CatalogEntry layout).
+     * API 2/3: calls plugin->catalog() directly.
+     */
+    QVector<CatalogEntry> loadPluginCatalog(const QString& id) const;
     bool hasPlugin(const QString& id) const;
     /** True if plugin.json exists under a search root (even if DLL failed to load). */
     bool hasPluginFilesOnDisk(const QString& id) const;

@@ -6,6 +6,13 @@
 #include <QFileInfo>
 #include <QCoreApplication>
 
+#if defined(Q_OS_WIN)
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+#endif
+
 namespace arachnel::core {
 
 bool removePathRecursive(const QString& path, QString* errorOut)
@@ -18,11 +25,27 @@ bool removePathRecursive(const QString& path, QString* errorOut)
         return true;
 
     if (info.isFile()) {
+#if defined(Q_OS_WIN)
+        SetFileAttributesW(reinterpret_cast<LPCWSTR>(path.utf16()), FILE_ATTRIBUTE_NORMAL);
+#endif
         if (QFile::remove(path))
             return true;
         if (errorOut)
             *errorOut = QCoreApplication::translate("Core", "Failed to delete file: %1").arg(path);
         return false;
+    }
+
+    // Clear read-only on nested files so removeRecursively can succeed on Windows.
+    QDirIterator it(path, QDir::Files | QDir::Hidden | QDir::System | QDir::NoDotAndDotDot,
+                    QDirIterator::Subdirectories);
+    while (it.hasNext()) {
+        const QString filePath = it.next();
+#if defined(Q_OS_WIN)
+        SetFileAttributesW(reinterpret_cast<LPCWSTR>(filePath.utf16()), FILE_ATTRIBUTE_NORMAL);
+#else
+        QFile::setPermissions(filePath, QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner
+                                            | QFile::ReadUser | QFile::WriteUser);
+#endif
     }
 
     QDir dir(path);

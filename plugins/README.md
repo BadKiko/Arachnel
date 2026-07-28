@@ -9,13 +9,15 @@
 
 | Плагин | Репозиторий | Статус |
 |--------|-------------|--------|
-| `freetp` | [arachnel-plugin-freetp](https://github.com/PetWork/arachnel-plugin-freetp) | реализован (torrent → install) |
-| `steamidra` | [arachnel-plugin-steamidra](https://gitlab.com/BadKiko/arachnel-plugin-steamidra) | реализован (API v3, `owns_download`, GPL-3) |
+| `freetp` | [arachnel-plugin-freetp](https://github.com/PetWork/arachnel-plugin-freetp) | реализован (API v4, torrent → install) |
+| `steamidra` | [arachnel-plugin-steamidra](https://gitlab.com/BadKiko/arachnel-plugin-steamidra) | реализован (API v4, `owns_download`, GPL-3) |
 | `online-fix` | — | не начат |
 
 Официальный список пакетов (что ставит лаунчер из магазина):
 
 `https://gitlab.com/BadKiko/arachnel-plugins-sourcelist/-/raw/main/plugins.json`
+
+Schema **v2**: `builds[]` with `minArachnel` / `maxArachnel` / `abiToken`. The launcher picks a compatible build for the running app version.
 
 В UI для каждого пакета показываются **URL исходников** и **URL скачиваемого `.arach`**.  
 Для установленных плагинов — ещё **URL каталога игр** (откуда лаунчер грузит список тайтлов).
@@ -39,8 +41,9 @@ cd ..\Arachnel
 
 ## Контракт
 
-`ISourcePlugin` — `src/core/plugin_interface.h`.  
-API: `src/core/plugin_api.h` — **v3** (`owns_download` / plugin jobs); хост всё ещё грузит плагины с **apiVersion 2**.  
+`ISourcePlugin` — `src/core/plugins/plugin_interface.h`.  
+API: `src/core/plugins/plugin_api.h` — **v4** (JSON catalog across the DLL; host still loads API **2..3**).  
+Build plugins with the **same MinGW + Qt kit** as Arachnel `release.yml`; set `ARACHNEL_SDK_REF` to that release tag.  
 См. также [ARCHITECTURE.md](../docs/ARCHITECTURE.md).
 
 Ядро не хранит исходники плагинов; папка `plugins/` здесь — только этот README.

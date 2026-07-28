@@ -7,6 +7,7 @@
 #include "plugin_api.h"
 
 #include <QCoreApplication>
+#include <QDateTime>
 #include <QDesktopServices>
 #include <QDir>
 #include <QDirIterator>
@@ -18,6 +19,7 @@
 #include <QProcess>
 #include <QStandardPaths>
 #include <QTemporaryDir>
+#include <QThread>
 #include <QTimer>
 #include <QUrl>
 #include <QtConcurrent>
@@ -308,9 +310,6 @@ bool PluginHost::uninstallPlugin(const QString& pluginId)
         return false;
     }
 
-    const QString targetRoot = writablePluginsDir() + QLatin1Char('/') + id;
-    QDir targetDir(targetRoot);
-
     // Drop loaded libraries before deleting files (DLL/.so stay locked otherwise).
     unloadAll();
 
@@ -319,12 +318,46 @@ bool PluginHost::uninstallPlugin(const QString& pluginId)
     if (!roots.contains(writablePluginsDir(), Qt::CaseInsensitive))
         roots.prepend(writablePluginsDir());
 
+    auto tryRemoveDir = [](const QString& path, QString* errorOut) -> bool {
+        if (!QDir(path).exists())
+            return true;
+        // A few retries: Windows can keep the handle briefly after FreeLibrary.
+        for (int attempt = 0; attempt < 8; ++attempt) {
+            if (attempt > 0) {
+                QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+#if defined(Q_OS_WIN)
+                Sleep(100u * static_cast<DWORD>(attempt));
+#else
+                QThread::msleep(100u * static_cast<unsigned>(attempt));
+#endif
+            }
+            QString err;
+            if (removePathRecursive(path, &err))
+                return true;
+            if (errorOut)
+                *errorOut = err;
+        }
+        // Last resort: rename out of the way so a fresh install can proceed.
+        const QString tombstone =
+            path + QStringLiteral(".deleted-")
+            + QString::number(QDateTime::currentMSecsSinceEpoch());
+        if (QDir().rename(path, tombstone)) {
+            removePathRecursive(tombstone); // best-effort; ignore failure
+            return true;
+        }
+        return false;
+    };
+
     for (const QString& root : roots) {
-        QDir dir(root + QLatin1Char('/') + id);
+        const QString pluginPath = root + QLatin1Char('/') + id;
+        QDir dir(pluginPath);
         if (!dir.exists())
             continue;
-        if (!dir.removeRecursively()) {
+        QString err;
+        if (!tryRemoveDir(pluginPath, &err)) {
             m_lastError = QCoreApplication::translate("Core", "Could not delete plugin files");
+            if (!err.isEmpty())
+                m_lastError += QStringLiteral(": ") + err;
             scan();
             return false;
         }

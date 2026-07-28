@@ -1,9 +1,10 @@
 #include "core_controller_impl.h"
 
+#include "plugin_version.h"
+
 #include <QEventLoop>
 #include <QSet>
 #include <QTimer>
-#include <QVersionNumber>
 
 namespace arachnel::core {
 
@@ -250,12 +251,7 @@ void CoreController::runOfficialPluginAutoUpdate()
 
         bool needsUpdate = forceAfterAppChange || unloaded;
         if (!needsUpdate && !catalogVersion.isEmpty() && catalogVersion != localVersion) {
-            const QVersionNumber remote = QVersionNumber::fromString(catalogVersion);
-            const QVersionNumber local = QVersionNumber::fromString(localVersion);
-            if (!remote.isNull() && !local.isNull())
-                needsUpdate = remote > local;
-            else
-                needsUpdate = true;
+            needsUpdate = comparePluginVersions(catalogVersion, localVersion) > 0;
         }
 
         if (needsUpdate)

@@ -422,7 +422,7 @@ void CatalogController::processCatalogLoadQueue()
 void CatalogController::loadCatalogSourceNow(const QString& sourceId)
 {
     if (m_pluginHost) {
-        if (ISourcePlugin* plugin = m_pluginHost->plugin(sourceId)) {
+        if (m_pluginHost->hasPlugin(sourceId)) {
             auto* watcher = new QFutureWatcher<QVector<CatalogEntry>>(this);
             m_inFlightPluginCatalogWatchers.append(watcher);
             connect(watcher, &QFutureWatcher<QVector<CatalogEntry>>::finished, this,
@@ -449,7 +449,10 @@ void CatalogController::loadCatalogSourceNow(const QString& sourceId)
                         }
                         rebuildMergedCatalog();
                     });
-            watcher->setFuture(QtConcurrent::run([plugin]() { return plugin->catalog(); }));
+            PluginHost* host = m_pluginHost;
+            watcher->setFuture(QtConcurrent::run([host, sourceId]() {
+                return host->loadPluginCatalog(sourceId);
+            }));
             return;
         }
     }
@@ -589,8 +592,8 @@ void CatalogController::prefetchCatalogCounts()
 
 void CatalogController::prefetchPluginCatalogCount(const QString& sourceId)
 {
-    ISourcePlugin* plugin = m_pluginHost ? m_pluginHost->plugin(sourceId) : nullptr;
-    if (!plugin || m_catalogBySource.contains(sourceId) || m_loadingSourceIds.contains(sourceId)) {
+    if (!m_pluginHost || !m_pluginHost->hasPlugin(sourceId) || m_catalogBySource.contains(sourceId)
+        || m_loadingSourceIds.contains(sourceId)) {
         startNextCatalogPrefetch();
         return;
     }
@@ -609,7 +612,10 @@ void CatalogController::prefetchPluginCatalogCount(const QString& sourceId)
                 }
                 startNextCatalogPrefetch();
             });
-    watcher->setFuture(QtConcurrent::run([plugin]() { return plugin->catalog(); }));
+    PluginHost* host = m_pluginHost;
+    watcher->setFuture(QtConcurrent::run([host, sourceId]() {
+        return host->loadPluginCatalog(sourceId);
+    }));
 }
 
 void CatalogController::startNextCatalogPrefetch()
