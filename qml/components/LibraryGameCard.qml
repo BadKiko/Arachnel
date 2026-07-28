@@ -108,61 +108,34 @@ Item {
                 onClicked: root.openDetails(root.gameId)
             }
 
-            Rectangle {
+            MD.AssistChip {
                 anchors.top: parent.top
                 anchors.right: parent.right
                 anchors.margins: MD.Token.spacing.small
                 visible: root.isRunning
-                radius: MD.Token.shape.corner.full
-                color: MD.Token.color.primary_container
-                width: runningChipLabel.implicitWidth + 20
-                height: runningChipLabel.implicitHeight + 12
-
-                MD.Label {
-                    id: runningChipLabel
-                    anchors.centerIn: parent
-                    text: qsTr("Playing")
-                    typescale: MD.Token.typescale.label_small
-                    color: MD.Token.color.on_primary_container
-                }
+                text: qsTr("Playing")
+                elevated: true
+                enabled: false
             }
 
-            Rectangle {
+            MD.AssistChip {
                 anchors.top: parent.top
                 anchors.left: parent.left
                 anchors.margins: MD.Token.spacing.small
                 visible: root.hasUpdate
-                radius: MD.Token.shape.corner.full
-                color: MD.Token.color.tertiary_container
-                width: updateLabel.implicitWidth + 20
-                height: updateLabel.implicitHeight + 12
-
-                MD.Label {
-                    id: updateLabel
-                    anchors.centerIn: parent
-                    text: qsTr("Updating")
-                    typescale: MD.Token.typescale.label_small
-                    color: MD.Token.color.on_tertiary_container
-                }
+                text: qsTr("Updating")
+                elevated: true
+                enabled: false
             }
 
-            Rectangle {
+            MD.AssistChip {
                 anchors.bottom: parent.bottom
                 anchors.left: parent.left
                 anchors.margins: MD.Token.spacing.small
                 visible: root.hasAddons
-                radius: MD.Token.shape.corner.full
-                color: MD.Token.color.secondary_container
-                width: addonChipLabel.implicitWidth + 20
-                height: addonChipLabel.implicitHeight + 12
-
-                MD.Label {
-                    id: addonChipLabel
-                    anchors.centerIn: parent
-                    text: root.addonLabel
-                    typescale: MD.Token.typescale.label_small
-                    color: MD.Token.color.on_secondary_container
-                }
+                text: root.addonLabel
+                elevated: true
+                enabled: false
             }
         }
 

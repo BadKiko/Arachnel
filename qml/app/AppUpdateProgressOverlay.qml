@@ -51,25 +51,15 @@ Item {
                     typescale: MD.Token.typescale.body_medium
                 }
 
-                Item {
+                MD.LinearIndicator {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 8
-                    clip: true
-
-                    Rectangle {
-                        anchors.fill: parent
-                        radius: 4
-                        color: MD.Util.transparent(MD.Token.color.primary, 0.2)
-                    }
-
-                    Rectangle {
-                        anchors.top: parent.top
-                        anchors.bottom: parent.bottom
-                        anchors.left: parent.left
-                        width: parent.width * Math.max(0, Math.min(1, Core.appUpdater.downloadProgress / 100))
-                        radius: 4
-                        color: MD.Token.color.primary
-                    }
+                    indeterminate: Core.appUpdater.downloadProgress <= 0
+                    running: Core.appUpdater.downloadProgress <= 0
+                    from: 0
+                    to: 100
+                    value: Math.max(0, Core.appUpdater.downloadProgress)
+                    strokeWidth: 4
                 }
 
                 MD.Label {

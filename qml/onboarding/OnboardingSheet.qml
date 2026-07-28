@@ -160,28 +160,11 @@ Item {
             }
 
             // Progress dots
-            Row {
+            MD.PageIndicator {
                 Layout.alignment: Qt.AlignHCenter
                 Layout.topMargin: MD.Token.spacing.medium
-                spacing: 6
-
-                Repeater {
-                    model: root.stepCount
-
-                    Rectangle {
-                        required property int index
-                        width: index === root.stepIndex ? 18 : 8
-                        height: 8
-                        radius: 4
-                        color: index === root.stepIndex
-                               ? MD.Token.color.primary
-                               : MD.Token.color.outline_variant
-
-                        Behavior on width {
-                            NumberAnimation { duration: 160; easing.type: Easing.OutCubic }
-                        }
-                    }
-                }
+                count: root.stepCount
+                currentIndex: root.stepIndex
             }
 
             Flickable {

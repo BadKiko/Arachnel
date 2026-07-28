@@ -49,27 +49,16 @@ Item {
                     horizontalAlignment: Text.AlignHCenter
                 }
 
-                Item {
+                MD.LinearIndicator {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 8
                     visible: Core.pluginCatalog && Core.pluginCatalog.installing
                              && Core.pluginCatalog.downloadProgress >= 0
-                    clip: true
-
-                    Rectangle {
-                        anchors.fill: parent
-                        radius: 4
-                        color: MD.Util.transparent(MD.Token.color.primary, 0.2)
-                    }
-
-                    Rectangle {
-                        anchors.top: parent.top
-                        anchors.bottom: parent.bottom
-                        anchors.left: parent.left
-                        width: parent.width * Math.max(0, Math.min(1, Core.pluginCatalog.downloadProgress / 100))
-                        radius: 4
-                        color: MD.Token.color.primary
-                    }
+                    indeterminate: false
+                    from: 0
+                    to: 100
+                    value: Core.pluginCatalog ? Core.pluginCatalog.downloadProgress : 0
+                    strokeWidth: 4
                 }
 
                 MD.Label {

@@ -158,25 +158,14 @@ Flickable {
             spacing: MD.Token.spacing.medium
             visible: Core.appUpdater.downloading
 
-            Item {
+            MD.LinearIndicator {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 6
-                clip: true
-
-                Rectangle {
-                    anchors.fill: parent
-                    radius: 3
-                    color: MD.Util.transparent(MD.Token.color.primary, 0.2)
-                }
-
-                Rectangle {
-                    anchors.top: parent.top
-                    anchors.bottom: parent.bottom
-                    anchors.left: parent.left
-                    width: parent.width * (Core.appUpdater.downloadProgress / 100)
-                    radius: 3
-                    color: MD.Token.color.primary
-                }
+                indeterminate: false
+                from: 0
+                to: 100
+                value: Core.appUpdater.downloadProgress
+                strokeWidth: 4
             }
 
             MD.Label {
