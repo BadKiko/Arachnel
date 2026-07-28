@@ -39,7 +39,7 @@ void CoreController::initializeServices()
         [this]() -> QVector<CatalogEntry>& { return m_catalogCache; }, this);
     connect(m_catalogCovers, &CatalogCoverCoordinator::coverApplied, this,
             [this](const QString& entryId, const QString& coverUrl) {
-                // Discovery shelves use CatalogShelfModel, not CatalogModel — refresh them too.
+                // Discovery shelves use CatalogShelfModel, not CatalogModel - refresh them too.
                 if (m_catalogDiscovery)
                     m_catalogDiscovery->onEntryMetadataChanged(entryId);
 
@@ -284,7 +284,7 @@ void CoreController::initializeServices()
             [this](bool available, const QString& latestVersion) {
                 if (!available)
                     return;
-                // History only — AppUpdateSheet in QML owns the prompt UX.
+                // History only - AppUpdateSheet in QML owns the prompt UX.
                 m_notifications.add(
                     QCoreApplication::translate("Core", "Arachnel %1 is available").arg(latestVersion),
                     QStringLiteral("info"));
@@ -446,7 +446,7 @@ void CoreController::initializeServices()
                 ensureLibraryPlaceholder(*entry, libraryId);
                 m_jobOrchestrator->setJobPhase(
                     jobId, QStringLiteral("completed"),
-                    QCoreApplication::translate("Core", "Download complete — install manually"));
+                    QCoreApplication::translate("Core", "Download complete - install manually"));
             });
 
     connect(m_jobOrchestrator, &JobOrchestrator::downloadFailed, this,

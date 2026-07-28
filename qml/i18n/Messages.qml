@@ -10,7 +10,7 @@ QtObject {
 
     readonly property string helpCatalogBody: qsTr("Pick a game in Catalog to start a download.")
 
-    readonly property string helpLibraryBody: qsTr("After download and install, the game appears here — launch, updates, and details.")
+    readonly property string helpLibraryBody: qsTr("After download and install, the game appears here - launch, updates, and details.")
 
     readonly property string settingsSourcesConnectHint: qsTr("Add a catalog URL from Hydra or another community list. Install a plugin (e.g. FreeTP) to install and play.")
 
@@ -22,7 +22,7 @@ QtObject {
 
     readonly property string settingsPluginsInstallHint: qsTr("Use Install plugin below and pick a plugin file (e.g. FreeTP).")
 
-    readonly property string settingsPluginsDesc: qsTr("Plugins add catalogs and handle install, updates, and launch (e.g. FreeTP).")
+    readonly property string settingsPluginsDesc: qsTr("Plugins provide catalogs, install, updates, and launch.")
 
     readonly property string libraryEmptySubtitle: qsTr("Your library is empty. Install a plugin, pick a game in Catalog, and it will appear here.")
 
@@ -34,19 +34,19 @@ QtObject {
 
     readonly property string gameInstallTorrentHint: qsTr("Download finished. Click Install to set up the game.")
 
-    readonly property string steamidraTrustMarkdown: qsTr("### Where do the files come from?\n\nGame **chunks** are downloaded from the **Valve Steam CDN** — the same content delivery network Steam itself uses for depot files.\n\n### What is Online Fix?\n\nMany multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugin can include it so the game runs and goes online without a Store purchase license check.\n\n### What is *not* from Valve?\n\n- Depot **keys** and **manifests** come from the plugin relay (not the Steam Store).\n- This is **not** the same as buying the game on Steam.\n- Arachnel does **not** claim antivirus clearance or Valve endorsement.")
+    readonly property string steamidraTrustMarkdown: qsTr("### Where do the files come from?\n\nGame **chunks** are downloaded from the **Valve Steam CDN** - the same CDN Steam uses for depot files.\n\n### What is Online Fix?\n\nMany multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugin can include it so the game runs and goes online without a Store purchase license check.\n\n### What is *not* from Valve?\n\n- Depot **keys** and **manifests** come from the plugin relay (not the Steam Store).\n- This is **not** the same as buying the game on Steam.\n- Arachnel does **not** claim antivirus clearance or Valve endorsement.")
 
     readonly property string catalogPipelineDesc: qsTr("Browse games from your catalogs and sources.")
 
     readonly property string catalogConnectHint: qsTr("Add a catalog or install a plugin in Settings.")
 
-    readonly property string catalogEnableChipsHint: qsTr("Turn on one or more sources above — or leave them all off.")
+    readonly property string catalogEnableChipsHint: qsTr("Turn on one or more sources above - or leave them all off.")
 
-    readonly property string storageLibrariesDesc: qsTr("Libraries on disks — like Steam. You can add other drives.")
+    readonly property string storageLibrariesDesc: qsTr("Libraries on disk, like Steam. You can add other drives.")
 
-    readonly property string addonsSelectionHint: qsTr("Add-ons are available for \"%1\" — choose what to download with the game.")
+    readonly property string addonsSelectionHint: qsTr("Add-ons are available for \"%1\" - choose what to download with the game.")
 
-    readonly property string downloadsEmptyHint: qsTr("Start installing from the catalog — progress will appear here.")
+    readonly property string downloadsEmptyHint: qsTr("Start installing from the catalog - progress will appear here.")
 
     readonly property string gameDeleteWarning: qsTr("Game files will be deleted from disk. This cannot be undone.")
 }

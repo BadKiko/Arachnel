@@ -26,7 +26,7 @@ MD.ElevationRectangle {
 
     function addonTitle(job) {
         const full = job.title ?? ""
-        const sep = " — "
+        const sep = " - "
         const idx = full.indexOf(sep)
         return idx >= 0 ? full.substring(idx + sep.length) : full
     }

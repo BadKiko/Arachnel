@@ -105,7 +105,7 @@ void SettingsStore::load()
             freetp.id = QStringLiteral("freetp");
             freetp.name = QStringLiteral("FreeTP");
             freetp.description =
-                QCoreApplication::translate("Core", "FreeTP torrent catalog — magnet links and add-ons");
+                QCoreApplication::translate("Core", "FreeTP torrent catalog - magnet links and add-ons");
             freetp.catalogUrl = legacyUrl;
             freetp.iconName = QStringLiteral("storefront");
             freetp.enabled = true;

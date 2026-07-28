@@ -55,7 +55,7 @@ void InstallSessionService::cleanupDownloadArtifact(const QString& artifactPath,
     if (!pathIsUnderRoot(artifact, downloadsRoot))
         return;
 
-    // Large FreeTP payloads — don't block the UI thread.
+    // Large FreeTP payloads - don't block the UI thread.
     (void)QtConcurrent::run([artifact]() { removePathRecursive(artifact); });
 }
 
@@ -82,7 +82,7 @@ void InstallSessionService::startPluginAddonInstall(const CatalogEntry& parent,
     if (!plugin) {
         m_hooks.showNotice(
             QCoreApplication::translate(
-                "Core", "Plugin not found for %1 — install it in Settings → Plugins")
+                "Core", "Plugin not found for %1 - install it in Settings → Plugins")
                 .arg(sourceId),
             true);
         return;

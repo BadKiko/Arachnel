@@ -34,7 +34,7 @@ namespace arachnel::setup {
 namespace {
 
 /** User plugin dir used by the app (org+app = Arachnel/Arachnel). Setup has a different
- *  applicationName, so AppDataLocation would be wrong — hardcode the app path. */
+ *  applicationName, so AppDataLocation would be wrong - hardcode the app path. */
 QString arachnelUserPluginsDir()
 {
 #if defined(Q_OS_WIN)
@@ -446,7 +446,7 @@ void SetupBackend::startInstall()
     setBusy(true);
     setPhase(3);
     setProgress(0);
-    setStatusText(m_updateMode ? QCoreApplication::translate("Setup", "Please wait — updating Arachnel…")
+    setStatusText(m_updateMode ? QCoreApplication::translate("Setup", "Please wait - updating Arachnel…")
                                : QCoreApplication::translate("Setup", "Preparing…"));
     startInstallPulse();
 
@@ -489,7 +489,7 @@ void SetupBackend::startInstall()
             }
         }
 
-        report(5, updateMode ? QCoreApplication::translate("Setup", "Please wait — updating Arachnel…")
+        report(5, updateMode ? QCoreApplication::translate("Setup", "Please wait - updating Arachnel…")
                              : QCoreApplication::translate("Setup", "Preparing…"));
 
         QDir target(installPath);

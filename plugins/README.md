@@ -1,9 +1,9 @@
 # Плагины источников
 
 Плагины живут в **отдельных репозиториях**. В этом репозитории только хост и SDK.
+Исходники каждого плагина открыты — ссылки ниже и в UI (**Настройки → Магазин плагинов** / **Плагины** / **Источники**).
 
-**Полная инструкция для разработчиков:** [docs/PLUGIN_SDK.md](../docs/PLUGIN_SDK.md)  
-(клонирование, сборка, куда копировать, `.arach`, новый плагин с нуля, ABI, отладка)
+**Полная инструкция для разработчиков:** [docs/PLUGIN_SDK.md](../docs/PLUGIN_SDK.md)
 
 ## Статус
 
@@ -13,19 +13,14 @@
 | `steamidra` | [arachnel-plugin-steamidra](https://gitlab.com/BadKiko/arachnel-plugin-steamidra) | реализован (API v3, `owns_download`, GPL-3) |
 | `online-fix` | — | не начат |
 
-Hydra-каталоги (только JSON по URL, без своего install-пайплайна) настраиваются в UI: **Настройки → Каталоги Hydra**.
+Официальный список пакетов (что ставит лаунчер из магазина):
 
-## SteaMidra (кратко)
+`https://gitlab.com/BadKiko/arachnel-plugins-sourcelist/-/raw/main/plugins.json`
 
-Плагин **не** использует magnet/торрент ядра: Hubcap/Steam search → lua + keys → LumaCore (Windows) / SLSsteam (Linux) → Steam download, с fallback на DepotDownloaderMod (.NET 9).
+В UI для каждого пакета показываются **URL исходников** и **URL скачиваемого `.arach`**.  
+Для установленных плагинов — ещё **URL каталога игр** (откуда лаунчер грузит список тайтлов).
 
-```bash
-export ARACHNEL_SDK_DIR=~/path/to/Arachnel
-cd ~/path/to/arachnel-plugin-steamidra
-./run.sh   # → ~/.local/share/Arachnel/plugins/steamidra/
-```
-
-Third-party notices: в репозитории плагина `NOTICE.md` / `LICENSE` (GPL-3).
+Hydra-каталоги (только JSON по URL, без своего install-пайплайна) настраиваются в UI: **Настройки → Источники**.
 
 ## Минимальный цикл (FreeTP)
 

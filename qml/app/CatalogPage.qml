@@ -39,8 +39,8 @@ Item {
     readonly property var sortOptions: [
         { mode: 0, label: qsTr("Newest first") },
         { mode: 1, label: qsTr("Oldest first") },
-        { mode: 2, label: qsTr("Title A–Z") },
-        { mode: 3, label: qsTr("Title Z–A") },
+        { mode: 2, label: qsTr("Title A-Z") },
+        { mode: 3, label: qsTr("Title Z-A") },
         { mode: 4, label: qsTr("Portable first") },
         { mode: 5, label: qsTr("Non-portable first") },
         { mode: 6, label: qsTr("Largest first") },
@@ -56,8 +56,8 @@ Item {
     readonly property var sizeFilterLabels: ({
         "0": qsTr("Any size"),
         "1": qsTr("< 1 GB"),
-        "2": qsTr("1–5 GB"),
-        "3": qsTr("5–20 GB"),
+        "2": qsTr("1-5 GB"),
+        "3": qsTr("5-20 GB"),
         "4": qsTr("20+ GB")
     })
     readonly property var recencyFilterLabels: ({
@@ -78,7 +78,7 @@ Item {
     property real savedGridScrollY: 0
     property real savedListScrollY: 0
     property bool restoringFilters: false
-    /** When true (Catalog tab), always show the full game list — never discovery shelves. */
+    /** When true (Catalog tab), always show the full game list - never discovery shelves. */
     property bool browseOnly: false
     property bool browseAllMode: false
 
@@ -108,7 +108,7 @@ Item {
     }
 
     function applySortMode(mode) {
-        // Persist only — Core.applyCatalogPresentation already applied sort quietly.
+        // Persist only - Core.applyCatalogPresentation already applied sort quietly.
         catalogPrefs.sortMode = mode
         if (Core.catalog.sortMode !== mode)
             Core.catalog.sortMode = mode

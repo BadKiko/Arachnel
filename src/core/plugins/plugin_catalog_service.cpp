@@ -1,5 +1,7 @@
 #include "plugin_catalog_service.h"
 
+#include "plugin_urls.h"
+
 #include <QCoreApplication>
 #include <QCryptographicHash>
 #include <QDir>
@@ -152,6 +154,8 @@ void PluginCatalogService::refresh()
             row.insert(QStringLiteral("url"), obj.value(QStringLiteral("url")).toString());
             row.insert(QStringLiteral("sha256"), obj.value(QStringLiteral("sha256")).toString());
             row.insert(QStringLiteral("size"), obj.value(QStringLiteral("size")).toVariant());
+            const QString pluginId = row.value(QStringLiteral("id")).toString();
+            row.insert(QStringLiteral("repository"), resolvePluginRepository(pluginId, obj));
 
             QStringList platforms;
             const QJsonArray plats = obj.value(QStringLiteral("platforms")).toArray();

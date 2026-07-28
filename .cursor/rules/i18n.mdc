@@ -1,17 +1,18 @@
 ---
-description: Все новые UI-строки — на английском в коде и с русским переводом в .ts
+description: UI strings in English in code, Russian in .ts
 alwaysApply: true
 ---
 
 # i18n (Arachnel)
 
-**English** — язык исходника в коде (`qsTr` / `translate`). **Russian** — `translations/arachnel_ru.ts`.
+- **English** source in code (`qsTr` / `translate`). **Russian** in `translations/arachnel_ru.ts`.
+- User-facing tone and dashes: see `ui-copy.mdc` (no prompt-like copy; use `-`, not `—` / `–`).
 
 ## При добавлении любой пользовательской строки
 
-1. **QML** — `qsTr("English text")`, не хардкод на русском.
-2. **C++** — `QCoreApplication::translate("Core", "English text")`.
-3. **Длинные / общие тексты** — `qml/i18n/Messages.qml` через `qsTr("...")` (тот же механизм).
+1. **QML** - `qsTr("English text")`, не хардкод на русском.
+2. **C++** - `QCoreApplication::translate("Core", "English text")`.
+3. **Длинные / общие тексты** - `qml/i18n/Messages.qml` через `qsTr("...")` (тот же механизм).
 4. **Сразу после изменений**:
 
 ```bash
@@ -28,6 +29,6 @@ cmake --build build --target release_translations
 
 ## Файлы
 
-- `translations/arachnel_en.ts` — каталог источников (английский)
-- `translations/arachnel_ru.ts` — русский
-- `docs/TRANSLATING.md` — подробности
+- `translations/arachnel_en.ts` - каталог источников (английский)
+- `translations/arachnel_ru.ts` - русский
+- `docs/TRANSLATING.md` - подробности

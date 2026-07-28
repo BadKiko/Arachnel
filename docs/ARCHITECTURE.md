@@ -69,6 +69,10 @@ shared library из пакета и предоставляет её `ISourcePlug
 `owns_download` плагин сам ведёт download/install и сообщает прогресс хосту.
 В core нельзя добавлять ветвления вида `if (sourceId == ...)`.
 
+Прозрачность для пользователя: в Settings UI показываются URL репозитория
+плагина, URL пакета `.arach` из официального sourcelist и URL игрового каталога
+источника (`catalogUrl` / `repository` в `plugin.json` и `plugins.json`).
+
 ## UI (QML)
 
 | Путь | Содержимое |

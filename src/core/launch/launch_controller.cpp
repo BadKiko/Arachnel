@@ -92,7 +92,7 @@ void LaunchController::launchGame(const QString& gameId)
                 if (m_hooks.notice) {
                     m_hooks.notice(QCoreApplication::translate(
                         "Core",
-                        "Steam is not running — Online Fix needs it for SpaceWar/overlay. Starting Steam…"));
+                        "Steam is not running - Online Fix needs it for SpaceWar/overlay. Starting Steam…"));
                 }
             }
         }

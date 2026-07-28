@@ -40,8 +40,8 @@ MD.BottomSheet {
     readonly property var sizeOptions: [
         { value: 0, label: qsTr("Any") },
         { value: 1, label: qsTr("< 1 GB") },
-        { value: 2, label: qsTr("1–5 GB") },
-        { value: 3, label: qsTr("5–20 GB") },
+        { value: 2, label: qsTr("1-5 GB") },
+        { value: 3, label: qsTr("5-20 GB") },
         { value: 4, label: qsTr("20+ GB") }
     ]
 
@@ -363,7 +363,7 @@ MD.BottomSheet {
                         visible: Core.availableCatalogGenres.length > root.visibleGenres.length
                                  && root.genreSearch.trim().length === 0
                         Layout.fillWidth: true
-                        text: qsTr("Showing top genres — type to search more")
+                        text: qsTr("Showing top genres - type to search more")
                         color: MD.Token.color.on_surface_variant
                         typescale: MD.Token.typescale.body_small
                     }

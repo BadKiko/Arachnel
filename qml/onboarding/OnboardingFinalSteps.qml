@@ -23,7 +23,7 @@ ColumnLayout {
         MD.Label { text: qsTr("Updates"); typescale: MD.Token.typescale.headline_small }
         MD.Label {
             Layout.fillWidth: true
-            text: qsTr("Recommended defaults — change anytime in Settings → Updates.")
+            text: qsTr("Recommended defaults - change anytime in Settings → Updates.")
             wrapMode: Text.WordWrap
             color: MD.Token.color.on_surface_variant
             typescale: MD.Token.typescale.body_medium

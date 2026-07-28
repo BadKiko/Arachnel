@@ -30,7 +30,7 @@ void JobOrchestrator::reportPluginProgress(const QString& jobId,
     qint64 downloaded = progress.bytesDownloaded;
     qint64 total = progress.totalBytes;
     if (total <= 0) {
-        // Plugin sent an explicit "unknown total" with bytes — drop stale cache
+        // Plugin sent an explicit "unknown total" with bytes - drop stale cache
         // (old fake totals like "19.5 GB" from percent invention).
         if (downloaded > 0)
             m_pluginEstimatedTotal.remove(jobId);
@@ -54,7 +54,7 @@ void JobOrchestrator::reportPluginProgress(const QString& jobId,
             nextProgress = bytePercent;
     }
 
-    // Status-only ticks often send percent=0 — never rewind the bar mid-download.
+    // Status-only ticks often send percent=0 - never rewind the bar mid-download.
     if (nextProgress < previousProgress && previousProgress < 100) {
         const bool statusOnly = progress.percent <= 0 && downloaded <= previousDownloaded;
         const bool noRealRegression = downloaded + 64 * 1024 >= previousDownloaded;
@@ -116,14 +116,14 @@ QString JobOrchestrator::formatSpeed(int bytesPerSec) const
 {
     // Match plugin: hide crumb rates (EMA decay used to show "1 B/s").
     if (bytesPerSec < 8 * 1024)
-        return QStringLiteral("—");
+        return QStringLiteral("-");
     return QStringLiteral("%1/s").arg(formatBytes(bytesPerSec));
 }
 
 QString JobOrchestrator::formatEta(qint64 remainingBytes, int bytesPerSec) const
 {
     if (bytesPerSec <= 0 || remainingBytes <= 0)
-        return QStringLiteral("—");
+        return QStringLiteral("-");
     const qint64 seconds = remainingBytes / bytesPerSec;
     if (seconds < 60)
         return QStringLiteral("%1 s").arg(seconds);

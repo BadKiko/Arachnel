@@ -40,7 +40,7 @@ Item {
     readonly property string heroSubtitle: {
         if (root.showRunningHero || root.heroHasRecentPlay)
             return (root.heroGame?.sourceName ?? "") + " · v" + (root.heroGame?.version ?? "")
-        return qsTr("Launch a game from your library — it will appear here.")
+        return qsTr("Launch a game from your library - it will appear here.")
     }
     readonly property bool heroHasUpdate: !!(root.heroGame?.hasUpdate)
 

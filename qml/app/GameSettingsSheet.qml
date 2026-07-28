@@ -351,7 +351,7 @@ MD.BottomSheet {
                     model: [
                         { label: qsTr("Source"), value: root.sourceLabel },
                         { label: qsTr("Version"), value: root.info.version ?? "" },
-                        { label: qsTr("Size"), value: root.info.sizeLabel || "—" },
+                        { label: qsTr("Size"), value: root.info.sizeLabel || "-" },
                         { label: qsTr("Install type"), value: root.info.installKindLabel ?? "" },
                         {
                             label: qsTr("Online Fix"),
@@ -362,16 +362,16 @@ MD.BottomSheet {
                         {
                             label: qsTr("Install path"),
                             value: root.playable
-                                   ? (root.info.installPath || "—")
+                                   ? (root.info.installPath || "-")
                                    : (root.isInstalling
                                           ? qsTr("Installing…")
                                           : root.readyToInstall || root.installFailed
                                           ? qsTr("Waiting to install")
-                                          : qsTr("—"))
+                                          : qsTr("-"))
                         },
                         {
                             label: qsTr("Download"),
-                            value: root.info.downloadPath || "—"
+                            value: root.info.downloadPath || "-"
                         }
                     ]
 

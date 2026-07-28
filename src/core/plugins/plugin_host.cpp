@@ -3,8 +3,8 @@
 #include "crash_log.h"
 #include "catalog_types.h"
 #include "file_utils.h"
-
 #include "plugin_api.h"
+#include "plugin_urls.h"
 
 #include <QCoreApplication>
 #include <QDesktopServices>
@@ -276,7 +276,7 @@ bool PluginHost::loadPluginDir(const QString& dirPath)
         if (pluginEntrySize != coreEntrySize) {
             logDiagnostic(QStringLiteral(
                               "Plugin rejected (CatalogEntry size mismatch): %1 plugin=%2 core=%3 "
-                              "from %4 — rebuild plugins with run.ps1")
+                              "from %4 - rebuild plugins with run.ps1")
                               .arg(id)
                               .arg(pluginEntrySize)
                               .arg(coreEntrySize)
@@ -306,6 +306,7 @@ bool PluginHost::loadPluginDir(const QString& dirPath)
     info.name = loaded->instance->name();
     info.description = loaded->instance->description();
     info.catalogUrl = manifest.value(QStringLiteral("catalogUrl")).toString();
+    info.repositoryUrl = resolvePluginRepository(info.id, manifest);
     info.iconName = manifest.value(QStringLiteral("iconName")).toString(QStringLiteral("storefront"));
     info.enabled = true;
     info.isPlugin = true;
@@ -415,6 +416,8 @@ QVector<SourcePluginInfo> PluginHost::diskPluginInfos() const
             info.pluginVersion = obj.value(QStringLiteral("version")).toString();
             info.pluginRootPath = pluginDir;
             info.iconName = obj.value(QStringLiteral("iconName")).toString(QStringLiteral("extension"));
+            info.catalogUrl = obj.value(QStringLiteral("catalogUrl")).toString();
+            info.repositoryUrl = resolvePluginRepository(id, obj);
             info.isPlugin = true;
             info.enabled = false;
             infos.append(info);

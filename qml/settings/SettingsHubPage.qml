@@ -16,12 +16,12 @@ Flickable {
             {
                 id: "plugins",
                 title: qsTr("Plugins"),
-                subtitle: qsTr("FreeTP and others — install, launch, and add-ons")
+                subtitle: qsTr("FreeTP and others - install, launch, and add-ons")
             },
             {
                 id: "sources",
                 title: qsTr("Hydra catalogs"),
-                subtitle: qsTr("Catalog links — import from Hydra or elsewhere")
+                subtitle: qsTr("Catalog links - import from Hydra or elsewhere")
             },
             {
                 id: "storage",

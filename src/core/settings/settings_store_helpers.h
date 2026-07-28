@@ -14,6 +14,9 @@ SourcePluginInfo sourceFromJson(const QJsonObject& obj)
     info.name = obj.value(QStringLiteral("name")).toString();
     info.description = obj.value(QStringLiteral("description")).toString();
     info.catalogUrl = obj.value(QStringLiteral("catalogUrl")).toString();
+    info.repositoryUrl = obj.value(QStringLiteral("repositoryUrl")).toString();
+    if (info.repositoryUrl.isEmpty())
+        info.repositoryUrl = obj.value(QStringLiteral("repository")).toString();
     info.iconName = obj.value(QStringLiteral("iconName")).toString(QStringLiteral("storefront"));
     info.enabled = obj.value(QStringLiteral("enabled")).toBool(true);
 
@@ -34,6 +37,8 @@ QJsonObject sourceToJson(const SourcePluginInfo& info)
     obj.insert(QStringLiteral("name"), info.name);
     obj.insert(QStringLiteral("description"), info.description);
     obj.insert(QStringLiteral("catalogUrl"), info.catalogUrl);
+    if (!info.repositoryUrl.isEmpty())
+        obj.insert(QStringLiteral("repositoryUrl"), info.repositoryUrl);
     obj.insert(QStringLiteral("iconName"), info.iconName);
     obj.insert(QStringLiteral("enabled"), info.enabled);
 

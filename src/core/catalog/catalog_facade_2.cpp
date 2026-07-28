@@ -177,7 +177,7 @@ void CoreController::validateHydraCatalogUrl(const QString& requestId, const QSt
     if (!parsed.isValid() || !parsed.scheme().startsWith(QStringLiteral("http"),
                                                          Qt::CaseInsensitive)) {
         emit hydraCatalogUrlValidated(requestId, false, 0,
-                                      QCoreApplication::translate("Core", "Invalid URL — http or https required"));
+                                      QCoreApplication::translate("Core", "Invalid URL - http or https required"));
         return;
     }
 

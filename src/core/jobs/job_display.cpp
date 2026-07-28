@@ -42,7 +42,7 @@ void jobDisplayTranslationSeed()
     QT_TRANSLATE_NOOP("Core", "Installing (%1/%2)");
     QT_TRANSLATE_NOOP("Core", "Install failed: %1");
     QT_TRANSLATE_NOOP("Core", "Error: %1");
-    QT_TRANSLATE_NOOP("Core", "Add-on %1 — %2");
+    QT_TRANSLATE_NOOP("Core", "Add-on %1 - %2");
     (void)&jobDisplayTranslationSeed;
 }
 
@@ -87,14 +87,26 @@ QString displayJobTitle(const QString& title)
         return translated;
 
     if (title.startsWith(QStringLiteral("Дополнение "))) {
-        const int dash = title.indexOf(QStringLiteral(" — "));
+        int dash = title.indexOf(QStringLiteral(" - "));
+        int sepLen = 3;
+        if (dash < 0) {
+            dash = title.indexOf(QStringLiteral(" — "));
+            sepLen = 3;
+        }
         if (dash > 11)
-            return QCoreApplication::translate("Core", "Add-on %1 — %2").arg(title.mid(11, dash - 11), title.mid(dash + 3));
+            return QCoreApplication::translate("Core", "Add-on %1 - %2")
+                .arg(title.mid(11, dash - 11), title.mid(dash + sepLen));
     }
     if (title.startsWith(QStringLiteral("Add-on "))) {
-        const int dash = title.indexOf(QStringLiteral(" — "));
+        int dash = title.indexOf(QStringLiteral(" - "));
+        int sepLen = 3;
+        if (dash < 0) {
+            dash = title.indexOf(QStringLiteral(" — "));
+            sepLen = 3;
+        }
         if (dash > 7)
-            return QCoreApplication::translate("Core", "Add-on %1 — %2").arg(title.mid(7, dash - 7), title.mid(dash + 3));
+            return QCoreApplication::translate("Core", "Add-on %1 - %2")
+                .arg(title.mid(7, dash - 7), title.mid(dash + sepLen));
     }
 
     return title;

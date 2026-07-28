@@ -374,7 +374,7 @@ QString catalogFeedValidationError(const QByteArray& payload)
         || root.value(QStringLiteral("catalogKind")).toString().contains(QStringLiteral("ryuu"),
                                                                          Qt::CaseInsensitive);
     if (!hydra && !ryuu)
-        return QCoreApplication::translate("Core", "No downloads array — not a Hydra catalog");
+        return QCoreApplication::translate("Core", "No downloads array - not a Hydra catalog");
 
     if (hydra) {
         const QJsonArray downloads = root.value(QStringLiteral("downloads")).toArray();

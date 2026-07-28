@@ -5,7 +5,7 @@ Source plugins are **separate repositories**. Arachnel ships only the host (`Plu
 Reference implementations:
 
 - [arachnel-plugin-freetp](https://github.com/PetWork/arachnel-plugin-freetp) — torrent download (API v2+)
-- [arachnel-plugin-steamidra](https://github.com/PetWork/arachnel-plugin-steamidra) — plugin-owned download (API v3, `owns_download`)
+- [arachnel-plugin-steamidra](https://gitlab.com/BadKiko/arachnel-plugin-steamidra) — plugin-owned download (API v3, `owns_download`)
 
 ---
 
@@ -149,6 +149,7 @@ arachnel-plugin-<source-id>/
   "library": "my_source_plugin",
   "iconName": "storefront",
   "catalogUrl": "https://example.com/games-arachnel.json",
+  "repository": "https://github.com/you/arachnel-plugin-mysource",
   "description": "Short description for Settings UI"
 }
 ```
@@ -156,7 +157,8 @@ arachnel-plugin-<source-id>/
 - **`id`** — folder name under `plugins/` and `sourceId` in the library.
 - **`apiVersion`** — host accepts **2..3** (`ARACHNEL_PLUGIN_API_VERSION` / `ARACHNEL_PLUGIN_API_VERSION_MIN` in `src/core/plugin_api.h`). New plugins should ship **3**.
 - **`library`** — base name of the shared library (`my_source_plugin` → `my_source_plugin.dll`).
-
+- **`catalogUrl`** — where the launcher loads the game list JSON for this source (shown in Settings).
+- **`repository`** — public git/source URL (shown in Plugin store / Plugins / Sources). Also accepted: `homepage`, `sourceUrl`, `git`.
 ### 3. `plugin_entry.cpp`
 
 Export the C ABI (see `arachnel-plugin-freetp/src/plugin_entry.cpp`):

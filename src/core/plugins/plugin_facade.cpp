@@ -93,6 +93,8 @@ QVariantList CoreController::pluginEntries() const
         row.insert(QStringLiteral("description"), source.description);
         row.insert(QStringLiteral("pluginVersion"), source.pluginVersion);
         row.insert(QStringLiteral("pluginRootPath"), source.pluginRootPath);
+        row.insert(QStringLiteral("catalogUrl"), source.catalogUrl);
+        row.insert(QStringLiteral("repositoryUrl"), source.repositoryUrl);
         row.insert(QStringLiteral("sourceEnabled"), source.enabled);
         row.insert(QStringLiteral("loaded"), true);
         entries.append(row);
@@ -110,6 +112,8 @@ QVariantList CoreController::pluginEntries() const
             row.insert(QStringLiteral("description"), disk.description);
             row.insert(QStringLiteral("pluginVersion"), disk.pluginVersion);
             row.insert(QStringLiteral("pluginRootPath"), disk.pluginRootPath);
+            row.insert(QStringLiteral("catalogUrl"), disk.catalogUrl);
+            row.insert(QStringLiteral("repositoryUrl"), disk.repositoryUrl);
             row.insert(QStringLiteral("sourceEnabled"), false);
             row.insert(QStringLiteral("loaded"), false);
             entries.append(row);
