@@ -1,10 +1,34 @@
 #include "catalog_types.h"
 
+#include "catalog_genre_normalize.h"
+
 #include <QCoreApplication>
 #include <QDate>
 #include <QRegularExpression>
+#include <QtMath>
 
 namespace arachnel::core {
+
+namespace {
+
+double computeHypeScore(const CatalogEntry& entry)
+{
+    double score = 0.0;
+    if (entry.currentPlayers > 0)
+        score += qLn(1.0 + static_cast<double>(entry.currentPlayers)) * 12.0;
+    if (entry.recommendationsTotal > 0)
+        score += qLn(1.0 + static_cast<double>(entry.recommendationsTotal)) * 4.0;
+    if (entry.metacriticScore > 0)
+        score += entry.metacriticScore * 0.15;
+    if (entry.uploadDay > 0) {
+        const qint64 today = QDate::currentDate().toJulianDay();
+        const qint64 age = qMax<qint64>(0, today - entry.uploadDay);
+        score += qMax(0.0, 30.0 - static_cast<double>(age) * 0.35);
+    }
+    return score;
+}
+
+} // namespace
 
 void prepareCatalogEntry(CatalogEntry& entry)
 {
@@ -21,11 +45,18 @@ void prepareCatalogEntry(CatalogEntry& entry)
         if (!token.isEmpty())
             entry.genreTokens.append(token);
     }
+    entry.genreKeys = canonicalizeGenreTokens(entry.genreTokens);
     entry.playModeMask = playModeMaskFromEntry(entry.genreTokens, entry.installKind);
+    for (const QString& key : entry.genreKeys) {
+        if (key.compare(QLatin1String("Massively Multiplayer"), Qt::CaseInsensitive) == 0)
+            entry.playModeMask |= kPlayModeMulti;
+    }
+    entry.hypeScore = computeHypeScore(entry);
 }
 
 quint8 playModeMaskFromEntry(const QStringList& genreTokens, InstallKind installKind)
 {
+    Q_UNUSED(installKind);
     quint8 mask = 0;
     for (const QString& raw : genreTokens) {
         const QString t = raw.trimmed().toLower();
@@ -35,25 +66,37 @@ quint8 playModeMaskFromEntry(const QStringList& genreTokens, InstallKind install
             || t.contains(QStringLiteral("однопользовател")))
             mask |= kPlayModeSingle;
         if (t.contains(QLatin1String("co-op")) || t.contains(QLatin1String("coop"))
-            || t.contains(QStringLiteral("кооп")))
+            || t.contains(QStringLiteral("кооп"))
+            || t.contains(QLatin1String("shared/split"))
+            || t.contains(QLatin1String("shared and split"))
+            || t.contains(QLatin1String("split screen")))
             mask |= kPlayModeCoop;
         if (t.contains(QLatin1String("multi-player")) || t.contains(QLatin1String("multiplayer"))
             || t.contains(QLatin1String("online pvp")) || t == QLatin1String("pvp")
             || t.contains(QLatin1String("mmo"))
-            || t.contains(QLatin1String("cross-platform"))
-            || t.contains(QLatin1String("online fix"))
-            || t.contains(QStringLiteral("мультиплеер")))
+            || t.contains(QLatin1String("cross-platform multiplayer"))
+            || t.contains(QStringLiteral("мультиплеер"))
+            || t.contains(QLatin1String("massively multiplayer")))
             mask |= kPlayModeMulti;
-        // Online Co-op / Online PvP are online multiplayer modes.
-        if (t.contains(QLatin1String("online co-op")) || t.contains(QLatin1String("online pvp"))
-            || t.contains(QLatin1String("online fix")))
+        if (t.contains(QLatin1String("online co-op")) || t.contains(QLatin1String("online pvp")))
             mask |= kPlayModeMulti;
     }
-    // FreeTP/steamidra mark online-capable titles as BundledFix / FixDownload.
-    if (mask == 0
-        && (installKind == InstallKind::BundledFix || installKind == InstallKind::FixDownload))
-        mask |= kPlayModeMulti;
     return mask;
+}
+
+bool catalogEntryHasOnlineFixAddon(const CatalogEntry& entry)
+{
+    for (const CatalogComponent& addon : entry.addons) {
+        const QString title = addon.title.trimmed().toLower();
+        if (title.isEmpty())
+            continue;
+        if (title.contains(QLatin1String("online fix")) || title.contains(QLatin1String("online-fix"))
+            || title.contains(QLatin1String("onlinefix"))
+            || (title.contains(QLatin1String("fix")) && title.contains(QLatin1String("repair")))
+            || title.contains(QLatin1String("fix-repair")))
+            return true;
+    }
+    return false;
 }
 
 qint64 parseSizeLabelBytes(const QString& label)

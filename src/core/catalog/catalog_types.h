@@ -63,8 +63,18 @@ struct CatalogEntry {
     qint64 sizeBytes = 0;
     qint64 uploadDay = 0; // Julian day; 0 if unknown
     QStringList genreTokens;
+    /** Canonical genre keys (Action, RPG, …) derived from genreTokens. */
+    QStringList genreKeys;
     /** Bitmask: Single=1, Co-op=2, Multiplayer=4 (from Steam categories / genres). */
     quint8 playModeMask = 0;
+
+    // Steam-enrichment discovery signals (any catalog source; keyed by steamAppId).
+    int recommendationsTotal = 0;
+    int metacriticScore = 0; // 0 = unknown
+    qint64 releaseDay = 0; // Julian day; 0 if unknown
+    int currentPlayers = -1; // -1 = unknown / not fetched
+    qint64 playersFetchedAt = 0; // unix secs
+    double hypeScore = 0.0;
 };
 
 constexpr quint8 kPlayModeSingle = 1;
@@ -73,6 +83,8 @@ constexpr quint8 kPlayModeMulti = 4;
 
 /** Derive play-mode bits from genre/category tokens (+ online-fix installKind fallback). */
 quint8 playModeMaskFromEntry(const QStringList& genreTokens, InstallKind installKind);
+/** True when catalog lists an Online Fix / repair add-on (not plain BundledFix install kind). */
+bool catalogEntryHasOnlineFixAddon(const CatalogEntry& entry);
 
 QString catalogItemKindLabel(CatalogItemKind kind);
 QString repairCatalogEntryId(const QString& entryId);

@@ -6,26 +6,18 @@ import Qcm.Material as MD
 ColumnLayout {
     spacing: MD.Token.spacing.small
 
-    ColumnLayout {
+    MD.Label {
         Layout.fillWidth: true
-        spacing: 4
-
-        MD.Label {
-            text: qsTr("Catalog")
-            typescale: MD.Token.typescale.headline_medium
-        }
-
-        MD.Label {
-            Layout.fillWidth: true
-            text: Messages.catalogPipelineDesc
-            wrapMode: Text.WordWrap
-            color: MD.Token.color.on_surface_variant
-            typescale: MD.Token.typescale.body_medium
-        }
+        text: qsTr("Browse the catalog")
+        typescale: MD.Token.typescale.headline_medium
     }
 
-    CatalogSourceChips {
+    MD.Label {
         Layout.fillWidth: true
+        text: qsTr("Search and filter every game from your enabled sources.")
+        wrapMode: Text.WordWrap
+        color: MD.Token.color.on_surface_variant
+        typescale: MD.Token.typescale.body_medium
     }
 
     Item {

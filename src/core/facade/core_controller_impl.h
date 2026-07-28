@@ -6,6 +6,7 @@
 #include "catalog_controller.h"
 #include "catalog_cover_coordinator.h"
 #include "catalog_filter_service.h"
+#include "catalog_discovery_service.h"
 #include "catalog_parser.h"
 #include "cover_image_cache.h"
 #include "file_utils.h"

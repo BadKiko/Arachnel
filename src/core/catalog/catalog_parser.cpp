@@ -132,9 +132,11 @@ CatalogEntry parseRyuuEntryObject(const QJsonObject& obj, const QString& sourceI
         entry.id = QStringLiteral("steam-%1").arg(entry.steamAppId);
     if (entry.id.isEmpty())
         entry.id = slugifyCatalogId(entry.title, sourceId);
-    if (entry.coverUrl.isEmpty() && !entry.steamAppId.isEmpty()) {
+    // Prefer Steam library art over plugin-provided covers (usually lower quality).
+    if (!entry.steamAppId.isEmpty()) {
         entry.coverUrl =
-            QStringLiteral("https://cdn.akamai.steamstatic.com/steam/apps/%1/header.jpg")
+            QStringLiteral(
+                "https://cdn.akamai.steamstatic.com/steam/apps/%1/library_600x900_2x.jpg")
                 .arg(entry.steamAppId);
     }
 

@@ -236,7 +236,7 @@ Item {
                                 if (page.runtimeSetupActive)
                                     return Core.runtimeSetupStatus.length > 0
                                            ? Core.runtimeSetupStatus
-                                           : qsTr("PreparingтАж")
+                                           : qsTr("Preparing…")
                                 return qsTr("Play")
                             }
                             icon.name: page.isRunning || page.runtimeSetupActive

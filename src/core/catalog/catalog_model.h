@@ -47,6 +47,8 @@ public:
         AddonCountRole,
         HasAddonsRole,
         MetadataPendingRole,
+        CurrentPlayersRole,
+        HypeScoreRole,
     };
     Q_ENUM(Role)
 

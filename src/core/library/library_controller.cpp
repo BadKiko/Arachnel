@@ -482,7 +482,9 @@ int LibraryController::scanInstalledGames()
             if (m_hooks.findCatalogEntry) {
                 if (const CatalogEntry* entry = m_hooks.findCatalogEntry(folderName)) {
                     game.title = entry->title;
-                    game.coverUrl = entry->coverUrl;
+                    // UI models accept file: covers only — never plant remote URLs.
+                    if (entry->coverUrl.startsWith(QStringLiteral("file:")))
+                        game.coverUrl = entry->coverUrl;
                     game.sourceId = entry->sourceId.isEmpty() ? sourceId : entry->sourceId;
                     game.sourceName = pluginDisplayName(m_plugins, game.sourceId);
                     game.version = entry->version;
@@ -510,8 +512,6 @@ int LibraryController::scanInstalledGames()
             if (game.steamAppId.isEmpty() && m_metadata) {
                 const GameMetadata meta = m_metadata->metadataForTitle(game.title);
                 game.steamAppId = meta.steamAppId;
-                if (game.coverUrl.isEmpty() && !meta.coverUrl.isEmpty())
-                    game.coverUrl = meta.coverUrl;
             }
 
             m_store->upsertGame(game);

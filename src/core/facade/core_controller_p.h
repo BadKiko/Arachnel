@@ -107,6 +107,7 @@
     QVector<CatalogEntry> m_catalogCache;
     QHash<QString, int> m_catalogIdToCacheIndex;
     CatalogFilterService* m_catalogFilters = nullptr;
+    CatalogDiscoveryService* m_catalogDiscovery = nullptr;
     QString m_userNotice;
     int m_userNoticeSerial = 0;
     QString m_lastPluginError;
