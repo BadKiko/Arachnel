@@ -1952,6 +1952,18 @@
     </message>
 </context>
 <context>
+    <name>GameDetailsPage</name>
+    <message numerus="yes">
+        <location filename="../qml/app/GameDetailsPage.qml"/>
+        <source>%n source(s)</source>
+        <translation>
+            <numerusform>%n источник</numerusform>
+            <numerusform>%n источника</numerusform>
+            <numerusform>%n источников</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
     <name>GameDetailsContent</name>
     <message>
         <location filename="../qml/app/GameDetailsContent.qml" line="39"/>

@@ -15,8 +15,14 @@ Rectangle {
     height: compactRow.implicitHeight + MD.Token.spacing.small * 2
     color: MD.Token.color.surface
     opacity: barOpacity
-    visible: barOpacity > 0.02
+    visible: barOpacity > 0.01
+    scale: 0.97 + 0.03 * barOpacity
+    transformOrigin: Item.Top
     layer.enabled: visible
+
+    transform: Translate {
+        y: (1 - root.barOpacity) * -12
+    }
 
     MouseArea {
         anchors.fill: parent
@@ -25,13 +31,32 @@ Rectangle {
         onWheel: function (wheel) { wheel.accepted = false }
     }
 
+    // Soft shadow so the bar feels like it settles over the grid.
+    Rectangle {
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.bottom
+        height: 16
+        opacity: root.barOpacity * 0.55
+        gradient: Gradient {
+            GradientStop {
+                position: 0.0
+                color: MD.Util.transparent(MD.Token.color.scrim, 0.18)
+            }
+            GradientStop {
+                position: 1.0
+                color: "transparent"
+            }
+        }
+    }
+
     Rectangle {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         height: 1
         color: MD.Token.color.outline_variant
-        opacity: 0.35
+        opacity: 0.2 + 0.25 * root.barOpacity
     }
 
     RowLayout {
@@ -46,6 +71,8 @@ Rectangle {
             typescale: MD.Token.typescale.title_large
             elide: Text.ElideRight
             maximumLineCount: 1
+            scale: 0.94 + 0.06 * root.barOpacity
+            transformOrigin: Item.Left
         }
 
         Item {
@@ -83,11 +110,13 @@ Rectangle {
             typescale: MD.Token.typescale.label_large
             elide: Text.ElideRight
             maximumLineCount: 1
+            opacity: 0.55 + 0.45 * root.barOpacity
         }
 
         Item {
             Layout.preferredWidth: compactFilterBtn.implicitWidth
             Layout.preferredHeight: compactFilterBtn.implicitHeight
+            opacity: 0.4 + 0.6 * root.barOpacity
 
             MD.IconButton {
                 id: compactFilterBtn
@@ -122,18 +151,21 @@ Rectangle {
         }
 
         MD.IconButton {
+            opacity: 0.4 + 0.6 * root.barOpacity
             mdState.type: page.listViewMode ? MD.Enum.IBtStandard : MD.Enum.IBtFilledTonal
             icon.name: MD.Token.icon.grid_view
             onClicked: prefs.viewMode = 0
         }
 
         MD.IconButton {
+            opacity: 0.4 + 0.6 * root.barOpacity
             mdState.type: page.listViewMode ? MD.Enum.IBtFilledTonal : MD.Enum.IBtStandard
             icon.name: MD.Token.icon.view_list
             onClicked: prefs.viewMode = 1
         }
 
         MD.IconButton {
+            opacity: 0.4 + 0.6 * root.barOpacity
             mdState.type: MD.Enum.IBtStandard
             icon.name: MD.Token.icon.refresh
             enabled: !Core.catalogLoading && Core.activeCatalogSourceIds.length > 0

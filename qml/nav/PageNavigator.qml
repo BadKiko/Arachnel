@@ -3,7 +3,7 @@ import QtQuick.Controls
 
 import Qcm.Material as MD
 
-// Unified page navigation: fade + bounce scale (OutBack).
+// Unified page navigation: fade + soft scale.
 // Covered pages can stay at opacity 0 after Immediate pop; restoreCurrent() fixes that.
 MD.StackView {
     id: root
@@ -29,6 +29,8 @@ MD.StackView {
         item.scale = 1
         if (item.visible !== undefined)
             item.visible = true
+        if (item.fixCatalogViewports)
+            Qt.callLater(item.fixCatalogViewports)
     }
 
     function restoreItem(item) {
@@ -38,6 +40,8 @@ MD.StackView {
         item.scale = 1
         if (item.visible !== undefined)
             item.visible = true
+        if (item.fixCatalogViewports)
+            Qt.callLater(item.fixCatalogViewports)
     }
 
     onBusyChanged: {

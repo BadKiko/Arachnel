@@ -154,8 +154,12 @@ Item {
     Connections {
         target: Core.jobs
         function onJobsChanged() {
+            const prevStatus = root.downloadJob.status || ""
             root.refreshDownloadJob()
-            root.detailsRevision++
+            // Progress ticks used to bump detailsRevision every time, which rebuilt
+            // the screenshot strip and made tiles vanish mid-download.
+            if ((root.downloadJob.status || "") !== prevStatus)
+                root.detailsRevision++
         }
     }
 
@@ -197,7 +201,30 @@ Item {
         maybeEnrich()
     }
 
+    readonly property int installSourceCount: {
+        const _rev = root.detailsRevision
+        if (!root.gameId.length)
+            return 0
+        const offers = Core.installOffersForEntry(root.gameId)
+        if (!offers || !offers.length)
+            return 0
+        const seen = ({})
+        let n = 0
+        for (let i = 0; i < offers.length; ++i) {
+            const sid = offers[i].sourceId || ""
+            if (!sid.length || seen[sid])
+                continue
+            seen[sid] = true
+            ++n
+        }
+        return n
+    }
+
     readonly property string sourceLabel: {
+        const _rev = root.detailsRevision
+        // Merged catalog entry available from several plugins - don't pin one name.
+        if (root.installSourceCount > 1)
+            return qsTr("%n source(s)", "", root.installSourceCount)
         const sid = info.sourceId ?? ""
         if (!sid.length)
             return ""

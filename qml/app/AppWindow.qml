@@ -48,16 +48,16 @@ MD.ApplicationWindow {
 
         root.detailsGameId = ""
         root.pageIndex = index
-        if (pageStack.currentItem && pageStack.currentItem.pageIndex !== undefined)
-            pageStack.currentItem.pageIndex = index
     }
 
     function openCatalogWithQuery(query) {
+        // Discover "All games" / search / filters → Catalog tab in the rail.
         root.goToPage(2)
         Qt.callLater(function () {
             const pages = pageStack.currentItem
-            if (pages && pages.catalogBrowsePage)
-                pages.catalogBrowsePage.showBrowseAll(query || "")
+            if (!pages || !pages.catalogBrowsePage)
+                return
+            pages.catalogBrowsePage.showBrowseAll(query || "")
         })
     }
 
@@ -74,6 +74,11 @@ MD.ApplicationWindow {
         if (pageStack.canPop)
             pageStack.navigatePop()
         root.detailsGameId = ""
+        // Stack scale/opacity transitions can leave Discover scrolled under the clip.
+        Qt.callLater(function () {
+            if (pageStack.currentItem && pageStack.currentItem.fixCatalogViewports)
+                pageStack.currentItem.fixCatalogViewports()
+        })
     }
 
     function beginCatalogInstall(entryId, libraryId, addonIds) {
@@ -143,10 +148,29 @@ MD.ApplicationWindow {
         Item {
             id: mainPages
 
-            property int pageIndex: root.pageIndex
+            // Always follow the window rail index. Writing this property used to
+            // break the binding and leave Discover visible while Catalog was selected.
+            readonly property int pageIndex: root.pageIndex
             property alias catalogBrowsePage: catalogBrowsePage
 
             transformOrigin: Item.Center
+
+            function fixCatalogViewports() {
+                // Discover + Catalog tabs both host scrollable headers.
+                for (let i = 0; i < children.length; ++i) {
+                    const child = children[i]
+                    if (child && child.fixViewport)
+                        child.fixViewport()
+                }
+            }
+
+            StackView.onStatusChanged: {
+                if (StackView.status === StackView.Active) {
+                    opacity = 1
+                    scale = 1
+                    Qt.callLater(fixCatalogViewports)
+                }
+            }
 
             // Background comes from MD.Pane in AppWindow — no fill rect here (it hid bottom corners).
             // Soft crossfade + light bounce on the active tab.
@@ -186,7 +210,11 @@ MD.ApplicationWindow {
                 onOpenGame: function (id) { root.openGameDetails(id, true) }
                 onOpenSettings: settingsSheet.openSettings()
                 onAddSourceRequested: settingsSheet.openPlugins()
-                onOpenFullCatalog: function (query) { root.openCatalogWithQuery(query) }
+                onOpenFullCatalog: function (query) {
+                    // Leave Discover shelves as-is; Catalog tab owns the full list.
+                    browseAllMode = false
+                    root.openCatalogWithQuery(query)
+                }
 
                 Behavior on opacity {
                     NumberAnimation {

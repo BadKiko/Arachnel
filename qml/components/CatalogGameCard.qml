@@ -107,6 +107,7 @@ Item {
             fallbackText: root.title.length > 0 ? root.title.charAt(0) : "?"
             awaiting: root.metadataPending
             enableShimmer: false
+            hoverScaleEnabled: false
             cornerRadius: MD.Token.shape.corner.medium
             onClicked: root.openDetails(root.entryId)
             onLoadFailed: root.onPosterFailed()
@@ -142,6 +143,7 @@ Item {
         spacing: MD.Token.spacing.extra_small
 
         GamePoster {
+            id: gridPoster
             Layout.fillWidth: true
             Layout.fillHeight: true
             source: root.compactRow ? "" : root.displayCoverUrl
@@ -160,6 +162,14 @@ Item {
             typescale: MD.Token.typescale.title_small
             elide: Text.ElideRight
             maximumLineCount: 1
+            opacity: gridPoster.hovered ? 1 : 0.92
+
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: MD.Token.duration.short3
+                    easing: MD.Token.easing.emphasized_decelerate
+                }
+            }
         }
 
         MD.Label {

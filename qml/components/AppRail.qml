@@ -45,10 +45,7 @@ MD.Pane {
             MouseArea {
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
-                onClicked: {
-                    root.currentIndex = 0
-                    root.activated(0)
-                }
+                onClicked: root.activated(0)
             }
         }
 
@@ -87,9 +84,17 @@ MD.Pane {
                                    ? MD.Token.color.secondary_container
                                    : "transparent"
                             elevation: MD.Token.elevation.level0
+                            scale: railEntry.selected ? 1 : 0.92
+                            transformOrigin: Item.Center
 
                             Behavior on color {
                                 ColorAnimation { duration: MD.Token.duration.short4 }
+                            }
+                            Behavior on scale {
+                                NumberAnimation {
+                                    duration: MD.Token.duration.short4
+                                    easing: MD.Token.easing.emphasized_decelerate
+                                }
                             }
 
                             MD.Icon {
@@ -132,10 +137,10 @@ MD.Pane {
                 MouseArea {
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: {
-                        root.currentIndex = railEntry.index
-                        root.activated(railEntry.index)
-                    }
+                    // Don't assign currentIndex here - that breaks the parent's
+                    // `currentIndex: pageIndex` binding and leaves the rail stuck
+                    // (e.g. Discover stays highlighted after "All games" → Catalog).
+                    onClicked: root.activated(railEntry.index)
                 }
             }
         }

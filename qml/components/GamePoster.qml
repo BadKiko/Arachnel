@@ -14,6 +14,7 @@ Item {
     property bool hovered: mouseArea.containsMouse
     property real fillProgress: -1
     property bool enableShimmer: true
+    property bool hoverScaleEnabled: true
     property int decodeWidth: 300
     property int decodeHeight: 450
     readonly property real fillRatio: Math.max(0, Math.min(1, fillProgress / 100))
@@ -55,6 +56,17 @@ Item {
 
     implicitWidth: 168
     implicitHeight: Math.round(width * 4 / 3)
+
+    scale: (root.hoverScaleEnabled && root.hovered) ? 1.03 : 1.0
+    transformOrigin: Item.Center
+
+    Behavior on scale {
+        enabled: root.hoverScaleEnabled
+        NumberAnimation {
+            duration: MD.Token.duration.short4
+            easing: MD.Token.easing.emphasized_decelerate
+        }
+    }
 
     Image {
         id: coverProbe
@@ -229,9 +241,16 @@ Item {
     Rectangle {
         anchors.fill: parent
         radius: root.cornerRadius
-        visible: root.hovered
         z: 2
-        color: MD.Util.transparent(MD.Token.color.scrim, 0.22)
+        color: MD.Util.transparent(MD.Token.color.scrim, 0.2)
+        opacity: root.hovered ? 1 : 0
+
+        Behavior on opacity {
+            NumberAnimation {
+                duration: MD.Token.duration.short3
+                easing: MD.Token.easing.emphasized_decelerate
+            }
+        }
     }
 
     MouseArea {

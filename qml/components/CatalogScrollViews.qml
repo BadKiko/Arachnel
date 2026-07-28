@@ -36,12 +36,14 @@ Item {
 
             CatalogIntroHeader {
                 width: parent.width
+                collapseProgress: page.introCollapseProgress
             }
 
             CatalogScrollHeader {
                 contentWidth: grid.width
                 hasSelection: Core.activeCatalogSourceIds.length > 0
                 listViewMode: page.listViewMode
+                collapseProgress: page.compactBarOpacity
                 onFilterRequested: page.openFilterSheet()
                 onViewModeChangeRequested: function (mode) { prefs.viewMode = mode }
                 onRefreshRequested: Core.refreshSelectedCatalogs()
@@ -79,12 +81,14 @@ Item {
 
             CatalogIntroHeader {
                 width: parent.width
+                collapseProgress: page.introCollapseProgress
             }
 
             CatalogScrollHeader {
                 contentWidth: list.width
                 hasSelection: Core.activeCatalogSourceIds.length > 0
                 listViewMode: page.listViewMode
+                collapseProgress: page.compactBarOpacity
                 onFilterRequested: page.openFilterSheet()
                 onViewModeChangeRequested: function (mode) { prefs.viewMode = mode }
                 onRefreshRequested: Core.refreshSelectedCatalogs()

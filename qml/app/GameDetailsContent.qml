@@ -148,7 +148,8 @@ Item {
                             icon.name: MD.Token.icon.install_desktop
                         }
                         MD.AssistChip {
-                            visible: (page.info.sourceId ?? "") === "steamidra"
+                            visible: page.installSourceCount <= 1
+                                     && (page.info.sourceId ?? "") === "steamidra"
                             text: qsTr("Steam CDN · Online Fix")
                             icon.name: MD.Token.icon.check_circle
                             elevated: true

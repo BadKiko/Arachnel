@@ -1,7 +1,8 @@
 import QtQuick
 import Qcm.Material as MD
 
-// Bounce enter: fade + scale overshoot (OutBack).
+// Soft enter: fade + light scale. Avoid strong OutBack overshoot - it clips the
+// discovery hero under RoundClip / StackView during push/pop from game details.
 Transition {
     ParallelAnimation {
         OpacityAnimator {
@@ -11,11 +12,10 @@ Transition {
             easing: MD.Token.easing.emphasized_decelerate
         }
         ScaleAnimator {
-            from: 0.90
+            from: 0.96
             to: 1.0
             duration: MD.Token.duration.medium4
-            easing.type: Easing.OutBack
-            easing.overshoot: 1.35
+            easing: MD.Token.easing.emphasized_decelerate
         }
     }
 }
