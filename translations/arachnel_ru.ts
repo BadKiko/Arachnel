@@ -2971,6 +2971,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>Для этой платформы нет официальных плагинов.</translation>
     </message>
     <message>
+        <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="200"/>
+        <source>Recommended</source>
+        <translation>Рекомендуем</translation>
+    </message>
+    <message>
         <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="208"/>
         <source>v%1</source>
         <translation>v%1</translation>
@@ -3475,6 +3480,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <location filename="../qml/settings/SettingsPluginStorePage.qml" line="138"/>
         <source>No official plugins available for this platform.</source>
         <translation>Для этой платформы нет официальных плагинов.</translation>
+    </message>
+    <message>
+        <location filename="../qml/settings/SettingsPluginStorePage.qml" line="196"/>
+        <source>Recommended</source>
+        <translation>Рекомендуем</translation>
     </message>
     <message>
         <location filename="../qml/settings/SettingsPluginStorePage.qml" line="204"/>

@@ -19,6 +19,8 @@
 #include <QUrl>
 #include <QVariantMap>
 
+#include <algorithm>
+
 namespace arachnel::core {
 
 namespace {
@@ -250,6 +252,9 @@ void PluginCatalogService::refresh()
             row.insert(QStringLiteral("maxArachnel"),
                        build.value(QStringLiteral("maxArachnel")).toString());
             row.insert(QStringLiteral("repository"), resolvePluginRepository(pluginId, obj));
+            row.insert(QStringLiteral("recommended"),
+                       obj.value(QStringLiteral("recommended")).toBool(false)
+                           || pluginId == QStringLiteral("steamidra"));
 
             const QStringList platforms =
                 platformsFromJson(build.value(QStringLiteral("platforms")));
@@ -257,6 +262,24 @@ void PluginCatalogService::refresh()
             row.insert(QStringLiteral("supported"), true);
             next.append(row);
         }
+
+        std::sort(next.begin(), next.end(), [](const QVariant& a, const QVariant& b) {
+            const QVariantMap left = a.toMap();
+            const QVariantMap right = b.toMap();
+            const bool leftRec = left.value(QStringLiteral("recommended")).toBool();
+            const bool rightRec = right.value(QStringLiteral("recommended")).toBool();
+            if (leftRec != rightRec)
+                return leftRec;
+            const QString leftId = left.value(QStringLiteral("id")).toString();
+            const QString rightId = right.value(QStringLiteral("id")).toString();
+            if (leftId == QStringLiteral("steamidra") && rightId != QStringLiteral("steamidra"))
+                return true;
+            if (rightId == QStringLiteral("steamidra") && leftId != QStringLiteral("steamidra"))
+                return false;
+            return QString::localeAwareCompare(left.value(QStringLiteral("name")).toString(),
+                                               right.value(QStringLiteral("name")).toString())
+                   < 0;
+        });
 
         m_plugins = next;
         emit pluginsChanged();
