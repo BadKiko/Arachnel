@@ -19,51 +19,40 @@ ColumnLayout {
     spacing: MD.Token.spacing.small
     visible: shelfModel && shelfModel.count > 0
 
+    readonly property real scrollStep: page.cardWidth + shelfList.spacing
+    readonly property bool canScrollLeft: shelfList.contentX > 1
+    readonly property bool canScrollRight: shelfList.contentWidth - shelfList.width - shelfList.contentX > 1
+
+    function scrollBy(delta) {
+        const maxX = Math.max(0, shelfList.contentWidth - shelfList.width)
+        shelfList.contentX = Math.max(0, Math.min(maxX, shelfList.contentX + delta))
+    }
+
     RowLayout {
         Layout.fillWidth: true
-        spacing: MD.Token.spacing.medium
-
-        MD.Icon {
-            name: root.iconName
-            size: 22
-            color: MD.Token.color.primary
-        }
-
-        ColumnLayout {
-            Layout.fillWidth: true
-            spacing: 2
-
-            MD.Label {
-                Layout.fillWidth: true
-                text: root.title
-                typescale: MD.Token.typescale.title_medium
-            }
-
-            MD.Label {
-                Layout.fillWidth: true
-                visible: root.subtitle.length > 0
-                text: root.subtitle
-                color: MD.Token.color.on_surface_variant
-                typescale: MD.Token.typescale.body_small
-            }
-        }
-
-        MD.Button {
-            mdState.type: MD.Enum.BtText
-            text: qsTr("Random")
-            visible: shelfModel && shelfModel.count > 1
-            onClicked: {
-                const i = Math.floor(Math.random() * shelfModel.count)
-                const info = shelfModel.entryInfo(i)
-                if (info && info.entryId)
-                    root.surpriseFromShelf(info.entryId)
-            }
-        }
+        spacing: MD.Token.spacing.small
 
         MD.Label {
-            text: shelfModel.count
-            color: MD.Token.color.on_surface_variant
-            typescale: MD.Token.typescale.label_large
+            Layout.fillWidth: true
+            text: root.title
+            typescale: MD.Token.typescale.title_medium
+            elide: Text.ElideRight
+        }
+
+        MD.IconButton {
+            mdState.type: MD.Enum.IBtStandard
+            icon.name: MD.Token.icon.arrow_back
+            enabled: root.canScrollLeft
+            visible: shelfList.contentWidth > shelfList.width
+            onClicked: root.scrollBy(-root.scrollStep)
+        }
+
+        MD.IconButton {
+            mdState.type: MD.Enum.IBtStandard
+            icon.name: MD.Token.icon.chevron_right
+            enabled: root.canScrollRight
+            visible: shelfList.contentWidth > shelfList.width
+            onClicked: root.scrollBy(root.scrollStep)
         }
     }
 
@@ -78,9 +67,16 @@ ColumnLayout {
         boundsBehavior: Flickable.StopAtBounds
         reuseItems: true
         cacheBuffer: page.cardWidth * 2
+        // Carousel arrows replace the scrollbar.
+        ScrollBar.horizontal: ScrollBar {
+            policy: ScrollBar.AlwaysOff
+        }
 
-        ScrollBar.horizontal: MD.ScrollBar {
-            policy: ScrollBar.AsNeeded
+        Behavior on contentX {
+            NumberAnimation {
+                duration: 180
+                easing.type: Easing.OutCubic
+            }
         }
 
         delegate: CatalogGameCard {

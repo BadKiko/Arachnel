@@ -1,6 +1,7 @@
 #include "core_controller_impl.h"
 
 #include <QFutureWatcher>
+#include <QTimer>
 #include <QtConcurrent>
 
 namespace arachnel::core {
@@ -38,6 +39,14 @@ void CoreController::initializeServices()
         [this]() -> QVector<CatalogEntry>& { return m_catalogCache; }, this);
     connect(m_catalogCovers, &CatalogCoverCoordinator::coverApplied, this,
             [this](const QString& entryId, const QString& coverUrl) {
+                // Discovery shelves use CatalogShelfModel, not CatalogModel — refresh them too.
+                if (m_catalogDiscovery)
+                    m_catalogDiscovery->onEntryMetadataChanged(entryId);
+
+                // Persist only local cached covers into the library store.
+                if (!coverUrl.startsWith(QStringLiteral("file:")))
+                    return;
+
                 const LibraryGame* existing = m_libraryStore.gameById(entryId);
                 if (!existing || existing->coverUrl == coverUrl)
                     return;
@@ -60,7 +69,10 @@ void CoreController::initializeServices()
     catalogHooks.rebuildIdIndex = [this]() { rebuildCatalogIdIndex(); };
     catalogHooks.applyFilter = [this](const QString& query) { applyCatalogFilter(query); };
     catalogHooks.rebuildGenres = [this]() { rebuildAvailableCatalogGenres(); };
-    catalogHooks.warmCovers = [this]() { warmActiveCatalogCovers(); };
+    catalogHooks.warmCovers = [this]() {
+        // Don't block first paint / catalog merge with cover I/O.
+        QTimer::singleShot(750, this, [this]() { warmActiveCatalogCovers(); });
+    };
     catalogHooks.catalogReady = [this]() { onCatalogReady(); };
     m_catalogController =
         new CatalogController(&m_catalog, &m_sources, m_pluginHost, &m_catalogCache,

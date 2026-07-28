@@ -46,7 +46,12 @@ signals:
 
 private:
     void applyCoverToEntry(const QString& entryId, const QString& coverUrl);
+    void markCoverPending(CatalogEntry* entry);
+    void handleCoverDownloadFailed(const QString& remoteUrl);
+    QStringList steamCoverCandidates(const QString& steamAppId) const;
+    QString nextSteamCoverFallback(const QString& entryId, const QString& failedUrl) const;
     static bool isRemoteLibraryCover(const QString& url);
+    static bool isAllowedSteamCoverUrl(const QString& url);
 
     CoverImageCache* m_coverCache = nullptr;
     GameMetadataService* m_metadataService = nullptr;
@@ -55,6 +60,10 @@ private:
     EntryLookup m_findEntry;
     EntryList m_entries;
     QHash<QString, QSet<QString>> m_coverWaiters;
+    // entryId -> last remote URL we tried (for fallback chain).
+    QHash<QString, QString> m_coverAttempt;
+    // Do not keep retrying entries that exhausted Steam CDN fallbacks.
+    QSet<QString> m_coverGiveUp;
 };
 
 } // namespace arachnel::core

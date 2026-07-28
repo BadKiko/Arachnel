@@ -278,7 +278,18 @@ void CatalogController::rebuildMergedCatalog()
             if (offer.id.startsWith(QStringLiteral("steam-")) && !offer.steamAppId.isEmpty()) {
                 showcase.id = offer.id;
                 showcase.steamAppId = offer.steamAppId;
+                if (!offer.coverUrl.isEmpty())
+                    showcase.coverUrl = offer.coverUrl;
                 break;
+            }
+        }
+        // If showcase itself has no steamAppId, steal it from any offer that does.
+        if (showcase.steamAppId.isEmpty()) {
+            for (const CatalogEntry& offer : offers) {
+                if (!offer.steamAppId.isEmpty()) {
+                    showcase.steamAppId = offer.steamAppId;
+                    break;
+                }
             }
         }
 

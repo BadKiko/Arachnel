@@ -151,6 +151,14 @@ void CoverImageCache::handleFinished(QNetworkReply* reply)
         return;
     }
 
+    const int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    if (status >= 400) {
+        reply->deleteLater();
+        emit failed(remoteUrl);
+        startNext();
+        return;
+    }
+
     const QByteArray payload = reply->readAll();
     reply->deleteLater();
 

@@ -106,99 +106,59 @@
 <context>
     <name>CatalogDiscoveryHeader</name>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="49"/>
-        <source>Don&apos;t know what to play?</source>
-        <translation>Не знаешь, во что поиграть?</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="55"/>
-        <source>Answer in one tap — or scroll the shelves below.</source>
-        <translation>Ответь одним тапом — или листай полки ниже.</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="71"/>
+        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="138"/>
         <source>All games</source>
         <translation>Все игры</translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="115"/>
+        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="64"/>
         <source>Jump back in</source>
         <translation>Вернуться в игру</translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="131"/>
+        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="80"/>
         <source>Continue</source>
         <translation>Играть</translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="154"/>
+        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="101"/>
         <source>Surprise me</source>
         <translation>Удиви меня</translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="155"/>
-        <source>Open a random hit</source>
-        <translation>Случайный хит</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="160"/>
+        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="108"/>
         <source>Help me pick</source>
         <translation>Подобрать</translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="161"/>
-        <source>3 quick questions</source>
-        <translation>3 быстрых вопроса</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="166"/>
+        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="115"/>
         <source>Short install</source>
         <translation>Быстрая установка</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="167"/>
-        <source>About 1–5 GB</source>
-        <translation>Примерно 1–5 ГБ</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="172"/>
-        <source>With friends</source>
-        <translation>С друзьями</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="173"/>
-        <source>Co-op &amp; party</source>
-        <translation>Кооп и вечеринки</translation>
     </message>
 </context>
 <context>
     <name>CatalogDiscoveryHero</name>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="60"/>
-        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="62"/>
-        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="63"/>
+        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="65"/>
+        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="67"/>
+        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="68"/>
         <source>playing now</source>
         <translation>играют сейчас</translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="125"/>
+        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="130"/>
         <source>Tonight&apos;s pick</source>
         <translation>Выбор на вечер</translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="156"/>
+        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="161"/>
         <source>Open game</source>
         <translation>Открыть игру</translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="162"/>
+        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="167"/>
         <source>Another pick</source>
         <translation>Другой вариант</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="169"/>
-        <source>Surprise me</source>
-        <translation>Удиви меня</translation>
     </message>
 </context>
 <context>
@@ -641,17 +601,7 @@
 <context>
     <name>CatalogPageContent</name>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="257"/>
-        <source>Hits</source>
-        <translation>Хиты</translation>
-    </message>
-    <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="269"/>
-        <source>New games</source>
-        <translation>Новые игры</translation>
-    </message>
-    <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="263"/>
+        <location filename="../qml/app/CatalogPageContent.qml" line="247"/>
         <source>With friends</source>
         <translation>С друзьями</translation>
     </message>
@@ -667,7 +617,6 @@
     </message>
     <message>
         <location filename="../qml/app/CatalogPageContent.qml" line="198"/>
-        <location filename="../qml/app/CatalogPageContent.qml" line="334"/>
         <source>All games</source>
         <translation>Все игры</translation>
     </message>
@@ -682,59 +631,24 @@
         <translation>Подборки загружены, но этих игр ещё нет во включённых источниках.</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="228"/>
-        <source>Or browse the shelves</source>
-        <translation>Или полистай полки</translation>
-    </message>
-    <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="236"/>
-        <source>Filtered picks</source>
-        <translation>Подборка по фильтру</translation>
-    </message>
-    <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="249"/>
+        <location filename="../qml/app/CatalogPageContent.qml" line="233"/>
         <source>Matches your mood</source>
         <translation>Под твоё настроение</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="250"/>
+        <location filename="../qml/app/CatalogPageContent.qml" line="234"/>
         <source>Tap a cover to open details</source>
         <translation>Нажми на обложку, чтобы открыть</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="258"/>
-        <source>What&apos;s buzzing right now</source>
-        <translation>Сейчас на хайпе</translation>
+        <location filename="../qml/app/CatalogPageContent.qml" line="241"/>
+        <source>Recommended for you</source>
+        <translation>Рекомендуем вам</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="264"/>
-        <source>Chaotic co-op and party games</source>
-        <translation>Хаотичный кооп и пати</translation>
-    </message>
-    <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="270"/>
-        <source>Fresh releases</source>
-        <translation>Свежие релизы</translation>
-    </message>
-    <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="305"/>
-        <source>Still undecided?</source>
-        <translation>Всё ещё сомневаешься?</translation>
-    </message>
-    <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="311"/>
-        <source>Search the full catalog, or let us narrow it down.</source>
-        <translation>Ищи в полном каталоге или сузь выбор с нами.</translation>
-    </message>
-    <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="322"/>
-        <source>Surprise me</source>
-        <translation>Удиви меня</translation>
-    </message>
-    <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="328"/>
-        <source>Help me pick</source>
-        <translation>Подобрать</translation>
+        <location filename="../qml/app/CatalogPageContent.qml" line="253"/>
+        <source>Popular this week</source>
+        <translation>Популярное на этой неделе</translation>
     </message>
 </context>
 <context>
@@ -841,14 +755,6 @@
         <location filename="../qml/components/CatalogScrollHeader.qml" line="35"/>
         <source>Found: %1</source>
         <translation>Найдено: %1</translation>
-    </message>
-</context>
-<context>
-    <name>CatalogShelfRow</name>
-    <message>
-        <location filename="../qml/components/CatalogShelfRow.qml" line="53"/>
-        <source>Random</source>
-        <translation>Случайно</translation>
     </message>
 </context>
 <context>
@@ -1164,23 +1070,23 @@
         <translation>Ошибка каталога: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="387"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="391"/>
         <source>Game not found for add-on</source>
         <translation>Игра не найдена для дополнения</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="392"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="396"/>
         <source>Add-on not found in catalog</source>
         <translation>Дополнение не найдено в каталоге</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="374"/>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="403"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="378"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="407"/>
         <source>Could not find game to install: %1</source>
         <translation>Не удалось найти игру для установки: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="439"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="443"/>
         <source>Download error: %1</source>
         <translation>Ошибка загрузки: %1</translation>
     </message>
@@ -1226,7 +1132,7 @@
     </message>
     <message>
         <location filename="../src/core/runtime/proton_facade.cpp" line="33"/>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="146"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="150"/>
         <source>Preparing runtime environment…</source>
         <translation>Подготовка среды выполнения…</translation>
     </message>
@@ -1299,27 +1205,27 @@
         <translation>Установить плагин</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="244"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="248"/>
         <source>Plugin install failed</source>
         <translation>Ошибка установки плагина</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="258"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="262"/>
         <source>Plugin installed: %1</source>
         <translation>Плагин установлен: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="299"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="303"/>
         <source>Proton-GE installed</source>
         <translation>Proton-GE установлен</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="301"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="305"/>
         <source>Proton-GE download failed: %1</source>
         <translation>Ошибка загрузки Proton-GE: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="433"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="437"/>
         <source>Download complete — install manually</source>
         <translation>Загрузка завершена — установите вручную</translation>
     </message>
@@ -1344,22 +1250,22 @@
         <translation>Исполняемые (*.exe *.sh *.x86_64);;Все файлы (*)</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_controller.cpp" line="307"/>
+        <location filename="../src/core/catalog/catalog_controller.cpp" line="308"/>
         <source>%1 · %2 games</source>
         <translation>%1 · %2 игр</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_controller.cpp" line="311"/>
+        <location filename="../src/core/catalog/catalog_controller.cpp" line="312"/>
         <source>%1 sources · %2 games</source>
         <translation>%1 источников · %2 игр</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_controller.cpp" line="434"/>
+        <location filename="../src/core/catalog/catalog_controller.cpp" line="435"/>
         <source>Catalog empty or unavailable: %1</source>
         <translation>Каталог пуст или недоступен: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_controller.cpp" line="453"/>
+        <location filename="../src/core/catalog/catalog_controller.cpp" line="454"/>
         <source>No catalog URL configured for source %1</source>
         <translation>Для источника %1 не задан URL каталога</translation>
     </message>
@@ -1526,7 +1432,7 @@
         <translation>Не удалось начать обновление %1</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="215"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="219"/>
         <source>No catalog sources enabled</source>
         <translation>Нет включённых источников каталога</translation>
     </message>
@@ -1716,7 +1622,7 @@
     </message>
     <message>
         <location filename="../src/core/settings/app_updater.cpp" line="193"/>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="273"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="277"/>
         <source>Arachnel %1 is available</source>
         <translation>Доступен Arachnel %1</translation>
     </message>
@@ -1980,7 +1886,7 @@
     <message>
         <location filename="../src/core/library/library_controller.cpp" line="222"/>
         <location filename="../src/core/library/library_controller.cpp" line="243"/>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="173"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="177"/>
         <source>Game removed: %1</source>
         <translation>Игра удалена: %1</translation>
     </message>

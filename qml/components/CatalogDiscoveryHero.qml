@@ -25,7 +25,12 @@ Item {
         const appId = featured.steamAppId || ""
         if (appId.length > 0)
             return "https://cdn.akamai.steamstatic.com/steam/apps/" + appId + "/library_hero.jpg"
-        return featured.coverUrl || ""
+        const fromCatalog = featured.coverUrl || ""
+        if (fromCatalog.startsWith("file:")
+                || fromCatalog.indexOf("library_capsule") >= 0
+                || fromCatalog.indexOf("library_600x900") >= 0)
+            return fromCatalog
+        return ""
     }
     property string heroImageUrl: heroCoverUrl
 
@@ -91,6 +96,7 @@ Item {
             seed: featured ? featured.title : ""
             fallbackText: featured ? featured.title : "?"
             awaiting: featured ? featured.metadataPending : false
+            allowRemote: true
             cornerRadius: 0
             decodeWidth: 1440
             decodeHeight: 540
@@ -162,12 +168,6 @@ Item {
                     text: qsTr("Another pick")
                     visible: root.shelfCount > 1
                     onClicked: root.nextPick()
-                }
-
-                MD.Button {
-                    mdState.type: MD.Enum.BtOutlined
-                    text: qsTr("Surprise me")
-                    onClicked: root.surpriseRequested()
                 }
             }
         }

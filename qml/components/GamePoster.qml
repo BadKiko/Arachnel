@@ -20,13 +20,27 @@ Item {
     property int decodeHeight: 450
     readonly property real fillRatio: Math.max(0, Math.min(1, fillProgress / 100))
 
-    readonly property bool hasSource: source.toString().length > 0
+    property bool allowRemote: false
+    property bool loadFailedEmitted: false
+
+    readonly property bool hasSource: resolvedSource.length > 0
     readonly property bool coverReady: hasSource && coverProbe.status === Image.Ready
     readonly property bool showFillProgress: fillProgress >= 0 && coverReady
     readonly property bool imageLoading: hasSource
                                          && (coverProbe.status === Image.Loading
                                              || coverProbe.status === Image.Null)
     readonly property bool showShimmer: root.enableShimmer && !coverReady && (awaiting || imageLoading)
+
+    onSourceChanged: loadFailedEmitted = false
+
+    readonly property string resolvedSource: {
+        const s = root.source.toString()
+        if (!s.length)
+            return ""
+        if (s.startsWith("file:") || root.allowRemote)
+            return s
+        return ""
+    }
 
     readonly property string monogram: {
         const s = (seed || fallbackText || "?").trim()
@@ -47,15 +61,17 @@ Item {
     Image {
         id: coverProbe
         visible: false
-        source: root.source
+        source: root.resolvedSource
         asynchronous: true
         cache: true
         sourceSize.width: root.decodeWidth
         sourceSize.height: root.decodeHeight
 
         onStatusChanged: {
-            if (status === Image.Error && root.hasSource)
+            if (status === Image.Error && root.resolvedSource.length > 0 && !root.loadFailedEmitted) {
+                root.loadFailedEmitted = true
                 root.loadFailed()
+            }
         }
     }
 
@@ -145,7 +161,7 @@ Item {
     MD.Image {
         id: coverImage
         anchors.fill: parent
-        source: root.source
+        source: root.coverReady ? root.resolvedSource : ""
         radius: root.cornerRadius
         elevation: MD.Token.elevation.level0
         fillMode: Image.PreserveAspectCrop
@@ -180,7 +196,7 @@ Item {
         Image {
             id: grayImage
             anchors.fill: parent
-            source: root.source
+            source: root.coverReady ? root.resolvedSource : ""
             fillMode: Image.PreserveAspectCrop
             asynchronous: true
             cache: true
@@ -205,7 +221,7 @@ Item {
             Image {
                 width: fillHost.width
                 height: fillHost.height
-                source: root.source
+                source: root.coverReady ? root.resolvedSource : ""
                 fillMode: Image.PreserveAspectCrop
                 asynchronous: true
                 cache: true

@@ -45,15 +45,18 @@ Item {
     }
 
     readonly property bool hasLibraryCover: coverUrl.startsWith("file:")
-                                            || coverUrl.indexOf("library_capsule") >= 0
-                                            || coverUrl.indexOf("library_600x900") >= 0
+    readonly property string effectiveCoverUrl: hasLibraryCover ? coverUrl : ""
 
     property string requestedId: ""
+    property bool coverRequestSent: false
 
     function requestCoverIfNeeded() {
-        if (!entryId.length || hasLibraryCover)
+        if (!entryId.length || hasLibraryCover || coverRequestSent)
+            return
+        if (metadataPending && requestedId === entryId)
             return
         requestedId = entryId
+        coverRequestSent = true
         Core.requestCatalogCover(entryId)
     }
 
@@ -63,6 +66,7 @@ Item {
             return
         Core.cancelCatalogCover(requestedId)
         requestedId = ""
+        coverRequestSent = false
     }
 
     Timer {
@@ -74,10 +78,14 @@ Item {
     Component.onCompleted: requestTimer.start()
     Component.onDestruction: cancelRequest()
 
-    ListView.onReused: requestTimer.restart()
+    ListView.onReused: {
+        coverRequestSent = false
+        requestTimer.restart()
+    }
 
     onEntryIdChanged: {
         cancelRequest()
+        coverRequestSent = false
         requestTimer.restart()
     }
 
@@ -85,7 +93,13 @@ Item {
         if (hasLibraryCover) {
             requestTimer.stop()
             requestedId = ""
+            coverRequestSent = true
         }
+    }
+
+    onMetadataPendingChanged: {
+        if (!metadataPending && !hasLibraryCover)
+            coverRequestSent = true // exhausted / give up — don't spam requests
     }
 
     RowLayout {
@@ -96,14 +110,17 @@ Item {
         GamePoster {
             Layout.preferredWidth: 52
             Layout.preferredHeight: 70
-            source: root.coverUrl
+            source: root.effectiveCoverUrl
             seed: root.title
             fallbackText: root.title.length > 0 ? root.title.charAt(0) : "?"
             awaiting: root.metadataPending
             enableShimmer: false
             cornerRadius: MD.Token.shape.corner.medium
             onClicked: root.openDetails(root.entryId)
-            onLoadFailed: Core.invalidateCatalogCover(root.entryId)
+            onLoadFailed: {
+                if (root.coverUrl.startsWith("file:"))
+                    Core.invalidateCatalogCover(root.entryId)
+            }
         }
 
         ColumnLayout {
@@ -127,21 +144,6 @@ Item {
                 maximumLineCount: 1
             }
         }
-
-        MD.Label {
-            text: root.installKindLabel
-            color: MD.Token.color.on_surface_variant
-            typescale: MD.Token.typescale.label_small
-            elide: Text.ElideRight
-            maximumLineCount: 1
-            Layout.maximumWidth: 120
-        }
-
-        MD.Icon {
-            name: MD.Token.icon.chevron_right
-            size: 20
-            color: MD.Token.color.on_surface_variant
-        }
     }
 
     ColumnLayout {
@@ -153,34 +155,19 @@ Item {
         GamePoster {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            source: root.coverUrl
+            source: root.effectiveCoverUrl
             seed: root.title
             fallbackText: root.title.length > 0 ? root.title.charAt(0) : "?"
             awaiting: root.metadataPending
             enableShimmer: false
             cornerRadius: MD.Token.shape.corner.large
             onClicked: root.openDetails(root.entryId)
-            onLoadFailed: Core.invalidateCatalogCover(root.entryId)
-
-            Rectangle {
-                anchors.left: parent.left
-                anchors.top: parent.top
-                anchors.margins: MD.Token.spacing.extra_small
-                visible: root.playersLabel.length > 0
-                radius: MD.Token.shape.corner.small
-                color: MD.Token.color.primary
-                opacity: 0.92
-                implicitWidth: playersBadge.implicitWidth + 12
-                implicitHeight: playersBadge.implicitHeight + 8
-
-                MD.Label {
-                    id: playersBadge
-                    anchors.centerIn: parent
-                    text: root.playersLabel
-                    color: MD.Token.color.on_primary
-                    typescale: MD.Token.typescale.label_small
-                }
+            onLoadFailed: {
+                if (root.coverUrl.startsWith("file:"))
+                    Core.invalidateCatalogCover(root.entryId)
             }
+
+            // Keep the card focused: players count is part of metaLine.
         }
 
         MD.Label {

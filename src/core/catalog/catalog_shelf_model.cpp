@@ -110,7 +110,8 @@ bool CatalogShelfModel::notifyEntryChanged(const QString& id)
     if (it == m_idToRow.cend())
         return false;
     const QModelIndex idx = index(it.value());
-    emit dataChanged(idx, idx);
+    emit dataChanged(idx, idx,
+                     {CoverUrlRole, MetadataPendingRole, TitleRole, CurrentPlayersRole});
     return true;
 }
 
