@@ -47,7 +47,10 @@ void JobOrchestrator::reportPluginProgress(const QString& jobId,
     if (progress.totalBytes <= 0 && total > 0 && downloaded > 0 && total > downloaded * 2)
         total = 0;
 
-    if (total > 0 && downloaded > 0) {
+    if (total > 0 && downloaded > 0
+        && (progress.percent <= 0 || progress.totalBytes <= 0)) {
+        // Only invent percent from bytes when the plugin did not provide one.
+        // Never clamp to 99 or override a real plugin percent (steamidra).
         const int bytePercent =
             static_cast<int>(qMin<qint64>(99, downloaded * 100 / total));
         if (bytePercent > nextProgress)

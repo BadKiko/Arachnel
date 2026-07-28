@@ -26,20 +26,38 @@ Item {
         RowLayout {
             Layout.fillWidth: true
             Layout.topMargin: MD.Token.spacing.small
+            Layout.rightMargin: MD.Token.spacing.small
             spacing: MD.Token.spacing.small
 
-            MD.CircularIndicator {
-                Layout.preferredWidth: 22
-                Layout.preferredHeight: 22
+            Item {
+                Layout.preferredWidth: 44
+                Layout.preferredHeight: 20
                 visible: Core.catalogLoading
-                indeterminate: true
-                running: Core.catalogLoading
-                strokeWidth: 3
+
+                Rectangle {
+                    anchors.fill: parent
+                    radius: height / 2
+                    color: MD.Util.transparent(MD.Token.color.primary, 0.12)
+                }
+
+                MD.LinearIndicator {
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.leftMargin: 6
+                    anchors.rightMargin: 6
+                    implicitHeight: 4
+                    strokeWidth: implicitHeight
+                    indeterminate: true
+                    running: Core.catalogLoading && root.visible
+                    color: MD.Token.color.primary
+                    trackColor: MD.Util.transparent(color, 0.2)
+                }
             }
 
             MD.Label {
                 Layout.fillWidth: true
-                text: Core.catalogLoading
+                text: Core.catalogLoading && Core.catalog.count === 0
                     ? qsTr("Loading catalog…")
                     : qsTr("Found: %1").arg(Core.catalog.count)
                 color: MD.Token.color.on_surface_variant
@@ -48,17 +66,39 @@ Item {
                 maximumLineCount: 1
             }
 
-            MD.Badge {
-                count: Core.catalogActiveFilterCount
-                backgroundColor: MD.Token.color.error
-                textColor: MD.Token.color.on_error
+            Item {
+                Layout.preferredWidth: filterBtn.implicitWidth
+                Layout.preferredHeight: filterBtn.implicitHeight
 
                 MD.IconButton {
+                    id: filterBtn
+                    anchors.centerIn: parent
                     mdState.type: Core.catalogActiveFilterCount > 0
                                   ? MD.Enum.IBtFilledTonal
                                   : MD.Enum.IBtStandard
                     icon.name: MD.Token.icon.filter_list
                     onClicked: root.filterRequested()
+                }
+
+                Rectangle {
+                    visible: Core.catalogActiveFilterCount > 0
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    anchors.rightMargin: 2
+                    anchors.topMargin: 2
+                    width: Math.max(18, badgeLabel.implicitWidth + 6)
+                    height: 18
+                    radius: 9
+                    color: MD.Token.color.error
+                    z: 2
+
+                    MD.Label {
+                        id: badgeLabel
+                        anchors.centerIn: parent
+                        text: Core.catalogActiveFilterCount
+                        color: MD.Token.color.on_error
+                        typescale: MD.Token.typescale.label_small
+                    }
                 }
             }
 

@@ -85,8 +85,9 @@ CatalogController::CatalogController(CatalogModel* catalog, SourcePluginModel* s
 
 bool CatalogController::catalogLoading() const
 {
-    return !m_loadingSourceIds.isEmpty() || m_catalogHttpLoadActive
-           || !m_inFlightPluginCatalogWatchers.isEmpty();
+    // Prefetch count watchers share m_inFlightPluginCatalogWatchers but must not
+    // keep the catalog chrome stuck on "Loading…" after games are already shown.
+    return !m_loadingSourceIds.isEmpty() || m_catalogHttpLoadActive;
 }
 QString CatalogController::catalogStatus() const { return m_catalogStatus; }
 QString CatalogController::activeCatalogSourceId() const { return m_activeSourceIds.value(0); }
@@ -576,7 +577,8 @@ void CatalogController::prefetchCatalogCounts()
 {
     m_catalogPrefetchQueue.clear();
     for (const SourcePluginInfo& source : m_sources->plugins()) {
-        if (!source.enabled || m_catalogBySource.contains(source.id))
+        if (!source.enabled || m_catalogBySource.contains(source.id)
+            || m_loadingSourceIds.contains(source.id))
             continue;
         m_catalogPrefetchQueue.append(m_pluginHost && m_pluginHost->hasPlugin(source.id)
                                           ? source.id
@@ -588,7 +590,7 @@ void CatalogController::prefetchCatalogCounts()
 void CatalogController::prefetchPluginCatalogCount(const QString& sourceId)
 {
     ISourcePlugin* plugin = m_pluginHost ? m_pluginHost->plugin(sourceId) : nullptr;
-    if (!plugin) {
+    if (!plugin || m_catalogBySource.contains(sourceId) || m_loadingSourceIds.contains(sourceId)) {
         startNextCatalogPrefetch();
         return;
     }
@@ -599,7 +601,7 @@ void CatalogController::prefetchPluginCatalogCount(const QString& sourceId)
                 m_inFlightPluginCatalogWatchers.removeAll(watcher);
                 const QVector<CatalogEntry> entries = watcher->result();
                 watcher->deleteLater();
-                if (!entries.isEmpty()) {
+                if (!entries.isEmpty() && !m_catalogBySource.contains(sourceId)) {
                     m_catalogBySource.insert(sourceId, entries);
                     m_sourceLoadedAtMs.insert(sourceId, QDateTime::currentMSecsSinceEpoch());
                     m_catalogCounts.insert(sourceId, entries.size());
