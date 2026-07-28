@@ -28,6 +28,15 @@ Item {
             Layout.topMargin: MD.Token.spacing.small
             spacing: MD.Token.spacing.small
 
+            MD.CircularIndicator {
+                Layout.preferredWidth: 22
+                Layout.preferredHeight: 22
+                visible: Core.catalogLoading
+                indeterminate: true
+                running: Core.catalogLoading
+                strokeWidth: 3
+            }
+
             MD.Label {
                 Layout.fillWidth: true
                 text: Core.catalogLoading
@@ -104,12 +113,6 @@ Item {
             wrapMode: Text.WordWrap
             maximumLineCount: 2
             elide: Text.ElideRight
-        }
-
-        MD.LinearIndicator {
-            Layout.fillWidth: true
-            visible: Core.catalogLoading
-            indeterminate: true
         }
 
         Item {

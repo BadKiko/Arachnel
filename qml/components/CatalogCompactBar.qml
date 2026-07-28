@@ -48,6 +48,15 @@ Rectangle {
             maximumLineCount: 1
         }
 
+        MD.CircularIndicator {
+            Layout.preferredWidth: 20
+            Layout.preferredHeight: 20
+            visible: Core.catalogLoading
+            indeterminate: true
+            running: Core.catalogLoading
+            strokeWidth: 3
+        }
+
         MD.Label {
             Layout.fillWidth: true
             text: Core.catalogLoading
