@@ -71,6 +71,9 @@ set(ARACHNEL_APP_SOURCES
     src/core/runtime/windows_runner.cpp
     src/core/launch/process_tracker.cpp
     src/core/launch/launch_controller.cpp
+    src/core/platform/game_launch_target.cpp
+    src/core/platform/desktop_shortcut_service.cpp
+    src/core/platform/steam_shortcut_service.cpp
     src/core/settings/app_updater.cpp
     src/core/facade/core_controller.cpp
     src/core/catalog/catalog_facade_1.cpp
@@ -100,6 +103,7 @@ set(ARACHNEL_CORE_INCLUDE_DIRS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/core/install
     ${CMAKE_CURRENT_SOURCE_DIR}/src/core/plugins
     ${CMAKE_CURRENT_SOURCE_DIR}/src/core/launch
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/core/platform
     ${CMAKE_CURRENT_SOURCE_DIR}/src/core/runtime
     ${CMAKE_CURRENT_SOURCE_DIR}/src/core/torrent
     ${CMAKE_CURRENT_SOURCE_DIR}/src/core/settings

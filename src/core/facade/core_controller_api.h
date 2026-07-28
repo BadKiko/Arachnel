@@ -30,6 +30,9 @@
     Q_INVOKABLE void setGameExecutableOverride(const QString&, const QString&);
     Q_INVOKABLE void setGameProtonId(const QString&, const QString&);
     Q_INVOKABLE void setGameOnlineFixEnabled(const QString&, bool);
+    Q_INVOKABLE void createGameDesktopShortcut(const QString& gameId);
+    Q_INVOKABLE void createGameStartMenuShortcut(const QString& gameId);
+    Q_INVOKABLE void addGameToSteam(const QString& gameId);
     Q_INVOKABLE void refreshAvailableProtons();
     Q_INVOKABLE void moveProtonInPriority(const QString&, int);
     Q_INVOKABLE QString protonNameForId(const QString&) const;

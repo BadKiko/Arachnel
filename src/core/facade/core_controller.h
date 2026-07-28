@@ -26,6 +26,7 @@ class QJSEngine;
 namespace arachnel::core {
 
 struct GameMetadata;
+struct GameLaunchTarget;
 
 class CatalogFilterService;
 class CatalogDiscoveryService;

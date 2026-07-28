@@ -99,6 +99,35 @@ MD.BottomSheet {
             elide: Text.ElideRight
         }
 
+        Flow {
+            Layout.fillWidth: true
+            Layout.leftMargin: MD.Token.spacing.large
+            Layout.rightMargin: MD.Token.spacing.large
+            visible: root.installed
+            spacing: MD.Token.spacing.small
+
+            MD.Button {
+                mdState.type: MD.Enum.BtFilledTonal
+                text: qsTr("Desktop shortcut")
+                icon.name: MD.Token.icon.desktop_windows
+                onClicked: Core.createGameDesktopShortcut(root.gameId)
+            }
+
+            MD.Button {
+                mdState.type: MD.Enum.BtFilledTonal
+                text: qsTr("Start menu shortcut")
+                icon.name: MD.Token.icon.apps
+                onClicked: Core.createGameStartMenuShortcut(root.gameId)
+            }
+
+            MD.Button {
+                mdState.type: MD.Enum.BtFilledTonal
+                text: qsTr("Add to Steam")
+                icon.name: MD.Token.icon.sports_esports
+                onClicked: Core.addGameToSteam(root.gameId)
+            }
+        }
+
         ColumnLayout {
             Layout.fillWidth: true
             Layout.leftMargin: MD.Token.spacing.large

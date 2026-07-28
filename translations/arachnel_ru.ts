@@ -106,82 +106,49 @@
 <context>
     <name>CatalogDiscoveryHeader</name>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="138"/>
+        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="43"/>
         <source>All games</source>
         <translation>Все игры</translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="64"/>
+        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="86"/>
         <source>Jump back in</source>
         <translation>Вернуться в игру</translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="80"/>
+        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="102"/>
         <source>Continue</source>
         <translation>Играть</translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="101"/>
+        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="28"/>
         <source>Surprise me</source>
         <translation>Удиви меня</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="108"/>
-        <source>Help me pick</source>
-        <translation>Подобрать</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="115"/>
-        <source>Short install</source>
-        <translation>Быстрая установка</translation>
     </message>
 </context>
 <context>
     <name>CatalogDiscoveryHero</name>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="65"/>
-        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="67"/>
-        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="68"/>
+        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="76"/>
+        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="78"/>
+        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="79"/>
         <source>playing now</source>
         <translation>играют сейчас</translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="130"/>
+        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="146"/>
         <source>Tonight&apos;s pick</source>
         <translation>Выбор на вечер</translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="161"/>
+        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="177"/>
         <source>Open game</source>
         <translation>Открыть игру</translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="167"/>
+        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="183"/>
         <source>Another pick</source>
         <translation>Другой вариант</translation>
-    </message>
-</context>
-<context>
-    <name>CatalogDiscoveryMoodRow</name>
-    <message>
-        <location filename="../qml/components/CatalogDiscoveryMoodRow.qml" line="14"/>
-        <source>For you</source>
-        <translation>Для тебя</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogDiscoveryMoodRow.qml" line="15"/>
-        <source>With friends</source>
-        <translation>С друзьями</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogDiscoveryMoodRow.qml" line="16"/>
-        <source>Something new</source>
-        <translation>Что-то новое</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogDiscoveryMoodRow.qml" line="21"/>
-        <source>Browse by mood</source>
-        <translation>По настроению</translation>
     </message>
 </context>
 <context>
@@ -382,72 +349,6 @@
     </message>
 </context>
 <context>
-    <name>CatalogMoodChips</name>
-    <message>
-        <location filename="../qml/components/CatalogMoodChips.qml" line="15"/>
-        <location filename="../qml/components/CatalogMoodChips.qml" line="21"/>
-        <source>All shelves</source>
-        <translation>Все полки</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogMoodChips.qml" line="16"/>
-        <location filename="../qml/components/CatalogMoodChips.qml" line="22"/>
-        <source>With friends</source>
-        <translation>С друзьями</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogMoodChips.qml" line="16"/>
-        <source>Co-op &amp; party</source>
-        <translation>Кооп и вечеринки</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogMoodChips.qml" line="15"/>
-        <source>Hits, friends, new</source>
-        <translation>Хиты, с друзьями, новинки</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogMoodChips.qml" line="17"/>
-        <location filename="../qml/components/CatalogMoodChips.qml" line="23"/>
-        <source>New games</source>
-        <translation>Новые игры</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogMoodChips.qml" line="17"/>
-        <source>Recently added</source>
-        <translation>Недавно добавленные</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogMoodChips.qml" line="34"/>
-        <source>Filter discovery</source>
-        <translation>Фильтр подборки</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogMoodChips.qml" line="41"/>
-        <source>Showing matches only — pick All shelves to see every category again.</source>
-        <translation>Показаны только совпадения — выбери «Все полки», чтобы снова видеть все категории.</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogMoodChips.qml" line="42"/>
-        <source>Tap a filter to narrow the list, or use Help me pick for a wizard.</source>
-        <translation>Нажми фильтр, чтобы сузить список, или «Подобрать» для подсказки.</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogMoodChips.qml" line="62"/>
-        <source>Clear filter</source>
-        <translation>Сбросить фильтр</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogMoodChips.qml" line="69"/>
-        <source>games</source>
-        <translation>игр</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogMoodChips.qml" line="84"/>
-        <source>Help me pick</source>
-        <translation>Подобрать</translation>
-    </message>
-</context>
-<context>
     <name>CatalogNoSourcesPanel</name>
     <message>
         <location filename="../qml/components/CatalogNoSourcesPanel.qml" line="31"/>
@@ -601,147 +502,44 @@
 <context>
     <name>CatalogPageContent</name>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="247"/>
+        <location filename="../qml/app/CatalogPageContent.qml" line="227"/>
         <source>With friends</source>
         <translation>С друзьями</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="184"/>
+        <location filename="../qml/app/CatalogPageContent.qml" line="173"/>
         <source>Couldn&apos;t load discovery</source>
         <translation type="unfinished">Не удалось загрузить discovery</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="190"/>
+        <location filename="../qml/app/CatalogPageContent.qml" line="179"/>
         <source>Check your connection, or open All games.</source>
         <translation type="unfinished">Проверь интернет или открой «Все игры».</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="198"/>
+        <location filename="../qml/app/CatalogPageContent.qml" line="187"/>
         <source>All games</source>
         <translation>Все игры</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="210"/>
+        <location filename="../qml/app/CatalogPageContent.qml" line="199"/>
         <source>No matching games in your catalog</source>
         <translation>В каталоге нет подходящих игр</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="216"/>
+        <location filename="../qml/app/CatalogPageContent.qml" line="205"/>
         <source>Discovery loaded, but none of these titles are in your enabled sources yet.</source>
         <translation>Подборки загружены, но этих игр ещё нет во включённых источниках.</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="233"/>
-        <source>Matches your mood</source>
-        <translation>Под твоё настроение</translation>
-    </message>
-    <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="234"/>
-        <source>Tap a cover to open details</source>
-        <translation>Нажми на обложку, чтобы открыть</translation>
-    </message>
-    <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="241"/>
+        <location filename="../qml/app/CatalogPageContent.qml" line="221"/>
         <source>Recommended for you</source>
         <translation>Рекомендуем вам</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="253"/>
+        <location filename="../qml/app/CatalogPageContent.qml" line="233"/>
         <source>Popular this week</source>
         <translation>Популярное на этой неделе</translation>
-    </message>
-</context>
-<context>
-    <name>CatalogPlayPickerSheet</name>
-    <message>
-        <location filename="../qml/components/CatalogPlayPickerSheet.qml" line="19"/>
-        <source>Surprise me</source>
-        <translation>Удиви меня</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogPlayPickerSheet.qml" line="20"/>
-        <source>Solo</source>
-        <translation>Один</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogPlayPickerSheet.qml" line="21"/>
-        <source>With friends</source>
-        <translation>С друзьями</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogPlayPickerSheet.qml" line="22"/>
-        <source>Online multiplayer</source>
-        <translation>Онлайн-мультиплеер</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogPlayPickerSheet.qml" line="31"/>
-        <source>Any size</source>
-        <translation>Любой размер</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogPlayPickerSheet.qml" line="32"/>
-        <source>&lt; 1 GB</source>
-        <translation>&lt; 1 ГБ</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogPlayPickerSheet.qml" line="33"/>
-        <source>1–5 GB</source>
-        <translation>1–5 ГБ</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogPlayPickerSheet.qml" line="34"/>
-        <source>5–20 GB</source>
-        <translation>5–20 ГБ</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogPlayPickerSheet.qml" line="35"/>
-        <source>20+ GB</source>
-        <translation>20+ ГБ</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogPlayPickerSheet.qml" line="64"/>
-        <source>What to play?</source>
-        <translation>Во что поиграть?</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogPlayPickerSheet.qml" line="72"/>
-        <source>Who are you playing with?</source>
-        <translation>С кем будете играть?</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogPlayPickerSheet.qml" line="73"/>
-        <source>Pick a vibe</source>
-        <translation>Выбери настроение</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogPlayPickerSheet.qml" line="74"/>
-        <source>How much disk space?</source>
-        <translation>Сколько места на диске?</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogPlayPickerSheet.qml" line="110"/>
-        <source>Any genre</source>
-        <translation>Любой жанр</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogPlayPickerSheet.qml" line="149"/>
-        <source>Cancel</source>
-        <translation>Отмена</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogPlayPickerSheet.qml" line="149"/>
-        <source>Back</source>
-        <translation>Назад</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogPlayPickerSheet.qml" line="161"/>
-        <source>Next</source>
-        <translation>Далее</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/CatalogPlayPickerSheet.qml" line="161"/>
-        <source>Show games</source>
-        <translation>Показать игры</translation>
     </message>
 </context>
 <context>
@@ -1070,23 +868,23 @@
         <translation>Ошибка каталога: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="391"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="403"/>
         <source>Game not found for add-on</source>
         <translation>Игра не найдена для дополнения</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="396"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="408"/>
         <source>Add-on not found in catalog</source>
         <translation>Дополнение не найдено в каталоге</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="378"/>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="407"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="390"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="419"/>
         <source>Could not find game to install: %1</source>
         <translation>Не удалось найти игру для установки: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="443"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="455"/>
         <source>Download error: %1</source>
         <translation>Ошибка загрузки: %1</translation>
     </message>
@@ -1132,12 +930,15 @@
     </message>
     <message>
         <location filename="../src/core/runtime/proton_facade.cpp" line="33"/>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="150"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="162"/>
         <source>Preparing runtime environment…</source>
         <translation>Подготовка среды выполнения…</translation>
     </message>
     <message>
         <location filename="../src/core/jobs/job_facade_1.cpp" line="101"/>
+        <location filename="../src/core/library/library_facade_2.cpp" line="174"/>
+        <location filename="../src/core/library/library_facade_2.cpp" line="213"/>
+        <location filename="../src/core/library/library_facade_2.cpp" line="250"/>
         <source>Game not found</source>
         <translation>Игра не найдена</translation>
     </message>
@@ -1153,7 +954,7 @@
         <translation>Сначала скачайте дополнение</translation>
     </message>
     <message>
-        <location filename="../src/core/library/library_facade_1.cpp" line="297"/>
+        <location filename="../src/core/library/library_facade_1.cpp" line="304"/>
         <source>%1 update(s) available</source>
         <translation>Доступно обновлений: %1</translation>
     </message>
@@ -1173,8 +974,8 @@
         <translation>Нет ссылки для загрузки: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/library/library_facade_2.cpp" line="74"/>
-        <location filename="../src/core/library/library_facade_2.cpp" line="98"/>
+        <location filename="../src/core/library/library_facade_2.cpp" line="78"/>
+        <location filename="../src/core/library/library_facade_2.cpp" line="102"/>
         <source>Choose library folder</source>
         <translation>Выберите папку библиотеки</translation>
     </message>
@@ -1205,27 +1006,27 @@
         <translation>Установить плагин</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="248"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="260"/>
         <source>Plugin install failed</source>
         <translation>Ошибка установки плагина</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="262"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="274"/>
         <source>Plugin installed: %1</source>
         <translation>Плагин установлен: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="303"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="315"/>
         <source>Proton-GE installed</source>
         <translation>Proton-GE установлен</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="305"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="317"/>
         <source>Proton-GE download failed: %1</source>
         <translation>Ошибка загрузки Proton-GE: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="437"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="449"/>
         <source>Download complete — install manually</source>
         <translation>Загрузка завершена — установите вручную</translation>
     </message>
@@ -1240,32 +1041,93 @@
         <translation>Плагин для %1 не найден — установите в Настройки → Плагины</translation>
     </message>
     <message>
-        <location filename="../src/core/library/library_facade_2.cpp" line="52"/>
+        <location filename="../src/core/library/library_facade_2.cpp" line="56"/>
         <source>Choose game executable</source>
         <translation>Выберите исполняемый файл игры</translation>
     </message>
     <message>
-        <location filename="../src/core/library/library_facade_2.cpp" line="55"/>
+        <location filename="../src/core/library/library_facade_2.cpp" line="59"/>
         <source>Executables (*.exe *.sh *.x86_64);;All files (*)</source>
         <translation>Исполняемые (*.exe *.sh *.x86_64);;Все файлы (*)</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_controller.cpp" line="308"/>
+        <location filename="../src/core/library/library_facade_2.cpp" line="169"/>
+        <location filename="../src/core/library/library_facade_2.cpp" line="208"/>
+        <source>Shortcuts are not supported on this platform</source>
+        <translation>Ярлыки не поддерживаются на этой платформе</translation>
+    </message>
+    <message>
+        <location filename="../src/core/library/library_facade_2.cpp" line="184"/>
+        <source>Desktop folder not found</source>
+        <translation>Папка рабочего стола не найдена</translation>
+    </message>
+    <message>
+        <location filename="../src/core/library/library_facade_2.cpp" line="197"/>
+        <source>Failed to create desktop shortcut</source>
+        <translation>Не удалось создать ярлык на рабочем столе</translation>
+    </message>
+    <message>
+        <location filename="../src/core/library/library_facade_2.cpp" line="201"/>
+        <source>Desktop shortcut created</source>
+        <translation>Ярлык на рабочем столе создан</translation>
+    </message>
+    <message>
+        <location filename="../src/core/library/library_facade_2.cpp" line="234"/>
+        <source>Failed to create Start menu shortcut</source>
+        <translation>Не удалось создать ярлык в меню Пуск</translation>
+    </message>
+    <message>
+        <location filename="../src/core/library/library_facade_2.cpp" line="238"/>
+        <source>Start menu shortcut created</source>
+        <translation>Ярлык в меню Пуск создан</translation>
+    </message>
+    <message>
+        <location filename="../src/core/library/library_facade_2.cpp" line="245"/>
+        <source>Adding to Steam is not supported on this platform</source>
+        <translation>Добавление в Steam не поддерживается на этой платформе</translation>
+    </message>
+    <message>
+        <location filename="../src/core/library/library_facade_2.cpp" line="269"/>
+        <source>Steam userdata not found</source>
+        <translation>Папка Steam userdata не найдена</translation>
+    </message>
+    <message>
+        <location filename="../src/core/library/library_facade_2.cpp" line="273"/>
+        <source>Could not parse Steam shortcuts.vdf</source>
+        <translation>Не удалось разобрать Steam shortcuts.vdf</translation>
+    </message>
+    <message>
+        <location filename="../src/core/library/library_facade_2.cpp" line="275"/>
+        <source>Could not read Steam shortcuts.vdf</source>
+        <translation>Не удалось прочитать Steam shortcuts.vdf</translation>
+    </message>
+    <message>
+        <location filename="../src/core/library/library_facade_2.cpp" line="277"/>
+        <source>Could not write Steam shortcuts.vdf</source>
+        <translation>Не удалось записать Steam shortcuts.vdf</translation>
+    </message>
+    <message>
+        <location filename="../src/core/library/library_facade_2.cpp" line="281"/>
+        <source>Added to Steam. Restart Steam to see the game and artwork.</source>
+        <translation>Добавлено в Steam. Перезапусти Steam, чтобы увидеть игру и обложки.</translation>
+    </message>
+    <message>
+        <location filename="../src/core/catalog/catalog_controller.cpp" line="318"/>
         <source>%1 · %2 games</source>
         <translation>%1 · %2 игр</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_controller.cpp" line="312"/>
+        <location filename="../src/core/catalog/catalog_controller.cpp" line="322"/>
         <source>%1 sources · %2 games</source>
         <translation>%1 источников · %2 игр</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_controller.cpp" line="435"/>
+        <location filename="../src/core/catalog/catalog_controller.cpp" line="445"/>
         <source>Catalog empty or unavailable: %1</source>
         <translation>Каталог пуст или недоступен: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_controller.cpp" line="454"/>
+        <location filename="../src/core/catalog/catalog_controller.cpp" line="464"/>
         <source>No catalog URL configured for source %1</source>
         <translation>Для источника %1 не задан URL каталога</translation>
     </message>
@@ -1319,6 +1181,10 @@
     <message>
         <location filename="../src/core/launch/launch_controller.cpp" line="103"/>
         <location filename="../src/core/launch/launch_facade.cpp" line="135"/>
+        <location filename="../src/core/library/library_facade_2.cpp" line="179"/>
+        <location filename="../src/core/library/library_facade_2.cpp" line="218"/>
+        <location filename="../src/core/library/library_facade_2.cpp" line="255"/>
+        <location filename="../src/core/library/library_facade_2.cpp" line="271"/>
         <source>Executable not found for %1</source>
         <translation>Не найден исполняемый файл для %1</translation>
     </message>
@@ -1432,17 +1298,17 @@
         <translation>Не удалось начать обновление %1</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="219"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="231"/>
         <source>No catalog sources enabled</source>
         <translation>Нет включённых источников каталога</translation>
     </message>
     <message>
-        <location filename="../src/core/library/library_facade_2.cpp" line="137"/>
+        <location filename="../src/core/library/library_facade_2.cpp" line="141"/>
         <source>Found %1 game(s) on disk</source>
         <translation>Найдено игр на диске: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/library/library_facade_2.cpp" line="141"/>
+        <location filename="../src/core/library/library_facade_2.cpp" line="145"/>
         <source>No new games found on disk</source>
         <translation>Новых игр на диске не найдено</translation>
     </message>
@@ -1622,7 +1488,7 @@
     </message>
     <message>
         <location filename="../src/core/settings/app_updater.cpp" line="193"/>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="277"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="289"/>
         <source>Arachnel %1 is available</source>
         <translation>Доступен Arachnel %1</translation>
     </message>
@@ -1886,7 +1752,7 @@
     <message>
         <location filename="../src/core/library/library_controller.cpp" line="222"/>
         <location filename="../src/core/library/library_controller.cpp" line="243"/>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="177"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="189"/>
         <source>Game removed: %1</source>
         <translation>Игра удалена: %1</translation>
     </message>
@@ -2282,122 +2148,137 @@
         <translation>Настройки игры</translation>
     </message>
     <message>
-        <location filename="../qml/app/GameSettingsSheet.qml" line="119"/>
+        <location filename="../qml/app/GameSettingsSheet.qml" line="111"/>
+        <source>Desktop shortcut</source>
+        <translation>Ярлык на рабочий стол</translation>
+    </message>
+    <message>
+        <location filename="../qml/app/GameSettingsSheet.qml" line="118"/>
+        <source>Start menu shortcut</source>
+        <translation>Ярлык в меню Пуск</translation>
+    </message>
+    <message>
+        <location filename="../qml/app/GameSettingsSheet.qml" line="125"/>
+        <source>Add to Steam</source>
+        <translation>Добавить в Steam</translation>
+    </message>
+    <message>
+        <location filename="../qml/app/GameSettingsSheet.qml" line="148"/>
         <source>Auto-update this game</source>
         <translation>Автообновление этой игры</translation>
     </message>
     <message>
-        <location filename="../qml/app/GameSettingsSheet.qml" line="125"/>
+        <location filename="../qml/app/GameSettingsSheet.qml" line="154"/>
         <source>When enabled, updates start automatically after the catalog loads.</source>
         <translation>Если включено, обновление запускается автоматически после загрузки каталога.</translation>
     </message>
     <message>
-        <location filename="../qml/app/GameSettingsSheet.qml" line="191"/>
+        <location filename="../qml/app/GameSettingsSheet.qml" line="220"/>
         <source>Proton</source>
         <translation>Proton</translation>
     </message>
     <message>
-        <location filename="../qml/app/GameSettingsSheet.qml" line="197"/>
+        <location filename="../qml/app/GameSettingsSheet.qml" line="226"/>
         <source>Override Proton for this game. Default uses Settings → Launch.</source>
         <translation>Свой Proton для этой игры. По умолчанию — из Настройки → Запуск.</translation>
     </message>
     <message>
-        <location filename="../qml/app/GameSettingsSheet.qml" line="208"/>
+        <location filename="../qml/app/GameSettingsSheet.qml" line="237"/>
         <source>Default</source>
         <translation>По умолчанию</translation>
     </message>
     <message>
-        <location filename="../qml/app/GameSettingsSheet.qml" line="248"/>
+        <location filename="../qml/app/GameSettingsSheet.qml" line="277"/>
         <source>Launch options</source>
         <translation>Параметры запуска</translation>
     </message>
     <message>
-        <location filename="../qml/app/GameSettingsSheet.qml" line="258"/>
+        <location filename="../qml/app/GameSettingsSheet.qml" line="287"/>
         <source>Extra launch arguments for this game</source>
         <translation>Доп. аргументы запуска для этой игры</translation>
     </message>
     <message>
-        <location filename="../qml/app/GameSettingsSheet.qml" line="271"/>
+        <location filename="../qml/app/GameSettingsSheet.qml" line="300"/>
         <source>Custom executable (optional)</source>
         <translation>Свой исполняемый файл (необязательно)</translation>
     </message>
     <message>
-        <location filename="../qml/app/GameSettingsSheet.qml" line="317"/>
+        <location filename="../qml/app/GameSettingsSheet.qml" line="346"/>
         <source>Information</source>
         <translation>Информация</translation>
     </message>
     <message>
-        <location filename="../qml/app/GameSettingsSheet.qml" line="323"/>
+        <location filename="../qml/app/GameSettingsSheet.qml" line="352"/>
         <source>Source</source>
         <translation>Источник</translation>
     </message>
     <message>
-        <location filename="../qml/app/GameSettingsSheet.qml" line="324"/>
+        <location filename="../qml/app/GameSettingsSheet.qml" line="353"/>
         <source>Version</source>
         <translation>Версия</translation>
     </message>
     <message>
-        <location filename="../qml/app/GameSettingsSheet.qml" line="325"/>
+        <location filename="../qml/app/GameSettingsSheet.qml" line="354"/>
         <source>Size</source>
         <translation>Размер</translation>
     </message>
     <message>
-        <location filename="../qml/app/GameSettingsSheet.qml" line="326"/>
+        <location filename="../qml/app/GameSettingsSheet.qml" line="355"/>
         <source>Install type</source>
         <translation>Тип установки</translation>
     </message>
     <message>
-        <location filename="../qml/app/GameSettingsSheet.qml" line="334"/>
+        <location filename="../qml/app/GameSettingsSheet.qml" line="363"/>
         <source>Install path</source>
         <translation>Путь установки</translation>
     </message>
     <message>
-        <location filename="../qml/app/GameSettingsSheet.qml" line="338"/>
+        <location filename="../qml/app/GameSettingsSheet.qml" line="367"/>
         <source>Installing…</source>
         <translation>Установка…</translation>
     </message>
     <message>
-        <location filename="../qml/app/GameSettingsSheet.qml" line="340"/>
+        <location filename="../qml/app/GameSettingsSheet.qml" line="369"/>
         <source>Waiting to install</source>
         <translation>Ожидает установки</translation>
     </message>
     <message>
-        <location filename="../qml/app/GameSettingsSheet.qml" line="341"/>
+        <location filename="../qml/app/GameSettingsSheet.qml" line="370"/>
         <source>—</source>
         <translation>—</translation>
     </message>
     <message>
-        <location filename="../qml/app/GameSettingsSheet.qml" line="344"/>
+        <location filename="../qml/app/GameSettingsSheet.qml" line="373"/>
         <source>Download</source>
         <translation>Загрузка</translation>
     </message>
     <message>
-        <location filename="../qml/app/GameSettingsSheet.qml" line="381"/>
+        <location filename="../qml/app/GameSettingsSheet.qml" line="410"/>
         <source>Done</source>
         <translation>Готово</translation>
     </message>
     <message>
-        <location filename="../qml/app/GameSettingsSheet.qml" line="149"/>
+        <location filename="../qml/app/GameSettingsSheet.qml" line="178"/>
         <source>Online Fix for this game</source>
         <translation>Online Fix для этой игры</translation>
     </message>
     <message>
-        <location filename="../qml/app/GameSettingsSheet.qml" line="155"/>
+        <location filename="../qml/app/GameSettingsSheet.qml" line="184"/>
         <source>When disabled, SteamFix/winmm overlay DLLs are renamed so the game runs without the fix.</source>
         <translation>Если выключить, DLL оверлея SteamFix/winmm переименуются — игра запустится без фикса.</translation>
     </message>
     <message>
-        <location filename="../qml/app/GameSettingsSheet.qml" line="328"/>
+        <location filename="../qml/app/GameSettingsSheet.qml" line="357"/>
         <source>Online Fix</source>
         <translation>Online Fix</translation>
     </message>
     <message>
-        <location filename="../qml/app/GameSettingsSheet.qml" line="330"/>
+        <location filename="../qml/app/GameSettingsSheet.qml" line="359"/>
         <source>Not installed</source>
         <translation>Не установлен</translation>
     </message>
     <message>
-        <location filename="../qml/app/GameSettingsSheet.qml" line="331"/>
+        <location filename="../qml/app/GameSettingsSheet.qml" line="360"/>
         <source>Not needed</source>
         <translation>Не нужен</translation>
     </message>

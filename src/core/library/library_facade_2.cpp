@@ -1,5 +1,9 @@
 #include "core_controller_impl.h"
 
+#include "desktop_shortcut_service.h"
+#include "game_launch_target.h"
+#include "steam_shortcut_service.h"
+
 namespace arachnel::core {
 
 QString CoreController::browseGameExecutable(const QString& currentPath)
@@ -147,6 +151,136 @@ void CoreController::checkUpdates()
 {
     if (m_gameUpdates)
         m_gameUpdates->checkUpdates(!m_catalogCache.isEmpty());
+}
+
+GameLaunchTarget CoreController::resolveShortcutTarget(const LibraryGame& game) const
+{
+    LaunchInfo info;
+    if (m_pluginHost) {
+        if (ISourcePlugin* plugin = m_pluginHost->plugin(game.sourceId))
+            info = plugin->launchInfo(game);
+    }
+    return resolveGameLaunchTarget(game, info, m_settings);
+}
+
+void CoreController::createGameDesktopShortcut(const QString& gameId)
+{
+#if !defined(Q_OS_WIN) && !defined(Q_OS_LINUX)
+    showNotice(QCoreApplication::translate("Core", "Shortcuts are not supported on this platform"));
+    return;
+#else
+    const LibraryGame* game = m_libraryStore.gameById(gameId);
+    if (!game) {
+        showNotice(QCoreApplication::translate("Core", "Game not found"));
+        return;
+    }
+    const GameLaunchTarget target = resolveShortcutTarget(*game);
+    if (target.executable.isEmpty()) {
+        showNotice(QCoreApplication::translate("Core", "Executable not found for %1").arg(game->title));
+        return;
+    }
+    const QString desktop = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
+    if (desktop.isEmpty()) {
+        showNotice(QCoreApplication::translate("Core", "Desktop folder not found"));
+        return;
+    }
+#if defined(Q_OS_WIN)
+    const QString ext = QStringLiteral(".lnk");
+#else
+    const QString ext = QStringLiteral(".desktop");
+#endif
+    const QString linkPath =
+        desktop + QLatin1Char('/') + sanitizeShortcutFileName(target.title) + ext;
+    QString error;
+    if (!createOsShortcut(linkPath, target, &error)) {
+        showNotice(error.isEmpty()
+                       ? QCoreApplication::translate("Core", "Failed to create desktop shortcut")
+                       : error);
+        return;
+    }
+    showNotice(QCoreApplication::translate("Core", "Desktop shortcut created"));
+#endif
+}
+
+void CoreController::createGameStartMenuShortcut(const QString& gameId)
+{
+#if !defined(Q_OS_WIN) && !defined(Q_OS_LINUX)
+    showNotice(QCoreApplication::translate("Core", "Shortcuts are not supported on this platform"));
+    return;
+#else
+    const LibraryGame* game = m_libraryStore.gameById(gameId);
+    if (!game) {
+        showNotice(QCoreApplication::translate("Core", "Game not found"));
+        return;
+    }
+    const GameLaunchTarget target = resolveShortcutTarget(*game);
+    if (target.executable.isEmpty()) {
+        showNotice(QCoreApplication::translate("Core", "Executable not found for %1").arg(game->title));
+        return;
+    }
+    const QString startMenu =
+        QStandardPaths::writableLocation(QStandardPaths::ApplicationsLocation)
+        + QStringLiteral("/Arachnel Games");
+#if defined(Q_OS_WIN)
+    const QString ext = QStringLiteral(".lnk");
+#else
+    const QString ext = QStringLiteral(".desktop");
+#endif
+    const QString linkPath =
+        startMenu + QLatin1Char('/') + sanitizeShortcutFileName(target.title) + ext;
+    QString error;
+    if (!createOsShortcut(linkPath, target, &error)) {
+        showNotice(error.isEmpty()
+                       ? QCoreApplication::translate("Core", "Failed to create Start menu shortcut")
+                       : error);
+        return;
+    }
+    showNotice(QCoreApplication::translate("Core", "Start menu shortcut created"));
+#endif
+}
+
+void CoreController::addGameToSteam(const QString& gameId)
+{
+#if !defined(Q_OS_WIN) && !defined(Q_OS_LINUX)
+    showNotice(QCoreApplication::translate("Core", "Adding to Steam is not supported on this platform"));
+    return;
+#else
+    const LibraryGame* game = m_libraryStore.gameById(gameId);
+    if (!game) {
+        showNotice(QCoreApplication::translate("Core", "Game not found"));
+        return;
+    }
+    const GameLaunchTarget target = resolveShortcutTarget(*game);
+    if (target.executable.isEmpty()) {
+        showNotice(QCoreApplication::translate("Core", "Executable not found for %1").arg(game->title));
+        return;
+    }
+
+    SteamShortcutRequest req;
+    req.target = target;
+    req.steamAppId = game->steamAppId;
+    if (game->coverUrl.startsWith(QStringLiteral("file:")))
+        req.coverFileUrl = game->coverUrl;
+
+    const SteamShortcutResult result = addOrUpdateSteamShortcut(req);
+    if (!result.ok) {
+        QString message = result.error;
+        if (message == QLatin1String("Steam userdata not found"))
+            message = QCoreApplication::translate("Core", "Steam userdata not found");
+        else if (message == QLatin1String("Executable not found"))
+            message = QCoreApplication::translate("Core", "Executable not found for %1").arg(game->title);
+        else if (message == QLatin1String("Could not parse shortcuts.vdf"))
+            message = QCoreApplication::translate("Core", "Could not parse Steam shortcuts.vdf");
+        else if (message == QLatin1String("Could not read shortcuts.vdf"))
+            message = QCoreApplication::translate("Core", "Could not read Steam shortcuts.vdf");
+        else if (message == QLatin1String("Could not write shortcuts.vdf"))
+            message = QCoreApplication::translate("Core", "Could not write Steam shortcuts.vdf");
+        showNotice(message);
+        return;
+    }
+    showNotice(QCoreApplication::translate(
+        "Core", "Added to Steam. Restart Steam to see the game and artwork."));
+#endif
 }
 
 } // namespace arachnel::core

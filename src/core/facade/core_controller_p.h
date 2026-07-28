@@ -50,6 +50,7 @@
     const JobEntry* findLatestJobForEntry(const QString&) const;
     bool entryHasActiveJob(const QString&) const;
     void showNotice(const QString&, bool = true);
+    GameLaunchTarget resolveShortcutTarget(const LibraryGame& game) const;
     bool isRemoteUploadDateNewer(const QString&, const QString&) const;
     bool gameHasUpdate(const LibraryGame&, const CatalogEntry&) const;
     int recalculateLibraryUpdates(bool);
