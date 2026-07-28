@@ -160,6 +160,15 @@ Item {
                                 }
 
                                 MD.Button {
+                                    visible: page.showRunningHero
+                                    text: qsTr("Stop")
+                                    mdState.type: MD.Enum.BtFilled
+                                    mdState.backgroundColor: MD.Token.color.error
+                                    mdState.textColor: MD.Token.color.on_error
+                                    onClicked: Core.stopRunningGame()
+                                }
+
+                                MD.Button {
                                     visible: page.heroHasRecentPlay || page.showRunningHero
                                     text: qsTr("Details")
                                     mdState.type: MD.Enum.BtOutlined
@@ -306,25 +315,30 @@ Item {
                     id: gridHost
                     Layout.fillWidth: true
 
+                    // cellWidth must tile exactly across `width`. Using
+                    // cardWidth+spacing per cell overflowed by one spacing and
+                    // clipped the last poster (clip: true) until the window grew.
                     readonly property int columns: Math.max(
-                        2, Math.floor((width + page.gridSpacing) / (page.minCardWidth + page.gridSpacing)))
-                    readonly property real cardWidth: width > 0
-                        ? (width - page.gridSpacing * (columns - 1)) / columns
-                        : page.minCardWidth
+                        2, Math.floor(width / (page.minCardWidth + page.gridSpacing)))
+                    readonly property real cellW: width > 0
+                        ? width / columns
+                        : page.minCardWidth + page.gridSpacing
+                    readonly property real cardWidth: Math.max(0, cellW - page.gridSpacing)
                     readonly property real cardHeight: cardWidth * 4 / 3 + page.metaHeight
                     readonly property int rows: Math.max(1, Math.ceil(Core.library.count / columns))
-                    Layout.preferredHeight: rows * cardHeight + Math.max(0, rows - 1) * page.gridSpacing
+                    Layout.preferredHeight: rows * cardHeight
+                        + Math.max(0, rows - 1) * page.gridSpacing
 
                     GridView {
                         anchors.fill: parent
                         clip: true
                         interactive: false
                         model: Core.library
-                        cellWidth: gridHost.cardWidth + page.gridSpacing
+                        cellWidth: gridHost.cellW
                         cellHeight: gridHost.cardHeight + page.gridSpacing
                         cacheBuffer: 0
                         delegate: LibraryGameCard {
-                            width: Math.max(0, gridHost.cardWidth - page.gridSpacing)
+                            width: gridHost.cardWidth
                             height: gridHost.cardHeight
                             onOpenDetails: function (id) { page.openGame(id) }
                         }

@@ -247,6 +247,7 @@ void CoreController::initializeServices()
     launchHooks.ensureRuntime = [this](const LibraryGame& game) {
         return ensureRuntimeDependenciesForGame(game);
     };
+    launchHooks.touchLastPlayed = [this](const QString& gameId) { touchLastPlayed(gameId); };
     m_launchController =
         new LaunchController(&m_library, &m_settings, m_pluginHost, std::move(launchHooks), this);
     connect(m_launchController, &LaunchController::runningGameChanged, this,

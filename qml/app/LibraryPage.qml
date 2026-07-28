@@ -16,7 +16,10 @@ Item {
 
     property string selectedSourceId: Core.sources.firstEnabledId
 
+    property int libraryRevision: 0
+
     readonly property var heroGame: {
+        void libraryRevision
         if (Core.gameRunning && Core.runningGameId.length)
             return Core.library.gameInfo(Core.runningGameId)
         return Core.library.mostRecentGame()
@@ -98,7 +101,7 @@ Item {
 
     Connections {
         target: Core.library
-        function onLibraryChanged() { /* heroGame binding refreshes */ }
+        function onLibraryChanged() { root.libraryRevision++ }
     }
 
 
