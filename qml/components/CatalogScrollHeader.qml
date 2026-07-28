@@ -10,6 +10,7 @@ Item {
     required property int contentWidth
     required property bool hasSelection
     required property bool listViewMode
+    property real collapseProgress: 0
 
     signal filterRequested()
     signal viewModeChangeRequested(int mode)
@@ -17,6 +18,8 @@ Item {
 
     width: contentWidth
     height: col.implicitHeight
+    // Hand controls off to the compact bar as it lands.
+    opacity: 1 - root.collapseProgress * 0.85
 
     ColumnLayout {
         id: col

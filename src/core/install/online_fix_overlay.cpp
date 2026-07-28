@@ -17,11 +17,19 @@ constexpr auto kDisabledSuffix = ".arachnel-off";
 
 const QStringList& overlayDllNames()
 {
-    // FreeTP-style (SteamFix/EpicFix) and Ryuu Online-Fix (OnlineFix64) — same pipeline.
+    // FreeTP SteamFix/EpicFix, Ryuu OnlineFix64, and online-fix.me (OnlineFix.dll + overlay).
     static const QStringList names = {
-        QStringLiteral("winmm.dll"),         QStringLiteral("SteamFix64.dll"),
-        QStringLiteral("SteamFix32.dll"),    QStringLiteral("EpicFix64.dll"),
-        QStringLiteral("OnlineFix64.dll"),   QStringLiteral("OnlineFix32.dll")};
+        QStringLiteral("winmm.dll"),
+        QStringLiteral("SteamFix64.dll"),
+        QStringLiteral("SteamFix32.dll"),
+        QStringLiteral("EpicFix64.dll"),
+        QStringLiteral("OnlineFix64.dll"),
+        QStringLiteral("OnlineFix32.dll"),
+        QStringLiteral("OnlineFix.dll"),
+        QStringLiteral("SteamOverlay32.dll"),
+        QStringLiteral("SteamOverlay64.dll"),
+        QStringLiteral("StubDRM32.dll"),
+        QStringLiteral("StubDRM64.dll")};
     return names;
 }
 
@@ -259,10 +267,17 @@ QStringList findOverlayDirs(const QString& installPath)
         const QString fileName = fi.fileName();
         const bool match = fileName == QLatin1String("winmm.dll")
             || fileName == QLatin1String("SteamFix64.dll")
+            || fileName == QLatin1String("SteamFix32.dll")
             || fileName == QLatin1String("OnlineFix64.dll")
+            || fileName == QLatin1String("OnlineFix.dll")
+            || fileName == QLatin1String("OnlineFix32.dll")
+            || fileName == QLatin1String("SteamOverlay32.dll")
+            || fileName == QLatin1String("SteamOverlay64.dll")
+            || fileName == QLatin1String("StubDRM32.dll")
             || fileName == QLatin1String("SteamFix.ini")
             || fileName == QLatin1String("OnlineFix.ini")
             || fileName == QLatin1String("dlllist.txt")
+            || fileName == QLatin1String("winmm.txt")
             || fileName.endsWith(QLatin1String(kDisabledSuffix));
         if (!match)
             continue;
@@ -305,6 +320,22 @@ bool renameOverlayInDir(const QDir& dir, bool enable, QString* error)
             }
             touched = true;
         }
+    }
+    // steam_appid.txt FakeAppId fallback (32-bit / no matching winmm).
+    const QString appIdFile = dir.filePath(QStringLiteral("steam_appid.txt"));
+    const QString appIdOff = appIdFile + QLatin1String(kDisabledSuffix);
+    if (enable) {
+        if (QFileInfo::exists(appIdOff)) {
+            if (QFileInfo::exists(appIdFile))
+                QFile::remove(appIdFile);
+            QFile::rename(appIdOff, appIdFile);
+            touched = true;
+        }
+    } else if (QFileInfo::exists(appIdFile)) {
+        if (QFileInfo::exists(appIdOff))
+            QFile::remove(appIdOff);
+        QFile::rename(appIdFile, appIdOff);
+        touched = true;
     }
     Q_UNUSED(touched);
     return true;
@@ -376,7 +407,19 @@ OnlineFixOverlayState detectOnlineFixOverlay(const QString& installPath)
         if (dir.exists(QStringLiteral("winmm.dll")) || dir.exists(QStringLiteral("SteamFix64.dll"))
             || dir.exists(QStringLiteral("SteamFix32.dll"))
             || dir.exists(QStringLiteral("OnlineFix64.dll"))
+            || dir.exists(QStringLiteral("OnlineFix32.dll"))
+            || dir.exists(QStringLiteral("OnlineFix.dll"))
+            || dir.exists(QStringLiteral("SteamOverlay32.dll"))
+            || dir.exists(QStringLiteral("SteamFix.ini"))
             || dir.exists(QStringLiteral("OnlineFix.ini"))) {
+            state.enabled = true;
+            state.overlayDir = path;
+            break;
+        }
+        // Fallback mode: FakeAppId via steam_appid.txt when only SteamFix.ini remains
+        // (e.g. 32-bit Unity where x64 winmm was removed because it blocked LoadLibrary).
+        if ((dir.exists(QStringLiteral("SteamFix.ini")) || dir.exists(QStringLiteral("OnlineFix.ini")))
+            && dir.exists(QStringLiteral("steam_appid.txt"))) {
             state.enabled = true;
             state.overlayDir = path;
             break;
@@ -484,18 +527,34 @@ void applyOnlineFixLaunchInfo(const QString& installPath, LaunchInfo* info)
             fakeAppId = fromIni;
     }
 
+    // steam_appid.txt is read by steam_api / Steamworks.NET. Write on every OS -
+    // critical for 32-bit Unity installs where only SteamFix64+x64 winmm was embedded
+    // (wrong-arch winmm in the game folder fails LoadLibrary with no SysWOW64 fallback).
+    auto ensureSteamAppIdFile = [&fakeAppId](const QString& dir) {
+        if (dir.isEmpty() || !QDir(dir).exists())
+            return;
+        const QString appIdFile = QDir(dir).filePath(QStringLiteral("steam_appid.txt"));
+        QFile out(appIdFile);
+        if (!out.open(QIODevice::WriteOnly | QIODevice::Truncate))
+            return;
+        out.write(fakeAppId.toUtf8());
+        if (!fakeAppId.endsWith(QLatin1Char('\n')))
+            out.write("\n");
+    };
+    ensureSteamAppIdFile(overlayDir);
+    if (!info->workingDirectory.isEmpty()
+        && QFileInfo(info->workingDirectory).absoluteFilePath()
+            != QFileInfo(overlayDir).absoluteFilePath())
+        ensureSteamAppIdFile(info->workingDirectory);
+    if (!info->executable.isEmpty()) {
+        const QString exeDir = QFileInfo(info->executable).absolutePath();
+        if (QFileInfo(exeDir).absoluteFilePath() != QFileInfo(overlayDir).absoluteFilePath())
+            ensureSteamAppIdFile(exeDir);
+    }
+
 #if defined(Q_OS_LINUX)
     // Always attach overlay preload when OF is on (SOFL default use-steam-overlay).
     appendSteamOverlayEnvironment(info, fakeAppId);
-    // Proton/Steam pick up AppID from steam_appid.txt next to the exe (SpaceWar = 480).
-    const QString appIdFile = QDir(overlayDir).filePath(QStringLiteral("steam_appid.txt"));
-    if (!QFileInfo::exists(appIdFile)) {
-        QFile out(appIdFile);
-        if (out.open(QIODevice::WriteOnly | QIODevice::Truncate))
-            out.write(fakeAppId.toUtf8());
-    }
-#else
-    Q_UNUSED(fakeAppId);
 #endif
 }
 

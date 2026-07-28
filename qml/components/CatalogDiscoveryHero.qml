@@ -38,7 +38,11 @@ Item {
         Core.requestCatalogCover(featuredEntryId)
     }
 
-    onFeaturedEntryIdChanged: refreshHeroCover()
+    onFeaturedEntryIdChanged: {
+        refreshHeroCover()
+        heroCopy.opacity = 0.35
+        Qt.callLater(function () { heroCopy.opacity = 1 })
+    }
     onShelfCountChanged: {
         if (featuredIndex >= shelfCount)
             featuredIndex = 0
@@ -113,6 +117,7 @@ Item {
             decodeWidth: 1440
             decodeHeight: 540
             enableShimmer: true
+            hoverScaleEnabled: false
             onLoadFailed: {
                 if ((root.heroLocalUrl || "").startsWith("file:"))
                     Core.invalidateCatalogCover(root.featuredEntryId)
@@ -138,9 +143,17 @@ Item {
         }
 
         ColumnLayout {
+            id: heroCopy
             anchors.fill: parent
             anchors.margins: MD.Token.spacing.large
             spacing: MD.Token.spacing.small
+
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: MD.Token.duration.short4
+                    easing: MD.Token.easing.emphasized_decelerate
+                }
+            }
 
             MD.Label {
                 text: qsTr("Tonight's pick")

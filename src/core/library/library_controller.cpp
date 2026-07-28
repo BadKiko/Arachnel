@@ -82,6 +82,26 @@ QVariantMap LibraryController::entryDetails(const QString& entryId) const
     const QVariantMap catalogInfo = m_catalog->entryInfo(entryId);
     if (info.isEmpty())
         info = catalogInfo;
+
+    auto asStringList = [](const QVariant& value) -> QStringList {
+        if (value.metaType().id() == QMetaType::QStringList)
+            return value.toStringList();
+        if (value.canConvert<QStringList>())
+            return value.toStringList();
+        if (value.metaType().id() == QMetaType::QVariantList) {
+            QStringList out;
+            const QVariantList list = value.toList();
+            out.reserve(list.size());
+            for (const QVariant& item : list) {
+                const QString s = item.toString();
+                if (!s.isEmpty())
+                    out.append(s);
+            }
+            return out;
+        }
+        return {};
+    };
+
     for (const QString& key : {QStringLiteral("description"), QStringLiteral("genres"),
                                QStringLiteral("sizeLabel"), QStringLiteral("coverUrl"),
                                QStringLiteral("version"), QStringLiteral("uploadDate"),
@@ -91,12 +111,28 @@ QVariantMap LibraryController::entryDetails(const QString& entryId) const
         if (info.value(key).toString().isEmpty() && catalogInfo.value(key).isValid())
             info.insert(key, catalogInfo.value(key));
     }
+    // Library rows don't store media URLs - keep catalog/Steam enrichments after install starts.
+    if (asStringList(info.value(QStringLiteral("screenshotUrls"))).isEmpty()) {
+        const QStringList shots = asStringList(catalogInfo.value(QStringLiteral("screenshotUrls")));
+        if (!shots.isEmpty())
+            info.insert(QStringLiteral("screenshotUrls"), QVariant::fromValue(shots));
+    }
     const QString title = info.value(QStringLiteral("title")).toString();
     if (!title.isEmpty() && m_metadata) {
         const GameMetadata metadata = m_metadata->metadataForTitle(title);
         if (info.value(QStringLiteral("description")).toString().isEmpty()
             && !metadata.description.isEmpty())
             info.insert(QStringLiteral("description"), metadata.description);
+        if (asStringList(info.value(QStringLiteral("screenshotUrls"))).isEmpty()
+            && !metadata.screenshotUrls.isEmpty())
+            info.insert(QStringLiteral("screenshotUrls"),
+                        QVariant::fromValue(metadata.screenshotUrls));
+        if (info.value(QStringLiteral("trailerUrl")).toString().isEmpty()
+            && !metadata.trailerUrl.isEmpty())
+            info.insert(QStringLiteral("trailerUrl"), metadata.trailerUrl);
+        if (info.value(QStringLiteral("trailerThumbnailUrl")).toString().isEmpty()
+            && !metadata.trailerThumbnailUrl.isEmpty())
+            info.insert(QStringLiteral("trailerThumbnailUrl"), metadata.trailerThumbnailUrl);
     }
     const QString sourceId = info.value(QStringLiteral("sourceId")).toString();
     if (m_hooks.sourceWebsiteFor)

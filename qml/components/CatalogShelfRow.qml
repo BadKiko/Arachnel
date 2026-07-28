@@ -74,8 +74,8 @@ ColumnLayout {
 
         Behavior on contentX {
             NumberAnimation {
-                duration: 180
-                easing.type: Easing.OutCubic
+                duration: MD.Token.duration.medium2
+                easing: MD.Token.easing.emphasized_decelerate
             }
         }
 

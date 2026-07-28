@@ -23,17 +23,29 @@ Item {
                                              || (!root.noSourceSelected && Core.catalog.count === 0))
     readonly property bool listViewMode: catalogPrefs.viewMode === 1
 
-    readonly property int compactRevealRange: 28
+    // Morph as soon as you nudge the list - don't wait until the big title
+    // has fully scrolled away (that left a dead zone with neither title).
+    readonly property int compactRevealRange: Math.max(64, Math.round(catalogContent.catalogIntroHeaderHeight))
     readonly property real scrollContentY: root.listViewMode ? catalogContent.listContentY : catalogContent.gridContentY
-    readonly property real compactRevealStart: catalogContent.catalogIntroHeaderHeight
-                                              + MD.Token.spacing.small
+    readonly property real compactRevealStart: 4
     readonly property real compactBarOpacity: {
         if (!catalogContent.visible)
             return 0
         const y = catalogContent.currentContentY
         if (y <= root.compactRevealStart)
             return 0
-        return Math.min(1, (y - root.compactRevealStart) / root.compactRevealRange)
+        const t = Math.min(1, (y - root.compactRevealStart) / root.compactRevealRange)
+        return t * t * (3 - 2 * t)
+    }
+    readonly property real introCollapseProgress: {
+        if (!catalogContent.visible)
+            return 0
+        const y = catalogContent.currentContentY
+        const span = Math.max(48, catalogContent.catalogIntroHeaderHeight)
+        if (y <= 0)
+            return 0
+        const t = Math.min(1, y / span)
+        return t * t * (3 - 2 * t)
     }
 
     readonly property var sortOptions: [
@@ -144,6 +156,8 @@ Item {
 
     function resetScroll() { catalogContent.resetScroll() }
 
+    function fixViewport() { catalogContent.fixViewport() }
+
     function saveAndResetScroll() {
         // Save current scroll position of the view that's currently visible
         if (!root.listViewMode) {
@@ -195,11 +209,10 @@ Item {
 
     function showBrowseAll(query) {
         root.browseAllMode = true
-        if (query && query.length) {
-            root.searchQuery = query
-            catalogContent.searchText = query
-            Core.applyCatalogSearch(query)
-        }
+        const q = query || ""
+        root.searchQuery = q
+        catalogContent.searchText = q
+        Core.applyCatalogSearch(q)
         catalogContent.resetScroll()
     }
 

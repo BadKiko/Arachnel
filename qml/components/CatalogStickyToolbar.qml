@@ -71,7 +71,16 @@ Item {
         Flow {
             Layout.fillWidth: true
             spacing: MD.Token.spacing.small
-            visible: Core.catalogActiveFilterCount > 0
+            opacity: Core.catalogActiveFilterCount > 0 ? 1 : 0
+            visible: opacity > 0.01
+            enabled: Core.catalogActiveFilterCount > 0
+
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: MD.Token.duration.short4
+                    easing: MD.Token.easing.emphasized_decelerate
+                }
+            }
 
             MD.FilterChip {
                 visible: Core.catalogTypeFilter >= 0
