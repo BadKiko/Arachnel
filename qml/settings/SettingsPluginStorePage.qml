@@ -57,10 +57,34 @@ Flickable {
             Layout.leftMargin: contentMargin
             Layout.rightMargin: contentMargin
             Layout.topMargin: MD.Token.spacing.small
-            text: qsTr("Official plugins from the Arachnel catalog. Install adds them to your plugins folder.")
+            text: qsTr("Install official plugins.")
             wrapMode: Text.WordWrap
             color: MD.Token.color.on_surface_variant
             typescale: MD.Token.typescale.body_medium
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.leftMargin: contentMargin
+            Layout.rightMargin: contentMargin
+            spacing: MD.Token.spacing.small
+            visible: Core.pluginCatalog && (Core.pluginCatalog.catalogUrl || "").length > 0
+
+            MD.Label {
+                Layout.fillWidth: true
+                text: qsTr("Index: %1").arg(Core.pluginCatalog.catalogUrl)
+                color: MD.Token.color.on_surface_variant
+                typescale: MD.Token.typescale.label_small
+                elide: Text.ElideMiddle
+                maximumLineCount: 2
+                wrapMode: Text.WordWrap
+            }
+
+            MD.Button {
+                mdState.type: MD.Enum.BtText
+                text: qsTr("Open")
+                onClicked: Core.openExternalUrl(Core.pluginCatalog.catalogUrl)
+            }
         }
 
         RowLayout {
@@ -167,6 +191,14 @@ Flickable {
 
                                 MD.Label {
                                     Layout.fillWidth: true
+                                    visible: !!(modelData.recommended)
+                                    text: qsTr("Recommended")
+                                    color: MD.Token.color.primary
+                                    typescale: MD.Token.typescale.label_small
+                                }
+
+                                MD.Label {
+                                    Layout.fillWidth: true
                                     text: modelData.description
                                     color: MD.Token.color.on_surface_variant
                                     typescale: MD.Token.typescale.body_small
@@ -181,20 +213,62 @@ Flickable {
                                     color: MD.Token.color.primary
                                     typescale: MD.Token.typescale.label_small
                                 }
+
+                                MD.Label {
+                                    Layout.fillWidth: true
+                                    visible: !!(modelData.repository && modelData.repository.length)
+                                    text: qsTr("Source: %1").arg(modelData.repository)
+                                    color: MD.Token.color.on_surface_variant
+                                    typescale: MD.Token.typescale.label_small
+                                    elide: Text.ElideMiddle
+                                    wrapMode: Text.WordWrap
+                                    maximumLineCount: 2
+                                }
+
+                                MD.Label {
+                                    Layout.fillWidth: true
+                                    visible: !!(modelData.url && modelData.url.length)
+                                    text: qsTr("Download: %1").arg(modelData.url)
+                                    color: MD.Token.color.on_surface_variant
+                                    typescale: MD.Token.typescale.label_small
+                                    elide: Text.ElideMiddle
+                                    wrapMode: Text.WordWrap
+                                    maximumLineCount: 2
+                                }
                             }
 
-                            MD.Button {
-                                mdState.type: installed ? MD.Enum.BtText : MD.Enum.BtFilledTonal
-                                text: installed ? qsTr("Delete")
-                                      : (thisInstalling ? qsTr("Installing…") : qsTr("Install"))
-                                icon.name: installed ? MD.Token.icon.delete : MD.Token.icon.download
-                                enabled: installed
-                                         || !(Core.pluginCatalog && Core.pluginCatalog.installing)
-                                onClicked: {
-                                    if (installed)
-                                        root.requestUninstall(modelData.id, modelData.name)
-                                    else
-                                        Core.installOfficialPlugin(modelData.id)
+                            ColumnLayout {
+                                spacing: MD.Token.spacing.extra_small
+
+                                MD.Button {
+                                    mdState.type: installed ? MD.Enum.BtText : MD.Enum.BtFilledTonal
+                                    text: installed ? qsTr("Delete")
+                                          : (thisInstalling ? qsTr("Installing…") : qsTr("Install"))
+                                    icon.name: installed ? MD.Token.icon.delete : MD.Token.icon.download
+                                    enabled: installed
+                                             || !(Core.pluginCatalog && Core.pluginCatalog.installing)
+                                    onClicked: {
+                                        if (installed)
+                                            root.requestUninstall(modelData.id, modelData.name)
+                                        else
+                                            Core.installOfficialPlugin(modelData.id)
+                                    }
+                                }
+
+                                MD.Button {
+                                    visible: !!(modelData.repository && modelData.repository.length)
+                                    mdState.type: MD.Enum.BtText
+                                    text: qsTr("Source code")
+                                    icon.name: MD.Token.icon.open_in_new
+                                    onClicked: Core.openExternalUrl(modelData.repository)
+                                }
+
+                                MD.Button {
+                                    visible: !!(modelData.url && modelData.url.length)
+                                    mdState.type: MD.Enum.BtText
+                                    text: qsTr("Package URL")
+                                    icon.name: MD.Token.icon.open_in_new
+                                    onClicked: Core.openExternalUrl(modelData.url)
                                 }
                             }
                         }

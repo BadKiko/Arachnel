@@ -1,5 +1,9 @@
 #include "plugin_catalog_service.h"
 
+#include "plugin_api.h"
+#include "plugin_urls.h"
+#include "plugin_version.h"
+
 #include <QCoreApplication>
 #include <QCryptographicHash>
 #include <QDir>
@@ -15,12 +19,90 @@
 #include <QUrl>
 #include <QVariantMap>
 
+#include <algorithm>
+
 namespace arachnel::core {
 
 namespace {
 
 const char* kDefaultCatalogUrl =
     "https://gitlab.com/BadKiko/arachnel-plugins-sourcelist/-/raw/main/plugins.json";
+
+QStringList platformsFromJson(const QJsonValue& value)
+{
+    QStringList platforms;
+    if (value.isArray()) {
+        const QJsonArray plats = value.toArray();
+        for (const QJsonValue& p : plats)
+            platforms.append(p.toString());
+    }
+    return platforms;
+}
+
+bool platformsSupported(const QStringList& platforms, const QString& platform)
+{
+    return platforms.isEmpty() || platforms.contains(platform)
+           || platforms.contains(QStringLiteral("all"));
+}
+
+/** Pick newest build compatible with this Arachnel + platform. */
+QJsonObject pickCompatibleBuild(const QJsonObject& pluginObj, const QString& appVersion,
+                                const QString& platform)
+{
+    const QJsonArray builds = pluginObj.value(QStringLiteral("builds")).toArray();
+    if (builds.isEmpty()) {
+        // Schema v1 flat entry.
+        QJsonObject flat;
+        flat.insert(QStringLiteral("version"), pluginObj.value(QStringLiteral("version")));
+        flat.insert(QStringLiteral("apiVersion"), pluginObj.value(QStringLiteral("apiVersion")));
+        flat.insert(QStringLiteral("minArachnel"),
+                    pluginObj.value(QStringLiteral("minArachnel")).toString(QStringLiteral("0.0.0")));
+        flat.insert(QStringLiteral("maxArachnel"),
+                    pluginObj.value(QStringLiteral("maxArachnel")).toString());
+        flat.insert(QStringLiteral("url"), pluginObj.value(QStringLiteral("url")));
+        flat.insert(QStringLiteral("sha256"), pluginObj.value(QStringLiteral("sha256")));
+        flat.insert(QStringLiteral("size"), pluginObj.value(QStringLiteral("size")));
+        flat.insert(QStringLiteral("platforms"), pluginObj.value(QStringLiteral("platforms")));
+        flat.insert(QStringLiteral("abiToken"), pluginObj.value(QStringLiteral("abiToken")));
+        flat.insert(QStringLiteral("file"), pluginObj.value(QStringLiteral("file")));
+        if (!platformsSupported(platformsFromJson(flat.value(QStringLiteral("platforms"))),
+                                platform))
+            return {};
+        if (!appVersionInRange(appVersion,
+                               flat.value(QStringLiteral("minArachnel")).toString(),
+                               flat.value(QStringLiteral("maxArachnel")).toString()))
+            return {};
+        const int api = flat.value(QStringLiteral("apiVersion")).toInt(0);
+        if (api > ARACHNEL_PLUGIN_API_VERSION || api < ARACHNEL_PLUGIN_API_VERSION_MIN)
+            return {};
+        return flat;
+    }
+
+    QJsonObject best;
+    QString bestVersion;
+    for (const QJsonValue& value : builds) {
+        if (!value.isObject())
+            continue;
+        const QJsonObject build = value.toObject();
+        if (!platformsSupported(platformsFromJson(build.value(QStringLiteral("platforms"))),
+                                platform))
+            continue;
+        if (!appVersionInRange(appVersion,
+                               build.value(QStringLiteral("minArachnel"))
+                                   .toString(QStringLiteral("0.0.0")),
+                               build.value(QStringLiteral("maxArachnel")).toString()))
+            continue;
+        const int api = build.value(QStringLiteral("apiVersion")).toInt(0);
+        if (api > ARACHNEL_PLUGIN_API_VERSION || api < ARACHNEL_PLUGIN_API_VERSION_MIN)
+            continue;
+        const QString ver = build.value(QStringLiteral("version")).toString();
+        if (best.isEmpty() || comparePluginVersions(ver, bestVersion) > 0) {
+            best = build;
+            bestVersion = ver;
+        }
+    }
+    return best;
+}
 
 } // namespace
 
@@ -131,43 +213,73 @@ void PluginCatalogService::refresh()
             return;
         }
 
-        const QJsonArray arr = doc.object().value(QStringLiteral("plugins")).toArray();
+        const QJsonObject root = doc.object();
+        const QJsonArray arr = root.value(QStringLiteral("plugins")).toArray();
         QVariantList next;
         next.reserve(arr.size());
         const QString platform = currentPlatformId();
+        const QString appVersion = QCoreApplication::applicationVersion();
         for (const QJsonValue& value : arr) {
             if (!value.isObject())
                 continue;
             const QJsonObject obj = value.toObject();
+            const QString pluginId = obj.value(QStringLiteral("id")).toString().trimmed();
+            if (pluginId.isEmpty())
+                continue;
+
+            const QJsonObject build = pickCompatibleBuild(obj, appVersion, platform);
+            if (build.isEmpty())
+                continue;
+
             QVariantMap row;
-            row.insert(QStringLiteral("id"), obj.value(QStringLiteral("id")).toString());
+            row.insert(QStringLiteral("id"), pluginId);
             row.insert(QStringLiteral("name"), obj.value(QStringLiteral("name")).toString());
             row.insert(QStringLiteral("description"),
                        obj.value(QStringLiteral("description")).toString());
-            row.insert(QStringLiteral("version"), obj.value(QStringLiteral("version")).toString());
+            row.insert(QStringLiteral("version"),
+                       build.value(QStringLiteral("version")).toString());
             row.insert(QStringLiteral("apiVersion"),
-                       obj.value(QStringLiteral("apiVersion")).toInt(0));
+                       build.value(QStringLiteral("apiVersion")).toInt(0));
             row.insert(QStringLiteral("iconName"),
                        obj.value(QStringLiteral("iconName")).toString(QStringLiteral("extension")));
-            row.insert(QStringLiteral("url"), obj.value(QStringLiteral("url")).toString());
-            row.insert(QStringLiteral("sha256"), obj.value(QStringLiteral("sha256")).toString());
-            row.insert(QStringLiteral("size"), obj.value(QStringLiteral("size")).toVariant());
+            row.insert(QStringLiteral("url"), build.value(QStringLiteral("url")).toString());
+            row.insert(QStringLiteral("sha256"), build.value(QStringLiteral("sha256")).toString());
+            row.insert(QStringLiteral("size"), build.value(QStringLiteral("size")).toVariant());
+            row.insert(QStringLiteral("abiToken"),
+                       build.value(QStringLiteral("abiToken")).toString());
+            row.insert(QStringLiteral("minArachnel"),
+                       build.value(QStringLiteral("minArachnel")).toString());
+            row.insert(QStringLiteral("maxArachnel"),
+                       build.value(QStringLiteral("maxArachnel")).toString());
+            row.insert(QStringLiteral("repository"), resolvePluginRepository(pluginId, obj));
+            row.insert(QStringLiteral("recommended"),
+                       obj.value(QStringLiteral("recommended")).toBool(false)
+                           || pluginId == QStringLiteral("steamidra"));
 
-            QStringList platforms;
-            const QJsonArray plats = obj.value(QStringLiteral("platforms")).toArray();
-            for (const QJsonValue& p : plats)
-                platforms.append(p.toString());
+            const QStringList platforms =
+                platformsFromJson(build.value(QStringLiteral("platforms")));
             row.insert(QStringLiteral("platforms"), platforms);
-
-            const bool supported =
-                platforms.isEmpty() || platforms.contains(platform) || platforms.contains(QStringLiteral("all"));
-            row.insert(QStringLiteral("supported"), supported);
-            if (row.value(QStringLiteral("id")).toString().isEmpty())
-                continue;
-            if (!supported)
-                continue;
+            row.insert(QStringLiteral("supported"), true);
             next.append(row);
         }
+
+        std::sort(next.begin(), next.end(), [](const QVariant& a, const QVariant& b) {
+            const QVariantMap left = a.toMap();
+            const QVariantMap right = b.toMap();
+            const bool leftRec = left.value(QStringLiteral("recommended")).toBool();
+            const bool rightRec = right.value(QStringLiteral("recommended")).toBool();
+            if (leftRec != rightRec)
+                return leftRec;
+            const QString leftId = left.value(QStringLiteral("id")).toString();
+            const QString rightId = right.value(QStringLiteral("id")).toString();
+            if (leftId == QStringLiteral("steamidra") && rightId != QStringLiteral("steamidra"))
+                return true;
+            if (rightId == QStringLiteral("steamidra") && leftId != QStringLiteral("steamidra"))
+                return false;
+            return QString::localeAwareCompare(left.value(QStringLiteral("name")).toString(),
+                                               right.value(QStringLiteral("name")).toString())
+                   < 0;
+        });
 
         m_plugins = next;
         emit pluginsChanged();

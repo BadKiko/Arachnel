@@ -353,19 +353,9 @@ Item {
                     Layout.fillWidth: true
                     spacing: MD.Token.spacing.small
 
-                    Rectangle {
-                        Layout.preferredHeight: chipLabel.implicitHeight + 4
-                        Layout.preferredWidth: chipLabel.implicitWidth + 12
-                        radius: height / 2
-                        color: MD.Util.transparent(root.statusAccent, 0.16)
-
-                        MD.Label {
-                            id: chipLabel
-                            anchors.centerIn: parent
-                            text: root.statusChipText
-                            typescale: MD.Token.typescale.label_small
-                            color: root.statusAccent
-                        }
+                    MD.EmbedChip {
+                        text: root.statusChipText
+                        enabled: false
                     }
 
                     MD.Label {

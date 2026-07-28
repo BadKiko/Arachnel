@@ -17,11 +17,24 @@ Item {
     required property bool metadataPending
 
     property bool compactRow: false
+    property int currentPlayers: -1
 
     signal openDetails(string entryId)
 
+    readonly property string playersLabel: {
+        if (root.currentPlayers < 0)
+            return ""
+        if (root.currentPlayers >= 1000000)
+            return (root.currentPlayers / 1000000).toFixed(1) + "M " + qsTr("playing")
+        if (root.currentPlayers >= 1000)
+            return (root.currentPlayers / 1000).toFixed(1) + "K " + qsTr("playing")
+        return root.currentPlayers + " " + qsTr("playing")
+    }
+
     readonly property string metaLine: {
         const parts = []
+        if (root.playersLabel.length > 0)
+            parts.push(root.playersLabel)
         if ((root.version || "").length > 0)
             parts.push("v" + root.version)
         else if ((root.uploadDate || "").length >= 10)
@@ -31,48 +44,54 @@ Item {
         return parts.join(" · ")
     }
 
-    readonly property bool hasLibraryCover: coverUrl.startsWith("file:")
-                                            || coverUrl.indexOf("library_capsule") >= 0
-                                            || coverUrl.indexOf("library_600x900") >= 0
+    readonly property string displayCoverUrl: coverUrl.startsWith("file:") ? coverUrl : ""
 
-    property string requestedId: ""
+    property bool invalidateArmed: true
 
-    function requestCoverIfNeeded() {
-        if (!entryId.length || hasLibraryCover)
+    function requestCover() {
+        if (!entryId.length)
             return
-        requestedId = entryId
+        if (displayCoverUrl.length)
+            return
         Core.requestCatalogCover(entryId)
     }
 
-    function cancelRequest() {
-        requestTimer.stop()
-        if (!requestedId.length)
+    function cancelCover() {
+        if (!entryId.length)
             return
-        Core.cancelCatalogCover(requestedId)
-        requestedId = ""
+        Core.cancelCatalogCover(entryId)
+    }
+
+    function onPosterFailed() {
+        if (!invalidateArmed || !coverUrl.startsWith("file:"))
+            return
+        invalidateArmed = false
+        Core.invalidateCatalogCover(entryId)
     }
 
     Timer {
         id: requestTimer
-        interval: 60
-        onTriggered: root.requestCoverIfNeeded()
+        interval: 40
+        onTriggered: root.requestCover()
     }
 
     Component.onCompleted: requestTimer.start()
-    Component.onDestruction: cancelRequest()
+    Component.onDestruction: cancelCover()
 
-    ListView.onReused: requestTimer.restart()
-
-    onEntryIdChanged: {
-        cancelRequest()
+    ListView.onReused: {
+        invalidateArmed = true
         requestTimer.restart()
     }
 
-    onCoverUrlChanged: {
-        if (hasLibraryCover) {
+    onEntryIdChanged: {
+        cancelCover()
+        invalidateArmed = true
+        requestTimer.restart()
+    }
+
+    onDisplayCoverUrlChanged: {
+        if (displayCoverUrl.length)
             requestTimer.stop()
-            requestedId = ""
-        }
     }
 
     RowLayout {
@@ -83,13 +102,14 @@ Item {
         GamePoster {
             Layout.preferredWidth: 52
             Layout.preferredHeight: 70
-            source: root.coverUrl
+            source: root.compactRow ? root.displayCoverUrl : ""
             seed: root.title
             fallbackText: root.title.length > 0 ? root.title.charAt(0) : "?"
             awaiting: root.metadataPending
+            enableShimmer: false
             cornerRadius: MD.Token.shape.corner.medium
             onClicked: root.openDetails(root.entryId)
-            onLoadFailed: Core.invalidateCatalogCover(root.entryId)
+            onLoadFailed: root.onPosterFailed()
         }
 
         ColumnLayout {
@@ -113,21 +133,6 @@ Item {
                 maximumLineCount: 1
             }
         }
-
-        MD.Label {
-            text: root.installKindLabel
-            color: MD.Token.color.on_surface_variant
-            typescale: MD.Token.typescale.label_small
-            elide: Text.ElideRight
-            maximumLineCount: 1
-            Layout.maximumWidth: 120
-        }
-
-        MD.Icon {
-            name: MD.Token.icon.chevron_right
-            size: 20
-            color: MD.Token.color.on_surface_variant
-        }
     }
 
     ColumnLayout {
@@ -139,13 +144,14 @@ Item {
         GamePoster {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            source: root.coverUrl
+            source: root.compactRow ? "" : root.displayCoverUrl
             seed: root.title
             fallbackText: root.title.length > 0 ? root.title.charAt(0) : "?"
             awaiting: root.metadataPending
+            enableShimmer: true
             cornerRadius: MD.Token.shape.corner.large
             onClicked: root.openDetails(root.entryId)
-            onLoadFailed: Core.invalidateCatalogCover(root.entryId)
+            onLoadFailed: root.onPosterFailed()
         }
 
         MD.Label {

@@ -2,136 +2,6 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="en">
 <context>
-    <name></name>
-    <message id="help.catalog_intro">
-        <location filename="../../qml/i18n/Messages.qml" line="8"/>
-        <source>Add a catalog to browse games, or install a plugin for download, install, and play.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="help.hydra_catalog_body">
-        <location filename="../../qml/i18n/Messages.qml" line="11"/>
-        <source>Paste a catalog link in Settings → Hydra catalogs. Games show up in Catalog.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="help.catalog_body">
-        <location filename="../../qml/i18n/Messages.qml" line="14"/>
-        <source>Pick a game in Catalog to start a download.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="help.library_body">
-        <location filename="../../qml/i18n/Messages.qml" line="17"/>
-        <source>After download and install, the game appears here — launch, updates, and details.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="settings.sources.connect_hint">
-        <location filename="../../qml/i18n/Messages.qml" line="20"/>
-        <source>Add a catalog URL from Hydra or another community list. Install a plugin (e.g. FreeTP) to install and play.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="settings.sources.add_hint">
-        <location filename="../../qml/i18n/Messages.qml" line="23"/>
-        <source>Tap Add catalog and paste the catalog link.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="settings.source_form.desc">
-        <location filename="../../qml/i18n/Messages.qml" line="26"/>
-        <source>Paste a catalog URL. Arachnel loads the game list; a plugin handles install and launch.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="settings.appearance.weblate_hint">
-        <location filename="../../qml/i18n/Messages.qml" line="29"/>
-        <source>Missing your language? Help translate Arachnel on &lt;a href=&quot;%1&quot;&gt;Weblate&lt;/a&gt;.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="settings.plugins.install_hint">
-        <location filename="../../qml/i18n/Messages.qml" line="32"/>
-        <source>Use Install plugin below and pick a plugin file (e.g. FreeTP).</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="settings.plugins.desc">
-        <location filename="../../qml/i18n/Messages.qml" line="35"/>
-        <source>Plugins add catalogs and handle install, updates, and launch (e.g. FreeTP).</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="library.empty.subtitle">
-        <location filename="../../qml/i18n/Messages.qml" line="38"/>
-        <source>Your library is empty. Install a plugin, pick a game in Catalog, and it will appear here.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="library.step1.body">
-        <location filename="../../qml/i18n/Messages.qml" line="41"/>
-        <source>Install a plugin (e.g. FreeTP) in Settings → Plugins.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="library.step2.body">
-        <location filename="../../qml/i18n/Messages.qml" line="44"/>
-        <source>Pick a game in Catalog and start the download.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="library.step3.body">
-        <location filename="../../qml/i18n/Messages.qml" line="47"/>
-        <source>Installed games live here: launch, updates, and details.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="game.install.torrent_hint">
-        <location filename="../../qml/i18n/Messages.qml" line="50"/>
-        <source>Download finished. Click Install to set up the game.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="steamidra.trust.markdown">
-        <location filename="../../qml/i18n/Messages.qml" line="53"/>
-        <source>### Where do the files come from?
-
-Game **chunks** are downloaded from the **Valve Steam CDN** — the same content delivery network Steam itself uses for depot files.
-
-### What is Online Fix?
-
-Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugin can include it so the game runs and goes online without a Store purchase license check.
-
-### What is *not* from Valve?
-
-- Depot **keys** and **manifests** come from the plugin relay (not the Steam Store).
-- This is **not** the same as buying the game on Steam.
-- Arachnel does **not** claim antivirus clearance or Valve endorsement.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="catalog.pipeline_desc">
-        <location filename="../../qml/i18n/Messages.qml" line="56"/>
-        <source>Browse games from your catalogs and sources.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="catalog.connect_hint">
-        <location filename="../../qml/i18n/Messages.qml" line="59"/>
-        <source>Add a catalog or install a plugin in Settings.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="catalog.enable_chips_hint">
-        <location filename="../../qml/i18n/Messages.qml" line="62"/>
-        <source>Turn on one or more sources above — or leave them all off.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="storage.libraries_desc">
-        <location filename="../../qml/i18n/Messages.qml" line="65"/>
-        <source>Libraries on disks — like Steam. You can add other drives.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="addons.selection_hint">
-        <location filename="../../qml/i18n/Messages.qml" line="68"/>
-        <source>Add-ons are available for &quot;%1&quot; — choose what to download with the game.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="downloads.empty_hint">
-        <location filename="../../qml/i18n/Messages.qml" line="71"/>
-        <source>Start installing from the catalog — progress will appear here.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message id="game.delete_warning">
-        <location filename="../../qml/i18n/Messages.qml" line="74"/>
-        <source>Game files will be deleted from disk. This cannot be undone.</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>AppUpdateProgressOverlay</name>
     <message>
         <location filename="../../qml/app/AppUpdateProgressOverlay.qml" line="42"/>
@@ -195,17 +65,22 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/AppWindow.qml" line="111"/>
+        <location filename="../../qml/app/AppWindow.qml" line="120"/>
         <source>Library</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/AppWindow.qml" line="115"/>
+        <location filename="../../qml/app/AppWindow.qml" line="124"/>
+        <source>Discover</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/AppWindow.qml" line="128"/>
         <source>Catalog</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/AppWindow.qml" line="119"/>
+        <location filename="../../qml/app/AppWindow.qml" line="132"/>
         <source>Downloads</source>
         <translation type="unfinished"></translation>
     </message>
@@ -225,6 +100,54 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location filename="../../qml/components/CatalogCompactBar.qml" line="55"/>
         <source>Found: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>CatalogDiscoveryHeader</name>
+    <message>
+        <location filename="../../qml/components/CatalogDiscoveryHeader.qml" line="43"/>
+        <source>All games</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/components/CatalogDiscoveryHeader.qml" line="86"/>
+        <source>Jump back in</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/components/CatalogDiscoveryHeader.qml" line="102"/>
+        <source>Continue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/components/CatalogDiscoveryHeader.qml" line="28"/>
+        <source>Surprise me</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>CatalogDiscoveryHero</name>
+    <message>
+        <location filename="../../qml/components/CatalogDiscoveryHero.qml" line="76"/>
+        <location filename="../../qml/components/CatalogDiscoveryHero.qml" line="78"/>
+        <location filename="../../qml/components/CatalogDiscoveryHero.qml" line="79"/>
+        <source>playing now</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/components/CatalogDiscoveryHero.qml" line="146"/>
+        <source>Tonight&apos;s pick</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/components/CatalogDiscoveryHero.qml" line="177"/>
+        <source>Open game</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/components/CatalogDiscoveryHero.qml" line="183"/>
+        <source>Another pick</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -254,149 +177,174 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
 <context>
     <name>CatalogFilterSheet</name>
     <message>
-        <location filename="../../qml/components/CatalogFilterSheet.qml" line="26"/>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="27"/>
         <source>All</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/components/CatalogFilterSheet.qml" line="27"/>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="28"/>
         <source>Portable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/components/CatalogFilterSheet.qml" line="28"/>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="29"/>
         <source>Installer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/components/CatalogFilterSheet.qml" line="29"/>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="30"/>
         <source>Online fix</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/components/CatalogFilterSheet.qml" line="33"/>
-        <location filename="../../qml/components/CatalogFilterSheet.qml" line="40"/>
-        <location filename="../../qml/components/CatalogFilterSheet.qml" line="48"/>
-        <location filename="../../qml/components/CatalogFilterSheet.qml" line="312"/>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="34"/>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="41"/>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="49"/>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="341"/>
         <source>Any</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/components/CatalogFilterSheet.qml" line="34"/>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="35"/>
         <source>Single-player</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/components/CatalogFilterSheet.qml" line="35"/>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="36"/>
         <source>Co-op</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/components/CatalogFilterSheet.qml" line="36"/>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="37"/>
         <source>Multiplayer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/components/CatalogFilterSheet.qml" line="41"/>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="42"/>
         <source>&lt; 1 GB</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/components/CatalogFilterSheet.qml" line="42"/>
-        <source>1–5 GB</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../../qml/components/CatalogFilterSheet.qml" line="43"/>
-        <source>5–20 GB</source>
+        <source>1-5 GB</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../qml/components/CatalogFilterSheet.qml" line="44"/>
+        <source>5-20 GB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="45"/>
         <source>20+ GB</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/components/CatalogFilterSheet.qml" line="49"/>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="50"/>
         <source>Last 7 days</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/components/CatalogFilterSheet.qml" line="50"/>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="51"/>
         <source>Last 30 days</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/components/CatalogFilterSheet.qml" line="51"/>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="52"/>
         <source>Last 90 days</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/components/CatalogFilterSheet.qml" line="52"/>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="53"/>
         <source>Last year</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/components/CatalogFilterSheet.qml" line="93"/>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="115"/>
         <source>Sort &amp; filters</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/components/CatalogFilterSheet.qml" line="117"/>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="139"/>
         <source>Sort</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/components/CatalogFilterSheet.qml" line="148"/>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="170"/>
         <source>Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/components/CatalogFilterSheet.qml" line="179"/>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="201"/>
         <source>Players</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/components/CatalogFilterSheet.qml" line="210"/>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="232"/>
         <source>Size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/components/CatalogFilterSheet.qml" line="241"/>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="263"/>
         <source>Added</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/components/CatalogFilterSheet.qml" line="272"/>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="294"/>
         <source>Extras</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/components/CatalogFilterSheet.qml" line="283"/>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="305"/>
         <source>Has add-ons</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/components/CatalogFilterSheet.qml" line="302"/>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="324"/>
         <source>Genre</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/components/CatalogFilterSheet.qml" line="351"/>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="331"/>
+        <source>Search genres</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="366"/>
+        <source>Showing top genres - type to search more</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="389"/>
         <source>Clear all</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/components/CatalogFilterSheet.qml" line="358"/>
+        <location filename="../../qml/components/CatalogFilterSheet.qml" line="396"/>
         <source>Apply</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>CatalogGameCard</name>
+    <message>
+        <location filename="../../qml/components/CatalogGameCard.qml" line="28"/>
+        <location filename="../../qml/components/CatalogGameCard.qml" line="30"/>
+        <location filename="../../qml/components/CatalogGameCard.qml" line="31"/>
+        <source>playing</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>CatalogIntroHeader</name>
     <message>
-        <location filename="../../qml/components/CatalogIntroHeader.qml" line="14"/>
-        <source>Catalog</source>
+        <location filename="../../qml/components/CatalogIntroHeader.qml" line="11"/>
+        <source>Browse the catalog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/components/CatalogIntroHeader.qml" line="17"/>
+        <source>Search and filter every game from your enabled sources.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -428,16 +376,6 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location filename="../../qml/app/CatalogPage.qml" line="41"/>
         <source>Oldest first</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../qml/app/CatalogPage.qml" line="42"/>
-        <source>Title A–Z</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../qml/app/CatalogPage.qml" line="43"/>
-        <source>Title Z–A</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -482,12 +420,12 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
     <message>
         <location filename="../../qml/app/CatalogPage.qml" line="59"/>
-        <source>1–5 GB</source>
+        <source>1-5 GB</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../qml/app/CatalogPage.qml" line="60"/>
-        <source>5–20 GB</source>
+        <source>5-20 GB</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -521,13 +459,86 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../qml/app/CatalogPage.qml" line="71"/>
+        <source>Any players</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/CatalogPage.qml" line="72"/>
+        <source>Single-player</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/CatalogPage.qml" line="73"/>
+        <source>Co-op</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/CatalogPage.qml" line="74"/>
+        <source>Multiplayer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../../qml/app/CatalogPage.qml" line="51"/>
         <source>All</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../qml/app/CatalogPage.qml" line="42"/>
+        <source>Title A-Z</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/CatalogPage.qml" line="43"/>
+        <source>Title Z-A</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../../qml/app/CatalogPage.qml" line="52"/>
         <source>Portable</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>CatalogPageContent</name>
+    <message>
+        <location filename="../../qml/app/CatalogPageContent.qml" line="173"/>
+        <source>Couldn&apos;t load discovery</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/CatalogPageContent.qml" line="179"/>
+        <source>Check your connection, or open All games.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/CatalogPageContent.qml" line="187"/>
+        <source>All games</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/CatalogPageContent.qml" line="199"/>
+        <source>No matching games in your catalog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/CatalogPageContent.qml" line="205"/>
+        <source>Discovery loaded, but none of these titles are in your enabled sources yet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/CatalogPageContent.qml" line="221"/>
+        <source>Recommended for you</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/CatalogPageContent.qml" line="233"/>
+        <source>Popular this week</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/CatalogPageContent.qml" line="227"/>
+        <source>With friends</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -574,6 +585,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <source>Has add-ons</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../../qml/components/CatalogStickyToolbar.qml" line="116"/>
+        <source>Players</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Core</name>
@@ -603,16 +619,9 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/jobs/job_display.cpp" line="45"/>
-        <location filename="../../src/core/jobs/job_display.cpp" line="92"/>
-        <location filename="../../src/core/jobs/job_display.cpp" line="97"/>
-        <source>Add-on %1 — %2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../../src/core/jobs/job_display.cpp" line="43"/>
-        <location filename="../../src/core/jobs/job_display.cpp" line="174"/>
-        <location filename="../../src/core/jobs/job_display.cpp" line="176"/>
+        <location filename="../../src/core/jobs/job_display.cpp" line="186"/>
+        <location filename="../../src/core/jobs/job_display.cpp" line="188"/>
         <source>Install failed: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -723,21 +732,28 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
     <message>
         <location filename="../../src/core/jobs/job_display.cpp" line="42"/>
-        <location filename="../../src/core/jobs/job_display.cpp" line="179"/>
-        <location filename="../../src/core/jobs/job_display.cpp" line="183"/>
+        <location filename="../../src/core/jobs/job_display.cpp" line="191"/>
+        <location filename="../../src/core/jobs/job_display.cpp" line="195"/>
         <source>Installing (%1/%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../src/core/jobs/job_display.cpp" line="44"/>
-        <location filename="../../src/core/jobs/job_display.cpp" line="188"/>
-        <location filename="../../src/core/jobs/job_display.cpp" line="190"/>
+        <location filename="../../src/core/jobs/job_display.cpp" line="200"/>
+        <location filename="../../src/core/jobs/job_display.cpp" line="202"/>
         <source>Error: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../src/core/jobs/job_display.cpp" line="45"/>
+        <location filename="../../src/core/jobs/job_display.cpp" line="97"/>
+        <location filename="../../src/core/jobs/job_display.cpp" line="108"/>
+        <source>Add-on %1 - %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../../src/core/jobs/job_kind.cpp" line="11"/>
-        <location filename="../../src/core/catalog/catalog_types.cpp" line="101"/>
+        <location filename="../../src/core/catalog/catalog_types.cpp" line="159"/>
         <source>Download</source>
         <translation type="unfinished"></translation>
     </message>
@@ -757,27 +773,27 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_types.cpp" line="84"/>
+        <location filename="../../src/core/catalog/catalog_types.cpp" line="142"/>
         <source>Game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_types.cpp" line="88"/>
+        <location filename="../../src/core/catalog/catalog_types.cpp" line="146"/>
         <source>Add-on</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_types.cpp" line="90"/>
+        <location filename="../../src/core/catalog/catalog_types.cpp" line="148"/>
         <source>Component</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_types.cpp" line="97"/>
+        <location filename="../../src/core/catalog/catalog_types.cpp" line="155"/>
         <source>Direct</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_types.cpp" line="99"/>
+        <location filename="../../src/core/catalog/catalog_types.cpp" line="157"/>
         <source>Torrent</source>
         <translation type="unfinished"></translation>
     </message>
@@ -842,7 +858,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location filename="../../src/core/jobs/job_display.cpp" line="35"/>
         <location filename="../../src/core/jobs/job_status.cpp" line="37"/>
-        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="275"/>
+        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="309"/>
         <source>Install failed</source>
         <translation type="unfinished"></translation>
     </message>
@@ -953,172 +969,173 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/plugins/plugin_catalog_service.cpp" line="115"/>
+        <location filename="../../src/core/plugins/plugin_catalog_service.cpp" line="121"/>
         <source>Could not load plugin list: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/plugins/plugin_catalog_service.cpp" line="124"/>
+        <location filename="../../src/core/plugins/plugin_catalog_service.cpp" line="130"/>
         <source>Plugin list is invalid</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/plugins/plugin_catalog_service.cpp" line="202"/>
+        <location filename="../../src/core/plugins/plugin_catalog_service.cpp" line="210"/>
         <source>Plugin not found in the official list</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/plugins/plugin_catalog_service.cpp" line="209"/>
+        <location filename="../../src/core/plugins/plugin_catalog_service.cpp" line="217"/>
         <source>No download link for this plugin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/plugins/plugin_catalog_service.cpp" line="308"/>
+        <location filename="../../src/core/plugins/plugin_catalog_service.cpp" line="328"/>
         <source>Download failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/plugins/plugin_catalog_service.cpp" line="323"/>
-        <location filename="../../src/core/settings/app_updater.cpp" line="294"/>
+        <location filename="../../src/core/plugins/plugin_catalog_service.cpp" line="332"/>
+        <location filename="../../src/core/settings/app_updater.cpp" line="361"/>
         <source>Download failed: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/plugins/plugin_catalog_service.cpp" line="333"/>
+        <location filename="../../src/core/plugins/plugin_catalog_service.cpp" line="342"/>
         <source>Downloaded plugin file is empty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/plugins/plugin_catalog_service.cpp" line="344"/>
+        <location filename="../../src/core/plugins/plugin_catalog_service.cpp" line="353"/>
         <source>Plugin file checksum mismatch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/plugins/plugin_catalog_service.cpp" line="260"/>
+        <location filename="../../src/core/plugins/plugin_catalog_service.cpp" line="269"/>
         <source>Could not save plugin file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/settings/app_updater.cpp" line="45"/>
+        <location filename="../../src/core/settings/app_updater.cpp" line="47"/>
         <source>Not checked yet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/settings/app_updater.cpp" line="117"/>
+        <location filename="../../src/core/settings/app_updater.cpp" line="127"/>
         <source>Checking for Arachnel updates…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/settings/app_updater.cpp" line="138"/>
+        <location filename="../../src/core/settings/app_updater.cpp" line="154"/>
         <source>Update check failed: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/settings/app_updater.cpp" line="162"/>
+        <location filename="../../src/core/settings/app_updater.cpp" line="190"/>
+        <location filename="../../src/core/settings/app_updater.cpp" line="210"/>
+        <location filename="../../src/core/settings/app_updater.cpp" line="232"/>
         <source>Could not parse GitHub release information</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/settings/app_updater.cpp" line="189"/>
-        <location filename="../../src/core/facade/core_wiring_services.cpp" line="252"/>
+        <location filename="../../src/core/settings/app_updater.cpp" line="248"/>
+        <source>Arachnel %1 (pre-release) is available</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/core/settings/app_updater.cpp" line="251"/>
+        <location filename="../../src/core/facade/core_wiring_services.cpp" line="294"/>
         <source>Arachnel %1 is available</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/settings/app_updater.cpp" line="191"/>
-        <location filename="../../src/core/settings/app_updater.cpp" line="193"/>
+        <location filename="../../src/core/settings/app_updater.cpp" line="254"/>
         <source>Arachnel is up to date (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/settings/app_updater.cpp" line="195"/>
+        <location filename="../../src/core/settings/app_updater.cpp" line="258"/>
         <source>Update found, but no installer package is available for this platform</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/settings/app_updater.cpp" line="214"/>
+        <location filename="../../src/core/settings/app_updater.cpp" line="277"/>
         <source>Open the release page to download the latest package for your platform</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/settings/app_updater.cpp" line="229"/>
+        <location filename="../../src/core/settings/app_updater.cpp" line="292"/>
         <source>Downloading Arachnel update…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/settings/app_updater.cpp" line="245"/>
-        <location filename="../../src/core/settings/app_updater.cpp" line="307"/>
+        <location filename="../../src/core/settings/app_updater.cpp" line="308"/>
+        <location filename="../../src/core/settings/app_updater.cpp" line="373"/>
         <source>Could not save the downloaded installer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/settings/app_updater.cpp" line="296"/>
-        <source>Unknown error</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../src/core/settings/app_updater.cpp" line="316"/>
+        <location filename="../../src/core/settings/app_updater.cpp" line="382"/>
         <source>Starting updater…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/settings/app_updater.cpp" line="337"/>
+        <location filename="../../src/core/settings/app_updater.cpp" line="403"/>
         <source>Could not start the Arachnel installer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/settings/app_updater.cpp" line="346"/>
+        <location filename="../../src/core/settings/app_updater.cpp" line="412"/>
         <source>Automatic installer launch is only available on Windows</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/facade/core_wiring_services.cpp" line="223"/>
+        <location filename="../../src/core/facade/core_wiring_services.cpp" line="265"/>
         <source>Plugin install failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/facade/core_wiring_services.cpp" line="237"/>
+        <location filename="../../src/core/facade/core_wiring_services.cpp" line="279"/>
         <source>Plugin installed: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/facade/core_wiring_services.cpp" line="278"/>
+        <location filename="../../src/core/facade/core_wiring_services.cpp" line="320"/>
         <source>Proton-GE installed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/facade/core_wiring_services.cpp" line="280"/>
+        <location filename="../../src/core/facade/core_wiring_services.cpp" line="322"/>
         <source>Proton-GE download failed: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_controller.cpp" line="50"/>
+        <location filename="../../src/core/facade/core_wiring_services.cpp" line="454"/>
+        <source>Download complete - install manually</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/core/catalog/catalog_controller.cpp" line="60"/>
         <source>Catalog error: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/facade/core_wiring_services.cpp" line="348"/>
-        <location filename="../../src/core/facade/core_wiring_services.cpp" line="377"/>
+        <location filename="../../src/core/facade/core_wiring_services.cpp" line="395"/>
+        <location filename="../../src/core/facade/core_wiring_services.cpp" line="424"/>
         <source>Could not find game to install: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/facade/core_wiring_services.cpp" line="361"/>
+        <location filename="../../src/core/facade/core_wiring_services.cpp" line="408"/>
         <source>Game not found for add-on</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/facade/core_wiring_services.cpp" line="366"/>
+        <location filename="../../src/core/facade/core_wiring_services.cpp" line="413"/>
         <source>Add-on not found in catalog</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/facade/core_wiring_services.cpp" line="407"/>
-        <source>Download complete — install manually</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../src/core/facade/core_wiring_services.cpp" line="413"/>
+        <location filename="../../src/core/facade/core_wiring_services.cpp" line="460"/>
         <source>Download error: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1129,7 +1146,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
     <message>
         <location filename="../../src/core/install/install_session_service.cpp" line="69"/>
-        <source>Can&apos;t install %1 — install a plugin for this source</source>
+        <source>Can&apos;t install %1 - install a plugin for this source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1159,7 +1176,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
     <message>
         <location filename="../../src/core/install/install_session_service_install.cpp" line="84"/>
-        <source>Plugin not found for %1 — install it in Settings → Plugins</source>
+        <source>Plugin not found for %1 - install it in Settings → Plugins</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1173,17 +1190,21 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/facade/core_wiring_services.cpp" line="128"/>
+        <location filename="../../src/core/runtime/proton_facade.cpp" line="33"/>
+        <location filename="../../src/core/facade/core_wiring_services.cpp" line="162"/>
         <source>Preparing runtime environment…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../src/core/jobs/job_facade_1.cpp" line="101"/>
+        <location filename="../../src/core/library/library_facade_2.cpp" line="174"/>
+        <location filename="../../src/core/library/library_facade_2.cpp" line="213"/>
+        <location filename="../../src/core/library/library_facade_2.cpp" line="250"/>
         <source>Game not found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="317"/>
+        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="351"/>
         <location filename="../../src/core/jobs/job_facade_1.cpp" line="107"/>
         <source>Add-on not found</source>
         <translation type="unfinished"></translation>
@@ -1194,115 +1215,186 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/library/library_facade_1.cpp" line="295"/>
+        <location filename="../../src/core/library/library_facade_1.cpp" line="304"/>
         <source>%1 update(s) available</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/library/library_facade_2.cpp" line="52"/>
+        <location filename="../../src/core/library/library_facade_2.cpp" line="56"/>
         <source>Choose game executable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/library/library_facade_2.cpp" line="55"/>
+        <location filename="../../src/core/library/library_facade_2.cpp" line="59"/>
         <source>Executables (*.exe *.sh *.x86_64);;All files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/library/library_facade_2.cpp" line="137"/>
+        <location filename="../../src/core/library/library_facade_2.cpp" line="141"/>
         <source>Found %1 game(s) on disk</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/library/library_facade_2.cpp" line="141"/>
+        <location filename="../../src/core/library/library_facade_2.cpp" line="145"/>
         <source>No new games found on disk</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/runtime/proton_facade.cpp" line="226"/>
+        <location filename="../../src/core/library/library_facade_2.cpp" line="169"/>
+        <location filename="../../src/core/library/library_facade_2.cpp" line="208"/>
+        <source>Shortcuts are not supported on this platform</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/core/library/library_facade_2.cpp" line="184"/>
+        <source>Desktop folder not found</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/core/library/library_facade_2.cpp" line="197"/>
+        <source>Failed to create desktop shortcut</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/core/library/library_facade_2.cpp" line="201"/>
+        <source>Desktop shortcut created</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/core/library/library_facade_2.cpp" line="234"/>
+        <source>Failed to create Start menu shortcut</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/core/library/library_facade_2.cpp" line="238"/>
+        <source>Start menu shortcut created</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/core/library/library_facade_2.cpp" line="245"/>
+        <source>Adding to Steam is not supported on this platform</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/core/library/library_facade_2.cpp" line="269"/>
+        <source>Steam userdata not found</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/core/library/library_facade_2.cpp" line="273"/>
+        <source>Could not parse Steam shortcuts.vdf</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/core/library/library_facade_2.cpp" line="275"/>
+        <source>Could not read Steam shortcuts.vdf</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/core/library/library_facade_2.cpp" line="277"/>
+        <source>Could not write Steam shortcuts.vdf</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/core/library/library_facade_2.cpp" line="281"/>
+        <source>Added to Steam. Restart Steam to see the game and artwork.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/core/runtime/proton_facade.cpp" line="236"/>
         <source>Install Proton-GE in Settings → Launch before downloading games</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/runtime/proton_facade.cpp" line="229"/>
+        <location filename="../../src/core/runtime/proton_facade.cpp" line="239"/>
         <source>Install %1 (Proton-GE) in Settings → Launch before downloading games</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_controller.cpp" line="164"/>
+        <location filename="../../src/core/catalog/catalog_controller.cpp" line="318"/>
         <source>%1 · %2 games</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_controller.cpp" line="168"/>
+        <location filename="../../src/core/catalog/catalog_controller.cpp" line="322"/>
         <source>%1 sources · %2 games</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_controller.cpp" line="247"/>
+        <location filename="../../src/core/catalog/catalog_controller.cpp" line="445"/>
         <source>Catalog empty or unavailable: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_controller.cpp" line="266"/>
+        <location filename="../../src/core/catalog/catalog_controller.cpp" line="464"/>
         <source>No catalog URL configured for source %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="311"/>
+        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="345"/>
         <source>Game not found: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/runtime/runtime_dependency_service.cpp" line="111"/>
+        <location filename="../../src/core/runtime/runtime_dependency_service.cpp" line="117"/>
         <source>Steam App ID is missing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/runtime/runtime_dependency_service_install.cpp" line="73"/>
+        <location filename="../../src/core/runtime/runtime_dependency_service_install.cpp" line="79"/>
         <source>Downloading runtime: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/runtime/runtime_dependency_service_install.cpp" line="89"/>
+        <location filename="../../src/core/runtime/runtime_dependency_service_install.cpp" line="95"/>
         <source>Installer not found for %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/runtime/runtime_dependency_service_install.cpp" line="96"/>
+        <location filename="../../src/core/runtime/runtime_dependency_service_install.cpp" line="102"/>
         <source>Installing runtime: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/runtime/runtime_dependency_service_install.cpp" line="108"/>
+        <location filename="../../src/core/runtime/runtime_dependency_service_install.cpp" line="114"/>
         <source>Proton is required to install runtime dependencies</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/runtime/runtime_dependency_service_install.cpp" line="116"/>
-        <location filename="../../src/core/launch/launch_facade.cpp" line="110"/>
+        <location filename="../../src/core/runtime/runtime_dependency_service_install.cpp" line="122"/>
+        <location filename="../../src/core/launch/launch_facade.cpp" line="128"/>
         <source>Proton not found. Install Proton-GE in Settings → Launch.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/launch/launch_controller.cpp" line="60"/>
+        <location filename="../../src/core/launch/launch_controller.cpp" line="62"/>
         <source>Game is not installed yet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/launch/launch_controller.cpp" line="75"/>
-        <location filename="../../src/core/launch/launch_facade.cpp" line="117"/>
+        <location filename="../../src/core/launch/launch_controller.cpp" line="93"/>
+        <location filename="../../src/core/launch/launch_facade.cpp" line="112"/>
+        <source>Steam is not running - Online Fix needs it for SpaceWar/overlay. Starting Steam…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/core/launch/launch_controller.cpp" line="103"/>
+        <location filename="../../src/core/launch/launch_facade.cpp" line="135"/>
+        <location filename="../../src/core/library/library_facade_2.cpp" line="179"/>
+        <location filename="../../src/core/library/library_facade_2.cpp" line="218"/>
+        <location filename="../../src/core/library/library_facade_2.cpp" line="255"/>
+        <location filename="../../src/core/library/library_facade_2.cpp" line="271"/>
         <source>Executable not found for %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/launch/launch_controller.cpp" line="82"/>
-        <location filename="../../src/core/launch/launch_facade.cpp" line="132"/>
+        <location filename="../../src/core/launch/launch_controller.cpp" line="112"/>
+        <location filename="../../src/core/launch/launch_facade.cpp" line="150"/>
         <source>Failed to launch game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/launch/launch_controller.cpp" line="96"/>
+        <location filename="../../src/core/launch/launch_controller.cpp" line="130"/>
         <source>Failed to stop game</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1343,58 +1435,60 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
     <message>
         <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="180"/>
-        <source>Invalid URL — http or https required</source>
+        <source>Invalid URL - http or https required</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="202"/>
+        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="205"/>
+        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="225"/>
         <source>Catalog entry not found: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="212"/>
+        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="235"/>
         <source>No download link for %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="217"/>
+        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="240"/>
         <source>No Steam App ID for %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="227"/>
+        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="250"/>
         <source>Plugin not loaded: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="235"/>
-        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="283"/>
+        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="262"/>
+        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="317"/>
         <source>Could not start download for %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/library/library_facade_2.cpp" line="74"/>
-        <location filename="../../src/core/library/library_facade_2.cpp" line="98"/>
+        <location filename="../../src/core/library/library_facade_2.cpp" line="78"/>
+        <location filename="../../src/core/library/library_facade_2.cpp" line="102"/>
         <source>Choose library folder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="323"/>
+        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="357"/>
         <source>Could not start add-on download</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="332"/>
+        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="366"/>
         <source>Entry not found: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="347"/>
+        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="260"/>
+        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="381"/>
         <source>Could not start update for %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/facade/core_wiring_services.cpp" line="197"/>
+        <location filename="../../src/core/facade/core_wiring_services.cpp" line="231"/>
         <source>No catalog sources enabled</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1452,49 +1546,44 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/plugins/plugin_facade.cpp" line="154"/>
+        <location filename="../../src/core/plugins/plugin_facade.cpp" line="159"/>
         <source>Plugin installed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/plugins/plugin_facade.cpp" line="157"/>
-        <location filename="../../src/core/plugins/plugin_facade.cpp" line="159"/>
+        <location filename="../../src/core/plugins/plugin_facade.cpp" line="162"/>
+        <location filename="../../src/core/plugins/plugin_facade.cpp" line="164"/>
         <source>Plugin install failed: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/plugins/plugin_facade.cpp" line="173"/>
+        <location filename="../../src/core/plugins/plugin_facade.cpp" line="178"/>
         <source>Plugin removed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/plugins/plugin_facade.cpp" line="176"/>
+        <location filename="../../src/core/plugins/plugin_facade.cpp" line="181"/>
         <source>Could not remove plugin: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/plugins/plugin_facade.cpp" line="267"/>
+        <location filename="../../src/core/plugins/plugin_facade.cpp" line="286"/>
         <source>Plugins updated</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/plugins/plugin_facade.cpp" line="309"/>
+        <location filename="../../src/core/plugins/plugin_facade.cpp" line="328"/>
         <source>Install plugin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/plugins/plugin_facade.cpp" line="311"/>
+        <location filename="../../src/core/plugins/plugin_facade.cpp" line="330"/>
         <source>Plugin files (*.arach)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/plugins/plugin_facade.cpp" line="322"/>
+        <location filename="../../src/core/plugins/plugin_facade.cpp" line="341"/>
         <source>Could not open plugins folder</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../src/core/settings/settings_store_persistence.cpp" line="108"/>
-        <source>FreeTP torrent catalog — magnet links and add-ons</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1543,27 +1632,32 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_parser.cpp" line="291"/>
+        <location filename="../../src/core/catalog/catalog_parser.cpp" line="358"/>
         <source>Empty server response</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_parser.cpp" line="302"/>
+        <location filename="../../src/core/catalog/catalog_parser.cpp" line="369"/>
         <source>Invalid JSON</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_parser.cpp" line="306"/>
-        <source>No downloads array — not a Hydra catalog</source>
+        <location filename="../../src/core/catalog/catalog_parser.cpp" line="377"/>
+        <source>No downloads array - not a Hydra catalog</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_parser.cpp" line="310"/>
+        <location filename="../../src/core/catalog/catalog_parser.cpp" line="382"/>
         <source>downloads array is empty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_parser.cpp" line="314"/>
+        <location filename="../../src/core/catalog/catalog_parser.cpp" line="388"/>
+        <source>Catalog entries array is empty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/core/catalog/catalog_parser.cpp" line="393"/>
         <source>Failed to parse games from catalog</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1573,32 +1667,32 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/install/online_fix_overlay.cpp" line="129"/>
+        <location filename="../../src/core/install/online_fix_overlay.cpp" line="290"/>
         <source>Failed to enable Online Fix: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/install/online_fix_overlay.cpp" line="141"/>
+        <location filename="../../src/core/install/online_fix_overlay.cpp" line="302"/>
         <source>Failed to disable Online Fix: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/install/online_fix_overlay.cpp" line="208"/>
+        <location filename="../../src/core/install/online_fix_overlay.cpp" line="402"/>
         <source>Online Fix overlay not found in this install</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/install/online_fix_overlay.cpp" line="224"/>
+        <location filename="../../src/core/install/online_fix_overlay.cpp" line="418"/>
         <source>Not installed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/install/online_fix_overlay.cpp" line="226"/>
+        <location filename="../../src/core/install/online_fix_overlay.cpp" line="420"/>
         <source>Enabled</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/install/online_fix_overlay.cpp" line="228"/>
+        <location filename="../../src/core/install/online_fix_overlay.cpp" line="422"/>
         <source>Disabled</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1659,7 +1753,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location filename="../../src/core/library/library_controller.cpp" line="222"/>
         <location filename="../../src/core/library/library_controller.cpp" line="243"/>
-        <location filename="../../src/core/facade/core_wiring_services.cpp" line="155"/>
+        <location filename="../../src/core/facade/core_wiring_services.cpp" line="189"/>
         <source>Game removed: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1676,6 +1770,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location filename="../../src/core/library/library_controller.cpp" line="373"/>
         <source>Drive removed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/core/settings/settings_store_persistence.cpp" line="110"/>
+        <source>FreeTP torrent catalog - magnet links and add-ons</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1865,88 +1964,103 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="129"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="133"/>
+        <source>DRM</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="143"/>
         <source>%1 add-ons</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="138"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="152"/>
         <source>Steam CDN · Online Fix</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="149"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="163"/>
         <source>Update available</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="165"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="181"/>
         <source>Source page</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="166"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="182"/>
         <source>Source website</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="177"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="193"/>
         <source>Steam</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="198"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="201"/>
+        <source>Plugin source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="210"/>
+        <source>Catalog URL</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="232"/>
         <source>Ready to download from Steam CDN. Online Fix can be included when needed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="207"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="241"/>
         <source>Install failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="221"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="255"/>
         <source>Stop</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="225"/>
-        <source>PreparingтАж</source>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="259"/>
+        <source>Preparing…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="226"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="260"/>
         <source>Play</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="268"/>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="388"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="302"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="422"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="285"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="319"/>
         <source>Update</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="337"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="371"/>
         <source>Description</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="343"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="377"/>
         <source>Description is not available yet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="360"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="394"/>
         <source>Remove game?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="382"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="416"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1992,52 +2106,52 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
 <context>
     <name>GameSettingsRuntimePanel</name>
     <message>
-        <location filename="../../qml/app/GameSettingsRuntimePanel.qml" line="35"/>
+        <location filename="../../qml/app/GameSettingsRuntimePanel.qml" line="58"/>
         <source>Runtime container</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsRuntimePanel.qml" line="41"/>
+        <location filename="../../qml/app/GameSettingsRuntimePanel.qml" line="64"/>
         <source>Proton prefix and redistributables for this game (Linux only).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsRuntimePanel.qml" line="53"/>
+        <location filename="../../qml/app/GameSettingsRuntimePanel.qml" line="77"/>
         <source>Container</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsRuntimePanel.qml" line="79"/>
+        <location filename="../../qml/app/GameSettingsRuntimePanel.qml" line="107"/>
         <source>Prefix</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsRuntimePanel.qml" line="91"/>
+        <location filename="../../qml/app/GameSettingsRuntimePanel.qml" line="119"/>
         <source>%1 (not created yet)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsRuntimePanel.qml" line="105"/>
+        <location filename="../../qml/app/GameSettingsRuntimePanel.qml" line="135"/>
         <source>Steam App ID</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsRuntimePanel.qml" line="124"/>
+        <location filename="../../qml/app/GameSettingsRuntimePanel.qml" line="154"/>
         <source>No runtime dependencies detected for this game.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsRuntimePanel.qml" line="125"/>
+        <location filename="../../qml/app/GameSettingsRuntimePanel.qml" line="155"/>
         <source>Dependencies: %1 / %2 installed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsRuntimePanel.qml" line="146"/>
+        <location filename="../../qml/app/GameSettingsRuntimePanel.qml" line="177"/>
         <source>Installed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsRuntimePanel.qml" line="146"/>
+        <location filename="../../qml/app/GameSettingsRuntimePanel.qml" line="177"/>
         <source>Missing</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2050,122 +2164,137 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsSheet.qml" line="119"/>
-        <source>Auto-update this game</source>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="111"/>
+        <source>Desktop shortcut</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="118"/>
+        <source>Start menu shortcut</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../qml/app/GameSettingsSheet.qml" line="125"/>
+        <source>Add to Steam</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="148"/>
+        <source>Auto-update this game</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="154"/>
         <source>When enabled, updates start automatically after the catalog loads.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsSheet.qml" line="149"/>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="178"/>
         <source>Online Fix for this game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsSheet.qml" line="155"/>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="184"/>
         <source>When disabled, SteamFix/winmm overlay DLLs are renamed so the game runs without the fix.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsSheet.qml" line="191"/>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="220"/>
         <source>Proton</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsSheet.qml" line="197"/>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="226"/>
         <source>Override Proton for this game. Default uses Settings → Launch.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsSheet.qml" line="208"/>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="237"/>
         <source>Default</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsSheet.qml" line="247"/>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="277"/>
         <source>Launch options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsSheet.qml" line="254"/>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="287"/>
         <source>Extra launch arguments for this game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsSheet.qml" line="265"/>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="300"/>
         <source>Custom executable (optional)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsSheet.qml" line="310"/>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="346"/>
         <source>Information</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsSheet.qml" line="316"/>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="352"/>
         <source>Source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsSheet.qml" line="317"/>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="353"/>
         <source>Version</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsSheet.qml" line="318"/>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="354"/>
         <source>Size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsSheet.qml" line="319"/>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="355"/>
         <source>Install type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsSheet.qml" line="321"/>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="357"/>
         <source>Online Fix</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsSheet.qml" line="323"/>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="359"/>
         <source>Not installed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsSheet.qml" line="324"/>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="360"/>
         <source>Not needed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsSheet.qml" line="327"/>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="363"/>
         <source>Install path</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsSheet.qml" line="331"/>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="367"/>
         <source>Installing…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsSheet.qml" line="333"/>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="369"/>
         <source>Waiting to install</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsSheet.qml" line="334"/>
-        <source>—</source>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="370"/>
+        <source>-</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsSheet.qml" line="337"/>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="373"/>
         <source>Download</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameSettingsSheet.qml" line="371"/>
+        <location filename="../../qml/app/GameSettingsSheet.qml" line="410"/>
         <source>Done</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2228,6 +2357,29 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
     <message>
         <location filename="../../qml/settings/InstallLocationSheet.qml" line="144"/>
+        <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>InstallSourceSheet</name>
+    <message>
+        <location filename="../../qml/settings/InstallSourceSheet.qml" line="34"/>
+        <source>Choose download source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/settings/InstallSourceSheet.qml" line="42"/>
+        <source>Select which catalog to download from</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/settings/InstallSourceSheet.qml" line="93"/>
+        <source>Unknown source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/settings/InstallSourceSheet.qml" line="122"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2426,7 +2578,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
     <message>
         <location filename="../../qml/app/LibraryPage.qml" line="43"/>
-        <source>Launch a game from your library — it will appear here.</source>
+        <source>Launch a game from your library - it will appear here.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2451,20 +2603,132 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
 </context>
 <context>
-    <name>NotificationsPopup</name>
+    <name>Messages</name>
     <message>
-        <location filename="../../qml/components/NotificationsPopup.qml" line="46"/>
-        <source>Notifications</source>
+        <location filename="../../qml/i18n/Messages.qml" line="7"/>
+        <source>Add a catalog to browse games, or install a plugin for download, install, and play.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/components/NotificationsPopup.qml" line="88"/>
-        <source>Empty for now</source>
+        <location filename="../../qml/i18n/Messages.qml" line="9"/>
+        <source>Paste a catalog link in Settings → Hydra catalogs. Games show up in Catalog.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/components/NotificationsPopup.qml" line="97"/>
-        <source>Installs, errors, and other events will appear here.</source>
+        <location filename="../../qml/i18n/Messages.qml" line="11"/>
+        <source>Pick a game in Catalog to start a download.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/i18n/Messages.qml" line="13"/>
+        <source>After download and install, the game appears here - launch, updates, and details.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/i18n/Messages.qml" line="15"/>
+        <source>Add a catalog URL from Hydra or another community list. Install a plugin (e.g. FreeTP) to install and play.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/i18n/Messages.qml" line="17"/>
+        <source>Tap Add catalog and paste the catalog link.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/i18n/Messages.qml" line="19"/>
+        <source>Paste a catalog URL. Arachnel loads the game list; a plugin handles install and launch.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/i18n/Messages.qml" line="21"/>
+        <source>Missing your language? Help translate Arachnel on &lt;a href=&quot;%1&quot;&gt;Weblate&lt;/a&gt;.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/i18n/Messages.qml" line="23"/>
+        <source>Use Install plugin below and pick a plugin file (e.g. FreeTP).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/i18n/Messages.qml" line="25"/>
+        <source>Plugins provide catalogs, install, updates, and launch.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/i18n/Messages.qml" line="37"/>
+        <source>### Where do the files come from?
+
+Game **chunks** are downloaded from the **Valve Steam CDN** - the same CDN Steam uses for depot files.
+
+### What is Online Fix?
+
+Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugin can include it so the game runs and goes online without a Store purchase license check.
+
+### What is *not* from Valve?
+
+- Depot **keys** and **manifests** come from the plugin relay (not the Steam Store).
+- This is **not** the same as buying the game on Steam.
+- Arachnel does **not** claim antivirus clearance or Valve endorsement.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/i18n/Messages.qml" line="43"/>
+        <source>Turn on one or more sources above - or leave them all off.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/i18n/Messages.qml" line="45"/>
+        <source>Libraries on disk, like Steam. You can add other drives.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/i18n/Messages.qml" line="47"/>
+        <source>Add-ons are available for &quot;%1&quot; - choose what to download with the game.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/i18n/Messages.qml" line="49"/>
+        <source>Start installing from the catalog - progress will appear here.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/i18n/Messages.qml" line="27"/>
+        <source>Your library is empty. Install a plugin, pick a game in Catalog, and it will appear here.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/i18n/Messages.qml" line="29"/>
+        <source>Install a plugin (e.g. FreeTP) in Settings → Plugins.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/i18n/Messages.qml" line="31"/>
+        <source>Pick a game in Catalog and start the download.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/i18n/Messages.qml" line="33"/>
+        <source>Installed games live here: launch, updates, and details.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/i18n/Messages.qml" line="35"/>
+        <source>Download finished. Click Install to set up the game.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/i18n/Messages.qml" line="39"/>
+        <source>Browse games from your catalogs and sources.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/i18n/Messages.qml" line="41"/>
+        <source>Add a catalog or install a plugin in Settings.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/i18n/Messages.qml" line="51"/>
+        <source>Game files will be deleted from disk. This cannot be undone.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2530,7 +2794,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
     <message>
         <location filename="../../qml/onboarding/OnboardingFinalSteps.qml" line="26"/>
-        <source>Recommended defaults — change anytime in Settings → Updates.</source>
+        <source>Recommended defaults - change anytime in Settings → Updates.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2645,92 +2909,109 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
 <context>
     <name>OnboardingStoragePluginsStep</name>
     <message>
-        <location filename="../../qml/onboarding/OnboardingStoragePluginsStep.qml" line="27"/>
+        <location filename="../../qml/onboarding/OnboardingStoragePluginsStep.qml" line="28"/>
         <source>Game library folder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/onboarding/OnboardingStoragePluginsStep.qml" line="32"/>
+        <location filename="../../qml/onboarding/OnboardingStoragePluginsStep.qml" line="33"/>
         <source>Choose where games are installed. Downloads go to a subfolder on the same drive.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/onboarding/OnboardingStoragePluginsStep.qml" line="90"/>
+        <location filename="../../qml/onboarding/OnboardingStoragePluginsStep.qml" line="91"/>
         <source>Choose folder…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/onboarding/OnboardingStoragePluginsStep.qml" line="103"/>
+        <location filename="../../qml/onboarding/OnboardingStoragePluginsStep.qml" line="104"/>
         <source>Or keep the default path already listed above.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/onboarding/OnboardingStoragePluginsStep.qml" line="116"/>
+        <location filename="../../qml/onboarding/OnboardingStoragePluginsStep.qml" line="117"/>
         <source>Source plugins</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/onboarding/OnboardingStoragePluginsStep.qml" line="121"/>
+        <location filename="../../qml/onboarding/OnboardingStoragePluginsStep.qml" line="122"/>
         <source>Plugins enable automatic install and Play (e.g. FreeTP). Without one, you can still browse catalogs and install manually.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/onboarding/OnboardingStoragePluginsStep.qml" line="144"/>
+        <location filename="../../qml/onboarding/OnboardingStoragePluginsStep.qml" line="145"/>
         <source>Official plugins</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/onboarding/OnboardingStoragePluginsStep.qml" line="149"/>
+        <location filename="../../qml/onboarding/OnboardingStoragePluginsStep.qml" line="150"/>
         <source>Refresh list</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/onboarding/OnboardingStoragePluginsStep.qml" line="157"/>
+        <location filename="../../qml/onboarding/OnboardingStoragePluginsStep.qml" line="158"/>
         <source>Loading official plugins…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/onboarding/OnboardingStoragePluginsStep.qml" line="174"/>
+        <location filename="../../qml/onboarding/OnboardingStoragePluginsStep.qml" line="175"/>
         <source>No official plugins available for this platform.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/onboarding/OnboardingStoragePluginsStep.qml" line="207"/>
+        <location filename="../../qml/onboarding/OnboardingStoragePluginsStep.qml" line="208"/>
         <source>v%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/onboarding/OnboardingStoragePluginsStep.qml" line="214"/>
-        <source>Installed</source>
+        <location filename="../../qml/onboarding/OnboardingStoragePluginsStep.qml" line="215"/>
+        <location filename="../../qml/onboarding/OnboardingStoragePluginsStep.qml" line="280"/>
+        <location filename="../../qml/onboarding/OnboardingStoragePluginsStep.qml" line="348"/>
+        <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/onboarding/OnboardingStoragePluginsStep.qml" line="214"/>
+        <location filename="../../qml/onboarding/OnboardingStoragePluginsStep.qml" line="318"/>
+        <source>Remove plugin?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/onboarding/OnboardingStoragePluginsStep.qml" line="326"/>
+        <source>Remove &quot;%1&quot;? Catalogs from this plugin will stop working until you install it again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/onboarding/OnboardingStoragePluginsStep.qml" line="343"/>
+        <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/onboarding/OnboardingStoragePluginsStep.qml" line="216"/>
         <source>Installing…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/onboarding/OnboardingStoragePluginsStep.qml" line="214"/>
+        <location filename="../../qml/onboarding/OnboardingStoragePluginsStep.qml" line="216"/>
         <source>Install</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/onboarding/OnboardingStoragePluginsStep.qml" line="222"/>
+        <location filename="../../qml/onboarding/OnboardingStoragePluginsStep.qml" line="234"/>
         <source>Or install a plugin file you already have.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/onboarding/OnboardingStoragePluginsStep.qml" line="249"/>
+        <location filename="../../qml/onboarding/OnboardingStoragePluginsStep.qml" line="273"/>
         <source>v%1 · %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/onboarding/OnboardingStoragePluginsStep.qml" line="264"/>
+        <location filename="../../qml/onboarding/OnboardingStoragePluginsStep.qml" line="294"/>
         <source>Install plugin…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/onboarding/OnboardingStoragePluginsStep.qml" line="270"/>
+        <location filename="../../qml/onboarding/OnboardingStoragePluginsStep.qml" line="300"/>
         <source>Skip for now</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2738,19 +3019,13 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
 <context>
     <name>PluginInstallOverlay</name>
     <message>
-        <location filename="../../qml/app/PluginInstallOverlay.qml" line="49"/>
-        <source>Installing plugin “%1”…</source>
+        <location filename="../../qml/app/PluginInstallOverlay.qml" line="45"/>
+        <source>Updating plugins…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/PluginInstallOverlay.qml" line="50"/>
-        <location filename="../../qml/app/PluginInstallOverlay.qml" line="52"/>
-        <source>Installing plugin…</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../qml/app/PluginInstallOverlay.qml" line="60"/>
-        <source>Downloading and unpacking. The UI stays responsive — please wait.</source>
+        <location filename="../../qml/app/PluginInstallOverlay.qml" line="46"/>
+        <source>Installing plugins…</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2959,18 +3234,18 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/settings/SettingsHubPage.qml" line="19"/>
-        <source>FreeTP and others — install, launch, and add-ons</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../../qml/settings/SettingsHubPage.qml" line="23"/>
         <source>Hydra catalogs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../qml/settings/SettingsHubPage.qml" line="19"/>
+        <source>FreeTP and others - install, launch, and add-ons</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../../qml/settings/SettingsHubPage.qml" line="24"/>
-        <source>Catalog links — import from Hydra or elsewhere</source>
+        <source>Catalog links - import from Hydra or elsewhere</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3160,47 +3435,93 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
 <context>
     <name>SettingsPluginStorePage</name>
     <message>
-        <location filename="../../qml/settings/SettingsPluginStorePage.qml" line="54"/>
-        <source>Official plugins from the Arachnel catalog. Install adds them to your plugins folder.</source>
+        <location filename="../../qml/settings/SettingsPluginStorePage.qml" line="60"/>
+        <source>Install official plugins.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/settings/SettingsPluginStorePage.qml" line="68"/>
+        <location filename="../../qml/settings/SettingsPluginStorePage.qml" line="75"/>
+        <source>Index: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/settings/SettingsPluginStorePage.qml" line="98"/>
         <source>Available</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/settings/SettingsPluginStorePage.qml" line="74"/>
+        <location filename="../../qml/settings/SettingsPluginStorePage.qml" line="104"/>
         <source>Refresh list</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/settings/SettingsPluginStorePage.qml" line="85"/>
+        <location filename="../../qml/settings/SettingsPluginStorePage.qml" line="115"/>
         <source>Loading official plugins…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/settings/SettingsPluginStorePage.qml" line="108"/>
+        <location filename="../../qml/settings/SettingsPluginStorePage.qml" line="138"/>
         <source>No official plugins available for this platform.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/settings/SettingsPluginStorePage.qml" line="174"/>
+        <location filename="../../qml/settings/SettingsPluginStorePage.qml" line="204"/>
         <source>v%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/settings/SettingsPluginStorePage.qml" line="182"/>
-        <source>Installed</source>
+        <location filename="../../qml/settings/SettingsPluginStorePage.qml" line="212"/>
+        <source>Source: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/settings/SettingsPluginStorePage.qml" line="183"/>
+        <location filename="../../qml/settings/SettingsPluginStorePage.qml" line="223"/>
+        <source>Download: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/settings/SettingsPluginStorePage.qml" line="237"/>
+        <location filename="../../qml/settings/SettingsPluginStorePage.qml" line="309"/>
+        <source>Delete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/settings/SettingsPluginStorePage.qml" line="253"/>
+        <source>Source code</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/settings/SettingsPluginStorePage.qml" line="261"/>
+        <source>Package URL</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/settings/SettingsPluginStorePage.qml" line="279"/>
+        <source>Remove plugin?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/settings/SettingsPluginStorePage.qml" line="287"/>
+        <source>Remove &quot;%1&quot;? Catalogs from this plugin will stop working until you install it again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/settings/SettingsPluginStorePage.qml" line="304"/>
+        <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/settings/SettingsPluginStorePage.qml" line="238"/>
         <source>Installing…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/settings/SettingsPluginStorePage.qml" line="183"/>
+        <location filename="../../qml/settings/SettingsPluginStorePage.qml" line="85"/>
+        <source>Open</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/settings/SettingsPluginStorePage.qml" line="238"/>
         <source>Install</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3228,53 +3549,73 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/settings/SettingsPluginsPage.qml" line="166"/>
-        <source>v%1 · %2 — not loaded</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../qml/settings/SettingsPluginsPage.qml" line="167"/>
+        <location filename="../../qml/settings/SettingsPluginsPage.qml" line="172"/>
         <source>v%1 · %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/settings/SettingsPluginsPage.qml" line="185"/>
-        <location filename="../../qml/settings/SettingsPluginsPage.qml" line="294"/>
+        <location filename="../../qml/settings/SettingsPluginsPage.qml" line="158"/>
+        <location filename="../../qml/settings/SettingsPluginsPage.qml" line="332"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/settings/SettingsPluginsPage.qml" line="219"/>
+        <location filename="../../qml/settings/SettingsPluginsPage.qml" line="171"/>
+        <source>v%1 · %2 - not loaded</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/settings/SettingsPluginsPage.qml" line="180"/>
+        <source>Game catalog: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/settings/SettingsPluginsPage.qml" line="191"/>
+        <source>Source: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/settings/SettingsPluginsPage.qml" line="218"/>
+        <source>Source code</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/settings/SettingsPluginsPage.qml" line="226"/>
+        <source>Catalog URL</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/settings/SettingsPluginsPage.qml" line="257"/>
         <source>Install from file…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/settings/SettingsPluginsPage.qml" line="230"/>
+        <location filename="../../qml/settings/SettingsPluginsPage.qml" line="268"/>
         <source>Open folder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/settings/SettingsPluginsPage.qml" line="237"/>
+        <location filename="../../qml/settings/SettingsPluginsPage.qml" line="275"/>
         <source>Refresh</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/settings/SettingsPluginsPage.qml" line="247"/>
+        <location filename="../../qml/settings/SettingsPluginsPage.qml" line="285"/>
         <source>User-installed: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/settings/SettingsPluginsPage.qml" line="261"/>
+        <location filename="../../qml/settings/SettingsPluginsPage.qml" line="299"/>
         <source>Remove plugin?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/settings/SettingsPluginsPage.qml" line="269"/>
+        <location filename="../../qml/settings/SettingsPluginsPage.qml" line="307"/>
         <source>Remove &quot;%1&quot;? Catalogs from this plugin will stop working until you install it again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/settings/SettingsPluginsPage.qml" line="287"/>
+        <location filename="../../qml/settings/SettingsPluginsPage.qml" line="325"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3365,37 +3706,57 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/settings/SettingsSourcesPage.qml" line="171"/>
+        <location filename="../../qml/settings/SettingsSourcesPage.qml" line="172"/>
         <source>Plugin · v%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/settings/SettingsSourcesPage.qml" line="201"/>
-        <source>No URL — catalog will not load</source>
+        <location filename="../../qml/settings/SettingsSourcesPage.qml" line="181"/>
+        <source>Game catalog: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/settings/SettingsSourcesPage.qml" line="203"/>
+        <location filename="../../qml/settings/SettingsSourcesPage.qml" line="193"/>
+        <source>Source: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/settings/SettingsSourcesPage.qml" line="216"/>
+        <source>No URL - catalog will not load</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/settings/SettingsSourcesPage.qml" line="218"/>
         <source>Active in catalog</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/settings/SettingsSourcesPage.qml" line="204"/>
+        <location filename="../../qml/settings/SettingsSourcesPage.qml" line="219"/>
         <source>Disabled</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/settings/SettingsSourcesPage.qml" line="214"/>
+        <location filename="../../qml/settings/SettingsSourcesPage.qml" line="229"/>
+        <source>Source code</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/settings/SettingsSourcesPage.qml" line="236"/>
+        <source>Open URL</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/settings/SettingsSourcesPage.qml" line="243"/>
         <source>Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/settings/SettingsSourcesPage.qml" line="226"/>
+        <location filename="../../qml/settings/SettingsSourcesPage.qml" line="255"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/settings/SettingsSourcesPage.qml" line="241"/>
+        <location filename="../../qml/settings/SettingsSourcesPage.qml" line="270"/>
         <source>Add Hydra catalog</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3526,17 +3887,27 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/settings/SettingsUpdatesPage.qml" line="232"/>
+        <location filename="../../qml/settings/SettingsUpdatesPage.qml" line="231"/>
+        <source>Include pre-releases</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/settings/SettingsUpdatesPage.qml" line="237"/>
+        <source>Offer beta and RC builds from GitHub.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../qml/settings/SettingsUpdatesPage.qml" line="263"/>
         <source>Check for Arachnel updates</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/settings/SettingsUpdatesPage.qml" line="241"/>
+        <location filename="../../qml/settings/SettingsUpdatesPage.qml" line="272"/>
         <source>Download and install</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/settings/SettingsUpdatesPage.qml" line="252"/>
+        <location filename="../../qml/settings/SettingsUpdatesPage.qml" line="283"/>
         <source>Open release page</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3570,12 +3941,6 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/setup_backend.cpp" line="449"/>
-        <location filename="../src/setup_backend.cpp" line="492"/>
-        <source>Please wait — updating Arachnel…</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../src/setup_backend.cpp" line="484"/>
         <source>Waiting for Arachnel to close…</source>
         <translation type="unfinished"></translation>
@@ -3598,6 +3963,12 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location filename="../src/setup_backend.cpp" line="499"/>
         <source>Clearing install folder…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/setup_backend.cpp" line="449"/>
+        <location filename="../src/setup_backend.cpp" line="492"/>
+        <source>Please wait - updating Arachnel…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

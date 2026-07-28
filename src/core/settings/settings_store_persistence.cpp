@@ -28,6 +28,7 @@ void SettingsStore::load()
         emit autoCheckUpdatesChanged();
         emit autoInstallUpdatesChanged();
         emit autoCheckAppUpdatesChanged();
+        emit includeAppPreReleasesChanged();
         emit uiLanguageChanged();
         emit onboardingCompletedChanged();
         emit globalLaunchArgsChanged();
@@ -43,6 +44,7 @@ void SettingsStore::load()
     m_autoCheckUpdates = obj.value(QStringLiteral("autoCheckUpdates")).toBool(true);
     m_autoInstallUpdates = obj.value(QStringLiteral("autoInstallUpdates")).toBool(false);
     m_autoCheckAppUpdates = obj.value(QStringLiteral("autoCheckAppUpdates")).toBool(true);
+    m_includeAppPreReleases = obj.value(QStringLiteral("includeAppPreReleases")).toBool(false);
     m_uiLanguage = obj.value(QStringLiteral("uiLanguage")).toString(QStringLiteral("en")).toLower();
     // Existing installs without the key skip the wizard; only true first launch shows it.
     m_onboardingCompleted = obj.contains(QStringLiteral("onboardingCompleted"))
@@ -105,7 +107,7 @@ void SettingsStore::load()
             freetp.id = QStringLiteral("freetp");
             freetp.name = QStringLiteral("FreeTP");
             freetp.description =
-                QCoreApplication::translate("Core", "FreeTP torrent catalog — magnet links and add-ons");
+                QCoreApplication::translate("Core", "FreeTP torrent catalog - magnet links and add-ons");
             freetp.catalogUrl = legacyUrl;
             freetp.iconName = QStringLiteral("storefront");
             freetp.enabled = true;
@@ -136,6 +138,7 @@ void SettingsStore::load()
     emit autoCheckUpdatesChanged();
     emit autoInstallUpdatesChanged();
     emit autoCheckAppUpdatesChanged();
+    emit includeAppPreReleasesChanged();
     emit uiLanguageChanged();
     emit onboardingCompletedChanged();
     emit globalLaunchArgsChanged();
@@ -153,6 +156,7 @@ void SettingsStore::save()
     obj.insert(QStringLiteral("autoCheckUpdates"), m_autoCheckUpdates);
     obj.insert(QStringLiteral("autoInstallUpdates"), m_autoInstallUpdates);
     obj.insert(QStringLiteral("autoCheckAppUpdates"), m_autoCheckAppUpdates);
+    obj.insert(QStringLiteral("includeAppPreReleases"), m_includeAppPreReleases);
     obj.insert(QStringLiteral("uiLanguage"), m_uiLanguage);
     obj.insert(QStringLiteral("onboardingCompleted"), m_onboardingCompleted);
     obj.insert(QStringLiteral("globalLaunchArgs"), m_globalLaunchArgs);

@@ -1,9 +1,10 @@
 #include "core_controller_impl.h"
 
+#include "plugin_version.h"
+
 #include <QEventLoop>
 #include <QSet>
 #include <QTimer>
-#include <QVersionNumber>
 
 namespace arachnel::core {
 
@@ -93,6 +94,8 @@ QVariantList CoreController::pluginEntries() const
         row.insert(QStringLiteral("description"), source.description);
         row.insert(QStringLiteral("pluginVersion"), source.pluginVersion);
         row.insert(QStringLiteral("pluginRootPath"), source.pluginRootPath);
+        row.insert(QStringLiteral("catalogUrl"), source.catalogUrl);
+        row.insert(QStringLiteral("repositoryUrl"), source.repositoryUrl);
         row.insert(QStringLiteral("sourceEnabled"), source.enabled);
         row.insert(QStringLiteral("loaded"), true);
         entries.append(row);
@@ -110,6 +113,8 @@ QVariantList CoreController::pluginEntries() const
             row.insert(QStringLiteral("description"), disk.description);
             row.insert(QStringLiteral("pluginVersion"), disk.pluginVersion);
             row.insert(QStringLiteral("pluginRootPath"), disk.pluginRootPath);
+            row.insert(QStringLiteral("catalogUrl"), disk.catalogUrl);
+            row.insert(QStringLiteral("repositoryUrl"), disk.repositoryUrl);
             row.insert(QStringLiteral("sourceEnabled"), false);
             row.insert(QStringLiteral("loaded"), false);
             entries.append(row);
@@ -246,12 +251,7 @@ void CoreController::runOfficialPluginAutoUpdate()
 
         bool needsUpdate = forceAfterAppChange || unloaded;
         if (!needsUpdate && !catalogVersion.isEmpty() && catalogVersion != localVersion) {
-            const QVersionNumber remote = QVersionNumber::fromString(catalogVersion);
-            const QVersionNumber local = QVersionNumber::fromString(localVersion);
-            if (!remote.isNull() && !local.isNull())
-                needsUpdate = remote > local;
-            else
-                needsUpdate = true;
+            needsUpdate = comparePluginVersions(catalogVersion, localVersion) > 0;
         }
 
         if (needsUpdate)

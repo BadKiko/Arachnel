@@ -4,8 +4,8 @@ Source plugins are **separate repositories**. Arachnel ships only the host (`Plu
 
 Reference implementations:
 
-- [arachnel-plugin-freetp](https://github.com/PetWork/arachnel-plugin-freetp) — torrent download (API v2+)
-- [arachnel-plugin-steamidra](https://github.com/PetWork/arachnel-plugin-steamidra) — plugin-owned download (API v3, `owns_download`)
+- [arachnel-plugin-freetp](https://github.com/PetWork/arachnel-plugin-freetp) — torrent download (API v4 JSON catalog; still loads on host as v2+ for older builds)
+- [arachnel-plugin-steamidra](https://gitlab.com/BadKiko/arachnel-plugin-steamidra) — plugin-owned download (API v4, `owns_download`)
 
 ---
 
@@ -145,44 +145,51 @@ arachnel-plugin-<source-id>/
   "id": "my-source",
   "name": "My Source",
   "version": "1.0.0",
-  "apiVersion": 3,
+  "apiVersion": 4,
   "library": "my_source_plugin",
   "iconName": "storefront",
   "catalogUrl": "https://example.com/games-arachnel.json",
-  "description": "Short description for Settings UI"
+  "repository": "https://github.com/you/arachnel-plugin-mysource",
+  "description": "Short description for Settings UI",
+  "minArachnel": "0.1.34",
+  "sdkRef": "v0.1.34a"
 }
 ```
 
 - **`id`** — folder name under `plugins/` and `sourceId` in the library.
-- **`apiVersion`** — host accepts **2..3** (`ARACHNEL_PLUGIN_API_VERSION` / `ARACHNEL_PLUGIN_API_VERSION_MIN` in `src/core/plugin_api.h`). New plugins should ship **3**.
+- **`apiVersion`** — host accepts **2..4** (`ARACHNEL_PLUGIN_API_VERSION` / `ARACHNEL_PLUGIN_API_VERSION_MIN` in `src/core/plugins/plugin_api.h`). New plugins should ship **4**.
 - **`library`** — base name of the shared library (`my_source_plugin` → `my_source_plugin.dll`).
+- **`catalogUrl`** — where the launcher loads the game list JSON for this source (shown in Settings).
+- **`repository`** — public git/source URL (shown in Plugin store / Plugins / Sources). Also accepted: `homepage`, `sourceUrl`, `git`.
+- **`minArachnel` / `maxArachnel` / `sdkRef`** — used by sourcelist `builds[]` so old launchers keep a compatible package.
 
 ### 3. `plugin_entry.cpp`
 
 Export the C ABI (see `arachnel-plugin-freetp/src/plugin_entry.cpp`):
 
 - `arachnel_plugin_api_version()`
-- `arachnel_plugin_catalog_entry_size()` → `sizeof(arachnel::core::CatalogEntry)`
 - `arachnel_plugin_create(const char* plugin_root_utf8)`
 - `arachnel_plugin_destroy(ISourcePlugin*)`
+- **API 4:** `arachnel_plugin_catalog_json` / `arachnel_plugin_catalog_json_free` (UTF-8 JSON catalog; host parses into its own `CatalogEntry`)
+- **API 2/3 only:** `arachnel_plugin_catalog_entry_size()` → `sizeof(CatalogEntry)` (legacy canary)
 
 ### 4. Implement `ISourcePlugin`
 
-Header: `Arachnel/src/core/plugin_interface.h`
+Header: `Arachnel/src/core/plugins/plugin_interface.h`
 
-Required methods include `catalog()`, `analyzeDownload()`, `analyzeFileNames()`, `installFromDownload()`, `launchInfo()`, etc. Copy FreeTP or SteaMidra as a template.
+Required methods include `catalog()`, `analyzeDownload()`, `analyzeFileNames()`, `installFromDownload()`, `launchInfo()`, etc. Copy FreeTP or SteaMidra as a template. For API 4 the host loads catalog via JSON, not `CatalogEntry` layout across the DLL.
 
-### Plugin-owned download (API v3)
+### Plugin-owned download (API v3+)
 
 When the plugin must fetch content itself (Steam depots, HTTP, custom CDN) instead of receiving a finished torrent path:
 
 1. Return capability **`owns_download`** from `capabilities()`.
-2. Set `plugin.json` → `apiVersion`: **3**.
+2. Set `plugin.json` → `apiVersion`: **4** (or at least **3**).
 3. Override `startOwnedDownload(InstallContext, progressCb)` and optionally `cancelOwnedDownload(jobId)`.
 4. Catalog entries should carry **`steamAppId`** (or another id the plugin understands). The host skips the magnet gate and creates a `pluginDownload` job.
 5. Report progress via the callback (`OwnedDownloadProgress`); on success return `InstallResult` with `installPath`.
 
-Default implementations of the new methods are no-ops so API v2 plugins keep working.
+Default implementations of the owned-download methods are no-ops so older plugins keep working.
 
 ### 5. `CMakeLists.txt`
 
@@ -235,9 +242,10 @@ Environment variables:
 | Path | Purpose |
 |------|---------|
 | `cmake/ArachnelPluginSdk.cmake` | `arachnel_plugin_sdk` static lib + bundle helpers |
-| `src/core/plugin_api.h` | C ABI, `ARACHNEL_PLUGIN_API_VERSION` |
-| `src/core/plugin_interface.h` | `ISourcePlugin`, install/launch structs |
-| `src/core/catalog_types.h` | `CatalogEntry` (size must match app) |
+| `src/core/plugins/plugin_api.h` | C ABI, `ARACHNEL_PLUGIN_API_VERSION` |
+| `src/core/plugins/plugin_interface.h` | `ISourcePlugin`, install/launch structs |
+| `src/core/plugins/plugin_catalog_json.h` | API 4 catalog JSON serialize/parse |
+| `src/core/catalog/catalog_types.h` | `CatalogEntry` (host-side only for API 4) |
 
 The SDK static library compiles shared helpers from Arachnel core (catalog parser, install heuristics, file utils, Windows runner, etc.) so plugins do not duplicate that code by hand.
 
@@ -245,10 +253,11 @@ The SDK static library compiles shared helpers from Arachnel core (catalog parse
 
 ## ABI rules (important)
 
-1. **`plugin.json` → `apiVersion`** must be in the host’s allowed range (**2..3**). Prefer **3** for new plugins; use **3** if you implement `owns_download`.
-2. **`arachnel_plugin_catalog_entry_size()`** must return the same `sizeof(CatalogEntry)` as the app — otherwise the host logs `Plugin rejected (CatalogEntry size mismatch)` and skips the plugin.
-3. After updating Arachnel, **rebuild all plugins** against the same SDK revision.
-4. Match **Qt major version** and **compiler** (MinGW vs MSVC) with the Arachnel build you test against.
+1. **`plugin.json` → `apiVersion`** must be in the host’s allowed range (**2..4**). Prefer **4** for new plugins.
+2. **API 4:** export `arachnel_plugin_catalog_json` / `_free`. The host does **not** check `sizeof(CatalogEntry)`.
+3. **API 2/3:** `arachnel_plugin_catalog_entry_size()` must match the app or the host rejects the plugin. Migrate to v4 when you can.
+4. Build plugins with the **same MinGW + Qt kit** as Arachnel `release.yml` (`scripts/ci/launcher-toolchain.env`). Set `ARACHNEL_SDK_REF` to that release tag.
+5. After cutting an Arachnel release, bump plugin `ARACHNEL_SDK_REF` / `minArachnel` and let CI ingest sourcelist `builds[]`.
 
 ---
 
@@ -266,7 +275,7 @@ Downloaded catalogs (`games-arachnel.json`) are **gitignored** in plugin repos �
 |---------|--------|
 | Plugin not listed | `plugin.json` `apiVersion`, files in `plugins/<id>/`, `run.log` |
 | `Plugin rejected (apiVersion …)` | Rebuild plugin; bump `apiVersion` in manifest |
-| `CatalogEntry size mismatch` | Rebuild plugin against current Arachnel SDK |
+| `CatalogEntry size mismatch` | Legacy API 2/3 only - rebuild against matching SDK, or migrate to API 4 |
 | Install does nothing | Plugin loaded? `InstallAnalyzer` picks a plugin with `canInstall` |
 | Wrong Qt at configure | Set `CMAKE_PREFIX_PATH` to the same Qt kit as Arachnel |
 

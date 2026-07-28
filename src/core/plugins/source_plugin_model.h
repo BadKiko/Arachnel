@@ -12,6 +12,7 @@ struct SourcePluginInfo {
     QString name;
     QString description;
     QString catalogUrl;
+    QString repositoryUrl;
     QString iconName;
     bool enabled = true;
     bool isPlugin = false;
@@ -37,6 +38,7 @@ public:
         NameRole,
         DescriptionRole,
         CatalogUrlRole,
+        RepositoryUrlRole,
         IconNameRole,
         SourceEnabledRole,
         CapabilitiesRole,
@@ -61,10 +63,11 @@ public:
     int count() const { return m_plugins.size(); }
     int enabledCount() const;
     QString firstEnabledId() const;
-    QString catalogUrlFor(const QString& id) const;
+    Q_INVOKABLE QString catalogUrlFor(const QString& id) const;
 
     Q_INVOKABLE QString nameForId(const QString& id) const;
     Q_INVOKABLE bool isSourceEnabled(const QString& id) const;
+    Q_INVOKABLE QString repositoryUrlFor(const QString& id) const;
     Q_INVOKABLE QString addSource(const QString& name, const QString& catalogUrl,
                                   const QString& description = {},
                                   const QString& iconName = {});

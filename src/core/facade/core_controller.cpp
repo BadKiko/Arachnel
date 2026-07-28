@@ -8,6 +8,7 @@
 #include "catalog_controller.h"
 #include "catalog_cover_coordinator.h"
 #include "catalog_filter_service.h"
+#include "catalog_discovery_service.h"
 #include "catalog_parser.h"
 #include "cover_image_cache.h"
 #include "file_utils.h"
@@ -216,10 +217,13 @@ CoreController::CoreController(QObject* parent)
         connect(m_catalogFilters, &CatalogFilterService::availableGenresChanged, this,
                 &CoreController::availableCatalogGenresChanged);
     }
+    if (!m_catalogDiscovery) {
+        m_catalogDiscovery = new CatalogDiscoveryService(this);
+        m_catalogDiscovery->setCache(&m_catalogCache);
+    }
 
-    const QString firstSource = m_sources.firstEnabledId();
-    if (!firstSource.isEmpty() && m_catalogController)
-        m_catalogController->setActiveCatalogSource(firstSource);
+    if (m_catalogController)
+        m_catalogController->selectAllEnabledSources();
 
     if (m_settings.autoCheckAppUpdates() && m_appUpdater) {
         QTimer::singleShot(4000, this, [this]() {

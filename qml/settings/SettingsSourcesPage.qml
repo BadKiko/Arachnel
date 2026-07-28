@@ -112,6 +112,7 @@ Flickable {
                     required property string name
                     required property string description
                     required property string catalogUrl
+                    required property string repositoryUrl
                     required property bool sourceEnabled
                     required property bool hasCatalogUrl
                     required property bool isPlugin
@@ -175,12 +176,26 @@ Flickable {
 
                         MD.Label {
                             Layout.fillWidth: true
-                            visible: !sourceCard.isPlugin && sourceCard.catalogUrl.length > 0
-                            text: sourceCard.catalogUrl
+                            visible: sourceCard.catalogUrl.length > 0
+                            text: sourceCard.isPlugin
+                                  ? qsTr("Game catalog: %1").arg(sourceCard.catalogUrl)
+                                  : sourceCard.catalogUrl
                             color: MD.Token.color.on_surface_variant
                             typescale: MD.Token.typescale.label_small
                             elide: Text.ElideMiddle
-                            maximumLineCount: 1
+                            maximumLineCount: 2
+                            wrapMode: Text.WordWrap
+                        }
+
+                        MD.Label {
+                            Layout.fillWidth: true
+                            visible: sourceCard.isPlugin && (sourceCard.repositoryUrl || "").length > 0
+                            text: qsTr("Source: %1").arg(sourceCard.repositoryUrl)
+                            color: MD.Token.color.on_surface_variant
+                            typescale: MD.Token.typescale.label_small
+                            elide: Text.ElideMiddle
+                            maximumLineCount: 2
+                            wrapMode: Text.WordWrap
                         }
 
                         MD.Label {
@@ -198,7 +213,7 @@ Flickable {
                             MD.Label {
                                 Layout.fillWidth: true
                                 text: !sourceCard.hasCatalogUrl
-                                      ? qsTr("No URL — catalog will not load")
+                                      ? qsTr("No URL - catalog will not load")
                                       : (sourceCard.sourceEnabled
                                          ? qsTr("Active in catalog")
                                          : qsTr("Disabled"))
@@ -206,6 +221,20 @@ Flickable {
                                        ? MD.Token.color.on_surface_variant
                                        : MD.Token.color.error
                                 typescale: MD.Token.typescale.label_medium
+                            }
+
+                            MD.Button {
+                                visible: sourceCard.isPlugin && (sourceCard.repositoryUrl || "").length > 0
+                                mdState.type: MD.Enum.BtText
+                                text: qsTr("Source code")
+                                onClicked: Core.openExternalUrl(sourceCard.repositoryUrl)
+                            }
+
+                            MD.Button {
+                                visible: sourceCard.catalogUrl.length > 0
+                                mdState.type: MD.Enum.BtText
+                                text: qsTr("Open URL")
+                                onClicked: Core.openExternalUrl(sourceCard.catalogUrl)
                             }
 
                             MD.Button {

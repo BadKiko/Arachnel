@@ -1,6 +1,7 @@
 #include "core_controller_impl.h"
 
 #include <QFutureWatcher>
+#include <QTimer>
 #include <QtConcurrent>
 
 namespace arachnel::core {
@@ -38,6 +39,14 @@ void CoreController::initializeServices()
         [this]() -> QVector<CatalogEntry>& { return m_catalogCache; }, this);
     connect(m_catalogCovers, &CatalogCoverCoordinator::coverApplied, this,
             [this](const QString& entryId, const QString& coverUrl) {
+                // Discovery shelves use CatalogShelfModel, not CatalogModel - refresh them too.
+                if (m_catalogDiscovery)
+                    m_catalogDiscovery->onEntryMetadataChanged(entryId);
+
+                // Persist only local cached covers into the library store.
+                if (!coverUrl.startsWith(QStringLiteral("file:")))
+                    return;
+
                 const LibraryGame* existing = m_libraryStore.gameById(entryId);
                 if (!existing || existing->coverUrl == coverUrl)
                     return;
@@ -46,6 +55,10 @@ void CoreController::initializeServices()
                 m_libraryStore.upsertGame(game);
                 if (!m_library.replaceGame(game))
                     syncLibraryFromStore();
+            });
+    connect(m_catalogCovers, &CatalogCoverCoordinator::heroCoverApplied, this,
+            [this](const QString& entryId, const QString&) {
+                emit catalogHeroCoverChanged(entryId);
             });
     CatalogController::Hooks catalogHooks;
     catalogHooks.prepareEntry = [this](CatalogEntry& entry) { applyCachedMetadata(entry); };
@@ -60,7 +73,10 @@ void CoreController::initializeServices()
     catalogHooks.rebuildIdIndex = [this]() { rebuildCatalogIdIndex(); };
     catalogHooks.applyFilter = [this](const QString& query) { applyCatalogFilter(query); };
     catalogHooks.rebuildGenres = [this]() { rebuildAvailableCatalogGenres(); };
-    catalogHooks.warmCovers = [this]() { warmActiveCatalogCovers(); };
+    catalogHooks.warmCovers = [this]() {
+        // Don't block first paint / catalog merge with cover I/O.
+        QTimer::singleShot(750, this, [this]() { warmActiveCatalogCovers(); });
+    };
     catalogHooks.catalogReady = [this]() { onCatalogReady(); };
     m_catalogController =
         new CatalogController(&m_catalog, &m_sources, m_pluginHost, &m_catalogCache,
@@ -236,6 +252,11 @@ void CoreController::initializeServices()
     connect(m_launchController, &LaunchController::runningGameChanged, this,
             &CoreController::runningGameChanged);
     m_appUpdater = new AppUpdater(this);
+    m_appUpdater->setIncludePreReleases(m_settings.includeAppPreReleases());
+    connect(&m_settings, &SettingsStore::includeAppPreReleasesChanged, this, [this]() {
+        if (m_appUpdater)
+            m_appUpdater->setIncludePreReleases(m_settings.includeAppPreReleases());
+    });
     m_pluginCatalog = new PluginCatalogService(this);
     connect(m_pluginCatalog, &PluginCatalogService::installFinished, this,
             [this](const QString& pluginId, bool ok, const QString& detail) {
@@ -268,7 +289,7 @@ void CoreController::initializeServices()
             [this](bool available, const QString& latestVersion) {
                 if (!available)
                     return;
-                // History only — AppUpdateSheet in QML owns the prompt UX.
+                // History only - AppUpdateSheet in QML owns the prompt UX.
                 m_notifications.add(
                     QCoreApplication::translate("Core", "Arachnel %1 is available").arg(latestVersion),
                     QStringLiteral("info"));
@@ -346,7 +367,10 @@ void CoreController::initializeServices()
                         continue;
                     applyMetadataToEntry(entry, metadata);
                     syncEntryToCatalogModel(entryId);
-                    if (m_catalogFilters && !m_catalogFilters->genreFilter().isEmpty())
+                    if (m_catalogFilters
+                        && (!m_catalogFilters->genreFilter().isEmpty()
+                            || m_catalogFilters->sizeFilter() > 0
+                            || m_catalogFilters->playModeFilter() > 0))
                         scheduleCatalogRefilter();
                     break;
                 }
@@ -355,6 +379,8 @@ void CoreController::initializeServices()
                 else
                     m_catalogCovers->applyCover(entryId, {});
                 emit entryMetadataChanged(entryId);
+                if (m_catalogDiscovery)
+                    m_catalogDiscovery->onEntryMetadataChanged(entryId);
                 if (!metadata.genres.isEmpty())
                     rebuildAvailableCatalogGenres();
             });
@@ -425,7 +451,7 @@ void CoreController::initializeServices()
                 ensureLibraryPlaceholder(*entry, libraryId);
                 m_jobOrchestrator->setJobPhase(
                     jobId, QStringLiteral("completed"),
-                    QCoreApplication::translate("Core", "Download complete — install manually"));
+                    QCoreApplication::translate("Core", "Download complete - install manually"));
             });
 
     connect(m_jobOrchestrator, &JobOrchestrator::downloadFailed, this,

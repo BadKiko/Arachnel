@@ -24,8 +24,7 @@ private:
     explicit TranslationService(QObject* parent = nullptr);
 
     QQmlApplicationEngine* m_engine = nullptr;
-    QTranslator* m_appTranslator = nullptr;
-    QTranslator* m_idTranslator = nullptr;
+    QTranslator* m_translator = nullptr;
     QString m_currentLanguage = QStringLiteral("en");
 };
 

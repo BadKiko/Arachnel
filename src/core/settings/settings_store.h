@@ -27,6 +27,8 @@ class SettingsStore : public QObject
                    autoInstallUpdatesChanged)
     Q_PROPERTY(bool autoCheckAppUpdates READ autoCheckAppUpdates WRITE setAutoCheckAppUpdates NOTIFY
                    autoCheckAppUpdatesChanged)
+    Q_PROPERTY(bool includeAppPreReleases READ includeAppPreReleases WRITE setIncludeAppPreReleases
+                   NOTIFY includeAppPreReleasesChanged)
     Q_PROPERTY(QString uiLanguage READ uiLanguage WRITE setUiLanguage NOTIFY uiLanguageChanged)
     Q_PROPERTY(bool onboardingCompleted READ onboardingCompleted WRITE setOnboardingCompleted NOTIFY
                    onboardingCompletedChanged)
@@ -46,6 +48,7 @@ public:
     bool autoCheckUpdates() const { return m_autoCheckUpdates; }
     bool autoInstallUpdates() const { return m_autoInstallUpdates; }
     bool autoCheckAppUpdates() const { return m_autoCheckAppUpdates; }
+    bool includeAppPreReleases() const { return m_includeAppPreReleases; }
     QString uiLanguage() const { return m_uiLanguage; }
     bool onboardingCompleted() const { return m_onboardingCompleted; }
     QString globalLaunchArgs() const { return m_globalLaunchArgs; }
@@ -79,6 +82,7 @@ public:
     void setAutoCheckUpdates(bool enabled);
     void setAutoInstallUpdates(bool enabled);
     void setAutoCheckAppUpdates(bool enabled);
+    void setIncludeAppPreReleases(bool enabled);
     void setUiLanguage(const QString& languageCode);
     void setOnboardingCompleted(bool completed);
     void setGlobalLaunchArgs(const QString& args);
@@ -104,6 +108,7 @@ signals:
     void autoCheckUpdatesChanged();
     void autoInstallUpdatesChanged();
     void autoCheckAppUpdatesChanged();
+    void includeAppPreReleasesChanged();
     void uiLanguageChanged();
     void onboardingCompletedChanged();
     void globalLaunchArgsChanged();
@@ -120,6 +125,7 @@ private:
     bool m_autoCheckUpdates = true;
     bool m_autoInstallUpdates = false;
     bool m_autoCheckAppUpdates = true;
+    bool m_includeAppPreReleases = false;
     QString m_uiLanguage = QStringLiteral("en");
     bool m_onboardingCompleted = false;
     QString m_globalLaunchArgs;

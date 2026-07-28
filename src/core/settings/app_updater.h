@@ -5,6 +5,7 @@
 
 class QNetworkAccessManager;
 class QNetworkReply;
+class QJsonObject;
 
 namespace arachnel::core {
 
@@ -20,6 +21,8 @@ class AppUpdater : public QObject
     Q_PROPERTY(QString statusText READ statusText NOTIFY stateChanged)
     Q_PROPERTY(QString lastError READ lastError NOTIFY stateChanged)
     Q_PROPERTY(QString releasePageUrl READ releasePageUrl NOTIFY stateChanged)
+    Q_PROPERTY(bool includePreReleases READ includePreReleases WRITE setIncludePreReleases NOTIFY
+                   includePreReleasesChanged)
 
 public:
     explicit AppUpdater(QObject* parent = nullptr);
@@ -33,6 +36,8 @@ public:
     QString statusText() const { return m_statusText; }
     QString lastError() const { return m_lastError; }
     QString releasePageUrl() const { return m_releasePageUrl; }
+    bool includePreReleases() const { return m_includePreReleases; }
+    void setIncludePreReleases(bool enabled);
 
     Q_INVOKABLE void checkForUpdates(bool notifyIfUpToDate = true);
     Q_INVOKABLE void downloadAndInstall();
@@ -41,6 +46,7 @@ public:
 signals:
     void stateChanged();
     void downloadProgressChanged();
+    void includePreReleasesChanged();
     void updateCheckFinished(bool available, const QString& latestVersion);
     void updateFailed(const QString& error);
     void installerLaunchRequested();
@@ -50,9 +56,12 @@ private:
     void setDownloading(bool value);
     void setStatusText(const QString& text);
     void setLastError(const QString& error);
+    void handleReleaseObject(const QJsonObject& release, bool notifyIfUpToDate);
     void handleReleasePayload(const QByteArray& payload, bool notifyIfUpToDate);
+    void handleReleasesListPayload(const QByteArray& payload, bool notifyIfUpToDate);
     void startDownload(const QUrl& url);
     bool launchInstaller(const QString& installerPath, QString* errorOut);
+    static QString assetDownloadUrl(const QJsonObject& release);
     static int compareVersions(const QString& left, const QString& right);
     static QString normalizeVersion(const QString& version);
 
@@ -61,6 +70,7 @@ private:
     bool m_checking = false;
     bool m_updateAvailable = false;
     bool m_downloading = false;
+    bool m_includePreReleases = false;
     int m_downloadProgress = 0;
     QString m_latestVersion;
     QString m_downloadUrl;

@@ -20,29 +20,13 @@ MD.Pane {
         id: content
         spacing: MD.Token.spacing.small
 
-        Rectangle {
-            Layout.preferredWidth: 10
-            Layout.preferredHeight: 10
+        MD.CircularIndicator {
+            Layout.preferredWidth: 14
+            Layout.preferredHeight: 14
             Layout.alignment: Qt.AlignVCenter
-            radius: 5
-            color: MD.Token.color.primary
-
-            SequentialAnimation on opacity {
-                running: root.visible
-                loops: Animation.Infinite
-                NumberAnimation {
-                    from: 1.0
-                    to: 0.35
-                    duration: 900
-                    easing.type: Easing.InOutQuad
-                }
-                NumberAnimation {
-                    from: 0.35
-                    to: 1.0
-                    duration: 900
-                    easing.type: Easing.InOutQuad
-                }
-            }
+            indeterminate: true
+            running: root.visible
+            strokeWidth: 2.5
         }
 
         GamePoster {

@@ -16,12 +16,12 @@ Flickable {
             {
                 id: "plugins",
                 title: qsTr("Plugins"),
-                subtitle: qsTr("FreeTP and others — install, launch, and add-ons")
+                subtitle: qsTr("FreeTP and others - install, launch, and add-ons")
             },
             {
                 id: "sources",
                 title: qsTr("Hydra catalogs"),
-                subtitle: qsTr("Catalog links — import from Hydra or elsewhere")
+                subtitle: qsTr("Catalog links - import from Hydra or elsewhere")
             },
             {
                 id: "storage",
@@ -76,30 +76,18 @@ Flickable {
             Repeater {
                 model: root.sectionModel
 
-                Rectangle {
+                MD.Card {
                     id: sectionCard
                     required property var modelData
 
                     Layout.fillWidth: true
-                    radius: MD.Token.shape.corner.large
-                    color: sectionMouse.containsMouse
-                           ? MD.Token.color.surface_container_high
-                           : MD.Token.color.surface_container
-                    border.width: 1
-                    border.color: MD.Token.color.outline_variant
-                    implicitHeight: sectionRow.implicitHeight + MD.Token.spacing.medium * 2
+                    type: MD.Enum.CardOutlined
+                    verticalPadding: MD.Token.spacing.medium
+                    horizontalPadding: MD.Token.spacing.medium
+                    onClicked: root.openSection(sectionCard.modelData.id)
 
-                    Behavior on color {
-                        ColorAnimation { duration: MD.Token.duration.short4 }
-                    }
-
-                    RowLayout {
+                    contentItem: RowLayout {
                         id: sectionRow
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.verticalCenter: parent.verticalCenter
-                        anchors.leftMargin: MD.Token.spacing.medium
-                        anchors.rightMargin: MD.Token.spacing.medium
                         spacing: MD.Token.spacing.medium
 
                         ColumnLayout {
@@ -126,14 +114,6 @@ Flickable {
                             size: 24
                             color: MD.Token.color.on_surface_variant
                         }
-                    }
-
-                    MouseArea {
-                        id: sectionMouse
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: root.openSection(sectionCard.modelData.id)
                     }
                 }
             }

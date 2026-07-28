@@ -17,6 +17,10 @@
     Q_INVOKABLE void searchCatalog(const QString&, const QString&);
     Q_INVOKABLE void installCatalogEntry(const QString&, const QString& = {},
                                          const QVariantList& = {}, const QString& = {});
+    Q_INVOKABLE QVariantList installOffersForEntry(const QString&) const;
+    Q_INVOKABLE void installCatalogEntryFromSource(const QString&, const QString&,
+                                                   const QString& = {}, const QVariantList& = {},
+                                                   const QString& = {});
     Q_INVOKABLE void installCatalogAddon(const QString&, const QString&);
     Q_INVOKABLE void installDownloadedCatalogAddon(const QString&, const QString&);
     Q_INVOKABLE bool isCatalogAddonInstalled(const QString&, const QString&) const;
@@ -26,6 +30,9 @@
     Q_INVOKABLE void setGameExecutableOverride(const QString&, const QString&);
     Q_INVOKABLE void setGameProtonId(const QString&, const QString&);
     Q_INVOKABLE void setGameOnlineFixEnabled(const QString&, bool);
+    Q_INVOKABLE void createGameDesktopShortcut(const QString& gameId);
+    Q_INVOKABLE void createGameStartMenuShortcut(const QString& gameId);
+    Q_INVOKABLE void addGameToSteam(const QString& gameId);
     Q_INVOKABLE void refreshAvailableProtons();
     Q_INVOKABLE void moveProtonInPriority(const QString&, int);
     Q_INVOKABLE QString protonNameForId(const QString&) const;
@@ -89,5 +96,7 @@
     Q_INVOKABLE void requestCatalogCover(const QString&);
     Q_INVOKABLE void cancelCatalogCover(const QString&);
     Q_INVOKABLE void invalidateCatalogCover(const QString&);
+    Q_INVOKABLE void requestCatalogHeroCover(const QString& entryId);
+    Q_INVOKABLE QString catalogHeroCoverUrl(const QString& entryId) const;
     Q_INVOKABLE void enrichCatalogEntry(const QString&);
     void prepareShutdown();

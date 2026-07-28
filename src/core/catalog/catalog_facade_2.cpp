@@ -177,11 +177,35 @@ void CoreController::validateHydraCatalogUrl(const QString& requestId, const QSt
     if (!parsed.isValid() || !parsed.scheme().startsWith(QStringLiteral("http"),
                                                          Qt::CaseInsensitive)) {
         emit hydraCatalogUrlValidated(requestId, false, 0,
-                                      QCoreApplication::translate("Core", "Invalid URL — http or https required"));
+                                      QCoreApplication::translate("Core", "Invalid URL - http or https required"));
         return;
     }
 
     m_catalogValidateLoader->loadFeed(parsed, QStringLiteral("validate:%1").arg(requestId));
+}
+
+QVariantList CoreController::installOffersForEntry(const QString& entryId) const
+{
+    if (!m_catalogController)
+        return {};
+    return m_catalogController->installOffersForEntry(entryId);
+}
+
+void CoreController::installCatalogEntryFromSource(const QString& entryId, const QString& sourceId,
+                                                   const QString& libraryId,
+                                                   const QVariantList& addonIdsVariant,
+                                                   const QString& installMode)
+{
+    if (!m_catalogController) {
+        installCatalogEntry(entryId, libraryId, addonIdsVariant, installMode);
+        return;
+    }
+    const auto offer = m_catalogController->resolveInstallOffer(entryId, sourceId);
+    if (!offer) {
+        showNotice(QCoreApplication::translate("Core", "Catalog entry not found: %1").arg(entryId));
+        return;
+    }
+    installCatalogEntry(offer->id, libraryId, addonIdsVariant, installMode);
 }
 
 void CoreController::installCatalogEntry(const QString& entryId, const QString& libraryId,

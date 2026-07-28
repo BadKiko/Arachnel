@@ -171,6 +171,8 @@ Item {
                         visible: (page.info.sourcePageUrl ?? "").length > 0
                                  || (page.info.sourceWebsiteUrl ?? "").length > 0
                                  || (page.info.steamStoreUrl ?? "").length > 0
+                                 || (Core.sources.repositoryUrlFor(page.info.sourceId ?? "") || "").length > 0
+                                 || (Core.sources.catalogUrlFor(page.info.sourceId ?? "") || "").length > 0
 
                         MD.Button {
                             visible: (page.info.sourcePageUrl ?? "").length > 0
@@ -192,6 +194,24 @@ Item {
                             icon.name: MD.Token.icon.open_in_new
                             mdState.type: MD.Enum.BtText
                             onClicked: Core.openExternalUrl(page.info.steamStoreUrl)
+                        }
+
+                        MD.Button {
+                            visible: (Core.sources.repositoryUrlFor(page.info.sourceId ?? "") || "").length > 0
+                            text: qsTr("Plugin source")
+                            icon.name: MD.Token.icon.open_in_new
+                            mdState.type: MD.Enum.BtText
+                            onClicked: Core.openExternalUrl(
+                                Core.sources.repositoryUrlFor(page.info.sourceId ?? ""))
+                        }
+
+                        MD.Button {
+                            visible: (Core.sources.catalogUrlFor(page.info.sourceId ?? "") || "").length > 0
+                            text: qsTr("Catalog URL")
+                            icon.name: MD.Token.icon.open_in_new
+                            mdState.type: MD.Enum.BtText
+                            onClicked: Core.openExternalUrl(
+                                Core.sources.catalogUrlFor(page.info.sourceId ?? ""))
                         }
                     }
 
@@ -236,7 +256,7 @@ Item {
                                 if (page.runtimeSetupActive)
                                     return Core.runtimeSetupStatus.length > 0
                                            ? Core.runtimeSetupStatus
-                                           : qsTr("PreparingтАж")
+                                           : qsTr("Preparing…")
                                 return qsTr("Play")
                             }
                             icon.name: page.isRunning || page.runtimeSetupActive

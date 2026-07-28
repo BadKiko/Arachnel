@@ -1,5 +1,6 @@
 #include "catalog_filter_service.h"
 
+#include "catalog_genre_normalize.h"
 #include "crash_log.h"
 #include "install_kind.h"
 
@@ -35,7 +36,7 @@ bool CatalogFilterService::entryMatches(const CatalogEntry& entry) const
     if (m_sizeFilter > 0) {
         const qint64 bytes = entry.sizeBytes;
         if (bytes <= 0)
-            return false;
+            return true; // unknown size: do not hard-exclude (common before Steam enrichment)
         constexpr qint64 kGb = 1024LL * 1024 * 1024;
         switch (m_sizeFilter) {
         case 1:
@@ -69,10 +70,21 @@ bool CatalogFilterService::entryMatches(const CatalogEntry& entry) const
 
     if (!m_genreFilter.isEmpty()) {
         bool matched = false;
-        for (const QString& token : entry.genreTokens) {
-            if (token.compare(m_genreFilter, Qt::CaseInsensitive) == 0) {
+        const QString want = canonicalizeGenreToken(m_genreFilter);
+        const QString wantKey = want.isEmpty() ? m_genreFilter : want;
+        for (const QString& key : entry.genreKeys) {
+            if (key.compare(wantKey, Qt::CaseInsensitive) == 0) {
                 matched = true;
                 break;
+            }
+        }
+        if (!matched) {
+            for (const QString& token : entry.genreTokens) {
+                if (token.compare(m_genreFilter, Qt::CaseInsensitive) == 0
+                    || canonicalizeGenreToken(token).compare(wantKey, Qt::CaseInsensitive) == 0) {
+                    matched = true;
+                    break;
+                }
             }
         }
         if (!matched)
@@ -154,32 +166,36 @@ void CatalogFilterService::rebuildAvailableGenres()
 
     QHash<QString, int> counts;
     for (const auto& entry : *m_cache) {
-        for (const QString& token : entry.genreTokens) {
-            const QString lower = token.toLower();
-            if (lower.contains(QLatin1String("single-player"))
-                || lower.contains(QLatin1String("multi-player"))
-                || lower.contains(QLatin1String("co-op")) || lower.contains(QLatin1String("coop"))
-                || lower.contains(QLatin1String("online pvp")) || lower == QLatin1String("pvp")
-                || lower.contains(QLatin1String("mmo"))
-                || lower.contains(QLatin1String("cross-platform"))
-                || lower.contains(QLatin1String("online fix"))
-                || lower.contains(QLatin1String("shared/split"))
-                || lower.contains(QLatin1String("lan pvp")) || lower.contains(QLatin1String("lan co-op"))
-                || lower.contains(QStringLiteral("однопользовател"))
-                || lower.contains(QStringLiteral("мультиплеер"))
-                || lower.contains(QStringLiteral("кооп")))
-                continue;
-            ++counts[token];
+        for (const QString& key : entry.genreKeys) {
+            if (!key.isEmpty())
+                ++counts[key];
+        }
+        // Fallback while entries are not yet enriched with canonical keys.
+        if (entry.genreKeys.isEmpty()) {
+            for (const QString& token : entry.genreTokens) {
+                const QString key = canonicalizeGenreToken(token);
+                if (!key.isEmpty())
+                    ++counts[key];
+            }
         }
     }
 
-    QStringList genres;
-    genres.reserve(counts.size());
-    for (auto it = counts.constBegin(); it != counts.constEnd(); ++it) {
-        if (it.value() > 0)
-            genres.append(it.key());
+    QStringList curated;
+    for (const QString& key : curatedGenreKeys()) {
+        if (counts.value(key) > 0)
+            curated.append(key);
     }
-    genres.sort(Qt::CaseInsensitive);
+
+    QStringList rest;
+    for (auto it = counts.constBegin(); it != counts.constEnd(); ++it) {
+        if (it.value() <= 0 || curated.contains(it.key()))
+            continue;
+        rest.append(it.key());
+    }
+    rest.sort(Qt::CaseInsensitive);
+
+    QStringList genres = curated;
+    genres.append(rest);
     if (genres == m_availableGenres)
         return;
     m_availableGenres = std::move(genres);

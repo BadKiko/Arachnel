@@ -141,11 +141,11 @@ MD.BottomSheet {
                         anchors.margins: MD.Token.spacing.medium
                         spacing: MD.Token.spacing.small
 
-                        ThemedCheckBox {
+                        MD.CheckBox {
                             checked: addonRow.checked
-                            onToggled: function (value) {
+                            onToggled: {
                                 if (addonRow.rowIndex >= 0)
-                                    addonModel.setProperty(addonRow.rowIndex, "checked", value)
+                                    addonModel.setProperty(addonRow.rowIndex, "checked", checked)
                             }
                         }
 

@@ -39,8 +39,8 @@ Item {
     readonly property var sortOptions: [
         { mode: 0, label: qsTr("Newest first") },
         { mode: 1, label: qsTr("Oldest first") },
-        { mode: 2, label: qsTr("Title A–Z") },
-        { mode: 3, label: qsTr("Title Z–A") },
+        { mode: 2, label: qsTr("Title A-Z") },
+        { mode: 3, label: qsTr("Title Z-A") },
         { mode: 4, label: qsTr("Portable first") },
         { mode: 5, label: qsTr("Non-portable first") },
         { mode: 6, label: qsTr("Largest first") },
@@ -56,8 +56,8 @@ Item {
     readonly property var sizeFilterLabels: ({
         "0": qsTr("Any size"),
         "1": qsTr("< 1 GB"),
-        "2": qsTr("1–5 GB"),
-        "3": qsTr("5–20 GB"),
+        "2": qsTr("1-5 GB"),
+        "3": qsTr("5-20 GB"),
         "4": qsTr("20+ GB")
     })
     readonly property var recencyFilterLabels: ({
@@ -67,15 +67,32 @@ Item {
         "3": qsTr("Last 90 days"),
         "4": qsTr("Last year")
     })
+    readonly property var playModeFilterLabels: ({
+        "0": qsTr("Any players"),
+        "1": qsTr("Single-player"),
+        "2": qsTr("Co-op"),
+        "3": qsTr("Multiplayer")
+    })
 
     property string searchQuery: ""
     property real savedGridScrollY: 0
     property real savedListScrollY: 0
     property bool restoringFilters: false
+    /** When true (Catalog tab), always show the full game list - never discovery shelves. */
+    property bool browseOnly: false
+    property bool browseAllMode: false
+
+    readonly property bool discoveryMode: !root.browseOnly
+                                         && !root.browseAllMode
+                                         && root.searchQuery.length === 0
+                                         && !root.noSources
+                                         && !root.noSourceSelected
 
     signal openGame(string entryId)
     signal openSettings()
     signal addSourceRequested()
+    /** Discover tab: open the Catalog tab (optionally with a search query). */
+    signal openFullCatalog(string searchQuery)
 
     Settings {
         id: catalogPrefs
@@ -91,7 +108,7 @@ Item {
     }
 
     function applySortMode(mode) {
-        // Persist only — Core.applyCatalogPresentation already applied sort quietly.
+        // Persist only - Core.applyCatalogPresentation already applied sort quietly.
         catalogPrefs.sortMode = mode
         if (Core.catalog.sortMode !== mode)
             Core.catalog.sortMode = mode
@@ -157,21 +174,44 @@ Item {
     function applyCatalogSearch(query) {
         if (!Core.activeCatalogSourceIds.length)
             return
+        // Discover tab: searching belongs in the full Catalog tab.
+        if (!root.browseOnly && query.length > 0) {
+            root.searchQuery = ""
+            catalogContent.searchText = ""
+            root.openFullCatalog(query)
+            return
+        }
         root.searchQuery = query
+        if (root.browseOnly) {
+            root.browseAllMode = true
+        } else if (query.length > 0) {
+            root.browseAllMode = true
+        } else if (Core.catalogActiveFilterCount === 0) {
+            root.browseAllMode = false
+        }
         Core.applyCatalogSearch(query)
+        catalogContent.resetScroll()
+    }
+
+    function showBrowseAll(query) {
+        root.browseAllMode = true
+        if (query && query.length) {
+            root.searchQuery = query
+            catalogContent.searchText = query
+            Core.applyCatalogSearch(query)
+        }
         catalogContent.resetScroll()
     }
 
     Component.onCompleted: {
         Core.catalog.sortMode = catalogPrefs.sortMode
         root.restoreCatalogFilters()
+        if (root.browseOnly || Core.catalogActiveFilterCount > 0)
+            root.browseAllMode = true
         Core.prefetchCatalogCounts()
         root.ensureValidSource()
-    }
-
-    onEnabledChanged: {
-        if (enabled)
-            root.ensureValidSource()
+        if (Core.catalogDiscovery && !root.browseOnly)
+            Core.catalogDiscovery.refresh()
     }
 
     Connections {
@@ -183,6 +223,17 @@ Item {
         }
         function onCatalogFiltersChanged() {
             root.persistCatalogFilters()
+            if (root.browseOnly) {
+                root.browseAllMode = true
+                return
+            }
+            // Discover tab: filters belong on the Catalog tab.
+            if (Core.catalogActiveFilterCount > 0) {
+                root.openFullCatalog(root.searchQuery)
+                return
+            }
+            if (root.searchQuery.length === 0)
+                root.browseAllMode = false
         }
     }
 

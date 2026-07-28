@@ -110,6 +110,14 @@ Item {
                 checked: true
                 onClicked: Core.catalogGenreFilter = ""
             }
+
+            MD.FilterChip {
+                visible: Core.catalogPlayModeFilter > 0
+                text: (page.playModeFilterLabels[String(Core.catalogPlayModeFilter)] || qsTr("Players"))
+                      + " ×"
+                checked: true
+                onClicked: Core.catalogPlayModeFilter = 0
+            }
         }
     }
 }

@@ -66,7 +66,7 @@ void InstallSessionService::startPluginInstall(const CatalogEntry& entry, const 
                 m_hooks.offerManualInstall(*job);
         } else {
             m_hooks.showNotice(
-                QCoreApplication::translate("Core", "Can't install %1 — install a plugin for this source")
+                QCoreApplication::translate("Core", "Can't install %1 - install a plugin for this source")
                     .arg(entry.title),
                 true);
         }

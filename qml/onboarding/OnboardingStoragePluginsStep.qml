@@ -196,6 +196,13 @@ ColumnLayout {
                             }
                             MD.Label {
                                 Layout.fillWidth: true
+                                visible: !!(modelData.recommended)
+                                text: qsTr("Recommended")
+                                color: MD.Token.color.primary
+                                typescale: MD.Token.typescale.label_small
+                            }
+                            MD.Label {
+                                Layout.fillWidth: true
                                 text: modelData.description
                                 color: MD.Token.color.on_surface_variant
                                 typescale: MD.Token.typescale.body_small

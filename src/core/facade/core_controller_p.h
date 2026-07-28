@@ -50,6 +50,7 @@
     const JobEntry* findLatestJobForEntry(const QString&) const;
     bool entryHasActiveJob(const QString&) const;
     void showNotice(const QString&, bool = true);
+    GameLaunchTarget resolveShortcutTarget(const LibraryGame& game) const;
     bool isRemoteUploadDateNewer(const QString&, const QString&) const;
     bool gameHasUpdate(const LibraryGame&, const CatalogEntry&) const;
     int recalculateLibraryUpdates(bool);
@@ -107,6 +108,7 @@
     QVector<CatalogEntry> m_catalogCache;
     QHash<QString, int> m_catalogIdToCacheIndex;
     CatalogFilterService* m_catalogFilters = nullptr;
+    CatalogDiscoveryService* m_catalogDiscovery = nullptr;
     QString m_userNotice;
     int m_userNoticeSerial = 0;
     QString m_lastPluginError;

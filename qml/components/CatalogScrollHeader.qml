@@ -26,11 +26,38 @@ Item {
         RowLayout {
             Layout.fillWidth: true
             Layout.topMargin: MD.Token.spacing.small
+            Layout.rightMargin: MD.Token.spacing.small
             spacing: MD.Token.spacing.small
+
+            Item {
+                Layout.preferredWidth: 44
+                Layout.preferredHeight: 20
+                visible: Core.catalogLoading
+
+                Rectangle {
+                    anchors.fill: parent
+                    radius: height / 2
+                    color: MD.Util.transparent(MD.Token.color.primary, 0.12)
+                }
+
+                MD.LinearIndicator {
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.leftMargin: 6
+                    anchors.rightMargin: 6
+                    implicitHeight: 4
+                    strokeWidth: implicitHeight
+                    indeterminate: true
+                    running: Core.catalogLoading && root.visible
+                    color: MD.Token.color.primary
+                    trackColor: MD.Util.transparent(color, 0.2)
+                }
+            }
 
             MD.Label {
                 Layout.fillWidth: true
-                text: Core.catalogLoading
+                text: Core.catalogLoading && Core.catalog.count === 0
                     ? qsTr("Loading catalog…")
                     : qsTr("Found: %1").arg(Core.catalog.count)
                 color: MD.Token.color.on_surface_variant
@@ -104,12 +131,6 @@ Item {
             wrapMode: Text.WordWrap
             maximumLineCount: 2
             elide: Text.ElideRight
-        }
-
-        MD.LinearIndicator {
-            Layout.fillWidth: true
-            visible: Core.catalogLoading
-            indeterminate: true
         }
 
         Item {

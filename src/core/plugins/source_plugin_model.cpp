@@ -55,6 +55,8 @@ QVariant SourcePluginModel::data(const QModelIndex& index, int role) const
         return plugin.description;
     case CatalogUrlRole:
         return plugin.catalogUrl;
+    case RepositoryUrlRole:
+        return plugin.repositoryUrl;
     case IconNameRole:
         return plugin.iconName.isEmpty() ? QStringLiteral("storefront") : plugin.iconName;
     case SourceEnabledRole:
@@ -81,6 +83,7 @@ QHash<int, QByteArray> SourcePluginModel::roleNames() const
         {NameRole, "name"},
         {DescriptionRole, "description"},
         {CatalogUrlRole, "catalogUrl"},
+        {RepositoryUrlRole, "repositoryUrl"},
         {IconNameRole, "iconName"},
         {SourceEnabledRole, "sourceEnabled"},
         {CapabilitiesRole, "capabilities"},
@@ -152,6 +155,12 @@ bool SourcePluginModel::isSourceEnabled(const QString& id) const
 {
     const SourcePluginInfo* plugin = pluginById(id);
     return plugin && plugin->enabled;
+}
+
+QString SourcePluginModel::repositoryUrlFor(const QString& id) const
+{
+    const SourcePluginInfo* plugin = pluginById(id);
+    return plugin ? plugin->repositoryUrl : QString();
 }
 
 QString SourcePluginModel::uniqueIdFromName(const QString& name) const

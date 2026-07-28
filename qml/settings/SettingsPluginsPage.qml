@@ -168,10 +168,32 @@ Flickable {
                         MD.Label {
                             Layout.fillWidth: true
                             text: modelData.loaded === false
-                                  ? qsTr("v%1 · %2 — not loaded").arg(modelData.pluginVersion).arg(modelData.pluginId)
+                                  ? qsTr("v%1 · %2 - not loaded").arg(modelData.pluginVersion).arg(modelData.pluginId)
                                   : qsTr("v%1 · %2").arg(modelData.pluginVersion).arg(modelData.pluginId)
                             color: modelData.loaded === false ? MD.Token.color.error : MD.Token.color.primary
                             typescale: MD.Token.typescale.label_small
+                        }
+
+                        MD.Label {
+                            Layout.fillWidth: true
+                            visible: !!(modelData.catalogUrl && modelData.catalogUrl.length)
+                            text: qsTr("Game catalog: %1").arg(modelData.catalogUrl)
+                            color: MD.Token.color.on_surface_variant
+                            typescale: MD.Token.typescale.label_small
+                            elide: Text.ElideMiddle
+                            wrapMode: Text.WordWrap
+                            maximumLineCount: 2
+                        }
+
+                        MD.Label {
+                            Layout.fillWidth: true
+                            visible: !!(modelData.repositoryUrl && modelData.repositoryUrl.length)
+                            text: qsTr("Source: %1").arg(modelData.repositoryUrl)
+                            color: MD.Token.color.on_surface_variant
+                            typescale: MD.Token.typescale.label_small
+                            elide: Text.ElideMiddle
+                            wrapMode: Text.WordWrap
+                            maximumLineCount: 2
                         }
 
                         MD.Label {
@@ -182,6 +204,29 @@ Flickable {
                             elide: Text.ElideMiddle
                             maximumLineCount: 2
                             wrapMode: Text.WordWrap
+                        }
+
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: MD.Token.spacing.small
+                            visible: !!(modelData.repositoryUrl && modelData.repositoryUrl.length)
+                                     || !!(modelData.catalogUrl && modelData.catalogUrl.length)
+
+                            MD.Button {
+                                visible: !!(modelData.repositoryUrl && modelData.repositoryUrl.length)
+                                mdState.type: MD.Enum.BtText
+                                text: qsTr("Source code")
+                                icon.name: MD.Token.icon.open_in_new
+                                onClicked: Core.openExternalUrl(modelData.repositoryUrl)
+                            }
+
+                            MD.Button {
+                                visible: !!(modelData.catalogUrl && modelData.catalogUrl.length)
+                                mdState.type: MD.Enum.BtText
+                                text: qsTr("Catalog URL")
+                                icon.name: MD.Token.icon.open_in_new
+                                onClicked: Core.openExternalUrl(modelData.catalogUrl)
+                            }
                         }
                     }
                 }

@@ -62,7 +62,7 @@ QString JobOrchestrator::startAddonDownload(const CatalogEntry& parent,
     }
 
     const QString saveSubdir = QStringLiteral("addons/%1/%2").arg(parent.id, addon.id);
-    const QString title = QStringLiteral("Add-on %1 — %2").arg(parent.title, addon.title);
+    const QString title = QStringLiteral("Add-on %1 - %2").arg(parent.title, addon.title);
     const QString libId = m_settings->defaultLibraryId();
 
     if (addon.delivery == ComponentDelivery::Direct) {

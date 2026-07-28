@@ -99,6 +99,35 @@ MD.BottomSheet {
             elide: Text.ElideRight
         }
 
+        Flow {
+            Layout.fillWidth: true
+            Layout.leftMargin: MD.Token.spacing.large
+            Layout.rightMargin: MD.Token.spacing.large
+            visible: root.installed
+            spacing: MD.Token.spacing.small
+
+            MD.Button {
+                mdState.type: MD.Enum.BtFilledTonal
+                text: qsTr("Desktop shortcut")
+                icon.name: MD.Token.icon.desktop_windows
+                onClicked: Core.createGameDesktopShortcut(root.gameId)
+            }
+
+            MD.Button {
+                mdState.type: MD.Enum.BtFilledTonal
+                text: qsTr("Start menu shortcut")
+                icon.name: MD.Token.icon.apps
+                onClicked: Core.createGameStartMenuShortcut(root.gameId)
+            }
+
+            MD.Button {
+                mdState.type: MD.Enum.BtFilledTonal
+                text: qsTr("Add to Steam")
+                icon.name: MD.Token.icon.sports_esports
+                onClicked: Core.addGameToSteam(root.gameId)
+            }
+        }
+
         ColumnLayout {
             Layout.fillWidth: true
             Layout.leftMargin: MD.Token.spacing.large
@@ -322,7 +351,7 @@ MD.BottomSheet {
                     model: [
                         { label: qsTr("Source"), value: root.sourceLabel },
                         { label: qsTr("Version"), value: root.info.version ?? "" },
-                        { label: qsTr("Size"), value: root.info.sizeLabel || "—" },
+                        { label: qsTr("Size"), value: root.info.sizeLabel || "-" },
                         { label: qsTr("Install type"), value: root.info.installKindLabel ?? "" },
                         {
                             label: qsTr("Online Fix"),
@@ -333,16 +362,16 @@ MD.BottomSheet {
                         {
                             label: qsTr("Install path"),
                             value: root.playable
-                                   ? (root.info.installPath || "—")
+                                   ? (root.info.installPath || "-")
                                    : (root.isInstalling
                                           ? qsTr("Installing…")
                                           : root.readyToInstall || root.installFailed
                                           ? qsTr("Waiting to install")
-                                          : qsTr("—"))
+                                          : qsTr("-"))
                         },
                         {
                             label: qsTr("Download"),
-                            value: root.info.downloadPath || "—"
+                            value: root.info.downloadPath || "-"
                         }
                     ]
 

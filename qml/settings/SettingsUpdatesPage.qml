@@ -158,25 +158,14 @@ Flickable {
             spacing: MD.Token.spacing.medium
             visible: Core.appUpdater.downloading
 
-            Item {
+            MD.LinearIndicator {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 6
-                clip: true
-
-                Rectangle {
-                    anchors.fill: parent
-                    radius: 3
-                    color: MD.Util.transparent(MD.Token.color.primary, 0.2)
-                }
-
-                Rectangle {
-                    anchors.top: parent.top
-                    anchors.bottom: parent.bottom
-                    anchors.left: parent.left
-                    width: parent.width * (Core.appUpdater.downloadProgress / 100)
-                    radius: 3
-                    color: MD.Token.color.primary
-                }
+                indeterminate: false
+                from: 0
+                to: 100
+                value: Core.appUpdater.downloadProgress
+                strokeWidth: 4
             }
 
             MD.Label {
@@ -213,6 +202,37 @@ Flickable {
             MD.Switch {
                 checked: Core.settings.autoCheckAppUpdates
                 onToggled: Core.settings.autoCheckAppUpdates = checked
+            }
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.leftMargin: contentMargin
+            Layout.rightMargin: contentMargin
+            spacing: MD.Token.spacing.medium
+
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 2
+
+                MD.Label {
+                    Layout.fillWidth: true
+                    text: qsTr("Include pre-releases")
+                    typescale: MD.Token.typescale.body_large
+                }
+
+                MD.Label {
+                    Layout.fillWidth: true
+                    text: qsTr("Offer beta and RC builds from GitHub.")
+                    color: MD.Token.color.on_surface_variant
+                    typescale: MD.Token.typescale.body_small
+                    wrapMode: Text.WordWrap
+                }
+            }
+
+            MD.Switch {
+                checked: Core.settings.includeAppPreReleases
+                onToggled: Core.settings.includeAppPreReleases = checked
             }
         }
 

@@ -17,7 +17,7 @@ void CoreController::touchLastPlayed(const QString& gameId)
     game.lastPlayedAt = QDateTime::currentDateTime().toString(Qt::ISODate);
     m_libraryStore.upsertGame(game);
     enrichLibraryGameCover(game);
-    // Do not beginResetModel() here — launch/stop run from QML Button onClicked.
+    // Do not beginResetModel() here - launch/stop run from QML Button onClicked.
     if (!m_library.replaceGame(game))
         syncLibraryFromStore();
 }
@@ -111,7 +111,7 @@ void CoreController::launchGameAfterRuntimeSetup(const QString& gameId)
             tryStartSteamClient();
             showNotice(QCoreApplication::translate(
                 "Core",
-                "Steam is not running — Online Fix needs it for SpaceWar/overlay. Starting Steam…"));
+                "Steam is not running - Online Fix needs it for SpaceWar/overlay. Starting Steam…"));
         }
     }
 #endif

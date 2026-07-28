@@ -54,6 +54,12 @@ void GameMetadataService::loadCache()
         metadata.steamAppId = obj.value(QStringLiteral("steamAppId")).toString();
         metadata.trailerUrl = obj.value(QStringLiteral("trailerUrl")).toString();
         metadata.trailerThumbnailUrl = obj.value(QStringLiteral("trailerThumbnailUrl")).toString();
+        metadata.recommendationsTotal = obj.value(QStringLiteral("recommendationsTotal")).toInt();
+        metadata.metacriticScore = obj.value(QStringLiteral("metacriticScore")).toInt();
+        metadata.releaseDate = obj.value(QStringLiteral("releaseDate")).toString();
+        metadata.currentPlayers = obj.value(QStringLiteral("currentPlayers")).toInt(-1);
+        metadata.playersFetchedAt =
+            static_cast<qint64>(obj.value(QStringLiteral("playersFetchedAt")).toDouble());
         for (const QJsonValue& shot : obj.value(QStringLiteral("screenshotUrls")).toArray())
             metadata.screenshotUrls.append(shot.toString());
         if (!isVerticalLibraryCover(metadata.coverUrl))
@@ -75,6 +81,11 @@ void GameMetadataService::saveCache()
         obj.insert(QStringLiteral("steamAppId"), it->steamAppId);
         obj.insert(QStringLiteral("trailerUrl"), it->trailerUrl);
         obj.insert(QStringLiteral("trailerThumbnailUrl"), it->trailerThumbnailUrl);
+        obj.insert(QStringLiteral("recommendationsTotal"), it->recommendationsTotal);
+        obj.insert(QStringLiteral("metacriticScore"), it->metacriticScore);
+        obj.insert(QStringLiteral("releaseDate"), it->releaseDate);
+        obj.insert(QStringLiteral("currentPlayers"), it->currentPlayers);
+        obj.insert(QStringLiteral("playersFetchedAt"), static_cast<double>(it->playersFetchedAt));
         QJsonArray screenshots;
         for (const QString& url : it->screenshotUrls)
             screenshots.append(url);
@@ -121,7 +132,8 @@ bool GameMetadataService::cancelPending(const QString& entryId)
 
 void GameMetadataService::prependPending(PendingRequest request)
 {
-    if (request.termIndex < 0 || request.termIndex >= request.searchTerms.size()) {
+    if (!request.playersOnly
+        && (request.termIndex < 0 || request.termIndex >= request.searchTerms.size())) {
         failCover(request.entryId);
         return;
     }
@@ -260,10 +272,45 @@ void GameMetadataService::queueFetch(const QString& entryId, const QString& titl
     prependPending({entryId, title, searchTermsFor(title), 0, mode, uiLanguage, {}});
 }
 
+void GameMetadataService::queuePlayersRefresh(const QString& entryId, const QString& title,
+                                              const QString& steamAppId)
+{
+    if (entryId.isEmpty() || title.isEmpty() || steamAppId.trimmed().isEmpty())
+        return;
+
+    GameMetadata cached = m_cache.value(title);
+    cached.steamAppId = steamAppId.trimmed();
+    m_cache.insert(title, cached);
+
+    if (m_inFlight.contains(entryId))
+        return;
+
+    const int existing = indexOfPending(entryId);
+    if (existing >= 0) {
+        PendingRequest& req = m_pending[existing];
+        req.playersOnly = true;
+        req.knownSteamAppId = steamAppId.trimmed();
+        return;
+    }
+
+    PendingRequest request;
+    request.entryId = entryId;
+    request.title = title;
+    request.knownSteamAppId = steamAppId.trimmed();
+    request.playersOnly = true;
+    request.mode = MetadataFetchMode::Full;
+    prependPending(std::move(request));
+}
+
 void GameMetadataService::requestNext()
 {
     while (m_activeRequests < kMaxConcurrent && !m_pending.isEmpty()) {
         const PendingRequest request = m_pending.takeFirst();
+        if (request.playersOnly && !request.knownSteamAppId.isEmpty()) {
+            m_inFlight.insert(request.entryId);
+            requestCurrentPlayers(request.entryId, request.title, request.knownSteamAppId);
+            continue;
+        }
         if (!request.knownSteamAppId.isEmpty()) {
             startKnownAppFetch(request.entryId, request.title, request.knownSteamAppId,
                                request.mode, request.languageCode, m_cache.value(request.title));

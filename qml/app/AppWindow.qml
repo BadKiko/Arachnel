@@ -52,6 +52,15 @@ MD.ApplicationWindow {
             pageStack.currentItem.pageIndex = index
     }
 
+    function openCatalogWithQuery(query) {
+        root.goToPage(2)
+        Qt.callLater(function () {
+            const pages = pageStack.currentItem
+            if (pages && pages.catalogBrowsePage)
+                pages.catalogBrowsePage.showBrowseAll(query || "")
+        })
+    }
+
     function openGameDetails(gameId, fromCatalog) {
         root.detailsGameId = gameId
         root.detailsFromCatalog = !!fromCatalog
@@ -112,15 +121,22 @@ MD.ApplicationWindow {
             icon: MD.Token.icon.sports_esports
         },
         {
+            name: qsTr("Discover"),
+            icon: MD.Token.icon.auto_awesome
+        },
+        {
             name: qsTr("Catalog"),
             icon: MD.Token.icon.storefront
         },
         {
             name: qsTr("Downloads"),
             icon: MD.Token.icon.downloading,
-            navIndex: 2
+            showDownloadBadge: true
         }
     ]
+
+    // Main rail tabs stay mounted; keep the crossfade short so Discover/Catalog feel instant.
+    readonly property int mainTabDuration: MD.Token.duration.short4
 
     Component {
         id: mainPagesComponent
@@ -128,6 +144,7 @@ MD.ApplicationWindow {
             id: mainPages
 
             property int pageIndex: root.pageIndex
+            property alias catalogBrowsePage: catalogBrowsePage
 
             transformOrigin: Item.Center
 
@@ -140,22 +157,21 @@ MD.ApplicationWindow {
                 enabled: mainPages.pageIndex === 0 && opacity > 0.99
                 transformOrigin: Item.Center
                 onOpenGame: function (id) { root.openGameDetails(id, false) }
-                onOpenCatalog: root.goToPage(1)
-                onOpenDownloads: root.goToPage(2)
+                onOpenCatalog: root.goToPage(2)
+                onOpenDownloads: root.goToPage(3)
                 onOpenSettings: settingsSheet.openSettings()
                 onAddSourceRequested: settingsSheet.openPlugins()
 
                 Behavior on opacity {
                     NumberAnimation {
-                        duration: pageStack.enterDuration
+                        duration: root.mainTabDuration
                         easing: MD.Token.easing.emphasized_decelerate
                     }
                 }
                 Behavior on scale {
                     NumberAnimation {
-                        duration: pageStack.enterDuration
-                        easing.type: Easing.OutBack
-                        easing.overshoot: 1.2
+                        duration: root.mainTabDuration
+                        easing: MD.Token.easing.emphasized_decelerate
                     }
                 }
             }
@@ -166,44 +182,70 @@ MD.ApplicationWindow {
                 scale: mainPages.pageIndex === 1 ? 1 : 0.97
                 enabled: mainPages.pageIndex === 1
                 transformOrigin: Item.Center
+                browseOnly: false
+                onOpenGame: function (id) { root.openGameDetails(id, true) }
+                onOpenSettings: settingsSheet.openSettings()
+                onAddSourceRequested: settingsSheet.openPlugins()
+                onOpenFullCatalog: function (query) { root.openCatalogWithQuery(query) }
+
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: root.mainTabDuration
+                        easing: MD.Token.easing.emphasized_decelerate
+                    }
+                }
+                Behavior on scale {
+                    NumberAnimation {
+                        duration: root.mainTabDuration
+                        easing: MD.Token.easing.emphasized_decelerate
+                    }
+                }
+            }
+
+            CatalogPage {
+                id: catalogBrowsePage
+                anchors.fill: parent
+                opacity: mainPages.pageIndex === 2 ? 1 : 0
+                scale: mainPages.pageIndex === 2 ? 1 : 0.97
+                enabled: mainPages.pageIndex === 2
+                transformOrigin: Item.Center
+                browseOnly: true
                 onOpenGame: function (id) { root.openGameDetails(id, true) }
                 onOpenSettings: settingsSheet.openSettings()
                 onAddSourceRequested: settingsSheet.openPlugins()
 
                 Behavior on opacity {
                     NumberAnimation {
-                        duration: pageStack.enterDuration
+                        duration: root.mainTabDuration
                         easing: MD.Token.easing.emphasized_decelerate
                     }
                 }
                 Behavior on scale {
                     NumberAnimation {
-                        duration: pageStack.enterDuration
-                        easing.type: Easing.OutBack
-                        easing.overshoot: 1.2
+                        duration: root.mainTabDuration
+                        easing: MD.Token.easing.emphasized_decelerate
                     }
                 }
             }
 
             DownloadsPage {
                 anchors.fill: parent
-                opacity: mainPages.pageIndex === 2 ? 1 : 0
-                scale: mainPages.pageIndex === 2 ? 1 : 0.97
-                enabled: mainPages.pageIndex === 2 && opacity > 0.99
+                opacity: mainPages.pageIndex === 3 ? 1 : 0
+                scale: mainPages.pageIndex === 3 ? 1 : 0.97
+                enabled: mainPages.pageIndex === 3 && opacity > 0.99
                 transformOrigin: Item.Center
                 onOpenGame: function (id) { root.openGameDetails(id, false) }
 
                 Behavior on opacity {
                     NumberAnimation {
-                        duration: pageStack.enterDuration
+                        duration: root.mainTabDuration
                         easing: MD.Token.easing.emphasized_decelerate
                     }
                 }
                 Behavior on scale {
                     NumberAnimation {
-                        duration: pageStack.enterDuration
-                        easing.type: Easing.OutBack
-                        easing.overshoot: 1.2
+                        duration: root.mainTabDuration
+                        easing: MD.Token.easing.emphasized_decelerate
                     }
                 }
             }
@@ -215,6 +257,9 @@ MD.ApplicationWindow {
         GameDetailsPage {
             transformOrigin: Item.Center
             onBackRequested: root.closeGameDetails()
+            onOpenSourcePicker: function (entryId, title) {
+                installSourceSheet.openForEntry(entryId, title)
+            }
             onOpenAddonPicker: function (entryId, title) {
                 installAddonSheet.openForEntry(entryId, title)
             }
@@ -345,6 +390,23 @@ MD.ApplicationWindow {
         anchors.fill: parent
         installEntry: function (entryId, libraryId, addonIds) {
             root.beginCatalogInstall(entryId, libraryId, addonIds)
+        }
+    }
+
+    InstallSourceSheet {
+        id: installSourceSheet
+        anchors.fill: parent
+        onSourceChosen: function (entryId, offerEntryId, sourceId, title) {
+            const page = pageStack.currentItem
+            if (page && typeof page.afterSourceSelected === "function") {
+                page.afterSourceSelected(offerEntryId, sourceId)
+                return
+            }
+            // Fallback when details page is not current (should be rare).
+            if (Core.needsInstallLocationChoice())
+                installLocationSheet.openForEntry(offerEntryId || entryId, title, [])
+            else
+                Core.installCatalogEntryFromSource(entryId, sourceId, "", [])
         }
     }
 

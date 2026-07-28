@@ -2,74 +2,51 @@ pragma Singleton
 
 import QtQuick
 
-// Short qsTrId keys for Weblate (e.g. "help.catalog_intro" instead of a full English sentence).
+// Long / shared UI copy. English source in qsTr(); Russian in translations/arachnel_ru.ts.
 QtObject {
-    //% "Add a catalog to browse games, or install a plugin for download, install, and play."
-    readonly property string helpCatalogIntro: qsTrId("help.catalog_intro")
+    readonly property string helpCatalogIntro: qsTr("Add a catalog to browse games, or install a plugin for download, install, and play.")
 
-    //% "Paste a catalog link in Settings → Hydra catalogs. Games show up in Catalog."
-    readonly property string helpHydraCatalogBody: qsTrId("help.hydra_catalog_body")
+    readonly property string helpHydraCatalogBody: qsTr("Paste a catalog link in Settings → Hydra catalogs. Games show up in Catalog.")
 
-    //% "Pick a game in Catalog to start a download."
-    readonly property string helpCatalogBody: qsTrId("help.catalog_body")
+    readonly property string helpCatalogBody: qsTr("Pick a game in Catalog to start a download.")
 
-    //% "After download and install, the game appears here — launch, updates, and details."
-    readonly property string helpLibraryBody: qsTrId("help.library_body")
+    readonly property string helpLibraryBody: qsTr("After download and install, the game appears here - launch, updates, and details.")
 
-    //% "Add a catalog URL from Hydra or another community list. Install a plugin (e.g. FreeTP) to install and play."
-    readonly property string settingsSourcesConnectHint: qsTrId("settings.sources.connect_hint")
+    readonly property string settingsSourcesConnectHint: qsTr("Add a catalog URL from Hydra or another community list. Install a plugin (e.g. FreeTP) to install and play.")
 
-    //% "Tap Add catalog and paste the catalog link."
-    readonly property string settingsSourcesAddHint: qsTrId("settings.sources.add_hint")
+    readonly property string settingsSourcesAddHint: qsTr("Tap Add catalog and paste the catalog link.")
 
-    //% "Paste a catalog URL. Arachnel loads the game list; a plugin handles install and launch."
-    readonly property string settingsSourceFormDesc: qsTrId("settings.source_form.desc")
+    readonly property string settingsSourceFormDesc: qsTr("Paste a catalog URL. Arachnel loads the game list; a plugin handles install and launch.")
 
-    //% "Missing your language? Help translate Arachnel on <a href=\"%1\">Weblate</a>."
-    readonly property string settingsWeblateHint: qsTrId("settings.appearance.weblate_hint")
+    readonly property string settingsWeblateHint: qsTr("Missing your language? Help translate Arachnel on <a href=\"%1\">Weblate</a>.")
 
-    //% "Use Install plugin below and pick a plugin file (e.g. FreeTP)."
-    readonly property string settingsPluginsInstallHint: qsTrId("settings.plugins.install_hint")
+    readonly property string settingsPluginsInstallHint: qsTr("Use Install plugin below and pick a plugin file (e.g. FreeTP).")
 
-    //% "Plugins add catalogs and handle install, updates, and launch (e.g. FreeTP)."
-    readonly property string settingsPluginsDesc: qsTrId("settings.plugins.desc")
+    readonly property string settingsPluginsDesc: qsTr("Plugins provide catalogs, install, updates, and launch.")
 
-    //% "Your library is empty. Install a plugin, pick a game in Catalog, and it will appear here."
-    readonly property string libraryEmptySubtitle: qsTrId("library.empty.subtitle")
+    readonly property string libraryEmptySubtitle: qsTr("Your library is empty. Install a plugin, pick a game in Catalog, and it will appear here.")
 
-    //% "Install a plugin (e.g. FreeTP) in Settings → Plugins."
-    readonly property string libraryStep1Body: qsTrId("library.step1.body")
+    readonly property string libraryStep1Body: qsTr("Install a plugin (e.g. FreeTP) in Settings → Plugins.")
 
-    //% "Pick a game in Catalog and start the download."
-    readonly property string libraryStep2Body: qsTrId("library.step2.body")
+    readonly property string libraryStep2Body: qsTr("Pick a game in Catalog and start the download.")
 
-    //% "Installed games live here: launch, updates, and details."
-    readonly property string libraryStep3Body: qsTrId("library.step3.body")
+    readonly property string libraryStep3Body: qsTr("Installed games live here: launch, updates, and details.")
 
-    //% "Download finished. Click Install to set up the game."
-    readonly property string gameInstallTorrentHint: qsTrId("game.install.torrent_hint")
+    readonly property string gameInstallTorrentHint: qsTr("Download finished. Click Install to set up the game.")
 
-    //% "### Where do the files come from?\n\nGame **chunks** are downloaded from the **Valve Steam CDN** — the same content delivery network Steam itself uses for depot files.\n\n### What is Online Fix?\n\nMany multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugin can include it so the game runs and goes online without a Store purchase license check.\n\n### What is *not* from Valve?\n\n- Depot **keys** and **manifests** come from the plugin relay (not the Steam Store).\n- This is **not** the same as buying the game on Steam.\n- Arachnel does **not** claim antivirus clearance or Valve endorsement."
-    readonly property string steamidraTrustMarkdown: qsTrId("steamidra.trust.markdown")
+    readonly property string steamidraTrustMarkdown: qsTr("### Where do the files come from?\n\nGame **chunks** are downloaded from the **Valve Steam CDN** - the same CDN Steam uses for depot files.\n\n### What is Online Fix?\n\nMany multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugin can include it so the game runs and goes online without a Store purchase license check.\n\n### What is *not* from Valve?\n\n- Depot **keys** and **manifests** come from the plugin relay (not the Steam Store).\n- This is **not** the same as buying the game on Steam.\n- Arachnel does **not** claim antivirus clearance or Valve endorsement.")
 
-    //% "Browse games from your catalogs and sources."
-    readonly property string catalogPipelineDesc: qsTrId("catalog.pipeline_desc")
+    readonly property string catalogPipelineDesc: qsTr("Browse games from your catalogs and sources.")
 
-    //% "Add a catalog or install a plugin in Settings."
-    readonly property string catalogConnectHint: qsTrId("catalog.connect_hint")
+    readonly property string catalogConnectHint: qsTr("Add a catalog or install a plugin in Settings.")
 
-    //% "Turn on one or more sources above — or leave them all off."
-    readonly property string catalogEnableChipsHint: qsTrId("catalog.enable_chips_hint")
+    readonly property string catalogEnableChipsHint: qsTr("Turn on one or more sources above - or leave them all off.")
 
-    //% "Libraries on disks — like Steam. You can add other drives."
-    readonly property string storageLibrariesDesc: qsTrId("storage.libraries_desc")
+    readonly property string storageLibrariesDesc: qsTr("Libraries on disk, like Steam. You can add other drives.")
 
-    //% "Add-ons are available for \"%1\" — choose what to download with the game."
-    readonly property string addonsSelectionHint: qsTrId("addons.selection_hint")
+    readonly property string addonsSelectionHint: qsTr("Add-ons are available for \"%1\" - choose what to download with the game.")
 
-    //% "Start installing from the catalog — progress will appear here."
-    readonly property string downloadsEmptyHint: qsTrId("downloads.empty_hint")
+    readonly property string downloadsEmptyHint: qsTr("Start installing from the catalog - progress will appear here.")
 
-    //% "Game files will be deleted from disk. This cannot be undone."
-    readonly property string gameDeleteWarning: qsTrId("game.delete_warning")
+    readonly property string gameDeleteWarning: qsTr("Game files will be deleted from disk. This cannot be undone.")
 }

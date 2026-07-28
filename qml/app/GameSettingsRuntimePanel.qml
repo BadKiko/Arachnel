@@ -81,7 +81,7 @@ MD.ElevationRectangle {
 
             MD.Label {
                 Layout.fillWidth: true
-                text: root.containerInfo.containerPath || "—"
+                text: root.containerInfo.containerPath || "-"
                 typescale: MD.Token.typescale.body_medium
                 wrapMode: Text.WrapAnywhere
                 maximumLineCount: 3
@@ -114,7 +114,7 @@ MD.ElevationRectangle {
                 text: {
                     const path = root.containerInfo.prefixPath || ""
                     if (!path.length)
-                        return "—"
+                        return "-"
                     const exists = root.containerInfo.prefixExists === true
                     return exists ? path : qsTr("%1 (not created yet)").arg(path)
                 }
@@ -139,7 +139,7 @@ MD.ElevationRectangle {
 
             MD.Label {
                 Layout.fillWidth: true
-                text: root.containerInfo.steamAppId || "—"
+                text: root.containerInfo.steamAppId || "-"
                 typescale: MD.Token.typescale.body_medium
             }
         }

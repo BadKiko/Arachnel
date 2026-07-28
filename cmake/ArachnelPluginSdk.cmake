@@ -17,6 +17,7 @@ function(arachnel_plugin_sdk_init ARACHNEL_ROOT)
     set(_ARACHNEL_PLUGIN_SDK_SOURCES
         ${ARACHNEL_ROOT}/src/core/catalog/catalog_parser.cpp
         ${ARACHNEL_ROOT}/src/core/catalog/catalog_types.cpp
+        ${ARACHNEL_ROOT}/src/core/catalog/catalog_genre_normalize.cpp
         ${ARACHNEL_ROOT}/src/core/install/install_kind.cpp
         ${ARACHNEL_ROOT}/src/core/install/install_analysis.cpp
         ${ARACHNEL_ROOT}/src/core/install/install_heuristics.cpp
@@ -24,6 +25,7 @@ function(arachnel_plugin_sdk_init ARACHNEL_ROOT)
         ${ARACHNEL_ROOT}/src/core/runtime/windows_runner.cpp
         ${ARACHNEL_ROOT}/src/core/runtime/proton_manager.cpp
         ${ARACHNEL_ROOT}/src/core/plugins/plugin_api.cpp
+        ${ARACHNEL_ROOT}/src/core/plugins/plugin_catalog_json.cpp
     )
 
     add_library(arachnel_plugin_sdk STATIC ${_ARACHNEL_PLUGIN_SDK_SOURCES})
