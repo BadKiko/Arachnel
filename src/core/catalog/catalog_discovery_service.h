@@ -20,8 +20,6 @@ namespace arachnel::core {
 class CatalogDiscoveryService : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString moodId READ moodId WRITE setMoodId NOTIFY moodIdChanged)
-    Q_PROPERTY(bool moodActive READ moodActive NOTIFY moodIdChanged)
     Q_PROPERTY(bool loading READ loading NOTIFY loadingChanged)
     Q_PROPERTY(bool feedLoaded READ feedLoaded NOTIFY feedChanged)
     Q_PROPERTY(CatalogShelfModel* onFireShelf READ onFireShelf CONSTANT)
@@ -35,9 +33,6 @@ public:
 
     void setCache(QVector<CatalogEntry>* cache);
 
-    QString moodId() const { return m_moodId; }
-    void setMoodId(const QString& moodId);
-    bool moodActive() const { return !m_moodId.isEmpty(); }
     bool loading() const { return m_loading; }
     bool feedLoaded() const { return m_feedLoaded; }
 
@@ -53,7 +48,6 @@ public:
     void onCatalogCacheRebuilt();
 
 signals:
-    void moodIdChanged();
     void loadingChanged();
     void feedChanged();
     void shelvesChanged();
@@ -69,11 +63,9 @@ private:
     bool applyFeedJson(const QByteArray& payload);
     QVector<int> indicesForEntryIds(const QStringList& entryIds) const;
     QStringList entryIdsForShelf(const QString& shelfId) const;
-    QStringList entryIdsForMood(const QString& moodId) const;
 
     QVector<CatalogEntry>* m_cache = nullptr;
     QJsonObject m_feed;
-    QString m_moodId;
     bool m_loading = false;
     bool m_feedLoaded = false;
     quint64 m_requestSerial = 0;

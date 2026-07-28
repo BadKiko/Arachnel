@@ -58,17 +58,6 @@ Item {
             page.openGame(pick.entryId)
     }
 
-    function openShortInstallCatalog() {
-        // Size band 2 = 1–5 GB in catalog filters (closest “short install” preset).
-        Core.applyCatalogPresentation(Core.catalog.sortMode, -1, 2, 0, false, "", 0)
-        page.openFullCatalog("")
-    }
-
-    function showFriendsMood() {
-        Core.catalogDiscovery.moodId = "friends"
-        discoveryFlick.contentY = 0
-    }
-
     readonly property bool discoveryShelvesEmpty:
         Core.catalogDiscovery.onFireShelf.count === 0
         && Core.catalogDiscovery.friendsShelf.count === 0
@@ -117,7 +106,7 @@ Item {
         Item {
             id: catalogScrollClip
             anchors.top: page.discoveryMode ? parent.top : catalogStickyToolbar.bottom
-            anchors.topMargin: page.discoveryMode ? MD.Token.spacing.medium : MD.Token.spacing.small
+            anchors.topMargin: page.discoveryMode ? MD.Token.spacing.large : MD.Token.spacing.small
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.bottom: parent.bottom
@@ -140,8 +129,13 @@ Item {
                     spacing: MD.Token.spacing.extra_large
                     leftMargin: page.pageMargin
                     rightMargin: page.pageMargin
-                    topMargin: MD.Token.spacing.small
-                    bottomMargin: MD.Token.spacing.extra_large
+                    topMargin: MD.Token.spacing.medium
+                    bottomMargin: MD.Token.spacing.extra_large * 2
+
+                    footer: Item {
+                        width: discoveryList.width - discoveryList.leftMargin - discoveryList.rightMargin
+                        height: MD.Token.spacing.extra_large * 2
+                    }
 
                     header: Column {
                         width: discoveryList.width - discoveryList.leftMargin - discoveryList.rightMargin
@@ -151,11 +145,9 @@ Item {
                             width: parent.width
                             visible: !content.discoveryShowSkeleton && !content.discoveryNoFeed
                                      && Core.catalogDiscovery.onFireShelf.count > 0
-                                     && !Core.catalogDiscovery.moodActive
                             page: content.page
                             shelfModel: Core.catalogDiscovery.onFireShelf
                             onOpenGame: function (id) { page.openGame(id) }
-                            onSurpriseRequested: content.pickRandomFromShelves()
                         }
 
                         CatalogDiscoverySkeleton {
@@ -168,9 +160,7 @@ Item {
                             width: parent.width
                             page: content.page
                             onBrowseAllRequested: page.openFullCatalog("")
-                            onHelpMePickRequested: content.openPlayPicker()
                             onSurpriseRequested: content.pickRandomFromShelves()
-                            onShortSessionRequested: content.openShortInstallCatalog()
                         }
 
                         Column {
@@ -226,36 +216,26 @@ Item {
                                                                      || Core.catalogDiscovery.newShelf.count > 0
                                                                      || Core.catalogDiscovery.friendsShelf.count > 0)
 
-                    readonly property var discoveryShelfSections: {
-                        if (Core.catalogDiscovery.moodActive) {
-                            return [{
-                                title: qsTr("Matches your mood"),
-                                subtitle: qsTr("Tap a cover to open details"),
-                                iconName: MD.Token.icon.auto_awesome,
-                                shelfModel: Core.catalogDiscovery.onFireShelf
-                            }]
+                    readonly property var discoveryShelfSections: [
+                        {
+                            title: qsTr("Recommended for you"),
+                            subtitle: "",
+                            iconName: MD.Token.icon.local_fire_department,
+                            shelfModel: Core.catalogDiscovery.onFireShelf
+                        },
+                        {
+                            title: qsTr("With friends"),
+                            subtitle: "",
+                            iconName: MD.Token.icon.groups,
+                            shelfModel: Core.catalogDiscovery.friendsShelf
+                        },
+                        {
+                            title: qsTr("Popular this week"),
+                            subtitle: "",
+                            iconName: MD.Token.icon.fiber_new,
+                            shelfModel: Core.catalogDiscovery.newShelf
                         }
-                        return [
-                            {
-                                title: qsTr("Recommended for you"),
-                                subtitle: "",
-                                iconName: MD.Token.icon.local_fire_department,
-                                shelfModel: Core.catalogDiscovery.onFireShelf
-                            },
-                            {
-                                title: qsTr("With friends"),
-                                subtitle: "",
-                                iconName: MD.Token.icon.groups,
-                                shelfModel: Core.catalogDiscovery.friendsShelf
-                            },
-                            {
-                                title: qsTr("Popular this week"),
-                                subtitle: "",
-                                iconName: MD.Token.icon.fiber_new,
-                                shelfModel: Core.catalogDiscovery.newShelf
-                            }
-                        ]
-                    }
+                    ]
 
                     model: showDiscoveryShelves ? discoveryShelfSections : []
 
@@ -321,20 +301,5 @@ Item {
         visible: page.noSources
         page: content.page
         pageMargin: page.pageMargin
-    }
-
-    CatalogPlayPickerSheet {
-        id: playPickerSheet
-        onApplied: {
-            page.persistCatalogFilters()
-            if (page.browseOnly)
-                page.browseAllMode = true
-            else
-                page.openFullCatalog("")
-        }
-    }
-
-    function openPlayPicker() {
-        playPickerSheet.openSheet()
     }
 }

@@ -9,29 +9,18 @@ Item {
     property url source
     property string seed: ""
     property string fallbackText: ""
-    // True while Steam metadata/cover URL is being resolved (before Image has a source).
     property bool awaiting: false
     property int cornerRadius: MD.Token.shape.corner.extra_large
     property bool hovered: mouseArea.containsMouse
-    // 0–100: color fills left-to-right over grayscale; <0 disables the effect.
     property real fillProgress: -1
     property bool enableShimmer: true
     property int decodeWidth: 300
     property int decodeHeight: 450
     readonly property real fillRatio: Math.max(0, Math.min(1, fillProgress / 100))
 
+    // Card posters: file: only. Hero may opt into remote only if explicitly allowed.
     property bool allowRemote: false
     property bool loadFailedEmitted: false
-
-    readonly property bool hasSource: resolvedSource.length > 0
-    readonly property bool coverReady: hasSource && coverProbe.status === Image.Ready
-    readonly property bool showFillProgress: fillProgress >= 0 && coverReady
-    readonly property bool imageLoading: hasSource
-                                         && (coverProbe.status === Image.Loading
-                                             || coverProbe.status === Image.Null)
-    readonly property bool showShimmer: root.enableShimmer && !coverReady && (awaiting || imageLoading)
-
-    onSourceChanged: loadFailedEmitted = false
 
     readonly property string resolvedSource: {
         const s = root.source.toString()
@@ -41,6 +30,15 @@ Item {
             return s
         return ""
     }
+    readonly property bool hasSource: resolvedSource.length > 0
+    readonly property bool coverReady: hasSource && coverProbe.status === Image.Ready
+    readonly property bool showFillProgress: fillProgress >= 0 && coverReady
+    readonly property bool imageLoading: hasSource
+                                         && (coverProbe.status === Image.Loading
+                                             || coverProbe.status === Image.Null)
+    readonly property bool showShimmer: root.enableShimmer && !coverReady && (awaiting || imageLoading)
+
+    onSourceChanged: loadFailedEmitted = false
 
     readonly property string monogram: {
         const s = (seed || fallbackText || "?").trim()
@@ -66,7 +64,6 @@ Item {
         cache: true
         sourceSize.width: root.decodeWidth
         sourceSize.height: root.decodeHeight
-
         onStatusChanged: {
             if (status === Image.Error && root.resolvedSource.length > 0 && !root.loadFailedEmitted) {
                 root.loadFailedEmitted = true
@@ -101,7 +98,6 @@ Item {
         }
 
         Item {
-            id: shimmerClip
             anchors.fill: parent
             visible: root.showShimmer
             clip: true
@@ -129,7 +125,7 @@ Item {
                         from: -shimmerBand.width
                         to: placeholder.width + shimmerBand.width
                         duration: 1400
-                        easing.type: Easing.InOutCubic
+                        easing.type: Easing.OutCubic
                     }
                     PauseAnimation { duration: 280 }
                 }
@@ -159,7 +155,6 @@ Item {
     }
 
     MD.Image {
-        id: coverImage
         anchors.fill: parent
         source: root.coverReady ? root.resolvedSource : ""
         radius: root.cornerRadius
@@ -213,7 +208,6 @@ Item {
         }
 
         Item {
-            id: colorClip
             width: parent.width * root.fillRatio
             height: parent.height
             clip: true

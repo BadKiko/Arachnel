@@ -56,16 +56,6 @@ void CatalogDiscoveryService::setCache(QVector<CatalogEntry>* cache)
     fetchFeed();
 }
 
-void CatalogDiscoveryService::setMoodId(const QString& moodId)
-{
-    const QString next = moodId.trimmed().toLower();
-    if (m_moodId == next)
-        return;
-    m_moodId = next;
-    emit moodIdChanged();
-    reapplyFeed();
-}
-
 void CatalogDiscoveryService::setLoading(bool loading)
 {
     if (m_loading == loading)
@@ -160,12 +150,6 @@ QStringList CatalogDiscoveryService::entryIdsForShelf(const QString& shelfId) co
     return ids;
 }
 
-QStringList CatalogDiscoveryService::entryIdsForMood(const QString& moodId) const
-{
-    const QJsonObject filters = m_feed.value(QStringLiteral("filters")).toObject();
-    return stringListFromJson(filters.value(moodId));
-}
-
 void CatalogDiscoveryService::reapplyFeed()
 {
     if (!m_cache || !m_feedLoaded) {
@@ -176,20 +160,11 @@ void CatalogDiscoveryService::reapplyFeed()
 
     bindShelves();
 
-    if (!m_moodId.isEmpty()) {
-        const QVector<int> filtered = indicesForEntryIds(entryIdsForMood(m_moodId));
-        m_onFire->setVisibleIndices(filtered);
-        m_new->setVisibleIndices({});
-        m_friends->setVisibleIndices({});
-        m_solo->setVisibleIndices({});
-        m_onlineFix->setVisibleIndices({});
-    } else {
-        m_onFire->setVisibleIndices(indicesForEntryIds(entryIdsForShelf(QStringLiteral("hits"))));
-        m_new->setVisibleIndices(indicesForEntryIds(entryIdsForShelf(QStringLiteral("new"))));
-        m_friends->setVisibleIndices(indicesForEntryIds(entryIdsForShelf(QStringLiteral("friends"))));
-        m_solo->setVisibleIndices(indicesForEntryIds(entryIdsForShelf(QStringLiteral("solo"))));
-        m_onlineFix->setVisibleIndices({});
-    }
+    m_onFire->setVisibleIndices(indicesForEntryIds(entryIdsForShelf(QStringLiteral("hits"))));
+    m_new->setVisibleIndices(indicesForEntryIds(entryIdsForShelf(QStringLiteral("new"))));
+    m_friends->setVisibleIndices(indicesForEntryIds(entryIdsForShelf(QStringLiteral("friends"))));
+    m_solo->setVisibleIndices(indicesForEntryIds(entryIdsForShelf(QStringLiteral("solo"))));
+    m_onlineFix->setVisibleIndices({});
 
     emit shelvesChanged();
 }

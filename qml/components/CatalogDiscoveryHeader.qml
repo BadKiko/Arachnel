@@ -8,13 +8,10 @@ ColumnLayout {
     id: root
 
     required property var page
-    spacing: MD.Token.spacing.medium
+    spacing: MD.Token.spacing.small
 
     signal browseAllRequested()
-    signal helpMePickRequested()
     signal surpriseRequested()
-    signal shortSessionRequested()
-    signal friendsRequested()
 
     readonly property var recentGame: {
         const _n = Core.library.count
@@ -25,6 +22,12 @@ ColumnLayout {
     RowLayout {
         Layout.fillWidth: true
         spacing: MD.Token.spacing.small
+
+        MD.Button {
+            mdState.type: MD.Enum.BtFilledTonal
+            text: qsTr("Surprise me")
+            onClicked: root.surpriseRequested()
+        }
 
         Item { Layout.fillWidth: true }
 
@@ -42,25 +45,24 @@ ColumnLayout {
         }
     }
 
-    // Jump back into something already installed.
     Rectangle {
         Layout.fillWidth: true
         visible: root.hasRecent
         radius: MD.Token.shape.corner.extra_large
         color: MD.Token.color.secondary_container
-        implicitHeight: continueRow.implicitHeight + MD.Token.spacing.medium * 2
+        implicitHeight: continueRow.implicitHeight + MD.Token.spacing.small * 2
 
         RowLayout {
             id: continueRow
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
-            anchors.margins: MD.Token.spacing.medium
+            anchors.margins: MD.Token.spacing.small
             spacing: MD.Token.spacing.medium
 
             Rectangle {
-                Layout.preferredWidth: 56
-                Layout.preferredHeight: 74
+                Layout.preferredWidth: 48
+                Layout.preferredHeight: 64
                 radius: MD.Token.shape.corner.medium
                 color: MD.Token.color.surface_container_highest
                 clip: true
@@ -71,8 +73,8 @@ ColumnLayout {
                     seed: root.recentGame.title || ""
                     fallbackText: root.recentGame.title || "?"
                     cornerRadius: MD.Token.shape.corner.medium
-                    decodeWidth: 112
-                    decodeHeight: 148
+                    decodeWidth: 96
+                    decodeHeight: 128
                 }
             }
 
@@ -107,33 +109,6 @@ ColumnLayout {
             z: -1
             cursorShape: Qt.PointingHandCursor
             onClicked: page.openGame(root.recentGame.gameId)
-        }
-    }
-
-    // Equal-width quick actions.
-    RowLayout {
-        Layout.fillWidth: true
-        spacing: MD.Token.spacing.small
-
-        MD.Button {
-            Layout.fillWidth: true
-            mdState.type: MD.Enum.BtFilledTonal
-            text: qsTr("Surprise me")
-            onClicked: root.surpriseRequested()
-        }
-
-        MD.Button {
-            Layout.fillWidth: true
-            mdState.type: MD.Enum.BtFilledTonal
-            text: qsTr("Help me pick")
-            onClicked: root.helpMePickRequested()
-        }
-
-        MD.Button {
-            Layout.fillWidth: true
-            mdState.type: MD.Enum.BtFilledTonal
-            text: qsTr("Short install")
-            onClicked: root.shortSessionRequested()
         }
     }
 }

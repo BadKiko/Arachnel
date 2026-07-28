@@ -195,12 +195,18 @@ void CoreController::syncLibraryFromStore()
 
 void CoreController::enrichLibraryGameCover(LibraryGame& game) const
 {
-    if (!game.coverUrl.isEmpty())
+    // Keep only existing local covers; drop remotes and stale file: paths.
+    const QString existing = m_coverCache->localUrlFor(game.coverUrl);
+    if (!existing.isEmpty()) {
+        game.coverUrl = existing;
         return;
+    }
+    game.coverUrl.clear();
 
     if (const JobEntry* job = findLatestJobForEntry(game.id)) {
-        if (!job->coverUrl.isEmpty()) {
-            game.coverUrl = job->coverUrl;
+        const QString jobLocal = m_coverCache->localUrlFor(job->coverUrl);
+        if (!jobLocal.isEmpty()) {
+            game.coverUrl = jobLocal;
             return;
         }
     }
@@ -210,7 +216,8 @@ void CoreController::enrichLibraryGameCover(LibraryGame& game) const
         return;
 
     const QString local = m_coverCache->localUrlFor(metadata.coverUrl);
-    game.coverUrl = !local.isEmpty() ? local : metadata.coverUrl;
+    if (!local.isEmpty())
+        game.coverUrl = local;
 }
 
 bool CoreController::isRemoteUploadDateNewer(const QString& remote, const QString& local) const

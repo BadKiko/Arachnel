@@ -11,50 +11,61 @@ Item {
     required property var shelfModel
 
     signal openGame(string entryId)
-    signal surpriseRequested()
 
     property int featuredIndex: 0
+    property string heroLocalUrl: ""
 
     readonly property int shelfCount: shelfModel ? shelfModel.count : 0
     readonly property var featured: shelfCount > 0
                                     ? shelfModel.entryInfo(Math.min(featuredIndex, shelfCount - 1))
                                     : null
-    readonly property string heroCoverUrl: {
-        if (!featured)
-            return ""
-        const appId = featured.steamAppId || ""
-        if (appId.length > 0)
-            return "https://cdn.akamai.steamstatic.com/steam/apps/" + appId + "/library_hero.jpg"
-        const fromCatalog = featured.coverUrl || ""
-        if (fromCatalog.startsWith("file:")
-                || fromCatalog.indexOf("library_capsule") >= 0
-                || fromCatalog.indexOf("library_600x900") >= 0)
-            return fromCatalog
-        return ""
-    }
-    property string heroImageUrl: heroCoverUrl
 
-    onHeroCoverUrlChanged: heroImageUrl = heroCoverUrl
+    readonly property string featuredEntryId: featured ? (featured.entryId || "") : ""
+
+    function refreshHeroCover() {
+        heroLocalUrl = ""
+        if (!featuredEntryId.length)
+            return
+        const cached = Core.catalogHeroCoverUrl(featuredEntryId)
+        if (cached && cached.length) {
+            heroLocalUrl = cached
+            return
+        }
+        // Prefer card cover while hero banner downloads.
+        if (featured && (featured.coverUrl || "").startsWith("file:"))
+            heroLocalUrl = featured.coverUrl
+        Core.requestCatalogHeroCover(featuredEntryId)
+        Core.requestCatalogCover(featuredEntryId)
+    }
+
+    onFeaturedEntryIdChanged: refreshHeroCover()
     onShelfCountChanged: {
         if (featuredIndex >= shelfCount)
             featuredIndex = 0
+        refreshHeroCover()
+    }
+    Component.onCompleted: refreshHeroCover()
+
+    Connections {
+        target: Core
+        function onCatalogHeroCoverChanged(entryId) {
+            if (entryId !== root.featuredEntryId)
+                return
+            root.heroLocalUrl = Core.catalogHeroCoverUrl(entryId)
+        }
+        function onEntryMetadataChanged(entryId) {
+            if (entryId !== root.featuredEntryId)
+                return
+            if (!(root.heroLocalUrl || "").startsWith("file:")
+                    && featured && (featured.coverUrl || "").startsWith("file:"))
+                root.heroLocalUrl = featured.coverUrl
+        }
     }
 
     function nextPick() {
         if (shelfCount <= 1)
             return
         featuredIndex = (featuredIndex + 1) % shelfCount
-    }
-
-    function handleHeroLoadFailed() {
-        if (!featured)
-            return
-        if (heroImageUrl.indexOf("library_hero") >= 0 && (featured.steamAppId || "").length > 0) {
-            heroImageUrl = "https://cdn.akamai.steamstatic.com/steam/apps/"
-                           + featured.steamAppId + "/header.jpg"
-            return
-        }
-        Core.invalidateCatalogCover(featured.entryId)
     }
 
     readonly property string playersLabel: {
@@ -89,19 +100,23 @@ Item {
         color: MD.Token.color.surface_container_high
         clip: true
 
+        // Round via poster + parent radius; avoid layer RoundClip (it clips title text).
         GamePoster {
             id: heroPoster
             anchors.fill: parent
-            source: root.heroImageUrl
+            source: root.heroLocalUrl
             seed: featured ? featured.title : ""
             fallbackText: featured ? featured.title : "?"
             awaiting: featured ? featured.metadataPending : false
-            allowRemote: true
-            cornerRadius: 0
+            allowRemote: false
+            cornerRadius: page.cardRadius
             decodeWidth: 1440
             decodeHeight: 540
             enableShimmer: true
-            onLoadFailed: root.handleHeroLoadFailed()
+            onLoadFailed: {
+                if ((root.heroLocalUrl || "").startsWith("file:"))
+                    Core.invalidateCatalogCover(root.featuredEntryId)
+            }
         }
 
         Rectangle {

@@ -142,10 +142,6 @@ Item {
         catalogFilterSheet.openSheet()
     }
 
-    function openPlayPicker() {
-        catalogContent.openPlayPicker()
-    }
-
     function resetScroll() { catalogContent.resetScroll() }
 
     function saveAndResetScroll() {

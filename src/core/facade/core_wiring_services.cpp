@@ -56,6 +56,10 @@ void CoreController::initializeServices()
                 if (!m_library.replaceGame(game))
                     syncLibraryFromStore();
             });
+    connect(m_catalogCovers, &CatalogCoverCoordinator::heroCoverApplied, this,
+            [this](const QString& entryId, const QString&) {
+                emit catalogHeroCoverChanged(entryId);
+            });
     CatalogController::Hooks catalogHooks;
     catalogHooks.prepareEntry = [this](CatalogEntry& entry) { applyCachedMetadata(entry); };
     catalogHooks.mergedEntriesReady = [this](QVector<CatalogEntry>& entries,

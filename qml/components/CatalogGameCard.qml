@@ -44,62 +44,54 @@ Item {
         return parts.join(" · ")
     }
 
-    readonly property bool hasLibraryCover: coverUrl.startsWith("file:")
-    readonly property string effectiveCoverUrl: hasLibraryCover ? coverUrl : ""
+    readonly property string displayCoverUrl: coverUrl.startsWith("file:") ? coverUrl : ""
 
-    property string requestedId: ""
-    property bool coverRequestSent: false
+    property bool invalidateArmed: true
 
-    function requestCoverIfNeeded() {
-        if (!entryId.length || hasLibraryCover || coverRequestSent)
+    function requestCover() {
+        if (!entryId.length)
             return
-        if (metadataPending && requestedId === entryId)
+        if (displayCoverUrl.length)
             return
-        requestedId = entryId
-        coverRequestSent = true
         Core.requestCatalogCover(entryId)
     }
 
-    function cancelRequest() {
-        requestTimer.stop()
-        if (!requestedId.length)
+    function cancelCover() {
+        if (!entryId.length)
             return
-        Core.cancelCatalogCover(requestedId)
-        requestedId = ""
-        coverRequestSent = false
+        Core.cancelCatalogCover(entryId)
+    }
+
+    function onPosterFailed() {
+        if (!invalidateArmed || !coverUrl.startsWith("file:"))
+            return
+        invalidateArmed = false
+        Core.invalidateCatalogCover(entryId)
     }
 
     Timer {
         id: requestTimer
-        interval: 60
-        onTriggered: root.requestCoverIfNeeded()
+        interval: 40
+        onTriggered: root.requestCover()
     }
 
     Component.onCompleted: requestTimer.start()
-    Component.onDestruction: cancelRequest()
+    Component.onDestruction: cancelCover()
 
     ListView.onReused: {
-        coverRequestSent = false
+        invalidateArmed = true
         requestTimer.restart()
     }
 
     onEntryIdChanged: {
-        cancelRequest()
-        coverRequestSent = false
+        cancelCover()
+        invalidateArmed = true
         requestTimer.restart()
     }
 
-    onCoverUrlChanged: {
-        if (hasLibraryCover) {
+    onDisplayCoverUrlChanged: {
+        if (displayCoverUrl.length)
             requestTimer.stop()
-            requestedId = ""
-            coverRequestSent = true
-        }
-    }
-
-    onMetadataPendingChanged: {
-        if (!metadataPending && !hasLibraryCover)
-            coverRequestSent = true // exhausted / give up — don't spam requests
     }
 
     RowLayout {
@@ -110,17 +102,14 @@ Item {
         GamePoster {
             Layout.preferredWidth: 52
             Layout.preferredHeight: 70
-            source: root.effectiveCoverUrl
+            source: root.compactRow ? root.displayCoverUrl : ""
             seed: root.title
             fallbackText: root.title.length > 0 ? root.title.charAt(0) : "?"
             awaiting: root.metadataPending
             enableShimmer: false
             cornerRadius: MD.Token.shape.corner.medium
             onClicked: root.openDetails(root.entryId)
-            onLoadFailed: {
-                if (root.coverUrl.startsWith("file:"))
-                    Core.invalidateCatalogCover(root.entryId)
-            }
+            onLoadFailed: root.onPosterFailed()
         }
 
         ColumnLayout {
@@ -155,19 +144,14 @@ Item {
         GamePoster {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            source: root.effectiveCoverUrl
+            source: root.compactRow ? "" : root.displayCoverUrl
             seed: root.title
             fallbackText: root.title.length > 0 ? root.title.charAt(0) : "?"
             awaiting: root.metadataPending
-            enableShimmer: false
+            enableShimmer: true
             cornerRadius: MD.Token.shape.corner.large
             onClicked: root.openDetails(root.entryId)
-            onLoadFailed: {
-                if (root.coverUrl.startsWith("file:"))
-                    Core.invalidateCatalogCover(root.entryId)
-            }
-
-            // Keep the card focused: players count is part of metaLine.
+            onLoadFailed: root.onPosterFailed()
         }
 
         MD.Label {

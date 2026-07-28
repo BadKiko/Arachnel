@@ -132,18 +132,17 @@ const CatalogComponent* CoreController::findCatalogAddon(const CatalogEntry& ent
 void CoreController::applyCachedMetadata(CatalogEntry& entry) const
 {
     const GameMetadata metadata = m_metadataService->metadataForTitle(entry.title);
-    // Prefer on-disk cover so Image never hits Steam CDN after a warm cache.
+    // Never plant https into the model — QML Image must only see existing file: URLs.
     if (!metadata.coverUrl.isEmpty()) {
         const QString local = m_coverCache->localUrlFor(metadata.coverUrl);
         if (!local.isEmpty())
             entry.coverUrl = local;
-        else if (entry.coverUrl.isEmpty()
-                 && (metadata.coverUrl.contains(QStringLiteral("library_capsule"))
-                     || metadata.coverUrl.contains(QStringLiteral("library_600x900"))))
-            entry.coverUrl = metadata.coverUrl;
+        else if (m_coverCache->localUrlFor(entry.coverUrl).isEmpty())
+            entry.coverUrl.clear();
+    } else if (m_coverCache->localUrlFor(entry.coverUrl).isEmpty()) {
+        entry.coverUrl.clear();
     }
     applyMetadataToEntry(entry, metadata);
-    // Leave metadataPending alone — it tracks an in-flight/queued fetch, not "missing cover".
 }
 
 QString CoreController::sourceWebsiteFor(const QString& sourceId) const
@@ -269,6 +268,17 @@ void CoreController::invalidateCatalogCover(const QString& entryId)
 {
     if (m_catalogCovers)
         m_catalogCovers->invalidateCatalogCover(entryId);
+}
+
+void CoreController::requestCatalogHeroCover(const QString& entryId)
+{
+    if (m_catalogCovers)
+        m_catalogCovers->requestCatalogHeroCover(entryId);
+}
+
+QString CoreController::catalogHeroCoverUrl(const QString& entryId) const
+{
+    return m_catalogCovers ? m_catalogCovers->heroCoverUrl(entryId) : QString{};
 }
 
 void CoreController::enrichCatalogEntry(const QString& entryId)

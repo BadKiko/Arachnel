@@ -178,6 +178,7 @@ signals:
     void protonStateChanged();
     void availableProtonsChanged();
     void entryMetadataChanged(const QString&);
+    void catalogHeroCoverChanged(const QString& entryId);
     void catalogFiltersChanged();
     void availableCatalogGenresChanged();
 
