@@ -315,27 +315,37 @@ Item {
                     id: gridHost
                     Layout.fillWidth: true
 
-                    // cellWidth must tile exactly across `width`. Using
-                    // cardWidth+spacing per cell overflowed by one spacing and
-                    // clipped the last poster (clip: true) until the window grew.
-                    readonly property int columns: Math.max(
-                        2, Math.floor(width / (page.minCardWidth + page.gridSpacing)))
-                    readonly property real cellW: width > 0
-                        ? width / columns
-                        : page.minCardWidth + page.gridSpacing
-                    readonly property real cardWidth: Math.max(0, cellW - page.gridSpacing)
-                    readonly property real cardHeight: cardWidth * 4 / 3 + page.metaHeight
-                    readonly property int rows: Math.max(1, Math.ceil(Core.library.count / columns))
-                    Layout.preferredHeight: rows * cardHeight
-                        + Math.max(0, rows - 1) * page.gridSpacing
+                    // N cards + (N-1) gaps: floor((w + gap) / (min + gap)).
+                    // Integer cellW so columns * cellW never exceeds width
+                    // (float width/columns clipped the last poster under clip:true).
+                    readonly property int gap: page.gridSpacing
+                    readonly property int columns: {
+                        if (width <= 0)
+                            return 2
+                        return Math.max(
+                            2,
+                            Math.floor((width + gap) / (page.minCardWidth + gap)))
+                    }
+                    readonly property int cellW: columns > 0
+                        ? Math.floor(width / columns)
+                        : page.minCardWidth + gap
+                    readonly property int cardWidth: Math.max(1, cellW - gap)
+                    readonly property int cardHeight: Math.ceil(cardWidth * 4 / 3) + page.metaHeight
+                    readonly property int cellH: cardHeight + gap
+                    readonly property int rows: Math.max(
+                        1, Math.ceil(Core.library.count / Math.max(1, columns)))
+                    // Full cell rows so GridView never clips the next line.
+                    Layout.preferredHeight: rows * cellH
 
                     GridView {
-                        anchors.fill: parent
-                        clip: true
+                        // Exact tile width - leftover pixels stay empty on the right.
+                        width: gridHost.cellW * gridHost.columns
+                        height: parent.height
+                        clip: false
                         interactive: false
                         model: Core.library
                         cellWidth: gridHost.cellW
-                        cellHeight: gridHost.cardHeight + page.gridSpacing
+                        cellHeight: gridHost.cellH
                         cacheBuffer: 0
                         delegate: LibraryGameCard {
                             width: gridHost.cardWidth
