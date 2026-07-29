@@ -254,6 +254,7 @@ Item {
         delegate: CatalogGameCard {
             width: page.cardWidth
             height: page.cardHeight
+            peekLeftEdge: page.peekLeftEdge ?? 0
             onOpenDetails: function (id) { page.openGame(id) }
         }
     }

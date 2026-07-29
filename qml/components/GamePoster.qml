@@ -11,10 +11,13 @@ Item {
     property string fallbackText: ""
     property bool awaiting: false
     property int cornerRadius: MD.Token.shape.corner.extra_large
-    property bool hovered: mouseArea.containsMouse
     property real fillProgress: -1
     property bool enableShimmer: true
     property bool hoverScaleEnabled: false
+    /** When false, parent can put its own MouseArea over the poster (catalog cards). */
+    property bool inputEnabled: true
+    /** Parent-driven hover (e.g. card MouseArea) so the scrim still shows. */
+    property bool externalHovered: false
     property int decodeWidth: 300
     property int decodeHeight: 450
     readonly property real fillRatio: Math.max(0, Math.min(1, fillProgress / 100))
@@ -38,6 +41,8 @@ Item {
                                          && (coverProbe.status === Image.Loading
                                              || coverProbe.status === Image.Null)
     readonly property bool showShimmer: root.enableShimmer && !coverReady && (awaiting || imageLoading)
+    readonly property bool hovered: (root.inputEnabled && mouseArea.containsMouse)
+                                    || root.externalHovered
 
     onSourceChanged: loadFailedEmitted = false
 
@@ -244,6 +249,8 @@ Item {
         z: 2
         color: MD.Util.transparent(MD.Token.color.scrim, 0.2)
         opacity: root.hovered ? 1 : 0
+        // Never steal hover/clicks from the MouseArea below.
+        enabled: false
 
         Behavior on opacity {
             NumberAnimation {
@@ -256,6 +263,8 @@ Item {
     MouseArea {
         id: mouseArea
         anchors.fill: parent
+        z: 10
+        enabled: root.inputEnabled
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         onClicked: root.clicked()

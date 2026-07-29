@@ -12,7 +12,9 @@ Popup {
     property var urls: []
     property bool active: false
     property Item anchorItem: null
-    property int advanceMs: 2000
+    property int advanceMs: 1100
+    /** Left edge (in overlay coords) the popup must not cross - set to nav rail right edge. */
+    property real leftEdgeX: 0
     readonly property bool popupHovered: false
 
     readonly property var shotList: {
@@ -170,11 +172,11 @@ Popup {
         }
 
         const dir = root.slideDir
-        const travel = Math.round(root.width * 0.12)
+        const travel = Math.round(root.width * 0.08)
         nextShot.source = url
         nextShot.opacity = 0
         nextShot.x = dir * travel
-        nextShot.scale = 1.06
+        nextShot.scale = 1.04
         shownShot.opacity = 1
         shownShot.x = 0
         shownShot.scale = 1
@@ -211,14 +213,16 @@ Popup {
         const p = root.anchorItem.mapToItem(overlay, 0, 0)
         const rightX = p.x + root.anchorItem.width + gap
         const leftX = p.x - root.width - gap
+        // leftEdgeX can be set to nav rail width; default clamp is just gap.
+        const leftEdge = Math.max(gap, root.leftEdgeX + gap)
         let nx
         if (rightX + root.width <= overlay.width - gap)
             nx = rightX
-        else if (leftX >= gap)
+        else if (leftX >= leftEdge)
             nx = leftX
         else
-            nx = Math.max(gap, Math.min(p.x + root.anchorItem.width + gap,
-                                        overlay.width - root.width - gap))
+            nx = Math.max(leftEdge,
+                          Math.min(p.x + root.anchorItem.width + gap, overlay.width - root.width - gap))
 
         let ny = p.y + (root.anchorItem.height - root.height) / 2
         ny = Math.max(gap, Math.min(ny, overlay.height - root.height - gap))
@@ -245,7 +249,7 @@ Popup {
         if (!p)
             return false
         while (p) {
-            if (p.visible === false)
+            if (p.visible === false || p.opacity < 0.01 || p.enabled === false)
                 return false
             p = p.parent
         }
@@ -380,13 +384,13 @@ Popup {
 
     Timer {
         id: advanceGrace
-        interval: 900
+        interval: 450
         onTriggered: root.advancePage()
     }
 
     Timer {
         id: skipBadFrame
-        interval: 700
+        interval: 400
         onTriggered: {
             if (root.count > 1)
                 root.advancePage()
@@ -458,48 +462,48 @@ Popup {
     ParallelAnimation {
         id: pageAnim
         property int dir: 1
-        property real travel: 40
+        property real travel: 28
 
         NumberAnimation {
             target: shownShot
             property: "opacity"
             to: 0
-            duration: 440
+            duration: 200
             easing.type: Easing.OutCubic
         }
         NumberAnimation {
             target: shownShot
             property: "x"
             to: -pageAnim.dir * pageAnim.travel
-            duration: 520
+            duration: 260
             easing.type: Easing.OutCubic
         }
         NumberAnimation {
             target: shownShot
             property: "scale"
-            to: 0.94
-            duration: 520
+            to: 0.96
+            duration: 260
             easing.type: Easing.OutCubic
         }
         NumberAnimation {
             target: nextShot
             property: "opacity"
             to: 1
-            duration: 380
+            duration: 180
             easing.type: Easing.OutCubic
         }
         NumberAnimation {
             target: nextShot
             property: "x"
             to: 0
-            duration: 520
+            duration: 260
             easing.type: Easing.OutCubic
         }
         NumberAnimation {
             target: nextShot
             property: "scale"
             to: 1
-            duration: 520
+            duration: 260
             easing.type: Easing.OutCubic
         }
 

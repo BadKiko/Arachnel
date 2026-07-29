@@ -22,6 +22,8 @@ Item {
     property int currentPlayers: -1
     property bool peekArmed: false
     property bool peekWaiting: false
+    /** Pass navRail.width so screenshot peek doesn't render over the nav rail. */
+    property real peekLeftEdge: 0
 
     signal openDetails(string entryId)
 
@@ -111,9 +113,9 @@ Item {
         screenshotPeek.hideNow()
     }
 
-    // After scroll stops, HoverHandler won't re-fire if the pointer never moved.
+    // After scroll stops, hover won't re-fire if the pointer never moved.
     function rearmPeekIfHovered() {
-        if (root.compactRow || !root.visible || !posterHover.hovered)
+        if (root.compactRow || !root.visible || !root.enabled || !posterMouse.containsMouse)
             return
         peekArmTimer.restart()
     }
@@ -177,6 +179,11 @@ Item {
 
     onVisibleChanged: {
         if (!visible)
+            root.dismissPeek()
+    }
+
+    onEnabledChanged: {
+        if (!enabled)
             root.dismissPeek()
     }
 
@@ -255,28 +262,39 @@ Item {
                 enableShimmer: true
                 cornerRadius: MD.Token.shape.corner.large
                 hoverScaleEnabled: false
-                onClicked: root.openDetails(root.entryId)
+                // Card owns a full-size MouseArea above MD.Image (layer/RoundClip
+                // + hover scrim made poster's own hover only work in a tiny zone).
+                inputEnabled: false
+                externalHovered: posterMouse.containsMouse
                 onLoadFailed: root.onPosterFailed()
             }
 
-            HoverHandler {
-                id: posterHover
-                enabled: !root.compactRow && root.visible
-                onHoveredChanged: {
-                    if (hovered) {
-                        peekArmTimer.restart()
-                    } else {
+            MouseArea {
+                id: posterMouse
+                anchors.fill: parent
+                z: 20
+                enabled: !root.compactRow && root.visible && root.enabled
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: root.openDetails(root.entryId)
+                onContainsMouseChanged: {
+                    if (!enabled) {
                         root.dismissPeek()
+                        return
                     }
+                    if (containsMouse)
+                        peekArmTimer.restart()
+                    else
+                        root.dismissPeek()
                 }
             }
 
             Timer {
                 id: peekArmTimer
-                interval: 380
+                interval: 220
                 repeat: false
                 onTriggered: {
-                    if (!posterHover.hovered || !root.visible)
+                    if (!posterMouse.containsMouse || !root.visible || !root.enabled)
                         return
                     root.peekArmed = true
                     if (root.shotUrls.length > 0) {
@@ -309,7 +327,7 @@ Item {
                 wavy: true
                 waveAmplitude: 1.8
                 waveLength: 18
-                visible: root.peekWaiting && posterHover.hovered && root.shotUrls.length === 0
+                visible: root.peekWaiting && posterMouse.containsMouse && root.shotUrls.length === 0
                 running: visible
                 color: MD.Token.color.primary
                 trackColor: MD.Util.transparent(MD.Token.color.on_surface, 0.18)
@@ -320,9 +338,10 @@ Item {
                 entryId: root.entryId
                 anchorItem: posterHost
                 urls: root.shotUrls
+                leftEdgeX: root.peekLeftEdge
                 // Only after we have URLs - popup itself waits for Image.Ready
                 // and rejects frames that don't belong to this entryId.
-                active: root.peekArmed && posterHover.hovered && root.shotUrls.length > 0
+                active: root.peekArmed && posterMouse.containsMouse && root.shotUrls.length > 0
             }
         }
 
@@ -332,7 +351,7 @@ Item {
             typescale: MD.Token.typescale.title_small
             elide: Text.ElideRight
             maximumLineCount: 1
-            opacity: posterHover.hovered ? 1 : 0.92
+            opacity: posterMouse.containsMouse ? 1 : 0.92
 
             Behavior on opacity {
                 NumberAnimation {

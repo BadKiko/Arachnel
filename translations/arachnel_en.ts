@@ -328,9 +328,9 @@
 <context>
     <name>CatalogGameCard</name>
     <message>
-        <location filename="../qml/components/CatalogGameCard.qml" line="55"/>
         <location filename="../qml/components/CatalogGameCard.qml" line="57"/>
-        <location filename="../qml/components/CatalogGameCard.qml" line="58"/>
+        <location filename="../qml/components/CatalogGameCard.qml" line="59"/>
+        <location filename="../qml/components/CatalogGameCard.qml" line="60"/>
         <source>playing</source>
         <translation></translation>
     </message>
@@ -351,17 +351,17 @@
 <context>
     <name>CatalogNavigator</name>
     <message>
-        <location filename="../qml/components/CatalogNavigator.qml" line="343"/>
+        <location filename="../qml/components/CatalogNavigator.qml" line="334"/>
         <source>Fine scrub</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogNavigator.qml" line="367"/>
+        <location filename="../qml/components/CatalogNavigator.qml" line="378"/>
         <source>%1 of %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogNavigator.qml" line="379"/>
+        <location filename="../qml/components/CatalogNavigator.qml" line="394"/>
         <source>Catalog navigator</source>
         <translation type="unfinished"></translation>
     </message>
@@ -387,132 +387,132 @@
 <context>
     <name>CatalogPage</name>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="50"/>
+        <location filename="../qml/app/CatalogPage.qml" line="52"/>
         <source>Newest first</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="51"/>
+        <location filename="../qml/app/CatalogPage.qml" line="53"/>
         <source>Oldest first</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="54"/>
+        <location filename="../qml/app/CatalogPage.qml" line="56"/>
         <source>Portable first</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="55"/>
+        <location filename="../qml/app/CatalogPage.qml" line="57"/>
         <source>Non-portable first</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="56"/>
+        <location filename="../qml/app/CatalogPage.qml" line="58"/>
         <source>Largest first</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="57"/>
+        <location filename="../qml/app/CatalogPage.qml" line="59"/>
         <source>Smallest first</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="63"/>
+        <location filename="../qml/app/CatalogPage.qml" line="65"/>
         <source>Installer</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="64"/>
+        <location filename="../qml/app/CatalogPage.qml" line="66"/>
         <source>Online fix</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="67"/>
+        <location filename="../qml/app/CatalogPage.qml" line="69"/>
         <source>Any size</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="68"/>
+        <location filename="../qml/app/CatalogPage.qml" line="70"/>
         <source>&lt; 1 GB</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="69"/>
+        <location filename="../qml/app/CatalogPage.qml" line="71"/>
         <source>1-5 GB</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="70"/>
+        <location filename="../qml/app/CatalogPage.qml" line="72"/>
         <source>5-20 GB</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="71"/>
+        <location filename="../qml/app/CatalogPage.qml" line="73"/>
         <source>20+ GB</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="74"/>
+        <location filename="../qml/app/CatalogPage.qml" line="76"/>
         <source>Any time</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="75"/>
+        <location filename="../qml/app/CatalogPage.qml" line="77"/>
         <source>Last 7 days</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="76"/>
+        <location filename="../qml/app/CatalogPage.qml" line="78"/>
         <source>Last 30 days</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="77"/>
+        <location filename="../qml/app/CatalogPage.qml" line="79"/>
         <source>Last 90 days</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="78"/>
+        <location filename="../qml/app/CatalogPage.qml" line="80"/>
         <source>Last year</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="81"/>
+        <location filename="../qml/app/CatalogPage.qml" line="83"/>
         <source>Any players</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="82"/>
+        <location filename="../qml/app/CatalogPage.qml" line="84"/>
         <source>Single-player</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="83"/>
+        <location filename="../qml/app/CatalogPage.qml" line="85"/>
         <source>Co-op</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="84"/>
+        <location filename="../qml/app/CatalogPage.qml" line="86"/>
         <source>Multiplayer</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="61"/>
+        <location filename="../qml/app/CatalogPage.qml" line="63"/>
         <source>All</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="52"/>
+        <location filename="../qml/app/CatalogPage.qml" line="54"/>
         <source>Title A-Z</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="53"/>
+        <location filename="../qml/app/CatalogPage.qml" line="55"/>
         <source>Title Z-A</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="62"/>
+        <location filename="../qml/app/CatalogPage.qml" line="64"/>
         <source>Portable</source>
         <translation></translation>
     </message>
@@ -3953,6 +3953,253 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <location filename="../qml/settings/SettingsUpdatesPage.qml" line="272"/>
         <source>Open release page</source>
         <translation></translation>
+    </message>
+</context>
+<context>
+    <name>Setup</name>
+    <message>
+        <location filename="../setup/src/self_extractor.cpp" line="140"/>
+        <source>Extracting files…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/src/setup_backend.cpp" line="195"/>
+        <source>Update package is incomplete (arachnel_app.exe missing)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/src/setup_backend.cpp" line="220"/>
+        <source>Update failed verification; previous install restored</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/src/setup_backend.cpp" line="240"/>
+        <source>Could not replace arachnel_app.exe while Arachnel files were locked</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/src/setup_backend.cpp" line="554"/>
+        <source>Updating uninstaller…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/src/setup_backend.cpp" line="555"/>
+        <source>Registering uninstaller…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/src/setup_backend.cpp" line="567"/>
+        <source>Refreshing shortcuts…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/src/setup_backend.cpp" line="568"/>
+        <source>Creating shortcuts…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/src/setup_backend.cpp" line="573"/>
+        <source>Update complete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/src/setup_backend.cpp" line="574"/>
+        <source>Installation complete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/src/setup_backend.cpp" line="592"/>
+        <location filename="../setup/src/setup_backend.cpp" line="635"/>
+        <source>Please wait - updating Arachnel…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/src/setup_backend.cpp" line="593"/>
+        <location filename="../setup/src/setup_backend.cpp" line="636"/>
+        <source>Preparing…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/src/setup_backend.cpp" line="627"/>
+        <source>Waiting for Arachnel to close…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/src/setup_backend.cpp" line="629"/>
+        <source>Arachnel is still running. Close it and try again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/src/setup_backend.cpp" line="650"/>
+        <source>Preparing update…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/src/setup_backend.cpp" line="653"/>
+        <source>Could not create update staging folder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/src/setup_backend.cpp" line="664"/>
+        <source>Applying update…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/src/setup_backend.cpp" line="674"/>
+        <source>Clearing install folder…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/src/setup_backend.cpp" line="676"/>
+        <source>Could not clear existing install folder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/src/setup_backend.cpp" line="682"/>
+        <source>Creating install folder…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/src/setup_backend.cpp" line="685"/>
+        <source>Could not create install folder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/src/setup_backend.cpp" line="696"/>
+        <source>Installation is incomplete (arachnel_app.exe missing)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/src/setup_backend.cpp" line="702"/>
+        <source>Finalizing…</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SetupTitleBar</name>
+    <message>
+        <location filename="../setup/qml/components/SetupTitleBar.qml" line="42"/>
+        <source>Arachnel Setup</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SetupWindow</name>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="15"/>
+        <source>Arachnel Setup</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="66"/>
+        <source>Choose language</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="72"/>
+        <source>Select the installer language.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="99"/>
+        <source>Install Arachnel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="105"/>
+        <source>Game launcher with plugin-based sources. This wizard unpacks Arachnel to your computer.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="114"/>
+        <source>No embedded app payload found. Build the installer with run.ps1 --installer.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="128"/>
+        <source>Choose install location</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="140"/>
+        <source>Install folder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="156"/>
+        <source>Shortcuts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="161"/>
+        <source>Create desktop shortcut</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="167"/>
+        <source>Create Start Menu shortcut</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="180"/>
+        <source>Updating Arachnel…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="180"/>
+        <source>Installing…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="187"/>
+        <source>Please wait while Arachnel is updated. Do not close this window.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="188"/>
+        <source>Arachnel is being installed on your computer.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="246"/>
+        <source>Arachnel is up to date</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="246"/>
+        <source>Arachnel is ready</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="269"/>
+        <source>Back</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="276"/>
+        <location filename="../setup/qml/SetupWindow.qml" line="283"/>
+        <source>Continue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="291"/>
+        <source>Install</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="299"/>
+        <source>Open folder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="306"/>
+        <source>Launch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setup/qml/SetupWindow.qml" line="316"/>
+        <source>Finish</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
