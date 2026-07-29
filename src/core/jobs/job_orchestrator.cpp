@@ -46,6 +46,10 @@ JobOrchestrator::JobOrchestrator(SettingsStore* settings, JobStore* jobStore,
         m_jobStore->save();
         m_dirty = false;
     });
+
+    m_pruneTimer.setInterval(30 * 1000);
+    connect(&m_pruneTimer, &QTimer::timeout, this, &JobOrchestrator::pruneFinishedJobs);
+    m_pruneTimer.start();
 }
 
 void JobOrchestrator::restoreJobs()
@@ -73,6 +77,8 @@ void JobOrchestrator::restoreJobs()
         if (!job.httpDownload && wasPaused)
             m_torrent->setPaused(job.id, true);
     }
+
+    pruneFinishedJobs();
 }
 
 void JobOrchestrator::flushPersistence()

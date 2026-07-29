@@ -219,6 +219,25 @@ void JobOrchestrator::clearFinishedJobs()
     m_jobStore->setJobs(remaining);
 }
 
+void JobOrchestrator::pruneFinishedJobs()
+{
+    const QDateTime cutoff = QDateTime::currentDateTimeUtc().addMSecs(-kFinishedJobTtlMs);
+    QVector<QString> expired;
+    for (int i = 0; i < m_jobs->rowCount(); ++i) {
+        const JobEntry job = jobFromModelRow(i);
+        if (!isJobTerminal(job.status))
+            continue;
+
+        QDateTime done = QDateTime::fromString(job.completedAt, Qt::ISODate);
+        if (!done.isValid())
+            done = QDateTime::fromString(job.createdAt, Qt::ISODate);
+        if (!done.isValid() || done.toUTC() <= cutoff)
+            expired.append(job.id);
+    }
+    for (const QString& jobId : expired)
+        removeJob(jobId);
+}
+
 void JobOrchestrator::setJobPhase(const QString& jobId, const QString& status,
                                   const QString& detail)
 {
@@ -229,6 +248,10 @@ void JobOrchestrator::setJobPhase(const QString& jobId, const QString& status,
     JobEntry job = jobFromModelRow(row);
     job.status = status;
     job.detail = detail;
+    if (isJobTerminal(status))
+        job.completedAt = isoNow();
+    else
+        job.completedAt.clear();
     updateJobInModel(job);
     persistJob(job);
 }
