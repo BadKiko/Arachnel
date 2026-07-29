@@ -388,11 +388,24 @@ QString catalogFeedValidationError(const QByteArray& payload)
             return QCoreApplication::translate("Core", "Catalog entries array is empty");
     }
 
-    const QVector<CatalogEntry> entries = parseCatalogFeed(payload, QStringLiteral("probe"));
-    if (entries.isEmpty())
-        return QCoreApplication::translate("Core", "Failed to parse games from catalog");
-
     return {};
+}
+
+int catalogFeedQuickCount(const QByteArray& payload)
+{
+    const QJsonDocument document = QJsonDocument::fromJson(payload);
+    if (!document.isObject())
+        return -1;
+    const QJsonObject root = document.object();
+    const QJsonArray downloads = root.value(QStringLiteral("downloads")).toArray();
+    if (!downloads.isEmpty())
+        return downloads.size();
+    QJsonArray ryuu = root.value(QStringLiteral("entries")).toArray();
+    if (ryuu.isEmpty())
+        ryuu = root.value(QStringLiteral("games")).toArray();
+    if (!ryuu.isEmpty())
+        return ryuu.size();
+    return -1;
 }
 
 QString catalogMagnetInfoHash(const QString& magnetUri)

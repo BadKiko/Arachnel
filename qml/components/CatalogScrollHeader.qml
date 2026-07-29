@@ -18,8 +18,10 @@ Item {
 
     width: contentWidth
     height: col.implicitHeight
-    // Hand controls off to the compact bar as it lands.
-    opacity: 1 - root.collapseProgress * 0.85
+    // Fade only - shrinking height fights Flickable contentY and can zero the
+    // scroll offset so the compact bar never lands.
+    opacity: 1 - root.collapseProgress
+    enabled: root.collapseProgress < 0.85
 
     ColumnLayout {
         id: col

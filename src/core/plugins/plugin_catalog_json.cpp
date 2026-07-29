@@ -220,7 +220,6 @@ QVector<CatalogEntry> parsePluginCatalogJson(const QByteArray& json,
         if (!v.isObject())
             continue;
         CatalogEntry e = entryFromJson(v.toObject(), defaultSourceId);
-        prepareCatalogEntry(e);
         out.append(e);
     }
     return out;

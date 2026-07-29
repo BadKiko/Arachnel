@@ -28,6 +28,8 @@ LaunchController::LaunchController(LibraryModel* library, SettingsStore* setting
 
 void LaunchController::markRunning(const LibraryGame& game, qint64 processId)
 {
+    if (m_hooks.touchLastPlayed)
+        m_hooks.touchLastPlayed(game.id);
     m_gameId = game.id;
     m_gameTitle = game.title;
     m_gameCoverUrl = game.coverUrl;

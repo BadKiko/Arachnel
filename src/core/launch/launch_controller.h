@@ -19,6 +19,7 @@ public:
     struct Hooks {
         std::function<void(const QString&)> notice;
         std::function<bool(const LibraryGame&)> ensureRuntime;
+        std::function<void(const QString&)> touchLastPlayed;
     };
 
     LaunchController(LibraryModel* library, SettingsStore* settings, PluginHost* plugins,

@@ -13,6 +13,7 @@
 
 #include <QObject>
 #include <QHash>
+#include <QReadWriteLock>
 #include <QUrl>
 #include <QVariant>
 #include <QVector>

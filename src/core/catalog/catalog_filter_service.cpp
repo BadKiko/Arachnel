@@ -7,6 +7,13 @@
 #include <QDate>
 #include <QElapsedTimer>
 #include <QHash>
+#include <QReadLocker>
+#include <QThreadPool>
+#include <QTimer>
+
+#include <algorithm>
+#include <memory>
+#include <numeric>
 
 namespace arachnel::core {
 
@@ -16,29 +23,29 @@ CatalogFilterService::CatalogFilterService(CatalogModel* model, QObject* parent)
 {
     m_refilterTimer = new QTimer(this);
     m_refilterTimer->setSingleShot(true);
-    m_refilterTimer->setInterval(50);
+    m_refilterTimer->setInterval(120);
     connect(m_refilterTimer, &QTimer::timeout, this, [this]() { applyFilter(m_activeQuery); });
 }
 
-bool CatalogFilterService::entryMatches(const CatalogEntry& entry) const
+bool CatalogFilterService::entryMatches(const CatalogEntry& entry, const FilterSnapshot& snap)
 {
-    if (m_typeFilter >= 0) {
+    if (snap.typeFilter >= 0) {
         const int kind = static_cast<int>(entry.installKind);
-        if (m_typeFilter == 2) {
+        if (snap.typeFilter == 2) {
             if (kind != static_cast<int>(InstallKind::BundledFix)
                 && kind != static_cast<int>(InstallKind::FixDownload))
                 return false;
-        } else if (kind != m_typeFilter) {
+        } else if (kind != snap.typeFilter) {
             return false;
         }
     }
 
-    if (m_sizeFilter > 0) {
+    if (snap.sizeFilter > 0) {
         const qint64 bytes = entry.sizeBytes;
         if (bytes <= 0)
             return true; // unknown size: do not hard-exclude (common before Steam enrichment)
         constexpr qint64 kGb = 1024LL * 1024 * 1024;
-        switch (m_sizeFilter) {
+        switch (snap.sizeFilter) {
         case 1:
             if (bytes >= kGb)
                 return false;
@@ -60,18 +67,18 @@ bool CatalogFilterService::entryMatches(const CatalogEntry& entry) const
         }
     }
 
-    if (m_recencyFilter > 0) {
-        if (entry.uploadDay <= 0 || entry.uploadDay < m_filterCutoffDay)
+    if (snap.recencyFilter > 0) {
+        if (entry.uploadDay <= 0 || entry.uploadDay < snap.cutoffDay)
             return false;
     }
 
-    if (m_hasAddonsFilter && entry.addons.isEmpty())
+    if (snap.hasAddonsFilter && entry.addons.isEmpty())
         return false;
 
-    if (!m_genreFilter.isEmpty()) {
+    if (!snap.genreFilter.isEmpty()) {
         bool matched = false;
-        const QString want = canonicalizeGenreToken(m_genreFilter);
-        const QString wantKey = want.isEmpty() ? m_genreFilter : want;
+        const QString want = canonicalizeGenreToken(snap.genreFilter);
+        const QString wantKey = want.isEmpty() ? snap.genreFilter : want;
         for (const QString& key : entry.genreKeys) {
             if (key.compare(wantKey, Qt::CaseInsensitive) == 0) {
                 matched = true;
@@ -80,7 +87,7 @@ bool CatalogFilterService::entryMatches(const CatalogEntry& entry) const
         }
         if (!matched) {
             for (const QString& token : entry.genreTokens) {
-                if (token.compare(m_genreFilter, Qt::CaseInsensitive) == 0
+                if (token.compare(snap.genreFilter, Qt::CaseInsensitive) == 0
                     || canonicalizeGenreToken(token).compare(wantKey, Qt::CaseInsensitive) == 0) {
                     matched = true;
                     break;
@@ -91,10 +98,10 @@ bool CatalogFilterService::entryMatches(const CatalogEntry& entry) const
             return false;
     }
 
-    if (m_playModeFilter > 0) {
-        const quint8 need = m_playModeFilter == 1   ? kPlayModeSingle
-                            : m_playModeFilter == 2 ? kPlayModeCoop
-                                                     : kPlayModeMulti;
+    if (snap.playModeFilter > 0) {
+        const quint8 need = snap.playModeFilter == 1   ? kPlayModeSingle
+                            : snap.playModeFilter == 2 ? kPlayModeCoop
+                                                       : kPlayModeMulti;
         if ((entry.playModeMask & need) == 0)
             return false;
     }
@@ -102,13 +109,25 @@ bool CatalogFilterService::entryMatches(const CatalogEntry& entry) const
     return true;
 }
 
+void CatalogFilterService::applyFilterResult(quint64 generation, QVector<int> indices,
+                                             qint64 elapsedMs, int cacheSize, const QString& needle)
+{
+    if (generation != m_filterGeneration.load(std::memory_order_relaxed) || !m_model)
+        return;
+    m_model->setVisibleIndicesPresorted(std::move(indices));
+    if (elapsedMs >= 16 || (!needle.isEmpty() && m_model->count() == 0)) {
+        logDiagnostic(QStringLiteral("applyCatalogFilter: %1ms cache=%2 visible=%3 needle=\"%4\"")
+                          .arg(elapsedMs)
+                          .arg(cacheSize)
+                          .arg(m_model->count())
+                          .arg(needle));
+    }
+}
+
 void CatalogFilterService::applyFilter(const QString& query)
 {
     if (!m_model || !m_cache)
         return;
-
-    QElapsedTimer timer;
-    timer.start();
 
     m_filterNeedle = query.trimmed().toLower();
     // Strip zero-width / BOM junk that can sneak in from paste/IME.
@@ -123,34 +142,119 @@ void CatalogFilterService::applyFilter(const QString& query)
         m_filterCutoffDay = QDate::currentDate().addDays(-days).toJulianDay();
     }
 
+    const quint64 generation = ++m_filterGeneration;
     m_model->bindSource(m_cache);
-    QVector<int> indices;
-    indices.reserve(m_cache->size());
-    for (int i = 0; i < m_cache->size(); ++i) {
-        const CatalogEntry& entry = m_cache->at(i);
-        if (!m_filterNeedle.isEmpty()) {
-            const QString titleLower =
-                entry.titleLower.isEmpty() ? entry.title.trimmed().toLower() : entry.titleLower;
-            const bool titleHit = titleLower.contains(m_filterNeedle);
-            const bool idHit = entry.id.contains(m_filterNeedle, Qt::CaseInsensitive)
-                || entry.steamAppId.contains(m_filterNeedle, Qt::CaseInsensitive);
-            if (!titleHit && !idHit)
-                continue;
-        }
-        if (!entryMatches(entry))
-            continue;
-        indices.append(i);
-    }
-    m_model->setVisibleIndices(std::move(indices));
 
-    const qint64 ms = timer.elapsed();
-    if (ms >= 16 || (!m_filterNeedle.isEmpty() && m_model->count() == 0)) {
-        logDiagnostic(QStringLiteral("applyCatalogFilter: %1ms cache=%2 visible=%3 needle=\"%4\"")
-                          .arg(ms)
-                          .arg(m_cache->size())
-                          .arg(m_model->count())
-                          .arg(m_filterNeedle));
-    }
+    FilterSnapshot snap;
+    snap.needle = m_filterNeedle;
+    snap.cutoffDay = m_filterCutoffDay;
+    snap.typeFilter = m_typeFilter;
+    snap.sizeFilter = m_sizeFilter;
+    snap.recencyFilter = m_recencyFilter;
+    snap.hasAddonsFilter = m_hasAddonsFilter;
+    snap.genreFilter = m_genreFilter;
+    snap.playModeFilter = m_playModeFilter;
+    snap.sortMode = m_model->sortMode();
+    snap.anySideFilter = m_typeFilter >= 0 || m_sizeFilter > 0 || m_recencyFilter > 0
+        || m_hasAddonsFilter || !m_genreFilter.isEmpty() || m_playModeFilter > 0;
+
+    QVector<CatalogEntry>* cachePtr = m_cache;
+    QReadWriteLock* lock = m_cacheLock;
+
+    QThreadPool::globalInstance()->start([this, generation, snap, cachePtr, lock]() {
+        QElapsedTimer timer;
+        timer.start();
+
+        QVector<int> indices;
+        int cacheSize = 0;
+        {
+            // Filter/sort under a read lock - avoid deep-copying ~55k CatalogEntry.
+            if (lock) {
+                QReadLocker locker(lock);
+                if (!cachePtr)
+                    return;
+                cacheSize = cachePtr->size();
+                indices.reserve(cacheSize);
+                if (snap.needle.isEmpty() && !snap.anySideFilter) {
+                    indices.resize(cacheSize);
+                    std::iota(indices.begin(), indices.end(), 0);
+                } else {
+                    for (int i = 0; i < cacheSize; ++i) {
+                        if ((i & 0x3FF) == 0
+                            && generation != m_filterGeneration.load(std::memory_order_relaxed)) {
+                            return;
+                        }
+                        const CatalogEntry& entry = cachePtr->at(i);
+                        if (!snap.needle.isEmpty()) {
+                            const QString& titleLower =
+                                entry.titleLower.isEmpty() ? entry.title : entry.titleLower;
+                            const bool titleHit = entry.titleLower.isEmpty()
+                                ? titleLower.contains(snap.needle, Qt::CaseInsensitive)
+                                : titleLower.contains(snap.needle);
+                            const bool idHit = entry.id.contains(snap.needle, Qt::CaseInsensitive)
+                                || entry.steamAppId.contains(snap.needle, Qt::CaseInsensitive);
+                            if (!titleHit && !idHit)
+                                continue;
+                        }
+                        if (!entryMatches(entry, snap))
+                            continue;
+                        indices.append(i);
+                    }
+                }
+
+                if (generation != m_filterGeneration.load(std::memory_order_relaxed))
+                    return;
+
+                const auto mode = static_cast<CatalogModel::SortMode>(snap.sortMode);
+                std::stable_sort(indices.begin(), indices.end(),
+                                 [cachePtr, mode](int ai, int bi) {
+                                     return catalogEntryLess(cachePtr->at(ai), cachePtr->at(bi), mode);
+                                 });
+            } else if (cachePtr) {
+                cacheSize = cachePtr->size();
+                indices.reserve(cacheSize);
+                if (snap.needle.isEmpty() && !snap.anySideFilter) {
+                    indices.resize(cacheSize);
+                    std::iota(indices.begin(), indices.end(), 0);
+                } else {
+                    for (int i = 0; i < cacheSize; ++i) {
+                        const CatalogEntry& entry = cachePtr->at(i);
+                        if (!snap.needle.isEmpty()) {
+                            const QString& titleLower =
+                                entry.titleLower.isEmpty() ? entry.title : entry.titleLower;
+                            const bool titleHit = entry.titleLower.isEmpty()
+                                ? titleLower.contains(snap.needle, Qt::CaseInsensitive)
+                                : titleLower.contains(snap.needle);
+                            const bool idHit = entry.id.contains(snap.needle, Qt::CaseInsensitive)
+                                || entry.steamAppId.contains(snap.needle, Qt::CaseInsensitive);
+                            if (!titleHit && !idHit)
+                                continue;
+                        }
+                        if (!entryMatches(entry, snap))
+                            continue;
+                        indices.append(i);
+                    }
+                }
+                const auto mode = static_cast<CatalogModel::SortMode>(snap.sortMode);
+                std::stable_sort(indices.begin(), indices.end(),
+                                 [cachePtr, mode](int ai, int bi) {
+                                     return catalogEntryLess(cachePtr->at(ai), cachePtr->at(bi), mode);
+                                 });
+            } else {
+                return;
+            }
+        }
+
+        if (generation != m_filterGeneration.load(std::memory_order_relaxed))
+            return;
+
+        const qint64 ms = timer.elapsed();
+        const QString needle = snap.needle;
+        QTimer::singleShot(0, this, [this, generation, indices = std::move(indices), ms, cacheSize,
+                                     needle]() mutable {
+            applyFilterResult(generation, std::move(indices), ms, cacheSize, needle);
+        });
+    });
 }
 
 void CatalogFilterService::scheduleRefilter()
@@ -159,47 +263,88 @@ void CatalogFilterService::scheduleRefilter()
         m_refilterTimer->start();
 }
 
+void CatalogFilterService::applyGenreResult(quint64 generation, QStringList genres)
+{
+    if (generation != m_genreGeneration.load(std::memory_order_relaxed))
+        return;
+    if (genres == m_availableGenres)
+        return;
+    m_availableGenres = std::move(genres);
+    emit availableGenresChanged();
+}
+
 void CatalogFilterService::rebuildAvailableGenres()
 {
     if (!m_cache)
         return;
 
-    QHash<QString, int> counts;
-    for (const auto& entry : *m_cache) {
-        for (const QString& key : entry.genreKeys) {
-            if (!key.isEmpty())
-                ++counts[key];
-        }
-        // Fallback while entries are not yet enriched with canonical keys.
-        if (entry.genreKeys.isEmpty()) {
-            for (const QString& token : entry.genreTokens) {
-                const QString key = canonicalizeGenreToken(token);
-                if (!key.isEmpty())
-                    ++counts[key];
+    const quint64 generation = ++m_genreGeneration;
+    QVector<CatalogEntry>* cachePtr = m_cache;
+    QReadWriteLock* lock = m_cacheLock;
+
+    QThreadPool::globalInstance()->start([this, generation, cachePtr, lock]() {
+        QHash<QString, int> counts;
+        {
+            if (lock) {
+                QReadLocker locker(lock);
+                if (!cachePtr)
+                    return;
+                for (const auto& entry : *cachePtr) {
+                    for (const QString& key : entry.genreKeys) {
+                        if (!key.isEmpty())
+                            ++counts[key];
+                    }
+                    if (entry.genreKeys.isEmpty()) {
+                        for (const QString& token : entry.genreTokens) {
+                            const QString key = canonicalizeGenreToken(token);
+                            if (!key.isEmpty())
+                                ++counts[key];
+                        }
+                    }
+                }
+            } else if (cachePtr) {
+                for (const auto& entry : *cachePtr) {
+                    for (const QString& key : entry.genreKeys) {
+                        if (!key.isEmpty())
+                            ++counts[key];
+                    }
+                    if (entry.genreKeys.isEmpty()) {
+                        for (const QString& token : entry.genreTokens) {
+                            const QString key = canonicalizeGenreToken(token);
+                            if (!key.isEmpty())
+                                ++counts[key];
+                        }
+                    }
+                }
+            } else {
+                return;
             }
         }
-    }
 
-    QStringList curated;
-    for (const QString& key : curatedGenreKeys()) {
-        if (counts.value(key) > 0)
-            curated.append(key);
-    }
+        if (generation != m_genreGeneration.load(std::memory_order_relaxed))
+            return;
 
-    QStringList rest;
-    for (auto it = counts.constBegin(); it != counts.constEnd(); ++it) {
-        if (it.value() <= 0 || curated.contains(it.key()))
-            continue;
-        rest.append(it.key());
-    }
-    rest.sort(Qt::CaseInsensitive);
+        QStringList curated;
+        for (const QString& key : curatedGenreKeys()) {
+            if (counts.value(key) > 0)
+                curated.append(key);
+        }
 
-    QStringList genres = curated;
-    genres.append(rest);
-    if (genres == m_availableGenres)
-        return;
-    m_availableGenres = std::move(genres);
-    emit availableGenresChanged();
+        QStringList rest;
+        for (auto it = counts.constBegin(); it != counts.constEnd(); ++it) {
+            if (it.value() <= 0 || curated.contains(it.key()))
+                continue;
+            rest.append(it.key());
+        }
+        rest.sort(Qt::CaseInsensitive);
+
+        QStringList genres = curated;
+        genres.append(rest);
+
+        QTimer::singleShot(0, this, [this, generation, genres = std::move(genres)]() mutable {
+            applyGenreResult(generation, std::move(genres));
+        });
+    });
 }
 
 void CatalogFilterService::notifyFiltersChanged()

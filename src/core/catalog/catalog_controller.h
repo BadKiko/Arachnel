@@ -8,6 +8,7 @@
 #include <QHash>
 #include <QList>
 #include <QObject>
+#include <QReadWriteLock>
 #include <QSet>
 #include <QStringList>
 #include <QVariantList>
@@ -43,6 +44,8 @@ public:
 
     CatalogController(CatalogModel* catalog, SourcePluginModel* sources, PluginHost* pluginHost,
                       QVector<CatalogEntry>* mergedCache, Hooks hooks = {}, QObject* parent = nullptr);
+
+    void setMergedCacheLock(QReadWriteLock* lock) { m_mergedCacheLock = lock; }
 
     bool catalogLoading() const;
     QString catalogStatus() const;
@@ -94,6 +97,7 @@ private:
     static void normalizeCatalogSourceIds(QVector<CatalogEntry>& entries, const QString& sourceId);
     bool isSourceCacheFresh(const QString& sourceId) const;
     void refreshStaleSources();
+    void revalidateCatalogSource(const QString& sourceId, const QByteArray& etag = {});
     static QString offerGroupKey(const CatalogEntry& entry);
     static QString normalizeTitleKey(const QString& title);
     static int showcaseScore(const CatalogEntry& entry);
@@ -102,12 +106,14 @@ private:
     SourcePluginModel* m_sources = nullptr;
     PluginHost* m_pluginHost = nullptr;
     QVector<CatalogEntry>* m_mergedCache = nullptr;
+    QReadWriteLock* m_mergedCacheLock = nullptr;
     Hooks m_hooks;
     CatalogFeedLoader* m_loader = nullptr;
     CatalogFeedLoader* m_probeLoader = nullptr;
     QTimer* m_cacheTtlTimer = nullptr;
     QHash<QString, QVector<CatalogEntry>> m_catalogBySource;
     QHash<QString, qint64> m_sourceLoadedAtMs;
+    QHash<QString, QByteArray> m_sourcePayloadSha;
     /** groupKey -> all source offers for that game. */
     QHash<QString, QVector<CatalogEntry>> m_installOffers;
     /** Any known entry id (showcase or offer) -> groupKey. */

@@ -10,12 +10,12 @@ ColumnLayout {
     property real collapseProgress: 0
 
     spacing: MD.Token.spacing.small
-    opacity: 1 - root.collapseProgress * 0.95
-    scale: 1 - root.collapseProgress * 0.06
+    opacity: 1 - root.collapseProgress
+    scale: 1 - root.collapseProgress * 0.08
     transformOrigin: Item.TopLeft
 
     transform: Translate {
-        y: -14 * root.collapseProgress
+        y: -18 * root.collapseProgress
     }
 
     MD.Label {

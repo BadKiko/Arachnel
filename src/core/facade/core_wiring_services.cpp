@@ -81,6 +81,9 @@ void CoreController::initializeServices()
     m_catalogController =
         new CatalogController(&m_catalog, &m_sources, m_pluginHost, &m_catalogCache,
                               std::move(catalogHooks), this);
+    m_catalogController->setMergedCacheLock(&m_catalogCacheLock);
+    if (m_catalogFilters)
+        m_catalogFilters->setCacheLock(&m_catalogCacheLock);
     if (m_pluginHost) {
         m_pluginHost->setBeforeUnloadHook([this]() {
             if (m_catalogController)
@@ -247,6 +250,7 @@ void CoreController::initializeServices()
     launchHooks.ensureRuntime = [this](const LibraryGame& game) {
         return ensureRuntimeDependenciesForGame(game);
     };
+    launchHooks.touchLastPlayed = [this](const QString& gameId) { touchLastPlayed(gameId); };
     m_launchController =
         new LaunchController(&m_library, &m_settings, m_pluginHost, std::move(launchHooks), this);
     connect(m_launchController, &LaunchController::runningGameChanged, this,
@@ -346,7 +350,7 @@ void CoreController::initializeServices()
 
     m_catalogValidateLoader = new CatalogFeedLoader(this);
     connect(m_catalogValidateLoader, &CatalogFeedLoader::feedLoaded, this,
-            [this](const QString& tag, const QVector<CatalogEntry> entries) {
+            [this](const QString& tag, const QVector<CatalogEntry>& entries, const QByteArray&) {
                 if (!tag.startsWith(QStringLiteral("validate:")))
                     return;
                 const QString requestId = tag.mid(9);

@@ -3,6 +3,7 @@
 #include "catalog_shelf_model.h"
 #include "catalog_types.h"
 
+#include <QHash>
 #include <QJsonObject>
 #include <QObject>
 #include <QPointer>
@@ -32,6 +33,8 @@ public:
     explicit CatalogDiscoveryService(QObject* parent = nullptr);
 
     void setCache(QVector<CatalogEntry>* cache);
+    /** Optional id -> cache index map (avoids scanning the full catalog per shelf). */
+    void setIdIndex(const QHash<QString, int>* idIndex) { m_idIndex = idIndex; }
 
     bool loading() const { return m_loading; }
     bool feedLoaded() const { return m_feedLoaded; }
@@ -65,6 +68,7 @@ private:
     QStringList entryIdsForShelf(const QString& shelfId) const;
 
     QVector<CatalogEntry>* m_cache = nullptr;
+    const QHash<QString, int>* m_idIndex = nullptr;
     QJsonObject m_feed;
     bool m_loading = false;
     bool m_feedLoaded = false;

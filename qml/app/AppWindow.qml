@@ -9,7 +9,7 @@ MD.ApplicationWindow {
     id: root
 
     visible: true
-    width: 1440
+    width: 1450
     height: 900
     minimumWidth: 1100
     minimumHeight: 720
@@ -48,6 +48,11 @@ MD.ApplicationWindow {
 
         root.detailsGameId = ""
         root.pageIndex = index
+        // Tab opacity crossfade can leave Discover/Catalog scrolled under the clip.
+        Qt.callLater(function () {
+            if (pageStack.currentItem && pageStack.currentItem.fixCatalogViewports)
+                pageStack.currentItem.fixCatalogViewports()
+        })
     }
 
     function openCatalogWithQuery(query) {
@@ -172,14 +177,12 @@ MD.ApplicationWindow {
                 }
             }
 
-            // Background comes from MD.Pane in AppWindow — no fill rect here (it hid bottom corners).
-            // Soft crossfade + light bounce on the active tab.
+            // Soft opacity crossfade only. Scale on mounted Flickables (Discover
+            // shelves) throws contentY under the pane clip after tab switches.
             LibraryPage {
                 anchors.fill: parent
                 opacity: mainPages.pageIndex === 0 ? 1 : 0
-                scale: mainPages.pageIndex === 0 ? 1 : 0.97
                 enabled: mainPages.pageIndex === 0 && opacity > 0.99
-                transformOrigin: Item.Center
                 onOpenGame: function (id) { root.openGameDetails(id, false) }
                 onOpenCatalog: root.goToPage(2)
                 onOpenDownloads: root.goToPage(3)
@@ -192,20 +195,12 @@ MD.ApplicationWindow {
                         easing: MD.Token.easing.emphasized_decelerate
                     }
                 }
-                Behavior on scale {
-                    NumberAnimation {
-                        duration: root.mainTabDuration
-                        easing: MD.Token.easing.emphasized_decelerate
-                    }
-                }
             }
 
             CatalogPage {
                 anchors.fill: parent
                 opacity: mainPages.pageIndex === 1 ? 1 : 0
-                scale: mainPages.pageIndex === 1 ? 1 : 0.97
-                enabled: mainPages.pageIndex === 1
-                transformOrigin: Item.Center
+                enabled: mainPages.pageIndex === 1 && opacity > 0.99
                 browseOnly: false
                 onOpenGame: function (id) { root.openGameDetails(id, true) }
                 onOpenSettings: settingsSheet.openSettings()
@@ -222,21 +217,13 @@ MD.ApplicationWindow {
                         easing: MD.Token.easing.emphasized_decelerate
                     }
                 }
-                Behavior on scale {
-                    NumberAnimation {
-                        duration: root.mainTabDuration
-                        easing: MD.Token.easing.emphasized_decelerate
-                    }
-                }
             }
 
             CatalogPage {
                 id: catalogBrowsePage
                 anchors.fill: parent
                 opacity: mainPages.pageIndex === 2 ? 1 : 0
-                scale: mainPages.pageIndex === 2 ? 1 : 0.97
-                enabled: mainPages.pageIndex === 2
-                transformOrigin: Item.Center
+                enabled: mainPages.pageIndex === 2 && opacity > 0.99
                 browseOnly: true
                 onOpenGame: function (id) { root.openGameDetails(id, true) }
                 onOpenSettings: settingsSheet.openSettings()
@@ -248,29 +235,15 @@ MD.ApplicationWindow {
                         easing: MD.Token.easing.emphasized_decelerate
                     }
                 }
-                Behavior on scale {
-                    NumberAnimation {
-                        duration: root.mainTabDuration
-                        easing: MD.Token.easing.emphasized_decelerate
-                    }
-                }
             }
 
             DownloadsPage {
                 anchors.fill: parent
                 opacity: mainPages.pageIndex === 3 ? 1 : 0
-                scale: mainPages.pageIndex === 3 ? 1 : 0.97
                 enabled: mainPages.pageIndex === 3 && opacity > 0.99
-                transformOrigin: Item.Center
                 onOpenGame: function (id) { root.openGameDetails(id, false) }
 
                 Behavior on opacity {
-                    NumberAnimation {
-                        duration: root.mainTabDuration
-                        easing: MD.Token.easing.emphasized_decelerate
-                    }
-                }
-                Behavior on scale {
                     NumberAnimation {
                         duration: root.mainTabDuration
                         easing: MD.Token.easing.emphasized_decelerate
@@ -369,7 +342,9 @@ MD.ApplicationWindow {
                                 Layout.rightMargin: MD.Token.spacing.medium
                                 Layout.topMargin: active ? MD.Token.spacing.medium : 0
                                 Layout.bottomMargin: active ? MD.Token.spacing.small : 0
+                                // Library home hero already shows "Playing now" + Stop.
                                 active: Core.gameRunning
+                                        && !(root.pageIndex === 0 && !root.detailsOpen)
                                 visible: active
                                 sourceComponent: RunningGameBar {
                                     gameId: Core.runningGameId

@@ -1,12 +1,15 @@
 #include "catalog_feed_loader.h"
 
+#include "catalog_disk_cache.h"
 #include "catalog_parser.h"
 
+#include <QCoreApplication>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
+#include <QTimer>
 #include <QVariant>
-#include <QCoreApplication>
+#include <QtConcurrent>
 
 namespace arachnel::core {
 
@@ -29,15 +32,16 @@ void CatalogFeedLoader::cancelActive()
     delete reply;
 }
 
-void CatalogFeedLoader::loadFeed(const QUrl& url, const QString& sourceId)
+void CatalogFeedLoader::loadFeed(const QUrl& url, const QString& sourceId, const QByteArray& etag)
 {
     cancelActive();
 
     const quint64 serial = ++m_requestSerial;
     QNetworkRequest request(url);
     request.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("Arachnel/0.1"));
-    // Qt 6.7+: abort hung catalog downloads so UI does not spin forever.
     request.setTransferTimeout(30000);
+    if (!etag.isEmpty())
+        request.setRawHeader("If-None-Match", etag);
     QNetworkReply* reply = m_network->get(request);
     reply->setProperty("sourceId", sourceId);
     reply->setProperty("requestSerial", QVariant::fromValue(serial));
@@ -63,6 +67,13 @@ void CatalogFeedLoader::handleFinished(QNetworkReply* reply)
         return;
     }
 
+    const int httpStatus = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    if (httpStatus == 304) {
+        emit feedNotModified(sourceId);
+        reply->deleteLater();
+        return;
+    }
+
     if (reply->error() != QNetworkReply::NoError) {
         emit feedFailed(sourceId, reply->errorString());
         reply->deleteLater();
@@ -70,26 +81,63 @@ void CatalogFeedLoader::handleFinished(QNetworkReply* reply)
     }
 
     const QByteArray payload = reply->readAll();
+    const QByteArray etag = reply->rawHeader("ETag");
     reply->deleteLater();
 
-    const QString validationError = catalogFeedValidationError(payload);
-    if (!validationError.isEmpty()) {
-        emit feedFailed(sourceId, validationError);
-        return;
-    }
+    const bool countOnly = sourceId.startsWith(QStringLiteral("count:"));
+    const quint64 capturedSerial = serial;
 
-  QString parseSourceId = sourceId;
-    if (parseSourceId.startsWith(QStringLiteral("count:")))
-        parseSourceId = parseSourceId.mid(6);
+    (void)QtConcurrent::run([this, sourceId, payload, etag, countOnly, capturedSerial]() {
+        if (countOnly) {
+            const int count = catalogFeedQuickCount(payload);
+            QTimer::singleShot(0, this, [this, sourceId, count, capturedSerial]() {
+                if (capturedSerial != m_requestSerial)
+                    return;
+                if (count < 0) {
+                    emit feedFailed(sourceId,
+                                    QCoreApplication::translate(
+                                        "Core", "Catalog is empty or format not recognized"));
+                    return;
+                }
+                emit feedCountLoaded(sourceId, count);
+            });
+            return;
+        }
 
-    const QVector<CatalogEntry> entries = parseCatalogFeed(payload, parseSourceId);
+        const QString validationError = catalogFeedValidationError(payload);
+        if (!validationError.isEmpty()) {
+            QTimer::singleShot(0, this, [this, sourceId, validationError, capturedSerial]() {
+                if (capturedSerial != m_requestSerial)
+                    return;
+                emit feedFailed(sourceId, validationError);
+            });
+            return;
+        }
 
-    if (entries.isEmpty()) {
-        emit feedFailed(sourceId, QCoreApplication::translate("Core", "Catalog is empty or format not recognized"));
-        return;
-    }
+        QString parseSourceId = sourceId;
+        if (parseSourceId.startsWith(QStringLiteral("count:")))
+            parseSourceId = parseSourceId.mid(6);
 
-    emit feedLoaded(sourceId, entries);
+        QVector<CatalogEntry> entries = parseCatalogFeed(payload, parseSourceId);
+        const QByteArray sha = CatalogDiskCache::payloadSha256(payload);
+        if (!entries.isEmpty() && !sourceId.startsWith(QStringLiteral("validate:")))
+            CatalogDiskCache::savePayload(parseSourceId, payload, etag);
+
+        QTimer::singleShot(0, this,
+                           [this, sourceId, entries = std::move(entries), sha,
+                            capturedSerial]() mutable {
+                               if (capturedSerial != m_requestSerial)
+                                   return;
+                               if (entries.isEmpty()) {
+                                   emit feedFailed(sourceId,
+                                                   QCoreApplication::translate(
+                                                       "Core",
+                                                       "Catalog is empty or format not recognized"));
+                                   return;
+                               }
+                               emit feedLoaded(sourceId, std::move(entries), sha);
+                           });
+    });
 }
 
 } // namespace arachnel::core

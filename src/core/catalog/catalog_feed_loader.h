@@ -2,6 +2,7 @@
 
 #include "catalog_types.h"
 
+#include <QByteArray>
 #include <QObject>
 #include <QPointer>
 #include <QUrl>
@@ -19,12 +20,14 @@ class CatalogFeedLoader : public QObject
 public:
     explicit CatalogFeedLoader(QObject* parent = nullptr);
 
-    void loadFeed(const QUrl& url, const QString& sourceId);
+    void loadFeed(const QUrl& url, const QString& sourceId, const QByteArray& etag = {});
     void cancelActive();
 
 signals:
-    void feedLoaded(const QString& sourceId, QVector<CatalogEntry> entries);
+    void feedLoaded(const QString& sourceId, QVector<CatalogEntry> entries, QByteArray payloadSha);
+    void feedCountLoaded(const QString& sourceId, int count);
     void feedFailed(const QString& sourceId, const QString& error);
+    void feedNotModified(const QString& sourceId);
 
 private:
     void handleFinished(QNetworkReply* reply);

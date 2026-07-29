@@ -39,7 +39,7 @@ Item {
             // typing a new query over a failed search left "Found: 0" on screen.
             Timer {
                 id: searchDebounce
-                interval: 180
+                interval: 700
                 onTriggered: page.applyCatalogSearch(catalogSearch.searchText.trim())
             }
 

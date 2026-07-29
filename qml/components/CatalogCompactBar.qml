@@ -20,6 +20,13 @@ Rectangle {
     transformOrigin: Item.Top
     layer.enabled: visible
 
+    Behavior on opacity {
+        NumberAnimation {
+            duration: MD.Token.duration.short4
+            easing: MD.Token.easing.emphasized_decelerate
+        }
+    }
+
     transform: Translate {
         y: (1 - root.barOpacity) * -12
     }

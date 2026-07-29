@@ -28,6 +28,7 @@ set(ARACHNEL_APP_SOURCES
     src/core/library/library_maintenance_service.cpp
     src/core/library/game_update_service.cpp
     src/core/catalog/catalog_feed_loader.cpp
+    src/core/catalog/catalog_disk_cache.cpp
     src/core/catalog/catalog_parser.cpp
     src/core/catalog/catalog_controller.cpp
     src/core/catalog/catalog_cover_coordinator.cpp

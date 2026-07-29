@@ -1,6 +1,7 @@
 #include "core_controller_impl.h"
 
 #include <QDate>
+#include <QWriteLocker>
 
 namespace arachnel::core {
 
@@ -132,16 +133,10 @@ const CatalogComponent* CoreController::findCatalogAddon(const CatalogEntry& ent
 void CoreController::applyCachedMetadata(CatalogEntry& entry) const
 {
     const GameMetadata metadata = m_metadataService->metadataForTitle(entry.title);
-    // Never plant https into the model — QML Image must only see existing file: URLs.
-    if (!metadata.coverUrl.isEmpty()) {
-        const QString local = m_coverCache->localUrlFor(metadata.coverUrl);
-        if (!local.isEmpty())
-            entry.coverUrl = local;
-        else if (m_coverCache->localUrlFor(entry.coverUrl).isEmpty())
-            entry.coverUrl.clear();
-    } else if (m_coverCache->localUrlFor(entry.coverUrl).isEmpty()) {
+    // Covers resolve lazily in CatalogCoverCoordinator. Skipping localUrlFor here
+    // avoids tens of thousands of filesystem stats during catalog commit.
+    if (!entry.coverUrl.startsWith(QStringLiteral("file:")))
         entry.coverUrl.clear();
-    }
     applyMetadataToEntry(entry, metadata);
 }
 
@@ -243,12 +238,14 @@ void CoreController::syncCatalogInstallKind(const QString& entryId, InstallKind 
     if (it == m_catalogIdToCacheIndex.cend())
         return;
     const int idx = it.value();
+    QWriteLocker locker(&m_catalogCacheLock);
     if (idx < 0 || idx >= m_catalogCache.size())
         return;
     CatalogEntry& entry = m_catalogCache[idx];
     if (entry.installKind == kind)
         return;
     entry.installKind = kind;
+    locker.unlock();
     syncEntryToCatalogModel(entryId);
 }
 

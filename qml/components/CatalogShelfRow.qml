@@ -5,7 +5,7 @@ import QtQuick.Controls
 import Arachnel.Core 1.0
 import Qcm.Material as MD
 
-ColumnLayout {
+Column {
     id: root
 
     required property string title
@@ -29,7 +29,7 @@ ColumnLayout {
     }
 
     RowLayout {
-        Layout.fillWidth: true
+        width: parent.width
         spacing: MD.Token.spacing.small
 
         MD.Label {
@@ -58,8 +58,8 @@ ColumnLayout {
 
     ListView {
         id: shelfList
-        Layout.fillWidth: true
-        Layout.preferredHeight: page.cardHeight
+        width: parent.width
+        height: page.cardHeight
         orientation: ListView.Horizontal
         clip: true
         spacing: MD.Token.spacing.medium
