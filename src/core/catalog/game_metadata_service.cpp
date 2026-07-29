@@ -9,6 +9,7 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QRegularExpression>
+#include <QSet>
 #include <QStandardPaths>
 #include <QTimer>
 #include <QUrl>
@@ -43,7 +44,13 @@ void GameMetadataService::loadCache()
     if (!file.open(QIODevice::ReadOnly))
         return;
     const QJsonObject root = QJsonDocument::fromJson(file.readAll()).object();
+    const int version = root.value(QStringLiteral("_version")).toInt(0);
+    // v1 matched localized Steam names poorly and could pin the wrong appid
+    // (e.g. Ghost of Tsushima → Ghost of Kyiv). Drop resolved ids so we re-search.
+    const bool scrubWrongAppIds = version < 2;
     for (auto it = root.constBegin(); it != root.constEnd(); ++it) {
+        if (it.key().startsWith(QLatin1Char('_')))
+            continue;
         const QJsonObject obj = it.value().toObject();
         GameMetadata metadata;
         metadata.coverUrl = obj.value(QStringLiteral("coverUrl")).toString();
@@ -64,13 +71,27 @@ void GameMetadataService::loadCache()
             metadata.screenshotUrls.append(shot.toString());
         if (!isVerticalLibraryCover(metadata.coverUrl))
             metadata.coverUrl.clear();
+        if (scrubWrongAppIds) {
+            metadata.steamAppId.clear();
+            metadata.description.clear();
+            metadata.descriptionLanguage.clear();
+            metadata.genres.clear();
+            metadata.screenshotUrls.clear();
+            metadata.trailerUrl.clear();
+            metadata.trailerThumbnailUrl.clear();
+            metadata.coverUrl.clear();
+            metadata.sizeLabel.clear();
+        }
         m_cache.insert(it.key(), metadata);
     }
+    if (scrubWrongAppIds)
+        m_saveTimer->start();
 }
 
 void GameMetadataService::saveCache()
 {
     QJsonObject root;
+    root.insert(QStringLiteral("_version"), 2);
     for (auto it = m_cache.constBegin(); it != m_cache.constEnd(); ++it) {
         QJsonObject obj;
         obj.insert(QStringLiteral("coverUrl"), it->coverUrl);
@@ -196,12 +217,14 @@ void GameMetadataService::queueFetch(const QString& entryId, const QString& titl
     const QString uiLanguage = languageCode.trimmed().isEmpty() ? QStringLiteral("en")
                                                                   : languageCode.trimmed();
     GameMetadata cached = m_cache.value(title);
-    if (!knownSteamAppId.isEmpty() && cached.steamAppId != knownSteamAppId) {
-        cached.steamAppId = knownSteamAppId;
+    const QString catalogAppId = knownSteamAppId.trimmed();
+    if (!catalogAppId.isEmpty() && cached.steamAppId != catalogAppId) {
+        cached.steamAppId = catalogAppId;
         m_cache.insert(title, cached);
     }
-    const QString appId =
-        !knownSteamAppId.isEmpty() ? knownSteamAppId.trimmed() : cached.steamAppId.trimmed();
+    // Only catalog-provided ids skip store search. Cached search hits can be wrong
+    // and must not permanently short-circuit resolution.
+    const QString appId = catalogAppId;
 
     if (mode == MetadataFetchMode::CoverOnly && isVerticalLibraryCover(cached.coverUrl)) {
         emit coverReady(entryId, cached.coverUrl);
@@ -210,23 +233,24 @@ void GameMetadataService::queueFetch(const QString& entryId, const QString& titl
     if (mode == MetadataFetchMode::Full && isVerticalLibraryCover(cached.coverUrl)
         && !cached.description.isEmpty()
         && cached.descriptionLanguage.compare(uiLanguage, Qt::CaseInsensitive) == 0) {
+        const QString sizeAppId = !appId.isEmpty() ? appId : cached.steamAppId.trimmed();
         if (hasCachedMedia(cached)) {
             emit metadataReady(entryId, cached);
-            if (cached.sizeLabel.isEmpty() && !appId.isEmpty()) {
+            if (cached.sizeLabel.isEmpty() && !sizeAppId.isEmpty()) {
                 m_inFlight.insert(entryId);
-                requestDepotSize(entryId, title, appId);
+                requestDepotSize(entryId, title, sizeAppId);
             }
             return;
         }
-        if (!appId.isEmpty() && needsMediaRefresh(cached)) {
-            startKnownAppFetch(entryId, title, appId, mode, uiLanguage, cached);
+        if (!sizeAppId.isEmpty() && needsMediaRefresh(cached)) {
+            startKnownAppFetch(entryId, title, sizeAppId, mode, uiLanguage, cached);
             return;
         }
         if (!cached.screenshotUrls.isEmpty() || !cached.trailerUrl.isEmpty()) {
             emit metadataReady(entryId, cached);
-            if (cached.sizeLabel.isEmpty() && !appId.isEmpty()) {
+            if (cached.sizeLabel.isEmpty() && !sizeAppId.isEmpty()) {
                 m_inFlight.insert(entryId);
-                requestDepotSize(entryId, title, appId);
+                requestDepotSize(entryId, title, sizeAppId);
             }
             return;
         }
@@ -320,12 +344,13 @@ void GameMetadataService::requestNext()
         m_inFlight.insert(request.entryId);
 
         const QString term = request.searchTerms.value(request.termIndex);
-        const QString steamLanguage = steamLanguageForUi(request.languageCode);
+        // Always search in English so result names match Latin catalog titles.
+        // (UI language localizes names and broke matching → wrong appids.)
         QUrl url(QStringLiteral("https://store.steampowered.com/api/storesearch/"));
         QUrlQuery query;
         query.addQueryItem(QStringLiteral("term"), term);
         query.addQueryItem(QStringLiteral("cc"), QStringLiteral("US"));
-        query.addQueryItem(QStringLiteral("l"), steamLanguage);
+        query.addQueryItem(QStringLiteral("l"), QStringLiteral("english"));
         url.setQuery(query);
 
         QNetworkRequest netRequest(url);
