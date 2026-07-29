@@ -23,29 +23,27 @@ Item {
                                              || (!root.noSourceSelected && Core.catalog.count === 0))
     readonly property bool listViewMode: catalogPrefs.viewMode === 1
 
-    // Morph as soon as you nudge the list - don't wait until the big title
-    // has fully scrolled away (that left a dead zone with neither title).
-    readonly property int compactRevealRange: Math.max(64, Math.round(catalogContent.catalogIntroHeaderHeight))
+    // Land the compact bar on the first nudge. Long ranges + header-height
+    // morphing fought Flickable contentY and left a scrolled grid with no bar.
+    readonly property int compactRevealRange: 8
     readonly property real scrollContentY: root.listViewMode ? catalogContent.listContentY : catalogContent.gridContentY
-    readonly property real compactRevealStart: 4
+    readonly property real compactRevealStart: 0
     readonly property real compactBarOpacity: {
         if (!catalogContent.visible)
             return 0
         const y = catalogContent.currentContentY
         if (y <= root.compactRevealStart)
             return 0
-        const t = Math.min(1, (y - root.compactRevealStart) / root.compactRevealRange)
-        return t * t * (3 - 2 * t)
+        return Math.min(1, (y - root.compactRevealStart) / root.compactRevealRange)
     }
     readonly property real introCollapseProgress: {
         if (!catalogContent.visible)
             return 0
         const y = catalogContent.currentContentY
-        const span = Math.max(48, catalogContent.catalogIntroHeaderHeight)
+        const span = 12
         if (y <= 0)
             return 0
-        const t = Math.min(1, y / span)
-        return t * t * (3 - 2 * t)
+        return Math.min(1, y / span)
     }
 
     readonly property var sortOptions: [

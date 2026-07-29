@@ -1,8 +1,10 @@
 #include "catalog_controller.h"
 
+#include "catalog_disk_cache.h"
 #include "catalog_feed_loader.h"
 #include "catalog_model.h"
 #include "catalog_parser.h"
+#include "plugin_catalog_json.h"
 #include "plugin_host.h"
 #include "source_plugin_model.h"
 
@@ -47,28 +49,50 @@ CatalogController::CatalogController(CatalogModel* catalog, SourcePluginModel* s
     m_cacheTtlTimer->start();
 
     connect(m_loader, &CatalogFeedLoader::feedLoaded, this,
-            [this](const QString& sourceId, const QVector<CatalogEntry>& entries) {
+            [this](const QString& sourceId, QVector<CatalogEntry> entries,
+                   const QByteArray& payloadSha) {
                 m_catalogHttpLoadActive = false;
-                storeCatalogForSource(sourceId, entries);
+                if (!payloadSha.isEmpty() && m_sourcePayloadSha.value(sourceId) == payloadSha
+                    && m_catalogBySource.contains(sourceId)) {
+                    m_sourceLoadedAtMs.insert(sourceId, QDateTime::currentMSecsSinceEpoch());
+                    m_loadingSourceIds.remove(sourceId);
+                    updateCatalogLoadingState();
+                    processCatalogLoadQueue();
+                    return;
+                }
+                if (!payloadSha.isEmpty())
+                    m_sourcePayloadSha.insert(sourceId, payloadSha);
+                storeCatalogForSource(sourceId, std::move(entries));
+                processCatalogLoadQueue();
+            });
+    connect(m_loader, &CatalogFeedLoader::feedNotModified, this,
+            [this](const QString& sourceId) {
+                m_catalogHttpLoadActive = false;
+                m_sourceLoadedAtMs.insert(sourceId, QDateTime::currentMSecsSinceEpoch());
+                m_loadingSourceIds.remove(sourceId);
+                updateCatalogLoadingState();
                 processCatalogLoadQueue();
             });
     connect(m_loader, &CatalogFeedLoader::feedFailed, this,
             [this](const QString& sourceId, const QString& error) {
                 m_catalogHttpLoadActive = false;
                 m_loadingSourceIds.remove(sourceId);
-                if (m_activeSourceIds.contains(sourceId)) {
+                if (m_activeSourceIds.contains(sourceId) && !m_catalogBySource.contains(sourceId)) {
                     emit noticeRequested(
                         QCoreApplication::translate("Core", "Catalog error: %1").arg(error));
                 }
-                rebuildMergedCatalog();
+                if (m_activeSourceIds.contains(sourceId))
+                    rebuildMergedCatalog();
+                else
+                    updateCatalogLoadingState();
                 processCatalogLoadQueue();
             });
-    connect(m_probeLoader, &CatalogFeedLoader::feedLoaded, this,
-            [this](const QString& tag, const QVector<CatalogEntry>& entries) {
+    connect(m_probeLoader, &CatalogFeedLoader::feedCountLoaded, this,
+            [this](const QString& tag, int count) {
                 if (!tag.startsWith(QStringLiteral("count:")))
                     return;
                 const QString sourceId = tag.mid(6);
-                m_catalogCounts.insert(sourceId, entries.size());
+                m_catalogCounts.insert(sourceId, count);
                 emit catalogCountsChanged();
                 if (m_activeSourceIds.contains(sourceId) && !m_catalogBySource.contains(sourceId))
                     requestCatalogLoad(sourceId);
@@ -187,9 +211,11 @@ void CatalogController::storeCatalogForSource(const QString& sourceId, QVector<C
 {
     normalizeCatalogSourceIds(entries, sourceId);
     for (CatalogEntry& entry : entries) {
-        prepareCatalogEntry(entry);
+        // prepareEntry (metadata) calls prepareCatalogEntry; otherwise prepare once here.
         if (m_hooks.prepareEntry)
             m_hooks.prepareEntry(entry);
+        else
+            prepareCatalogEntry(entry);
     }
     m_catalogBySource.insert(sourceId, std::move(entries));
     m_sourceLoadedAtMs.insert(sourceId, QDateTime::currentMSecsSinceEpoch());
@@ -434,6 +460,41 @@ void CatalogController::processCatalogLoadQueue()
 
 void CatalogController::loadCatalogSourceNow(const QString& sourceId)
 {
+    // Fast path: parse disk cache on a worker, show UI, then revalidate in background.
+    QByteArray diskPayload;
+    QByteArray diskEtag;
+    if (!m_catalogBySource.contains(sourceId)
+        && CatalogDiskCache::loadPayload(sourceId, &diskPayload, &diskEtag)
+        && !diskPayload.isEmpty()) {
+        auto* watcher = new QFutureWatcher<QVector<CatalogEntry>>(this);
+        m_inFlightPluginCatalogWatchers.append(watcher);
+        connect(watcher, &QFutureWatcher<QVector<CatalogEntry>>::finished, this,
+                [this, watcher, sourceId, diskEtag]() {
+                    m_inFlightPluginCatalogWatchers.removeAll(watcher);
+                    QVector<CatalogEntry> entries = watcher->result();
+                    watcher->deleteLater();
+                    if (!entries.isEmpty()) {
+                        QByteArray sha;
+                        QByteArray payload;
+                        if (CatalogDiskCache::loadPayload(sourceId, &payload))
+                            sha = CatalogDiskCache::payloadSha256(payload);
+                        if (!sha.isEmpty())
+                            m_sourcePayloadSha.insert(sourceId, sha);
+                        storeCatalogForSource(sourceId, std::move(entries));
+                    }
+                    // Always refresh from plugin/network; unchanged payload is a no-op.
+                    revalidateCatalogSource(sourceId, diskEtag);
+                });
+        const QByteArray payloadCopy = diskPayload;
+        watcher->setFuture(QtConcurrent::run([payloadCopy, sourceId]() {
+            QVector<CatalogEntry> entries = parseCatalogFeed(payloadCopy, sourceId);
+            if (entries.isEmpty())
+                entries = parsePluginCatalogJson(payloadCopy, sourceId);
+            return entries;
+        }));
+        return;
+    }
+
     if (m_pluginHost) {
         if (m_pluginHost->hasPlugin(sourceId)) {
             auto* watcher = new QFutureWatcher<QVector<CatalogEntry>>(this);
@@ -441,17 +502,23 @@ void CatalogController::loadCatalogSourceNow(const QString& sourceId)
             connect(watcher, &QFutureWatcher<QVector<CatalogEntry>>::finished, this,
                     [this, watcher, sourceId]() {
                         m_inFlightPluginCatalogWatchers.removeAll(watcher);
-                        const QVector<CatalogEntry> entries = watcher->result();
+                        QVector<CatalogEntry> entries = watcher->result();
                         watcher->deleteLater();
                         if (!entries.isEmpty()) {
-                            storeCatalogForSource(sourceId, entries);
+                            QByteArray payload;
+                            if (CatalogDiskCache::loadPayload(sourceId, &payload) && !payload.isEmpty())
+                                m_sourcePayloadSha.insert(sourceId,
+                                                          CatalogDiskCache::payloadSha256(payload));
+                            storeCatalogForSource(sourceId, std::move(entries));
                             return;
                         }
                         const QString url = m_sources->catalogUrlFor(sourceId);
                         if (!url.isEmpty()) {
                             m_catalogHttpLoadActive = true;
                             updateCatalogLoadingState();
-                            m_loader->loadFeed(QUrl(url), sourceId);
+                            QByteArray etag;
+                            CatalogDiskCache::loadPayload(sourceId, nullptr, &etag);
+                            m_loader->loadFeed(QUrl(url), sourceId, etag);
                             return;
                         }
                         m_loadingSourceIds.remove(sourceId);
@@ -474,13 +541,56 @@ void CatalogController::loadCatalogSourceNow(const QString& sourceId)
     if (!url.isEmpty()) {
         m_catalogHttpLoadActive = true;
         updateCatalogLoadingState();
-        m_loader->loadFeed(QUrl(url), sourceId);
+        QByteArray etag;
+        CatalogDiskCache::loadPayload(sourceId, nullptr, &etag);
+        m_loader->loadFeed(QUrl(url), sourceId, etag);
         return;
     }
     m_loadingSourceIds.remove(sourceId);
     emit noticeRequested(QCoreApplication::translate("Core", "No catalog URL configured for source %1")
                              .arg(sourceId));
     rebuildMergedCatalog();
+}
+
+void CatalogController::revalidateCatalogSource(const QString& sourceId, const QByteArray& etag)
+{
+    if (m_pluginHost && m_pluginHost->hasPlugin(sourceId)) {
+        auto* watcher = new QFutureWatcher<QVector<CatalogEntry>>(this);
+        m_inFlightPluginCatalogWatchers.append(watcher);
+        connect(watcher, &QFutureWatcher<QVector<CatalogEntry>>::finished, this,
+                [this, watcher, sourceId]() {
+                    m_inFlightPluginCatalogWatchers.removeAll(watcher);
+                    QVector<CatalogEntry> entries = watcher->result();
+                    watcher->deleteLater();
+                    if (entries.isEmpty())
+                        return;
+                    QByteArray payload;
+                    QByteArray sha;
+                    if (CatalogDiskCache::loadPayload(sourceId, &payload) && !payload.isEmpty())
+                        sha = CatalogDiskCache::payloadSha256(payload);
+                    if (!sha.isEmpty() && m_sourcePayloadSha.value(sourceId) == sha)
+                        return;
+                    if (!sha.isEmpty())
+                        m_sourcePayloadSha.insert(sourceId, sha);
+                    storeCatalogForSource(sourceId, std::move(entries));
+                });
+        PluginHost* host = m_pluginHost;
+        watcher->setFuture(QtConcurrent::run([host, sourceId]() {
+            return host->loadPluginCatalog(sourceId);
+        }));
+        return;
+    }
+
+    const QString url = m_sources->catalogUrlFor(sourceId);
+    if (url.isEmpty())
+        return;
+    // Keep chrome idle when we already showed disk cache; only block UI on cold load.
+    if (!m_catalogBySource.contains(sourceId)) {
+        m_catalogHttpLoadActive = true;
+        m_loadingSourceIds.insert(sourceId);
+        updateCatalogLoadingState();
+    }
+    m_loader->loadFeed(QUrl(url), sourceId, etag);
 }
 
 void CatalogController::updateCatalogLoadingState()
@@ -500,7 +610,9 @@ void CatalogController::refreshCatalog(const QString& sourceId)
 {
     m_catalogBySource.remove(sourceId);
     m_sourceLoadedAtMs.remove(sourceId);
+    m_sourcePayloadSha.remove(sourceId);
     m_catalogCounts.remove(sourceId);
+    CatalogDiskCache::remove(sourceId);
     emit catalogCountsChanged();
     m_loadingSourceIds.remove(sourceId);
     m_catalogLoadQueue.removeAll(sourceId);
@@ -590,6 +702,7 @@ void CatalogController::invalidateSourceCatalog(const QString& id)
 {
     m_catalogBySource.remove(id);
     m_sourceLoadedAtMs.remove(id);
+    m_sourcePayloadSha.remove(id);
     m_catalogCounts.remove(id);
     emit catalogCountsChanged();
     if (m_activeSourceIds.contains(id))

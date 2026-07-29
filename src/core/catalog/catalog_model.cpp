@@ -3,6 +3,10 @@
 #include "catalog_types.h"
 #include "install_kind.h"
 
+#include <QCoreApplication>
+#include <QDate>
+#include <QLocale>
+
 #include <algorithm>
 
 namespace arachnel::core {
@@ -64,6 +68,25 @@ bool catalogEntryLess(const CatalogEntry& a, const CatalogEntry& b, CatalogModel
     }
     return a.titleLower < b.titleLower;
 }
+
+namespace {
+
+QChar catalogIndexLetter(const QString& titleLower)
+{
+    for (const QChar c : titleLower) {
+        if (c.isDigit())
+            return QLatin1Char('#');
+        if (!c.isLetter())
+            continue;
+        // Latin A-Z for the alphabet scrubber; everything else maps to '#'.
+        if (c.unicode() < 128)
+            return c.toUpper();
+        return QLatin1Char('#');
+    }
+    return QLatin1Char('#');
+}
+
+} // namespace
 
 CatalogModel::CatalogModel(QObject* parent)
     : QAbstractListModel(parent)
@@ -167,6 +190,7 @@ void CatalogModel::setSortModeQuiet(int mode)
         return;
     m_sortMode = next;
     emit sortModeChanged();
+    invalidateScrubStops();
 }
 
 void CatalogModel::setSortMode(int mode)
@@ -184,6 +208,7 @@ void CatalogModel::setSortMode(int mode)
         endResetModel();
     }
     emit sortModeChanged();
+    invalidateScrubStops();
 }
 
 void CatalogModel::bindSource(const QVector<CatalogEntry>* source)
@@ -224,6 +249,7 @@ void CatalogModel::setVisibleIndices(QVector<int> indices)
     rebuildIdMap();
     endResetModel();
     emit countChanged();
+    invalidateScrubStops();
 }
 
 void CatalogModel::setVisibleIndicesPresorted(QVector<int> indices)
@@ -235,6 +261,7 @@ void CatalogModel::setVisibleIndicesPresorted(QVector<int> indices)
     rebuildIdMap();
     endResetModel();
     emit countChanged();
+    invalidateScrubStops();
 }
 
 bool CatalogModel::notifyEntryChanged(const QString& id)
@@ -333,10 +360,215 @@ QVariantList CatalogModel::addonsFor(const QString& entryId) const
     return addons;
 }
 
+int CatalogModel::indexForLetter(const QString& letter) const
+{
+    if (!m_source || letter.isEmpty() || m_indices.isEmpty())
+        return -1;
+
+    const QChar target = letter.at(0).toUpper();
+    for (int row = 0; row < m_indices.size(); ++row) {
+        const CatalogEntry* entry = entryAtRow(row);
+        if (!entry)
+            continue;
+        if (catalogIndexLetter(entry->titleLower) == target)
+            return row;
+    }
+    return -1;
+}
+
+void CatalogModel::invalidateScrubStops() const
+{
+    m_scrubStopsDirty = true;
+    emit const_cast<CatalogModel*>(this)->scrubStopsChanged();
+}
+
+QVariantList CatalogModel::scrubStops() const
+{
+    if (!m_scrubStopsDirty)
+        return m_scrubStops;
+    m_scrubStops = buildScrubStops();
+    m_scrubStopsDirty = false;
+    return m_scrubStops;
+}
+
+namespace {
+
+QVariantMap scrubStop(const QString& label, int row)
+{
+    return QVariantMap{
+        {QStringLiteral("label"), label},
+        {QStringLiteral("row"), row},
+    };
+}
+
+QString monthScrubLabel(const QDate& day, int currentYear)
+{
+    const QLocale locale;
+    if (day.year() == currentYear)
+        return locale.toString(day, QStringLiteral("MMM"));
+    if (day.month() == 1)
+        return QString::number(day.year());
+    return locale.toString(day, QStringLiteral("MMM yy"));
+}
+
+QString sizeScrubLabel(qint64 bytes)
+{
+    if (bytes >= (50LL << 30))
+        return QStringLiteral("50G+");
+    if (bytes >= (20LL << 30))
+        return QStringLiteral("20G");
+    if (bytes >= (10LL << 30))
+        return QStringLiteral("10G");
+    if (bytes >= (5LL << 30))
+        return QStringLiteral("5G");
+    if (bytes >= (1LL << 30))
+        return QStringLiteral("1G");
+    if (bytes >= (500LL << 20))
+        return QStringLiteral("500M");
+    if (bytes >= (100LL << 20))
+        return QStringLiteral("100M");
+    return QStringLiteral("<100M");
+}
+
+} // namespace
+
+QVariantList CatalogModel::buildScrubStops() const
+{
+    QVariantList stops;
+    if (!m_source || m_indices.isEmpty())
+        return stops;
+
+    constexpr int kMaxStops = 18;
+
+    switch (m_sortMode) {
+    case SortTitleAsc:
+    case SortTitleDesc: {
+        static const char kLetters[] = "#ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        for (const char* p = kLetters; *p; ++p) {
+            const QString letter = QString(QLatin1Char(*p));
+            const int row = indexForLetter(letter);
+            if (row >= 0)
+                stops.append(scrubStop(letter, row));
+        }
+        break;
+    }
+    case SortSizeLargest:
+    case SortSizeSmallest: {
+        QString lastLabel;
+        for (int row = 0; row < m_indices.size(); ++row) {
+            const CatalogEntry* entry = entryAtRow(row);
+            if (!entry)
+                continue;
+            const QString label = sizeScrubLabel(entry->sizeBytes);
+            if (label == lastLabel)
+                continue;
+            lastLabel = label;
+            stops.append(scrubStop(label, row));
+        }
+        if (stops.size() > kMaxStops) {
+            QVariantList thinned;
+            thinned.reserve(kMaxStops);
+            for (int i = 0; i < kMaxStops; ++i) {
+                const int idx = i * (stops.size() - 1) / (kMaxStops - 1);
+                thinned.append(stops.at(idx));
+            }
+            stops = std::move(thinned);
+        }
+        break;
+    }
+    case SortPortableFirst:
+    case SortNonPortableFirst: {
+        int portableRow = -1;
+        int otherRow = -1;
+        for (int row = 0; row < m_indices.size(); ++row) {
+            const CatalogEntry* entry = entryAtRow(row);
+            if (!entry)
+                continue;
+            const bool portable = entry->installKind == InstallKind::PortableArchive;
+            if (portable && portableRow < 0)
+                portableRow = row;
+            if (!portable && otherRow < 0)
+                otherRow = row;
+            if (portableRow >= 0 && otherRow >= 0)
+                break;
+        }
+        const QString portableLabel =
+            QCoreApplication::translate("Core", "Portable");
+        const QString otherLabel =
+            QCoreApplication::translate("Core", "Installer");
+        if (m_sortMode == SortPortableFirst) {
+            if (portableRow >= 0)
+                stops.append(scrubStop(portableLabel, portableRow));
+            if (otherRow >= 0)
+                stops.append(scrubStop(otherLabel, otherRow));
+        } else {
+            if (otherRow >= 0)
+                stops.append(scrubStop(otherLabel, otherRow));
+            if (portableRow >= 0)
+                stops.append(scrubStop(portableLabel, portableRow));
+        }
+        break;
+    }
+    case SortNewest:
+    case SortOldest:
+    default: {
+        struct Boundary {
+            QString ym;
+            int row = 0;
+        };
+        QVector<Boundary> boundaries;
+        boundaries.reserve(64);
+        QString lastYm;
+        for (int row = 0; row < m_indices.size(); ++row) {
+            const CatalogEntry* entry = entryAtRow(row);
+            if (!entry)
+                continue;
+            QString ym = entry->uploadDate.left(7);
+            if (ym.size() < 7)
+                ym = QStringLiteral("?");
+            if (ym == lastYm)
+                continue;
+            lastYm = ym;
+            boundaries.push_back({ym, row});
+        }
+
+        QVector<Boundary> picked;
+        if (boundaries.size() <= kMaxStops) {
+            picked = boundaries;
+        } else {
+            picked.reserve(kMaxStops);
+            for (int i = 0; i < kMaxStops; ++i) {
+                const int idx = i * (boundaries.size() - 1) / (kMaxStops - 1);
+                picked.push_back(boundaries.at(idx));
+            }
+        }
+
+        const int currentYear = QDate::currentDate().year();
+        QString lastLabel;
+        for (const Boundary& b : picked) {
+            QString label = b.ym;
+            const QDate day = QDate::fromString(b.ym + QStringLiteral("-01"), Qt::ISODate);
+            if (day.isValid())
+                label = monthScrubLabel(day, currentYear);
+            else if (b.ym == QLatin1String("?"))
+                label = QCoreApplication::translate("Core", "Unknown");
+            if (label == lastLabel)
+                continue;
+            lastLabel = label;
+            stops.append(scrubStop(label, b.row));
+        }
+        break;
+    }
+    }
+
+    return stops;
+}
+
 void CatalogModel::clear()
 {
     if (m_indices.isEmpty()) {
         m_source = nullptr;
+        invalidateScrubStops();
         return;
     }
     beginResetModel();
@@ -345,6 +577,7 @@ void CatalogModel::clear()
     m_source = nullptr;
     endResetModel();
     emit countChanged();
+    invalidateScrubStops();
 }
 
 } // namespace arachnel::core

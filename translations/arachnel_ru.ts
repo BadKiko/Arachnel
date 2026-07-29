@@ -14,7 +14,7 @@
         <translation>Подождите. Установщик откроется автоматически.</translation>
     </message>
     <message>
-        <location filename="../qml/app/AppUpdateProgressOverlay.qml" line="80"/>
+        <location filename="../qml/app/AppUpdateProgressOverlay.qml" line="70"/>
         <source>Starting…</source>
         <translation>Запуск…</translation>
     </message>
@@ -65,22 +65,22 @@
         <translation>Arachnel</translation>
     </message>
     <message>
-        <location filename="../qml/app/AppWindow.qml" line="120"/>
+        <location filename="../qml/app/AppWindow.qml" line="130"/>
         <source>Library</source>
         <translation>Библиотека</translation>
     </message>
     <message>
-        <location filename="../qml/app/AppWindow.qml" line="124"/>
+        <location filename="../qml/app/AppWindow.qml" line="134"/>
         <source>Discover</source>
         <translation>Подборки</translation>
     </message>
     <message>
-        <location filename="../qml/app/AppWindow.qml" line="128"/>
+        <location filename="../qml/app/AppWindow.qml" line="138"/>
         <source>Catalog</source>
         <translation>Каталог</translation>
     </message>
     <message>
-        <location filename="../qml/app/AppWindow.qml" line="132"/>
+        <location filename="../qml/app/AppWindow.qml" line="142"/>
         <source>Downloads</source>
         <translation>Загрузки</translation>
     </message>
@@ -88,17 +88,17 @@
 <context>
     <name>CatalogCompactBar</name>
     <message>
-        <location filename="../qml/components/CatalogCompactBar.qml" line="45"/>
+        <location filename="../qml/components/CatalogCompactBar.qml" line="77"/>
         <source>Catalog</source>
         <translation>Каталог</translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogCompactBar.qml" line="54"/>
+        <location filename="../qml/components/CatalogCompactBar.qml" line="114"/>
         <source>Loading…</source>
         <translation>Загрузка…</translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogCompactBar.qml" line="55"/>
+        <location filename="../qml/components/CatalogCompactBar.qml" line="115"/>
         <source>Found: %1</source>
         <translation>Найдено: %1</translation>
     </message>
@@ -129,24 +129,24 @@
 <context>
     <name>CatalogDiscoveryHero</name>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="76"/>
-        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="78"/>
-        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="79"/>
+        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="80"/>
+        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="82"/>
+        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="83"/>
         <source>playing now</source>
         <translation>играют сейчас</translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="146"/>
+        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="159"/>
         <source>Tonight&apos;s pick</source>
         <translation>Выбор на вечер</translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="177"/>
+        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="190"/>
         <source>Open game</source>
         <translation>Открыть игру</translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="183"/>
+        <location filename="../qml/components/CatalogDiscoveryHero.qml" line="196"/>
         <source>Another pick</source>
         <translation>Другой вариант</translation>
     </message>
@@ -336,14 +336,22 @@
     </message>
 </context>
 <context>
+    <name>CatalogIndexScrubber</name>
+    <message>
+        <location filename="../qml/components/CatalogIndexScrubber.qml" line="118"/>
+        <source>Catalog index scrubber</source>
+        <translation>Навигация по каталогу</translation>
+    </message>
+</context>
+<context>
     <name>CatalogIntroHeader</name>
     <message>
-        <location filename="../qml/components/CatalogIntroHeader.qml" line="11"/>
+        <location filename="../qml/components/CatalogIntroHeader.qml" line="23"/>
         <source>Browse the catalog</source>
         <translation>Каталог игр</translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogIntroHeader.qml" line="17"/>
+        <location filename="../qml/components/CatalogIntroHeader.qml" line="29"/>
         <source>Search and filter every game from your enabled sources.</source>
         <translation>Поиск и фильтры по всем играм из включённых источников.</translation>
     </message>
@@ -369,132 +377,132 @@
 <context>
     <name>CatalogPage</name>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="40"/>
+        <location filename="../qml/app/CatalogPage.qml" line="50"/>
         <source>Newest first</source>
         <translation>Сначала новые</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="41"/>
+        <location filename="../qml/app/CatalogPage.qml" line="51"/>
         <source>Oldest first</source>
         <translation>Сначала старые</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="44"/>
+        <location filename="../qml/app/CatalogPage.qml" line="54"/>
         <source>Portable first</source>
         <translation>Сначала портабл</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="45"/>
+        <location filename="../qml/app/CatalogPage.qml" line="55"/>
         <source>Non-portable first</source>
         <translation>Сначала не портабл</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="51"/>
+        <location filename="../qml/app/CatalogPage.qml" line="61"/>
         <source>All</source>
         <translation>Все</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="46"/>
+        <location filename="../qml/app/CatalogPage.qml" line="56"/>
         <source>Largest first</source>
         <translation>Сначала большие</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="42"/>
+        <location filename="../qml/app/CatalogPage.qml" line="52"/>
         <source>Title A-Z</source>
         <translation>Название А-Я</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="43"/>
+        <location filename="../qml/app/CatalogPage.qml" line="53"/>
         <source>Title Z-A</source>
         <translation>Название Я-А</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="47"/>
+        <location filename="../qml/app/CatalogPage.qml" line="57"/>
         <source>Smallest first</source>
         <translation>Сначала маленькие</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="52"/>
+        <location filename="../qml/app/CatalogPage.qml" line="62"/>
         <source>Portable</source>
         <translation>Портабл</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="53"/>
+        <location filename="../qml/app/CatalogPage.qml" line="63"/>
         <source>Installer</source>
         <translation>Установщик</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="54"/>
+        <location filename="../qml/app/CatalogPage.qml" line="64"/>
         <source>Online fix</source>
         <translation>Онлайн-фикс</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="57"/>
+        <location filename="../qml/app/CatalogPage.qml" line="67"/>
         <source>Any size</source>
         <translation>Любой размер</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="58"/>
+        <location filename="../qml/app/CatalogPage.qml" line="68"/>
         <source>&lt; 1 GB</source>
         <translation>&lt; 1 ГБ</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="59"/>
+        <location filename="../qml/app/CatalogPage.qml" line="69"/>
         <source>1-5 GB</source>
         <translation>1-5 ГБ</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="60"/>
+        <location filename="../qml/app/CatalogPage.qml" line="70"/>
         <source>5-20 GB</source>
         <translation>5-20 ГБ</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="61"/>
+        <location filename="../qml/app/CatalogPage.qml" line="71"/>
         <source>20+ GB</source>
         <translation>20+ ГБ</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="64"/>
+        <location filename="../qml/app/CatalogPage.qml" line="74"/>
         <source>Any time</source>
         <translation>Любое время</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="65"/>
+        <location filename="../qml/app/CatalogPage.qml" line="75"/>
         <source>Last 7 days</source>
         <translation>За 7 дней</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="66"/>
+        <location filename="../qml/app/CatalogPage.qml" line="76"/>
         <source>Last 30 days</source>
         <translation>За 30 дней</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="67"/>
+        <location filename="../qml/app/CatalogPage.qml" line="77"/>
         <source>Last 90 days</source>
         <translation>За 90 дней</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="68"/>
+        <location filename="../qml/app/CatalogPage.qml" line="78"/>
         <source>Last year</source>
         <translation>За год</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="71"/>
+        <location filename="../qml/app/CatalogPage.qml" line="81"/>
         <source>Any players</source>
         <translation>Любые игроки</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="72"/>
+        <location filename="../qml/app/CatalogPage.qml" line="82"/>
         <source>Single-player</source>
         <translation>Одиночная</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="73"/>
+        <location filename="../qml/app/CatalogPage.qml" line="83"/>
         <source>Co-op</source>
         <translation>Кооп</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPage.qml" line="74"/>
+        <location filename="../qml/app/CatalogPage.qml" line="84"/>
         <source>Multiplayer</source>
         <translation>Мультиплеер</translation>
     </message>
@@ -502,42 +510,42 @@
 <context>
     <name>CatalogPageContent</name>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="227"/>
+        <location filename="../qml/app/CatalogPageContent.qml" line="252"/>
         <source>With friends</source>
         <translation>С друзьями</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="173"/>
+        <location filename="../qml/app/CatalogPageContent.qml" line="193"/>
         <source>Couldn&apos;t load discovery</source>
         <translation>Не удалось загрузить discovery</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="179"/>
+        <location filename="../qml/app/CatalogPageContent.qml" line="199"/>
         <source>Check your connection, or open All games.</source>
         <translation>Проверь интернет или открой «Все игры».</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="187"/>
+        <location filename="../qml/app/CatalogPageContent.qml" line="207"/>
         <source>All games</source>
         <translation>Все игры</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="199"/>
+        <location filename="../qml/app/CatalogPageContent.qml" line="220"/>
         <source>No matching games in your catalog</source>
         <translation>В каталоге нет подходящих игр</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="205"/>
+        <location filename="../qml/app/CatalogPageContent.qml" line="226"/>
         <source>Discovery loaded, but none of these titles are in your enabled sources yet.</source>
         <translation>Подборки загружены, но этих игр ещё нет во включённых источниках.</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="221"/>
+        <location filename="../qml/app/CatalogPageContent.qml" line="239"/>
         <source>Recommended for you</source>
         <translation>Рекомендуем вам</translation>
     </message>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="233"/>
+        <location filename="../qml/app/CatalogPageContent.qml" line="265"/>
         <source>Popular this week</source>
         <translation>Популярное на этой неделе</translation>
     </message>
@@ -545,12 +553,12 @@
 <context>
     <name>CatalogScrollHeader</name>
     <message>
-        <location filename="../qml/components/CatalogScrollHeader.qml" line="34"/>
+        <location filename="../qml/components/CatalogScrollHeader.qml" line="66"/>
         <source>Loading catalog…</source>
         <translation>Загрузка каталога…</translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogScrollHeader.qml" line="35"/>
+        <location filename="../qml/components/CatalogScrollHeader.qml" line="67"/>
         <source>Found: %1</source>
         <translation>Найдено: %1</translation>
     </message>
@@ -566,27 +574,27 @@
 <context>
     <name>CatalogStickyToolbar</name>
     <message>
-        <location filename="../qml/components/CatalogStickyToolbar.qml" line="78"/>
+        <location filename="../qml/components/CatalogStickyToolbar.qml" line="87"/>
         <source>Type</source>
         <translation>Тип</translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogStickyToolbar.qml" line="86"/>
+        <location filename="../qml/components/CatalogStickyToolbar.qml" line="95"/>
         <source>Size</source>
         <translation>Размер</translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogStickyToolbar.qml" line="94"/>
+        <location filename="../qml/components/CatalogStickyToolbar.qml" line="103"/>
         <source>Added</source>
         <translation>Добавлено</translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogStickyToolbar.qml" line="102"/>
+        <location filename="../qml/components/CatalogStickyToolbar.qml" line="111"/>
         <source>Has add-ons</source>
         <translation>Есть дополнения</translation>
     </message>
     <message>
-        <location filename="../qml/components/CatalogStickyToolbar.qml" line="116"/>
+        <location filename="../qml/components/CatalogStickyToolbar.qml" line="125"/>
         <source>Players</source>
         <translation>Игроки</translation>
     </message>
@@ -626,11 +634,13 @@
     </message>
     <message>
         <location filename="../src/core/install/install_kind.cpp" line="11"/>
+        <location filename="../src/core/catalog/catalog_model.cpp" line="496"/>
         <source>Portable</source>
         <translation>Портабл</translation>
     </message>
     <message>
         <location filename="../src/core/install/install_kind.cpp" line="13"/>
+        <location filename="../src/core/catalog/catalog_model.cpp" line="498"/>
         <source>Installer</source>
         <translation>Установщик</translation>
     </message>
@@ -646,6 +656,7 @@
     </message>
     <message>
         <location filename="../src/core/install/install_kind.cpp" line="19"/>
+        <location filename="../src/core/catalog/catalog_model.cpp" line="554"/>
         <source>Unknown</source>
         <translation>Неизвестно</translation>
     </message>
@@ -863,33 +874,33 @@
         <translation>Ошибка установки</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_controller.cpp" line="60"/>
+        <location filename="../src/core/catalog/catalog_controller.cpp" line="61"/>
         <source>Catalog error: %1</source>
         <translation>Ошибка каталога: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="408"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="412"/>
         <source>Game not found for add-on</source>
         <translation>Игра не найдена для дополнения</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="413"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="417"/>
         <source>Add-on not found in catalog</source>
         <translation>Дополнение не найдено в каталоге</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="395"/>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="424"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="399"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="428"/>
         <source>Could not find game to install: %1</source>
         <translation>Не удалось найти игру для установки: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="454"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="458"/>
         <source>Download complete - install manually</source>
         <translation>Загрузка завершена - установите вручную</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="460"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="464"/>
         <source>Download error: %1</source>
         <translation>Ошибка загрузки: %1</translation>
     </message>
@@ -945,7 +956,7 @@
     </message>
     <message>
         <location filename="../src/core/runtime/proton_facade.cpp" line="33"/>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="162"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="165"/>
         <source>Preparing runtime environment…</source>
         <translation>Подготовка среды выполнения…</translation>
     </message>
@@ -1016,27 +1027,27 @@
         <translation>Ручная установка завершена: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_facade.cpp" line="328"/>
+        <location filename="../src/core/plugins/plugin_facade.cpp" line="324"/>
         <source>Install plugin</source>
         <translation>Установить плагин</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="265"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="269"/>
         <source>Plugin install failed</source>
         <translation>Ошибка установки плагина</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="279"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="283"/>
         <source>Plugin installed: %1</source>
         <translation>Плагин установлен: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="320"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="324"/>
         <source>Proton-GE installed</source>
         <translation>Proton-GE установлен</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="322"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="326"/>
         <source>Proton-GE download failed: %1</source>
         <translation>Ошибка загрузки Proton-GE: %1</translation>
     </message>
@@ -1112,22 +1123,22 @@
         <translation>Добавлено в Steam. Перезапусти Steam, чтобы увидеть игру и обложки.</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_controller.cpp" line="318"/>
+        <location filename="../src/core/catalog/catalog_controller.cpp" line="332"/>
         <source>%1 · %2 games</source>
         <translation>%1 · %2 игр</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_controller.cpp" line="322"/>
+        <location filename="../src/core/catalog/catalog_controller.cpp" line="336"/>
         <source>%1 sources · %2 games</source>
         <translation>%1 источников · %2 игр</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_controller.cpp" line="445"/>
+        <location filename="../src/core/catalog/catalog_controller.cpp" line="459"/>
         <source>Catalog empty or unavailable: %1</source>
         <translation>Каталог пуст или недоступен: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_controller.cpp" line="464"/>
+        <location filename="../src/core/catalog/catalog_controller.cpp" line="481"/>
         <source>No catalog URL configured for source %1</source>
         <translation>Для источника %1 не задан URL каталога</translation>
     </message>
@@ -1168,18 +1179,18 @@
         <translation>Proton не найден. Установите Proton-GE в Настройки → Запуск.</translation>
     </message>
     <message>
-        <location filename="../src/core/launch/launch_controller.cpp" line="62"/>
+        <location filename="../src/core/launch/launch_controller.cpp" line="64"/>
         <source>Game is not installed yet</source>
         <translation>Игра ещё не установлена</translation>
     </message>
     <message>
-        <location filename="../src/core/launch/launch_controller.cpp" line="93"/>
+        <location filename="../src/core/launch/launch_controller.cpp" line="95"/>
         <location filename="../src/core/launch/launch_facade.cpp" line="112"/>
         <source>Steam is not running - Online Fix needs it for SpaceWar/overlay. Starting Steam…</source>
         <translation>Steam не запущен - Online Fix нужен для SpaceWar/overlay. Запускаем Steam…</translation>
     </message>
     <message>
-        <location filename="../src/core/launch/launch_controller.cpp" line="103"/>
+        <location filename="../src/core/launch/launch_controller.cpp" line="105"/>
         <location filename="../src/core/launch/launch_facade.cpp" line="135"/>
         <location filename="../src/core/library/library_facade_2.cpp" line="179"/>
         <location filename="../src/core/library/library_facade_2.cpp" line="218"/>
@@ -1189,13 +1200,13 @@
         <translation>Не найден исполняемый файл для %1</translation>
     </message>
     <message>
-        <location filename="../src/core/launch/launch_controller.cpp" line="112"/>
+        <location filename="../src/core/launch/launch_controller.cpp" line="114"/>
         <location filename="../src/core/launch/launch_facade.cpp" line="150"/>
         <source>Failed to launch game</source>
         <translation>Не удалось запустить игру</translation>
     </message>
     <message>
-        <location filename="../src/core/launch/launch_controller.cpp" line="130"/>
+        <location filename="../src/core/launch/launch_controller.cpp" line="132"/>
         <source>Failed to stop game</source>
         <translation>Не удалось остановить игру</translation>
     </message>
@@ -1256,22 +1267,22 @@
         <translation>Плагин не загружен: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_facade.cpp" line="178"/>
+        <location filename="../src/core/plugins/plugin_facade.cpp" line="179"/>
         <source>Plugin removed</source>
         <translation>Плагин удалён</translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_facade.cpp" line="181"/>
+        <location filename="../src/core/plugins/plugin_facade.cpp" line="182"/>
         <source>Could not remove plugin: %1</source>
         <translation>Не удалось удалить плагин: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_facade.cpp" line="286"/>
+        <location filename="../src/core/plugins/plugin_facade.cpp" line="282"/>
         <source>Plugins updated</source>
         <translation>Плагины обновлены</translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_facade.cpp" line="330"/>
+        <location filename="../src/core/plugins/plugin_facade.cpp" line="326"/>
         <source>Plugin files (*.arach)</source>
         <translation>Файлы плагинов (*.arach)</translation>
     </message>
@@ -1298,7 +1309,7 @@
         <translation>Не удалось начать обновление %1</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="231"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="234"/>
         <source>No catalog sources enabled</source>
         <translation>Нет включённых источников каталога</translation>
     </message>
@@ -1345,38 +1356,38 @@
         <translation>Автоустановка недоступна. Запустите setup.exe из папки загрузки, затем кнопкой папки укажите, куда установилась игра.</translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_facade.cpp" line="159"/>
+        <location filename="../src/core/plugins/plugin_facade.cpp" line="160"/>
         <source>Plugin installed</source>
         <translation>Плагин установлен</translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_facade.cpp" line="162"/>
-        <location filename="../src/core/plugins/plugin_facade.cpp" line="164"/>
+        <location filename="../src/core/plugins/plugin_facade.cpp" line="163"/>
+        <location filename="../src/core/plugins/plugin_facade.cpp" line="165"/>
         <source>Plugin install failed: %1</source>
         <translation>Ошибка установки плагина: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="43"/>
+        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="45"/>
         <source>Invalid plugin file. Choose a plugin package (.arach)</source>
         <translation>Неверный файл плагина. Выберите пакет плагина (.arach)</translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="73"/>
+        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="75"/>
         <source>Could not start archive extraction</source>
         <translation>Не удалось запустить распаковку архива</translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="85"/>
+        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="87"/>
         <source>Archive extraction timed out</source>
         <translation>Таймаут распаковки</translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="96"/>
+        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="98"/>
         <source>Archive extraction failed (code %1)</source>
         <translation>Ошибка распаковки (код %1)</translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="139"/>
+        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="141"/>
         <location filename="../src/core/launch/process_launcher.cpp" line="20"/>
         <location filename="../src/core/runtime/windows_runner.cpp" line="110"/>
         <location filename="../src/core/runtime/windows_runner.cpp" line="218"/>
@@ -1384,80 +1395,80 @@
         <translation>Файл не найден: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="143"/>
+        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="145"/>
         <source>Only .arach packages are supported</source>
         <translation>Поддерживаются только пакеты с расширением .arach</translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="149"/>
+        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="151"/>
         <source>Failed to create temporary folder</source>
         <translation>Не удалось создать временную папку</translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="161"/>
+        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="163"/>
         <source>Archive has no plugin.json</source>
         <translation>В архиве нет plugin.json</translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="167"/>
+        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="169"/>
         <source>Failed to read plugin.json</source>
         <translation>Не удалось прочитать plugin.json</translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="175"/>
+        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="177"/>
         <source>Invalid plugin.json</source>
         <translation>Некорректный plugin.json</translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="180"/>
+        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="182"/>
         <source>Package is missing library %1</source>
         <translation>В пакете нет библиотеки %1</translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="187"/>
-        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="199"/>
-        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="229"/>
+        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="189"/>
+        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="201"/>
+        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="231"/>
         <source>Failed to create plugin folder</source>
         <translation>Не удалось создать папку плагина</translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="210"/>
-        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="235"/>
+        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="212"/>
+        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="237"/>
         <source>Failed to copy %1</source>
         <translation>Не удалось скопировать %1</translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="260"/>
+        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="262"/>
         <source>Failed to replace existing plugin</source>
         <translation>Не удалось заменить установленный плагин</translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="272"/>
+        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="274"/>
         <source>Failed to install plugin files</source>
         <translation>Не удалось установить файлы плагина</translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="288"/>
+        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="290"/>
         <source>Plugin files were copied but the library failed to load. Rebuild the plugin for your Arachnel version and platform (MSVC/MinGW), then reinstall.</source>
         <translation>Плагин скопирован, но библиотека не загрузилась. Пересоберите плагин под вашу версию Arachnel и платформу (MSVC/MinGW) и установите снова.</translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="307"/>
+        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="309"/>
         <source>Invalid plugin id</source>
         <translation>Некорректный id плагина</translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="335"/>
+        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="368"/>
         <source>Plugin is not installed</source>
         <translation>Плагин не установлен</translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="327"/>
+        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="358"/>
         <source>Could not delete plugin files</source>
         <translation>Не удалось удалить файлы плагина</translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_facade.cpp" line="341"/>
+        <location filename="../src/core/plugins/plugin_facade.cpp" line="337"/>
         <source>Could not open plugins folder</source>
         <translation>Не удалось открыть папку плагинов</translation>
     </message>
@@ -1495,7 +1506,7 @@
     </message>
     <message>
         <location filename="../src/core/settings/app_updater.cpp" line="251"/>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="294"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="298"/>
         <source>Arachnel %1 is available</source>
         <translation>Доступен Arachnel %1</translation>
     </message>
@@ -1520,48 +1531,48 @@
         <translation>Скачивание обновления Arachnel…</translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_catalog_service.cpp" line="121"/>
+        <location filename="../src/core/plugins/plugin_catalog_service.cpp" line="201"/>
         <source>Could not load plugin list: %1</source>
         <translation>Не удалось загрузить список плагинов: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_catalog_service.cpp" line="130"/>
+        <location filename="../src/core/plugins/plugin_catalog_service.cpp" line="210"/>
         <source>Plugin list is invalid</source>
         <translation>Список плагинов повреждён</translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_catalog_service.cpp" line="210"/>
+        <location filename="../src/core/plugins/plugin_catalog_service.cpp" line="318"/>
         <source>Plugin not found in the official list</source>
         <translation>Плагин не найден в официальном списке</translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_catalog_service.cpp" line="217"/>
+        <location filename="../src/core/plugins/plugin_catalog_service.cpp" line="325"/>
         <source>No download link for this plugin</source>
         <translation>Нет ссылки для загрузки этого плагина</translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_catalog_service.cpp" line="328"/>
+        <location filename="../src/core/plugins/plugin_catalog_service.cpp" line="436"/>
         <source>Download failed</source>
         <translation>Ошибка загрузки</translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_catalog_service.cpp" line="332"/>
+        <location filename="../src/core/plugins/plugin_catalog_service.cpp" line="440"/>
         <location filename="../src/core/settings/app_updater.cpp" line="361"/>
         <source>Download failed: %1</source>
         <translation>Ошибка загрузки: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_catalog_service.cpp" line="342"/>
+        <location filename="../src/core/plugins/plugin_catalog_service.cpp" line="450"/>
         <source>Downloaded plugin file is empty</source>
         <translation>Скачанный файл плагина пуст</translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_catalog_service.cpp" line="353"/>
+        <location filename="../src/core/plugins/plugin_catalog_service.cpp" line="461"/>
         <source>Plugin file checksum mismatch</source>
         <translation>Контрольная сумма файла плагина не совпадает</translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_catalog_service.cpp" line="269"/>
+        <location filename="../src/core/plugins/plugin_catalog_service.cpp" line="377"/>
         <source>Could not save plugin file</source>
         <translation>Не удалось сохранить файл плагина</translation>
     </message>
@@ -1587,32 +1598,32 @@
         <translation>Автозапуск установщика доступен только на Windows</translation>
     </message>
     <message>
-        <location filename="../src/core/install/online_fix_overlay.cpp" line="418"/>
+        <location filename="../src/core/install/online_fix_overlay.cpp" line="461"/>
         <source>Not installed</source>
         <translation>Не установлен</translation>
     </message>
     <message>
-        <location filename="../src/core/install/online_fix_overlay.cpp" line="420"/>
+        <location filename="../src/core/install/online_fix_overlay.cpp" line="463"/>
         <source>Enabled</source>
         <translation>Включён</translation>
     </message>
     <message>
-        <location filename="../src/core/install/online_fix_overlay.cpp" line="422"/>
+        <location filename="../src/core/install/online_fix_overlay.cpp" line="465"/>
         <source>Disabled</source>
         <translation>Отключён</translation>
     </message>
     <message>
-        <location filename="../src/core/install/online_fix_overlay.cpp" line="402"/>
+        <location filename="../src/core/install/online_fix_overlay.cpp" line="445"/>
         <source>Online Fix overlay not found in this install</source>
         <translation>Online Fix оверлей не найден в этой установке</translation>
     </message>
     <message>
-        <location filename="../src/core/install/online_fix_overlay.cpp" line="290"/>
+        <location filename="../src/core/install/online_fix_overlay.cpp" line="305"/>
         <source>Failed to enable Online Fix: %1</source>
         <translation>Не удалось включить Online Fix: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/install/online_fix_overlay.cpp" line="302"/>
+        <location filename="../src/core/install/online_fix_overlay.cpp" line="317"/>
         <source>Failed to disable Online Fix: %1</source>
         <translation>Не удалось отключить Online Fix: %1</translation>
     </message>
@@ -1627,32 +1638,32 @@
         <translation>Диск</translation>
     </message>
     <message>
-        <location filename="../src/core/util/file_utils.cpp" line="24"/>
+        <location filename="../src/core/util/file_utils.cpp" line="34"/>
         <source>Failed to delete file: %1</source>
         <translation>Не удалось удалить файл: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/util/file_utils.cpp" line="31"/>
+        <location filename="../src/core/util/file_utils.cpp" line="54"/>
         <source>Failed to delete folder: %1</source>
         <translation>Не удалось удалить папку: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/util/file_utils.cpp" line="42"/>
+        <location filename="../src/core/util/file_utils.cpp" line="65"/>
         <source>Source not found: %1</source>
         <translation>Источник не найден: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/util/file_utils.cpp" line="50"/>
+        <location filename="../src/core/util/file_utils.cpp" line="73"/>
         <source>Failed to replace: %1</source>
         <translation>Не удалось заменить: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/util/file_utils.cpp" line="56"/>
+        <location filename="../src/core/util/file_utils.cpp" line="79"/>
         <source>Failed to copy: %1</source>
         <translation>Не удалось скопировать: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/util/file_utils.cpp" line="64"/>
+        <location filename="../src/core/util/file_utils.cpp" line="87"/>
         <source>Failed to create folder: %1</source>
         <translation>Не удалось создать папку: %1</translation>
     </message>
@@ -1751,24 +1762,24 @@
         <translation>Не удалось отследить процесс установки</translation>
     </message>
     <message>
-        <location filename="../src/core/library/library_controller.cpp" line="222"/>
-        <location filename="../src/core/library/library_controller.cpp" line="243"/>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="189"/>
+        <location filename="../src/core/library/library_controller.cpp" line="258"/>
+        <location filename="../src/core/library/library_controller.cpp" line="279"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="192"/>
         <source>Game removed: %1</source>
         <translation>Игра удалена: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/library/library_controller.cpp" line="230"/>
+        <location filename="../src/core/library/library_controller.cpp" line="266"/>
         <source>Removing “%1”…</source>
         <translation>Удаление «%1»…</translation>
     </message>
     <message>
-        <location filename="../src/core/library/library_controller.cpp" line="368"/>
+        <location filename="../src/core/library/library_controller.cpp" line="404"/>
         <source>Drive removed. %1 game(s) kept on disk and listed under another drive.</source>
         <translation>Диск убран. Игр оставлено на диске и в библиотеке (на другом диске): %1</translation>
     </message>
     <message>
-        <location filename="../src/core/library/library_controller.cpp" line="373"/>
+        <location filename="../src/core/library/library_controller.cpp" line="409"/>
         <source>Drive removed</source>
         <translation>Диск убран</translation>
     </message>
@@ -1952,18 +1963,6 @@
     </message>
 </context>
 <context>
-    <name>GameDetailsPage</name>
-    <message numerus="yes">
-        <location filename="../qml/app/GameDetailsPage.qml"/>
-        <source>%n source(s)</source>
-        <translation>
-            <numerusform>%n источник</numerusform>
-            <numerusform>%n источника</numerusform>
-            <numerusform>%n источников</numerusform>
-        </translation>
-    </message>
-</context>
-<context>
     <name>GameDetailsContent</name>
     <message>
         <location filename="../qml/app/GameDetailsContent.qml" line="39"/>
@@ -1986,93 +1985,93 @@
         <translation>%1 доп.</translation>
     </message>
     <message>
-        <location filename="../qml/app/GameDetailsContent.qml" line="152"/>
+        <location filename="../qml/app/GameDetailsContent.qml" line="153"/>
         <source>Steam CDN · Online Fix</source>
         <translation>Steam CDN · Online Fix</translation>
     </message>
     <message>
-        <location filename="../qml/app/GameDetailsContent.qml" line="163"/>
+        <location filename="../qml/app/GameDetailsContent.qml" line="164"/>
         <source>Update available</source>
         <translation>Доступно обновление</translation>
     </message>
     <message>
-        <location filename="../qml/app/GameDetailsContent.qml" line="181"/>
+        <location filename="../qml/app/GameDetailsContent.qml" line="182"/>
         <source>Source page</source>
         <translation>Страница на источнике</translation>
     </message>
     <message>
-        <location filename="../qml/app/GameDetailsContent.qml" line="182"/>
+        <location filename="../qml/app/GameDetailsContent.qml" line="183"/>
         <source>Source website</source>
         <translation>Сайт источника</translation>
     </message>
     <message>
-        <location filename="../qml/app/GameDetailsContent.qml" line="193"/>
+        <location filename="../qml/app/GameDetailsContent.qml" line="194"/>
         <source>Steam</source>
         <translation>Steam</translation>
     </message>
     <message>
-        <location filename="../qml/app/GameDetailsContent.qml" line="201"/>
+        <location filename="../qml/app/GameDetailsContent.qml" line="202"/>
         <source>Plugin source</source>
         <translation>Исходники плагина</translation>
     </message>
     <message>
-        <location filename="../qml/app/GameDetailsContent.qml" line="210"/>
+        <location filename="../qml/app/GameDetailsContent.qml" line="211"/>
         <source>Catalog URL</source>
         <translation>URL каталога</translation>
     </message>
     <message>
-        <location filename="../qml/app/GameDetailsContent.qml" line="241"/>
+        <location filename="../qml/app/GameDetailsContent.qml" line="242"/>
         <source>Install failed</source>
         <translation>Ошибка установки</translation>
     </message>
     <message>
-        <location filename="../qml/app/GameDetailsContent.qml" line="255"/>
+        <location filename="../qml/app/GameDetailsContent.qml" line="256"/>
         <source>Stop</source>
         <translation>Остановить</translation>
     </message>
     <message>
-        <location filename="../qml/app/GameDetailsContent.qml" line="259"/>
+        <location filename="../qml/app/GameDetailsContent.qml" line="260"/>
         <source>Preparing…</source>
         <translation>Подготовка…</translation>
     </message>
     <message>
-        <location filename="../qml/app/GameDetailsContent.qml" line="260"/>
+        <location filename="../qml/app/GameDetailsContent.qml" line="261"/>
         <source>Play</source>
         <translation>Играть</translation>
     </message>
     <message>
-        <location filename="../qml/app/GameDetailsContent.qml" line="302"/>
-        <location filename="../qml/app/GameDetailsContent.qml" line="422"/>
+        <location filename="../qml/app/GameDetailsContent.qml" line="303"/>
+        <location filename="../qml/app/GameDetailsContent.qml" line="423"/>
         <source>Delete</source>
         <translation>Удалить</translation>
     </message>
     <message>
-        <location filename="../qml/app/GameDetailsContent.qml" line="319"/>
+        <location filename="../qml/app/GameDetailsContent.qml" line="320"/>
         <source>Update</source>
         <translation>Обновление</translation>
     </message>
     <message>
-        <location filename="../qml/app/GameDetailsContent.qml" line="371"/>
+        <location filename="../qml/app/GameDetailsContent.qml" line="372"/>
         <source>Description</source>
         <translation>Описание</translation>
     </message>
     <message>
-        <location filename="../qml/app/GameDetailsContent.qml" line="377"/>
+        <location filename="../qml/app/GameDetailsContent.qml" line="378"/>
         <source>Description is not available yet.</source>
         <translation>Описание пока недоступно.</translation>
     </message>
     <message>
-        <location filename="../qml/app/GameDetailsContent.qml" line="394"/>
+        <location filename="../qml/app/GameDetailsContent.qml" line="395"/>
         <source>Remove game?</source>
         <translation>Удалить игру?</translation>
     </message>
     <message>
-        <location filename="../qml/app/GameDetailsContent.qml" line="416"/>
+        <location filename="../qml/app/GameDetailsContent.qml" line="417"/>
         <source>Cancel</source>
         <translation>Отмена</translation>
     </message>
     <message>
-        <location filename="../qml/app/GameDetailsContent.qml" line="232"/>
+        <location filename="../qml/app/GameDetailsContent.qml" line="233"/>
         <source>Ready to download from Steam CDN. Online Fix can be included when needed.</source>
         <translation>Готово к загрузке с Steam CDN. При необходимости можно включить Online Fix.</translation>
     </message>
@@ -2113,6 +2112,18 @@
         <location filename="../qml/components/GameDetailsMediaSection.qml" line="77"/>
         <source>Screenshots</source>
         <translation>Скриншоты</translation>
+    </message>
+</context>
+<context>
+    <name>GameDetailsPage</name>
+    <message numerus="yes">
+        <location filename="../qml/app/GameDetailsPage.qml" line="227"/>
+        <source>%n source(s)</source>
+        <translation>
+            <numerusform>%n источник</numerusform>
+            <numerusform>%n источника</numerusform>
+            <numerusform>%n источников</numerusform>
+        </translation>
     </message>
 </context>
 <context>
@@ -2410,56 +2421,61 @@
     </message>
     <message>
         <location filename="../qml/app/LibraryContent.qml" line="164"/>
+        <source>Stop</source>
+        <translation>Остановить</translation>
+    </message>
+    <message>
+        <location filename="../qml/app/LibraryContent.qml" line="173"/>
         <source>Details</source>
         <translation>Подробнее</translation>
     </message>
     <message>
-        <location filename="../qml/app/LibraryContent.qml" line="172"/>
+        <location filename="../qml/app/LibraryContent.qml" line="181"/>
         <source>Update</source>
         <translation>Обновление</translation>
     </message>
     <message>
-        <location filename="../qml/app/LibraryContent.qml" line="210"/>
+        <location filename="../qml/app/LibraryContent.qml" line="219"/>
         <source>In library</source>
         <translation>В библиотеке</translation>
     </message>
     <message>
-        <location filename="../qml/app/LibraryContent.qml" line="217"/>
+        <location filename="../qml/app/LibraryContent.qml" line="226"/>
         <source>Sources</source>
         <translation>Источники</translation>
     </message>
     <message>
-        <location filename="../qml/app/LibraryContent.qml" line="224"/>
+        <location filename="../qml/app/LibraryContent.qml" line="233"/>
         <source>Tasks</source>
         <translation>Задачи</translation>
     </message>
     <message>
-        <location filename="../qml/app/LibraryContent.qml" line="231"/>
+        <location filename="../qml/app/LibraryContent.qml" line="240"/>
         <source>Updates</source>
         <translation>Обновления</translation>
     </message>
     <message>
-        <location filename="../qml/app/LibraryContent.qml" line="263"/>
+        <location filename="../qml/app/LibraryContent.qml" line="272"/>
         <source>%1 active downloads</source>
         <translation>%1 активных загрузок</translation>
     </message>
     <message>
-        <location filename="../qml/app/LibraryContent.qml" line="270"/>
+        <location filename="../qml/app/LibraryContent.qml" line="279"/>
         <source>Downloads continue after restart</source>
         <translation>Загрузки продолжаются после перезапуска</translation>
     </message>
     <message>
-        <location filename="../qml/app/LibraryContent.qml" line="277"/>
+        <location filename="../qml/app/LibraryContent.qml" line="286"/>
         <source>Open</source>
         <translation>Открыть</translation>
     </message>
     <message>
-        <location filename="../qml/app/LibraryContent.qml" line="294"/>
+        <location filename="../qml/app/LibraryContent.qml" line="303"/>
         <source>My library</source>
         <translation>Моя библиотека</translation>
     </message>
     <message>
-        <location filename="../qml/app/LibraryContent.qml" line="299"/>
+        <location filename="../qml/app/LibraryContent.qml" line="308"/>
         <source>%1 games</source>
         <translation>%1 игр</translation>
     </message>
@@ -2556,17 +2572,17 @@
         <translation>Загрузка %1%</translation>
     </message>
     <message>
-        <location filename="../qml/components/LibraryGameCard.qml" line="124"/>
+        <location filename="../qml/components/LibraryGameCard.qml" line="116"/>
         <source>Playing</source>
         <translation>Играет</translation>
     </message>
     <message>
-        <location filename="../qml/components/LibraryGameCard.qml" line="143"/>
+        <location filename="../qml/components/LibraryGameCard.qml" line="126"/>
         <source>Updating</source>
         <translation>Обновление</translation>
     </message>
     <message>
-        <location filename="../qml/components/LibraryGameCard.qml" line="195"/>
+        <location filename="../qml/components/LibraryGameCard.qml" line="168"/>
         <source>Running</source>
         <translation>Запущена</translation>
     </message>
@@ -2574,42 +2590,42 @@
 <context>
     <name>LibraryPage</name>
     <message>
-        <location filename="../qml/app/LibraryPage.qml" line="31"/>
+        <location filename="../qml/app/LibraryPage.qml" line="34"/>
         <source>Playing now</source>
         <translation>Сейчас играете</translation>
     </message>
     <message>
-        <location filename="../qml/app/LibraryPage.qml" line="32"/>
+        <location filename="../qml/app/LibraryPage.qml" line="35"/>
         <source>Recently played</source>
         <translation>Недавно играли</translation>
     </message>
     <message>
-        <location filename="../qml/app/LibraryPage.qml" line="36"/>
+        <location filename="../qml/app/LibraryPage.qml" line="39"/>
         <source>Nothing played yet</source>
         <translation>Ещё ничего не играли</translation>
     </message>
     <message>
-        <location filename="../qml/app/LibraryPage.qml" line="43"/>
+        <location filename="../qml/app/LibraryPage.qml" line="46"/>
         <source>Launch a game from your library - it will appear here.</source>
         <translation>Запустите игру из библиотеки - она появится здесь.</translation>
     </message>
     <message>
-        <location filename="../qml/app/LibraryPage.qml" line="75"/>
+        <location filename="../qml/app/LibraryPage.qml" line="78"/>
         <source>Installing %1%</source>
         <translation>Установка %1%</translation>
     </message>
     <message>
-        <location filename="../qml/app/LibraryPage.qml" line="78"/>
+        <location filename="../qml/app/LibraryPage.qml" line="81"/>
         <source>Installing…</source>
         <translation>Установка…</translation>
     </message>
     <message>
-        <location filename="../qml/app/LibraryPage.qml" line="80"/>
+        <location filename="../qml/app/LibraryPage.qml" line="83"/>
         <source>Paused · %1%</source>
         <translation>Пауза · %1%</translation>
     </message>
     <message>
-        <location filename="../qml/app/LibraryPage.qml" line="81"/>
+        <location filename="../qml/app/LibraryPage.qml" line="84"/>
         <source>Downloading %1%</source>
         <translation>Загрузка %1%</translation>
     </message>
@@ -2915,17 +2931,17 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>Пропустить</translation>
     </message>
     <message>
-        <location filename="../qml/onboarding/OnboardingSheet.qml" line="227"/>
+        <location filename="../qml/onboarding/OnboardingSheet.qml" line="210"/>
         <source>Back</source>
         <translation>Назад</translation>
     </message>
     <message>
-        <location filename="../qml/onboarding/OnboardingSheet.qml" line="236"/>
+        <location filename="../qml/onboarding/OnboardingSheet.qml" line="219"/>
         <source>Get started</source>
         <translation>Начать</translation>
     </message>
     <message>
-        <location filename="../qml/onboarding/OnboardingSheet.qml" line="236"/>
+        <location filename="../qml/onboarding/OnboardingSheet.qml" line="219"/>
         <source>Next</source>
         <translation>Далее</translation>
     </message>
@@ -2988,59 +3004,59 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>Рекомендуем</translation>
     </message>
     <message>
-        <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="208"/>
+        <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="215"/>
         <source>v%1</source>
         <translation>v%1</translation>
     </message>
     <message>
-        <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="215"/>
-        <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="280"/>
-        <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="348"/>
+        <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="222"/>
+        <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="287"/>
+        <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="355"/>
         <source>Delete</source>
         <translation>Удалить</translation>
     </message>
     <message>
-        <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="318"/>
+        <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="325"/>
         <source>Remove plugin?</source>
         <translation>Удалить плагин?</translation>
     </message>
     <message>
-        <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="326"/>
+        <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="333"/>
         <source>Remove &quot;%1&quot;? Catalogs from this plugin will stop working until you install it again.</source>
         <translation>Удалить «%1»? Каталоги этого плагина перестанут работать, пока вы не установите его снова.</translation>
     </message>
     <message>
-        <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="343"/>
+        <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="350"/>
         <source>Cancel</source>
         <translation>Отмена</translation>
     </message>
     <message>
-        <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="216"/>
+        <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="223"/>
         <source>Installing…</source>
         <translation>Установка…</translation>
     </message>
     <message>
-        <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="216"/>
+        <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="223"/>
         <source>Install</source>
         <translation>Установить</translation>
     </message>
     <message>
-        <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="234"/>
+        <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="241"/>
         <source>Or install a plugin file you already have.</source>
         <translation>Или установите файл плагина, если он уже есть.</translation>
     </message>
     <message>
-        <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="273"/>
+        <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="280"/>
         <source>v%1 · %2</source>
         <translation>v%1 · %2</translation>
     </message>
     <message>
-        <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="294"/>
+        <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="301"/>
         <source>Install plugin…</source>
         <translation>Установить плагин…</translation>
     </message>
     <message>
-        <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="300"/>
+        <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="307"/>
         <source>Skip for now</source>
         <translation>Пока пропустить</translation>
     </message>
@@ -3109,12 +3125,12 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
 <context>
     <name>RunningGameBar</name>
     <message>
-        <location filename="../qml/components/RunningGameBar.qml" line="65"/>
+        <location filename="../qml/components/RunningGameBar.qml" line="49"/>
         <source>Playing now</source>
         <translation>Сейчас играете</translation>
     </message>
     <message>
-        <location filename="../qml/components/RunningGameBar.qml" line="83"/>
+        <location filename="../qml/components/RunningGameBar.qml" line="67"/>
         <source>Stop</source>
         <translation>Остановить</translation>
     </message>
@@ -3494,58 +3510,58 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>Для этой платформы нет официальных плагинов.</translation>
     </message>
     <message>
-        <location filename="../qml/settings/SettingsPluginStorePage.qml" line="196"/>
+        <location filename="../qml/settings/SettingsPluginStorePage.qml" line="195"/>
         <source>Recommended</source>
         <translation>Рекомендуем</translation>
     </message>
     <message>
-        <location filename="../qml/settings/SettingsPluginStorePage.qml" line="204"/>
+        <location filename="../qml/settings/SettingsPluginStorePage.qml" line="212"/>
         <source>v%1</source>
         <translation>v%1</translation>
     </message>
     <message>
-        <location filename="../qml/settings/SettingsPluginStorePage.qml" line="212"/>
+        <location filename="../qml/settings/SettingsPluginStorePage.qml" line="220"/>
         <source>Source: %1</source>
         <translation>Исходники: %1</translation>
     </message>
     <message>
-        <location filename="../qml/settings/SettingsPluginStorePage.qml" line="223"/>
+        <location filename="../qml/settings/SettingsPluginStorePage.qml" line="231"/>
         <source>Download: %1</source>
         <translation>Скачивание: %1</translation>
     </message>
     <message>
-        <location filename="../qml/settings/SettingsPluginStorePage.qml" line="237"/>
-        <location filename="../qml/settings/SettingsPluginStorePage.qml" line="309"/>
+        <location filename="../qml/settings/SettingsPluginStorePage.qml" line="245"/>
+        <location filename="../qml/settings/SettingsPluginStorePage.qml" line="317"/>
         <source>Delete</source>
         <translation>Удалить</translation>
     </message>
     <message>
-        <location filename="../qml/settings/SettingsPluginStorePage.qml" line="253"/>
+        <location filename="../qml/settings/SettingsPluginStorePage.qml" line="261"/>
         <source>Source code</source>
         <translation>Исходный код</translation>
     </message>
     <message>
-        <location filename="../qml/settings/SettingsPluginStorePage.qml" line="261"/>
+        <location filename="../qml/settings/SettingsPluginStorePage.qml" line="269"/>
         <source>Package URL</source>
         <translation>URL пакета</translation>
     </message>
     <message>
-        <location filename="../qml/settings/SettingsPluginStorePage.qml" line="279"/>
+        <location filename="../qml/settings/SettingsPluginStorePage.qml" line="287"/>
         <source>Remove plugin?</source>
         <translation>Удалить плагин?</translation>
     </message>
     <message>
-        <location filename="../qml/settings/SettingsPluginStorePage.qml" line="287"/>
+        <location filename="../qml/settings/SettingsPluginStorePage.qml" line="295"/>
         <source>Remove &quot;%1&quot;? Catalogs from this plugin will stop working until you install it again.</source>
         <translation>Удалить «%1»? Каталоги этого плагина перестанут работать, пока вы не установите его снова.</translation>
     </message>
     <message>
-        <location filename="../qml/settings/SettingsPluginStorePage.qml" line="304"/>
+        <location filename="../qml/settings/SettingsPluginStorePage.qml" line="312"/>
         <source>Cancel</source>
         <translation>Отмена</translation>
     </message>
     <message>
-        <location filename="../qml/settings/SettingsPluginStorePage.qml" line="238"/>
+        <location filename="../qml/settings/SettingsPluginStorePage.qml" line="246"/>
         <source>Installing…</source>
         <translation>Установка…</translation>
     </message>
@@ -3555,7 +3571,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>Открыть</translation>
     </message>
     <message>
-        <location filename="../qml/settings/SettingsPluginStorePage.qml" line="238"/>
+        <location filename="../qml/settings/SettingsPluginStorePage.qml" line="246"/>
         <source>Install</source>
         <translation>Установить</translation>
     </message>
@@ -3911,251 +3927,39 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>Текущая версия: %1</translation>
     </message>
     <message>
-        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="200"/>
+        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="189"/>
         <source>Check for Arachnel updates on startup</source>
         <translation>Проверять обновления Arachnel при запуске</translation>
     </message>
     <message>
-        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="206"/>
+        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="195"/>
         <source>Checks for new versions in the background.</source>
         <translation>Проверяет новые версии в фоне.</translation>
     </message>
     <message>
-        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="231"/>
+        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="220"/>
         <source>Include pre-releases</source>
         <translation>Включать пререлизы</translation>
     </message>
     <message>
-        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="237"/>
+        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="226"/>
         <source>Offer beta and RC builds from GitHub.</source>
         <translation>Предлагать beta и RC сборки с GitHub.</translation>
     </message>
     <message>
-        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="263"/>
+        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="252"/>
         <source>Check for Arachnel updates</source>
         <translation>Проверять обновления Arachnel</translation>
     </message>
     <message>
-        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="272"/>
+        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="261"/>
         <source>Download and install</source>
         <translation>Скачать и установить</translation>
     </message>
     <message>
-        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="283"/>
+        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="272"/>
         <source>Open release page</source>
         <translation>Открыть страницу релиза</translation>
-    </message>
-</context>
-<context>
-    <name>Setup</name>
-    <message>
-        <location filename="../setup/src/self_extractor.cpp" line="140"/>
-        <source>Extracting files…</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../setup/src/setup_backend.cpp" line="411"/>
-        <source>Updating uninstaller…</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../setup/src/setup_backend.cpp" line="412"/>
-        <source>Registering uninstaller…</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../setup/src/setup_backend.cpp" line="424"/>
-        <source>Refreshing shortcuts…</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../setup/src/setup_backend.cpp" line="425"/>
-        <source>Creating shortcuts…</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../setup/src/setup_backend.cpp" line="430"/>
-        <source>Update complete</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../setup/src/setup_backend.cpp" line="431"/>
-        <source>Installation complete</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../setup/src/setup_backend.cpp" line="449"/>
-        <location filename="../setup/src/setup_backend.cpp" line="492"/>
-        <source>Please wait - updating Arachnel…</source>
-        <translation>Подождите - обновляем Arachnel…</translation>
-    </message>
-    <message>
-        <location filename="../setup/src/setup_backend.cpp" line="450"/>
-        <location filename="../setup/src/setup_backend.cpp" line="493"/>
-        <source>Preparing…</source>
-        <translation type="unfinished">Подготовка…</translation>
-    </message>
-    <message>
-        <location filename="../setup/src/setup_backend.cpp" line="484"/>
-        <source>Waiting for Arachnel to close…</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../setup/src/setup_backend.cpp" line="486"/>
-        <source>Arachnel is still running. Close it and try again.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../setup/src/setup_backend.cpp" line="499"/>
-        <source>Clearing install folder…</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../setup/src/setup_backend.cpp" line="501"/>
-        <source>Could not clear existing install folder</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../setup/src/setup_backend.cpp" line="507"/>
-        <source>Creating install folder…</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../setup/src/setup_backend.cpp" line="510"/>
-        <source>Could not create install folder</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../setup/src/setup_backend.cpp" line="524"/>
-        <source>Finalizing…</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>SetupTitleBar</name>
-    <message>
-        <location filename="../setup/qml/components/SetupTitleBar.qml" line="42"/>
-        <source>Arachnel Setup</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>SetupWindow</name>
-    <message>
-        <location filename="../setup/qml/SetupWindow.qml" line="15"/>
-        <source>Arachnel Setup</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../setup/qml/SetupWindow.qml" line="66"/>
-        <source>Choose language</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../setup/qml/SetupWindow.qml" line="72"/>
-        <source>Select the installer language.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../setup/qml/SetupWindow.qml" line="99"/>
-        <source>Install Arachnel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../setup/qml/SetupWindow.qml" line="105"/>
-        <source>Game launcher with plugin-based sources. This wizard unpacks Arachnel to your computer.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../setup/qml/SetupWindow.qml" line="114"/>
-        <source>No embedded app payload found. Build the installer with run.ps1 --installer.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../setup/qml/SetupWindow.qml" line="128"/>
-        <source>Choose install location</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../setup/qml/SetupWindow.qml" line="140"/>
-        <source>Install folder</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../setup/qml/SetupWindow.qml" line="156"/>
-        <source>Shortcuts</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../setup/qml/SetupWindow.qml" line="161"/>
-        <source>Create desktop shortcut</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../setup/qml/SetupWindow.qml" line="167"/>
-        <source>Create Start Menu shortcut</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../setup/qml/SetupWindow.qml" line="180"/>
-        <source>Updating Arachnel…</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../setup/qml/SetupWindow.qml" line="180"/>
-        <source>Installing…</source>
-        <translation type="unfinished">Установка…</translation>
-    </message>
-    <message>
-        <location filename="../setup/qml/SetupWindow.qml" line="187"/>
-        <source>Please wait while Arachnel is updated. Do not close this window.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../setup/qml/SetupWindow.qml" line="188"/>
-        <source>Arachnel is being installed on your computer.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../setup/qml/SetupWindow.qml" line="246"/>
-        <source>Arachnel is up to date</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../setup/qml/SetupWindow.qml" line="246"/>
-        <source>Arachnel is ready</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../setup/qml/SetupWindow.qml" line="269"/>
-        <source>Back</source>
-        <translation type="unfinished">Назад</translation>
-    </message>
-    <message>
-        <location filename="../setup/qml/SetupWindow.qml" line="276"/>
-        <location filename="../setup/qml/SetupWindow.qml" line="283"/>
-        <source>Continue</source>
-        <translation>Играть</translation>
-    </message>
-    <message>
-        <location filename="../setup/qml/SetupWindow.qml" line="291"/>
-        <source>Install</source>
-        <translation type="unfinished">Установить</translation>
-    </message>
-    <message>
-        <location filename="../setup/qml/SetupWindow.qml" line="299"/>
-        <source>Open folder</source>
-        <translation type="unfinished">Открыть папку</translation>
-    </message>
-    <message>
-        <location filename="../setup/qml/SetupWindow.qml" line="306"/>
-        <source>Launch</source>
-        <translation type="unfinished">Запуск</translation>
-    </message>
-    <message>
-        <location filename="../setup/qml/SetupWindow.qml" line="316"/>
-        <source>Finish</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

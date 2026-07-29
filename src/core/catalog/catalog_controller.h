@@ -97,6 +97,7 @@ private:
     static void normalizeCatalogSourceIds(QVector<CatalogEntry>& entries, const QString& sourceId);
     bool isSourceCacheFresh(const QString& sourceId) const;
     void refreshStaleSources();
+    void revalidateCatalogSource(const QString& sourceId, const QByteArray& etag = {});
     static QString offerGroupKey(const CatalogEntry& entry);
     static QString normalizeTitleKey(const QString& title);
     static int showcaseScore(const CatalogEntry& entry);
@@ -112,6 +113,7 @@ private:
     QTimer* m_cacheTtlTimer = nullptr;
     QHash<QString, QVector<CatalogEntry>> m_catalogBySource;
     QHash<QString, qint64> m_sourceLoadedAtMs;
+    QHash<QString, QByteArray> m_sourcePayloadSha;
     /** groupKey -> all source offers for that game. */
     QHash<QString, QVector<CatalogEntry>> m_installOffers;
     /** Any known entry id (showcase or offer) -> groupKey. */

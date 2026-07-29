@@ -1,6 +1,7 @@
 #include "plugin_host.h"
 
 #include "crash_log.h"
+#include "catalog_disk_cache.h"
 #include "catalog_types.h"
 #include "file_utils.h"
 #include "plugin_api.h"
@@ -390,6 +391,7 @@ QVector<CatalogEntry> PluginHost::loadPluginCatalog(const QString& id) const
         }
         const QByteArray bytes(buf, static_cast<int>(len));
         loaded->catalogJsonFreeFn(buf);
+        CatalogDiskCache::savePayload(id, bytes, {});
         return parsePluginCatalogJson(bytes, id);
     }
 

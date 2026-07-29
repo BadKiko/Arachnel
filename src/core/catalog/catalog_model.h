@@ -6,6 +6,7 @@
 #include <QAbstractListModel>
 #include <QHash>
 #include <QString>
+#include <QVariantList>
 #include <QVariantMap>
 #include <QVector>
 
@@ -16,6 +17,8 @@ class CatalogModel : public QAbstractListModel
     Q_OBJECT
     Q_PROPERTY(int count READ count NOTIFY countChanged)
     Q_PROPERTY(int sortMode READ sortMode WRITE setSortMode NOTIFY sortModeChanged)
+    /** Index rail stops for the current sort: [{label, row}, ...]. */
+    Q_PROPERTY(QVariantList scrubStops READ scrubStops NOTIFY scrubStopsChanged)
 
 public:
     enum SortMode {
@@ -76,15 +79,21 @@ public:
     const CatalogEntry* entryById(const QString& id) const;
     Q_INVOKABLE QVariantMap entryInfo(const QString& id) const;
     Q_INVOKABLE QVariantList addonsFor(const QString& entryId) const;
+    /** First visible row whose title starts with letter (A-Z) or '#' for digits/other. */
+    Q_INVOKABLE int indexForLetter(const QString& letter) const;
+    QVariantList scrubStops() const;
     void clear();
 
 signals:
     void countChanged();
     void sortModeChanged();
+    void scrubStopsChanged();
 
 private:
     void sortIndices();
     void rebuildIdMap();
+    void invalidateScrubStops() const;
+    QVariantList buildScrubStops() const;
     const CatalogEntry* entryAtRow(int row) const;
     QVariantMap toMap(const CatalogEntry& entry) const;
 
@@ -92,6 +101,8 @@ private:
     QVector<int> m_indices;
     QHash<QString, int> m_idToRow;
     SortMode m_sortMode = SortNewest;
+    mutable QVariantList m_scrubStops;
+    mutable bool m_scrubStopsDirty = true;
 };
 
 /** Shared by CatalogModel sort and async CatalogFilterService. */

@@ -165,16 +165,81 @@ void CatalogFilterService::applyFilter(const QString& query)
         QElapsedTimer timer;
         timer.start();
 
-        // Snapshot off the GUI thread. Lock only for the copy so merge can't tear the vector.
-        std::shared_ptr<QVector<CatalogEntry>> cacheSnap;
+        QVector<int> indices;
+        int cacheSize = 0;
         {
+            // Filter/sort under a read lock - avoid deep-copying ~55k CatalogEntry.
             if (lock) {
                 QReadLocker locker(lock);
                 if (!cachePtr)
                     return;
-                cacheSnap = std::make_shared<QVector<CatalogEntry>>(*cachePtr);
+                cacheSize = cachePtr->size();
+                indices.reserve(cacheSize);
+                if (snap.needle.isEmpty() && !snap.anySideFilter) {
+                    indices.resize(cacheSize);
+                    std::iota(indices.begin(), indices.end(), 0);
+                } else {
+                    for (int i = 0; i < cacheSize; ++i) {
+                        if ((i & 0x3FF) == 0
+                            && generation != m_filterGeneration.load(std::memory_order_relaxed)) {
+                            return;
+                        }
+                        const CatalogEntry& entry = cachePtr->at(i);
+                        if (!snap.needle.isEmpty()) {
+                            const QString& titleLower =
+                                entry.titleLower.isEmpty() ? entry.title : entry.titleLower;
+                            const bool titleHit = entry.titleLower.isEmpty()
+                                ? titleLower.contains(snap.needle, Qt::CaseInsensitive)
+                                : titleLower.contains(snap.needle);
+                            const bool idHit = entry.id.contains(snap.needle, Qt::CaseInsensitive)
+                                || entry.steamAppId.contains(snap.needle, Qt::CaseInsensitive);
+                            if (!titleHit && !idHit)
+                                continue;
+                        }
+                        if (!entryMatches(entry, snap))
+                            continue;
+                        indices.append(i);
+                    }
+                }
+
+                if (generation != m_filterGeneration.load(std::memory_order_relaxed))
+                    return;
+
+                const auto mode = static_cast<CatalogModel::SortMode>(snap.sortMode);
+                std::stable_sort(indices.begin(), indices.end(),
+                                 [cachePtr, mode](int ai, int bi) {
+                                     return catalogEntryLess(cachePtr->at(ai), cachePtr->at(bi), mode);
+                                 });
             } else if (cachePtr) {
-                cacheSnap = std::make_shared<QVector<CatalogEntry>>(*cachePtr);
+                cacheSize = cachePtr->size();
+                indices.reserve(cacheSize);
+                if (snap.needle.isEmpty() && !snap.anySideFilter) {
+                    indices.resize(cacheSize);
+                    std::iota(indices.begin(), indices.end(), 0);
+                } else {
+                    for (int i = 0; i < cacheSize; ++i) {
+                        const CatalogEntry& entry = cachePtr->at(i);
+                        if (!snap.needle.isEmpty()) {
+                            const QString& titleLower =
+                                entry.titleLower.isEmpty() ? entry.title : entry.titleLower;
+                            const bool titleHit = entry.titleLower.isEmpty()
+                                ? titleLower.contains(snap.needle, Qt::CaseInsensitive)
+                                : titleLower.contains(snap.needle);
+                            const bool idHit = entry.id.contains(snap.needle, Qt::CaseInsensitive)
+                                || entry.steamAppId.contains(snap.needle, Qt::CaseInsensitive);
+                            if (!titleHit && !idHit)
+                                continue;
+                        }
+                        if (!entryMatches(entry, snap))
+                            continue;
+                        indices.append(i);
+                    }
+                }
+                const auto mode = static_cast<CatalogModel::SortMode>(snap.sortMode);
+                std::stable_sort(indices.begin(), indices.end(),
+                                 [cachePtr, mode](int ai, int bi) {
+                                     return catalogEntryLess(cachePtr->at(ai), cachePtr->at(bi), mode);
+                                 });
             } else {
                 return;
             }
@@ -182,47 +247,6 @@ void CatalogFilterService::applyFilter(const QString& query)
 
         if (generation != m_filterGeneration.load(std::memory_order_relaxed))
             return;
-
-        const int cacheSize = cacheSnap->size();
-        QVector<int> indices;
-        indices.reserve(cacheSize);
-
-        if (snap.needle.isEmpty() && !snap.anySideFilter) {
-            indices.resize(cacheSize);
-            std::iota(indices.begin(), indices.end(), 0);
-        } else {
-            for (int i = 0; i < cacheSize; ++i) {
-                if ((i & 0x3FF) == 0
-                    && generation != m_filterGeneration.load(std::memory_order_relaxed)) {
-                    return;
-                }
-                const CatalogEntry& entry = cacheSnap->at(i);
-                if (!snap.needle.isEmpty()) {
-                    const QString& titleLower =
-                        entry.titleLower.isEmpty() ? entry.title : entry.titleLower;
-                    // titleLower is precomputed lower-case; title fallback may not be.
-                    const bool titleHit = entry.titleLower.isEmpty()
-                        ? titleLower.contains(snap.needle, Qt::CaseInsensitive)
-                        : titleLower.contains(snap.needle);
-                    const bool idHit = entry.id.contains(snap.needle, Qt::CaseInsensitive)
-                        || entry.steamAppId.contains(snap.needle, Qt::CaseInsensitive);
-                    if (!titleHit && !idHit)
-                        continue;
-                }
-                if (!entryMatches(entry, snap))
-                    continue;
-                indices.append(i);
-            }
-        }
-
-        if (generation != m_filterGeneration.load(std::memory_order_relaxed))
-            return;
-
-        const auto mode = static_cast<CatalogModel::SortMode>(snap.sortMode);
-        std::stable_sort(indices.begin(), indices.end(),
-                         [&cacheSnap, mode](int ai, int bi) {
-                             return catalogEntryLess(cacheSnap->at(ai), cacheSnap->at(bi), mode);
-                         });
 
         const qint64 ms = timer.elapsed();
         const QString needle = snap.needle;
@@ -259,15 +283,39 @@ void CatalogFilterService::rebuildAvailableGenres()
     QReadWriteLock* lock = m_cacheLock;
 
     QThreadPool::globalInstance()->start([this, generation, cachePtr, lock]() {
-        std::shared_ptr<QVector<CatalogEntry>> cacheSnap;
+        QHash<QString, int> counts;
         {
             if (lock) {
                 QReadLocker locker(lock);
                 if (!cachePtr)
                     return;
-                cacheSnap = std::make_shared<QVector<CatalogEntry>>(*cachePtr);
+                for (const auto& entry : *cachePtr) {
+                    for (const QString& key : entry.genreKeys) {
+                        if (!key.isEmpty())
+                            ++counts[key];
+                    }
+                    if (entry.genreKeys.isEmpty()) {
+                        for (const QString& token : entry.genreTokens) {
+                            const QString key = canonicalizeGenreToken(token);
+                            if (!key.isEmpty())
+                                ++counts[key];
+                        }
+                    }
+                }
             } else if (cachePtr) {
-                cacheSnap = std::make_shared<QVector<CatalogEntry>>(*cachePtr);
+                for (const auto& entry : *cachePtr) {
+                    for (const QString& key : entry.genreKeys) {
+                        if (!key.isEmpty())
+                            ++counts[key];
+                    }
+                    if (entry.genreKeys.isEmpty()) {
+                        for (const QString& token : entry.genreTokens) {
+                            const QString key = canonicalizeGenreToken(token);
+                            if (!key.isEmpty())
+                                ++counts[key];
+                        }
+                    }
+                }
             } else {
                 return;
             }
@@ -275,22 +323,6 @@ void CatalogFilterService::rebuildAvailableGenres()
 
         if (generation != m_genreGeneration.load(std::memory_order_relaxed))
             return;
-
-        QHash<QString, int> counts;
-        for (const auto& entry : *cacheSnap) {
-            for (const QString& key : entry.genreKeys) {
-                if (!key.isEmpty())
-                    ++counts[key];
-            }
-            // Fallback while entries are not yet enriched with canonical keys.
-            if (entry.genreKeys.isEmpty()) {
-                for (const QString& token : entry.genreTokens) {
-                    const QString key = canonicalizeGenreToken(token);
-                    if (!key.isEmpty())
-                        ++counts[key];
-                }
-            }
-        }
 
         QStringList curated;
         for (const QString& key : curatedGenreKeys()) {

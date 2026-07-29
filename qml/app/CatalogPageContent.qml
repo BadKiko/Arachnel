@@ -298,6 +298,8 @@ Item {
             anchors.top: catalogStickyToolbar.bottom
             anchors.left: parent.left
             anchors.right: parent.right
+            // Leave the alphabet scrubber uncovered on the right.
+            anchors.rightMargin: catalogScrollViews.scrubberWidth
             z: 5
             visible: !page.discoveryMode
             page: content.page

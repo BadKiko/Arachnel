@@ -9,7 +9,7 @@ MD.ApplicationWindow {
     id: root
 
     visible: true
-    width: 1440
+    width: 1450
     height: 900
     minimumWidth: 1100
     minimumHeight: 720

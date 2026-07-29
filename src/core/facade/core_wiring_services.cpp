@@ -350,7 +350,7 @@ void CoreController::initializeServices()
 
     m_catalogValidateLoader = new CatalogFeedLoader(this);
     connect(m_catalogValidateLoader, &CatalogFeedLoader::feedLoaded, this,
-            [this](const QString& tag, const QVector<CatalogEntry> entries) {
+            [this](const QString& tag, const QVector<CatalogEntry>& entries, const QByteArray&) {
                 if (!tag.startsWith(QStringLiteral("validate:")))
                     return;
                 const QString requestId = tag.mid(9);
