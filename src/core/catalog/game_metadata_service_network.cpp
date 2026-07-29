@@ -119,9 +119,18 @@ void GameMetadataService::handleSearchFinished(QNetworkReply* reply)
             byTerm.isEmpty()
                 ? -1
                 : titleMatchScore(searchTerm, byTerm.value(QStringLiteral("name")).toString());
-        if (termScore > score) {
+        const int againstTitle =
+            byTerm.isEmpty()
+                ? -1
+                : titleMatchScore(entryTitle, byTerm.value(QStringLiteral("name")).toString());
+        const int overlap =
+            byTerm.isEmpty()
+                ? -1
+                : titleTokenOverlapScore(entryTitle, byTerm.value(QStringLiteral("name")).toString());
+        // Short fallback terms ("Ghost of") must still look like the real title.
+        if (termScore > score && (againstTitle >= 500 || overlap >= 750)) {
             best = byTerm;
-            score = termScore;
+            score = qMax(againstTitle, overlap);
         }
     }
 

@@ -202,6 +202,7 @@ MD.ApplicationWindow {
                 opacity: mainPages.pageIndex === 1 ? 1 : 0
                 enabled: mainPages.pageIndex === 1 && opacity > 0.99
                 browseOnly: false
+                peekLeftEdge: navRail.width
                 onOpenGame: function (id) { root.openGameDetails(id, true) }
                 onOpenSettings: settingsSheet.openSettings()
                 onAddSourceRequested: settingsSheet.openPlugins()
@@ -225,6 +226,7 @@ MD.ApplicationWindow {
                 opacity: mainPages.pageIndex === 2 ? 1 : 0
                 enabled: mainPages.pageIndex === 2 && opacity > 0.99
                 browseOnly: true
+                peekLeftEdge: navRail.width
                 onOpenGame: function (id) { root.openGameDetails(id, true) }
                 onOpenSettings: settingsSheet.openSettings()
                 onAddSourceRequested: settingsSheet.openPlugins()

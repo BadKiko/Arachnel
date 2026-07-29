@@ -16,6 +16,8 @@ Item {
     readonly property int listRowHeight: 80
     readonly property int pageMargin: MD.Token.spacing.large
     readonly property int cardRadius: MD.Token.shape.corner.extra_large
+    /** Rail width forwarded so screenshot peeks don't render over the nav rail. */
+    property real peekLeftEdge: 0
     readonly property bool noSources: Core.sources.enabledCount === 0
     readonly property bool noSourceSelected: Core.activeCatalogSourceIds.length === 0
     readonly property bool catalogEmpty: !Core.catalogLoading

@@ -16,6 +16,8 @@
 #include <QUrl>
 #include <QVersionNumber>
 
+#include <utility>
+
 namespace arachnel::core {
 
 namespace {
@@ -58,6 +60,9 @@ void AppUpdater::setIncludePreReleases(bool enabled)
         return;
     m_includePreReleases = enabled;
     emit includePreReleasesChanged();
+    // Channel change invalidates the last check - refresh so UI picks up pre-releases.
+    if (!m_checking && !m_downloading)
+        checkForUpdates(false);
 }
 
 QString AppUpdater::normalizeVersion(const QString& version)
@@ -77,10 +82,37 @@ int AppUpdater::compareVersions(const QString& left, const QString& right)
     if (b == QLatin1String("dev") && a != QLatin1String("dev"))
         return 1;
 
-    const QVersionNumber leftVersion = QVersionNumber::fromString(a);
-    const QVersionNumber rightVersion = QVersionNumber::fromString(b);
-    if (!leftVersion.isNull() && !rightVersion.isNull())
-        return QVersionNumber::compare(leftVersion, rightVersion);
+    const auto parse = [](const QString& value) {
+        int i = 0;
+        while (i < value.size()) {
+            const QChar c = value.at(i);
+            if (c.isDigit() || c == QLatin1Char('.')) {
+                ++i;
+                continue;
+            }
+            break;
+        }
+        QVersionNumber number = QVersionNumber::fromString(value.left(i));
+        QString suffix = value.mid(i).trimmed();
+        if (suffix.startsWith(QLatin1Char('-')) || suffix.startsWith(QLatin1Char('+')))
+            suffix.remove(0, 1);
+        return std::pair<QVersionNumber, QString>{number, suffix.toLower()};
+    };
+
+    const auto leftVersion = parse(a);
+    const auto rightVersion = parse(b);
+    if (!leftVersion.first.isNull() && !rightVersion.first.isNull()) {
+        const int numberCmp = QVersionNumber::compare(leftVersion.first, rightVersion.first);
+        if (numberCmp != 0)
+            return numberCmp;
+        // Same numeric core: final release (no suffix) wins over lettered/pre builds
+        // (0.1.34 > 0.1.34b > 0.1.34a).
+        if (leftVersion.second.isEmpty() && !rightVersion.second.isEmpty())
+            return 1;
+        if (!leftVersion.second.isEmpty() && rightVersion.second.isEmpty())
+            return -1;
+        return QString::compare(leftVersion.second, rightVersion.second, Qt::CaseInsensitive);
+    }
 
     return QString::compare(a, b, Qt::CaseInsensitive);
 }
@@ -194,23 +226,38 @@ void AppUpdater::handleReleasesListPayload(const QByteArray& payload, bool notif
         return;
     }
 
+    // Pick the newest installable release (stable or pre), not just API order.
+    QJsonObject best;
+    QString bestTag;
     for (const QJsonValue& value : releases) {
         if (!value.isObject())
             continue;
         const QJsonObject release = value.toObject();
         if (release.value(QStringLiteral("draft")).toBool(false))
             continue;
+        if (!m_includePreReleases && release.value(QStringLiteral("prerelease")).toBool(false))
+            continue;
         if (assetDownloadUrl(release).isEmpty())
             continue;
-        handleReleaseObject(release, notifyIfUpToDate);
+        const QString tag = normalizeVersion(release.value(QStringLiteral("tag_name")).toString());
+        if (tag.isEmpty())
+            continue;
+        if (bestTag.isEmpty() || compareVersions(bestTag, tag) < 0) {
+            best = release;
+            bestTag = tag;
+        }
+    }
+
+    if (bestTag.isEmpty()) {
+        const QString error =
+            QCoreApplication::translate("Core", "Could not parse GitHub release information");
+        setLastError(error);
+        setStatusText(error);
+        emit updateFailed(error);
         return;
     }
 
-    const QString error =
-        QCoreApplication::translate("Core", "Could not parse GitHub release information");
-    setLastError(error);
-    setStatusText(error);
-    emit updateFailed(error);
+    handleReleaseObject(best, notifyIfUpToDate);
 }
 
 void AppUpdater::handleReleasePayload(const QByteArray& payload, bool notifyIfUpToDate)

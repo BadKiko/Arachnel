@@ -103,6 +103,149 @@ void preserveInstallDirPlugins(const QString& installPath)
     }
 }
 
+bool installHasAppExe(const QString& installPath)
+{
+    return QFile::exists(QDir(installPath).absoluteFilePath(QStringLiteral("arachnel_app.exe")));
+}
+
+void removeDirBestEffort(const QString& path)
+{
+    if (path.isEmpty() || !QDir(path).exists())
+        return;
+    QDir(path).removeRecursively();
+}
+
+bool renameDir(const QString& from, const QString& to, QString* errorOut)
+{
+    if (QDir(to).exists()) {
+        if (!QDir(to).removeRecursively()) {
+            if (errorOut)
+                *errorOut = QStringLiteral("Could not clear %1").arg(to);
+            return false;
+        }
+    }
+    if (QDir().rename(from, to))
+        return true;
+    if (errorOut)
+        *errorOut = QStringLiteral("Could not rename %1 → %2").arg(from, to);
+    return false;
+}
+
+/** Overwrite files from src into dst without deleting dst first (safe update fallback). */
+bool copyTreeOverwrite(const QString& srcRoot, const QString& dstRoot, QString* errorOut)
+{
+    QDirIterator it(srcRoot, QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot,
+                    QDirIterator::Subdirectories);
+    while (it.hasNext()) {
+        it.next();
+        const QString rel = QDir(srcRoot).relativeFilePath(it.filePath());
+        const QString dest = QDir(dstRoot).absoluteFilePath(rel);
+        if (it.fileInfo().isDir()) {
+            if (!QDir().mkpath(dest)) {
+                if (errorOut)
+                    *errorOut = QStringLiteral("Could not create %1").arg(dest);
+                return false;
+            }
+            continue;
+        }
+        if (!QDir().mkpath(QFileInfo(dest).absolutePath())) {
+            if (errorOut)
+                *errorOut = QStringLiteral("Could not create %1").arg(QFileInfo(dest).absolutePath());
+            return false;
+        }
+        if (QFile::exists(dest) && !QFile::remove(dest)) {
+            // Locked file: try replace via temp name.
+            const QString tmp = dest + QStringLiteral(".new");
+            QFile::remove(tmp);
+            if (!QFile::copy(it.filePath(), tmp)) {
+                if (errorOut)
+                    *errorOut = QStringLiteral("Could not write %1").arg(dest);
+                return false;
+            }
+            if (!QFile::rename(tmp, dest)) {
+                // Still locked - leave .new beside it; critical for non-exe DLLs only.
+                if (dest.endsWith(QStringLiteral("arachnel_app.exe"), Qt::CaseInsensitive)) {
+                    if (errorOut)
+                        *errorOut = QStringLiteral("Could not replace arachnel_app.exe");
+                    QFile::remove(tmp);
+                    return false;
+                }
+                // Non-critical: keep going; old DLL may stay until reboot.
+                continue;
+            }
+            continue;
+        }
+        if (!QFile::copy(it.filePath(), dest)) {
+            if (errorOut)
+                *errorOut = QStringLiteral("Could not copy %1").arg(rel);
+            return false;
+        }
+    }
+    return true;
+}
+
+/**
+ * Update without wipe-first: extract to staging, verify exe, then swap or merge.
+ * Live install stays intact until staging is known-good.
+ */
+bool applyStagedUpdate(const QString& installPath, const QString& stagingPath, QString* errorOut)
+{
+    if (!installHasAppExe(stagingPath)) {
+        if (errorOut) {
+            *errorOut = QCoreApplication::translate(
+                "Setup", "Update package is incomplete (arachnel_app.exe missing)");
+        }
+        return false;
+    }
+
+    const QString previousPath = installPath + QStringLiteral(".previous");
+    removeDirBestEffort(previousPath);
+
+    if (!QDir(installPath).exists()) {
+        if (!renameDir(stagingPath, installPath, errorOut))
+            return false;
+        return installHasAppExe(installPath);
+    }
+
+    // Prefer atomic folder swap on the same volume.
+    if (renameDir(installPath, previousPath, errorOut)) {
+        QString swapError;
+        if (renameDir(stagingPath, installPath, &swapError)) {
+            removeDirBestEffort(previousPath);
+            if (!installHasAppExe(installPath)) {
+                // Extremely unlikely after verify - try restore.
+                removeDirBestEffort(installPath);
+                renameDir(previousPath, installPath, nullptr);
+                if (errorOut)
+                    *errorOut = QCoreApplication::translate(
+                        "Setup", "Update failed verification; previous install restored");
+                return false;
+            }
+            return true;
+        }
+        // Staging rename failed - put the old install back.
+        renameDir(previousPath, installPath, nullptr);
+        if (errorOut)
+            *errorOut = swapError;
+        return false;
+    }
+
+    // Rename blocked (locked files). Merge new files over the live install - never wipe.
+    if (errorOut)
+        errorOut->clear();
+    if (!copyTreeOverwrite(stagingPath, installPath, errorOut))
+        return false;
+    if (!installHasAppExe(installPath)) {
+        if (errorOut) {
+            *errorOut = QCoreApplication::translate(
+                "Setup", "Could not replace arachnel_app.exe while Arachnel files were locked");
+        }
+        return false;
+    }
+    removeDirBestEffort(stagingPath);
+    return true;
+}
+
 } // namespace
 
 QString SetupBackend::detectDefaultLanguage()
@@ -492,33 +635,68 @@ void SetupBackend::startInstall()
         report(5, updateMode ? QCoreApplication::translate("Setup", "Please wait - updating Arachnel…")
                              : QCoreApplication::translate("Setup", "Preparing…"));
 
-        QDir target(installPath);
-        if (target.exists()) {
-            if (updateMode)
-                preserveInstallDirPlugins(installPath);
-            report(8, QCoreApplication::translate("Setup", "Clearing install folder…"));
-            if (!target.removeRecursively()) {
-                result.second = QCoreApplication::translate("Setup",
-                                                            "Could not clear existing install folder");
-                return result;
-            }
-        }
-
-        report(12, QCoreApplication::translate("Setup", "Creating install folder…"));
-        if (!QDir().mkpath(installPath)) {
-            result.second =
-                QCoreApplication::translate("Setup", "Could not create install folder");
-            return result;
-        }
-
         QString error;
         const auto onExtractProgress = [report](int progress, const QString& status) {
             report(progress, status);
         };
-        if (!extractZipSlice(executablePath, appOffset, appSize, installPath, &error,
-                             onExtractProgress)) {
-            result.second = error;
-            return result;
+
+        if (updateMode) {
+            // Never wipe the live install first - that left users with DLLs and no exe.
+            if (QDir(installPath).exists())
+                preserveInstallDirPlugins(installPath);
+
+            const QString stagingPath = installPath + QStringLiteral(".staging");
+            removeDirBestEffort(stagingPath);
+            report(10, QCoreApplication::translate("Setup", "Preparing update…"));
+            if (!QDir().mkpath(stagingPath)) {
+                result.second =
+                    QCoreApplication::translate("Setup", "Could not create update staging folder");
+                return result;
+            }
+
+            if (!extractZipSlice(executablePath, appOffset, appSize, stagingPath, &error,
+                                 onExtractProgress)) {
+                removeDirBestEffort(stagingPath);
+                result.second = error;
+                return result;
+            }
+
+            report(85, QCoreApplication::translate("Setup", "Applying update…"));
+            if (!applyStagedUpdate(installPath, stagingPath, &error)) {
+                removeDirBestEffort(stagingPath);
+                result.second = error;
+                return result;
+            }
+            removeDirBestEffort(stagingPath);
+        } else {
+            QDir target(installPath);
+            if (target.exists()) {
+                report(8, QCoreApplication::translate("Setup", "Clearing install folder…"));
+                if (!target.removeRecursively()) {
+                    result.second = QCoreApplication::translate(
+                        "Setup", "Could not clear existing install folder");
+                    return result;
+                }
+            }
+
+            report(12, QCoreApplication::translate("Setup", "Creating install folder…"));
+            if (!QDir().mkpath(installPath)) {
+                result.second =
+                    QCoreApplication::translate("Setup", "Could not create install folder");
+                return result;
+            }
+
+            if (!extractZipSlice(executablePath, appOffset, appSize, installPath, &error,
+                                 onExtractProgress)) {
+                result.second = error;
+                return result;
+            }
+
+            if (!installHasAppExe(installPath)) {
+                result.second = QCoreApplication::translate(
+                    "Setup", "Installation is incomplete (arachnel_app.exe missing)");
+                return result;
+            }
         }
 
         report(88, QCoreApplication::translate("Setup", "Finalizing…"));

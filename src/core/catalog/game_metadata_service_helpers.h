@@ -10,8 +10,81 @@ QString cacheFilePath()
 QString normalizeTitle(QString title)
 {
     title = title.toLower();
-    title.replace(QRegularExpression(QStringLiteral("[^a-z0-9]+")), QString());
-    return title;
+    QString out;
+    out.reserve(title.size());
+    for (const QChar c : title) {
+        if (c.isLetterOrNumber())
+            out.append(c);
+    }
+    return out;
+}
+
+bool isTitleStopWord(const QString& word)
+{
+    static const QSet<QString> kStop{
+        QStringLiteral("a"),      QStringLiteral("an"),     QStringLiteral("and"),
+        QStringLiteral("or"),     QStringLiteral("of"),     QStringLiteral("the"),
+        QStringLiteral("for"),    QStringLiteral("to"),     QStringLiteral("in"),
+        QStringLiteral("on"),     QStringLiteral("at"),     QStringLiteral("by"),
+        QStringLiteral("with"),   QStringLiteral("from"),   QStringLiteral("edition"),
+        QStringLiteral("pc"),
+    };
+    return kStop.contains(word.toLower());
+}
+
+QStringList significantTitleTokens(const QString& title)
+{
+    QString cleaned = title.toLower();
+    cleaned.replace(QRegularExpression(QStringLiteral("[^\\p{L}\\p{N}]+"),
+                                       QRegularExpression::UseUnicodePropertiesOption),
+                    QStringLiteral(" "));
+    const QStringList raw = cleaned.split(QLatin1Char(' '), Qt::SkipEmptyParts);
+    QStringList tokens;
+    tokens.reserve(raw.size());
+    for (const QString& word : raw) {
+        if (word.size() < 2 || isTitleStopWord(word))
+            continue;
+        tokens.append(word);
+    }
+    return tokens;
+}
+
+int titleTokenOverlapScore(const QString& wanted, const QString& candidate)
+{
+    const QStringList want = significantTitleTokens(wanted);
+    const QStringList have = significantTitleTokens(candidate);
+    if (want.isEmpty() || have.isEmpty())
+        return -1;
+    int matched = 0;
+    for (const QString& token : want) {
+        for (const QString& other : have) {
+            if (other == token || other.startsWith(token) || token.startsWith(other)) {
+                ++matched;
+                break;
+            }
+        }
+    }
+    // 0..1000 scale - require most distinctive words to align.
+    return (matched * 1000) / want.size();
+}
+
+int titleMatchScore(const QString& wanted, const QString& candidate)
+{
+    const QString a = normalizeTitle(wanted);
+    const QString b = normalizeTitle(candidate);
+    if (a.isEmpty() || b.isEmpty())
+        return -1;
+    if (a == b)
+        return 1000;
+    if (b.startsWith(a) || a.startsWith(b))
+        return 800 - qAbs(a.size() - b.size());
+    if (b.contains(a) || a.contains(b))
+        return 500 - qAbs(a.size() - b.size());
+    // Latin catalog title vs localized Steam name (or weak substring): use tokens.
+    const int overlap = titleTokenOverlapScore(wanted, candidate);
+    if (overlap >= 750)
+        return 600 + (overlap / 10);
+    return -1;
 }
 
 QString steamLanguageForUi(const QString& languageCode)
@@ -221,21 +294,6 @@ QString pickLibraryCover(const QJsonObject& assets)
     return {};
 }
 
-int titleMatchScore(const QString& wanted, const QString& candidate)
-{
-    const QString a = normalizeTitle(wanted);
-    const QString b = normalizeTitle(candidate);
-    if (a.isEmpty() || b.isEmpty())
-        return -1;
-    if (a == b)
-        return 1000;
-    if (b.startsWith(a) || a.startsWith(b))
-        return 800 - qAbs(a.size() - b.size());
-    if (b.contains(a) || a.contains(b))
-        return 500 - qAbs(a.size() - b.size());
-    return -1;
-}
-
 QJsonObject bestSearchItem(const QJsonArray& items, const QString& title)
 {
     QJsonObject best;
@@ -289,17 +347,23 @@ QStringList searchTermsFor(const QString& title)
         QRegularExpression(
             QStringLiteral(
                 R"(\s+(alpha|beta|demo|epoch|mod|multiplayer|singleplayer|goty|)"
-                R"(deluxe|definitive|remastered|complete|edition|pack|dlc)\s*$)"),
+                R"(deluxe|definitive|remastered|complete|edition|pack|dlc|)"
+                R"(director'?s\s+cut|directors\s+cut)\s*$)"),
             QRegularExpression::CaseInsensitiveOption),
         QString());
     stripped = stripped.simplified();
     appendUnique(terms, stripped);
 
     const QStringList words = stripped.split(QLatin1Char(' '), Qt::SkipEmptyParts);
-    if (words.size() >= 2)
+    // Prefer "Ghost of Tsushima" over weak "Ghost of" / "Ghost" fallbacks that
+    // match unrelated Steam apps when the UI language localizes the real hit.
+    if (words.size() >= 3) {
+        appendUnique(terms, words.mid(0, 3).join(QLatin1Char(' ')));
+        if (isTitleStopWord(words.at(1)) && words.size() >= 3)
+            appendUnique(terms, words.at(0) + QLatin1Char(' ') + words.at(2));
+    } else if (words.size() == 2 && !isTitleStopWord(words.at(1))) {
         appendUnique(terms, words.at(0) + QLatin1Char(' ') + words.at(1));
-    if (!words.isEmpty())
-        appendUnique(terms, words.at(0));
+    }
     return terms;
 }
 

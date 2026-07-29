@@ -40,6 +40,7 @@ public:
     void removeJob(const QString& jobId);
     void retryJob(const QString& jobId);
     void clearFinishedJobs();
+    void pruneFinishedJobs();
     void setJobPhase(const QString& jobId, const QString& status, const QString& detail);
 
 signals:
@@ -93,7 +94,10 @@ private:
     QHash<QString, SpeedSample> m_pluginSpeed;
     QHash<QString, qint64> m_pluginEstimatedTotal;
     QTimer m_persistTimer;
+    QTimer m_pruneTimer;
     bool m_dirty = false;
+
+    static constexpr int kFinishedJobTtlMs = 7 * 60 * 1000;
 };
 
 } // namespace arachnel::core
