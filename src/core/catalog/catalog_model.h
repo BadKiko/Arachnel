@@ -52,6 +52,7 @@ public:
         MetadataPendingRole,
         CurrentPlayersRole,
         HypeScoreRole,
+        ScreenshotUrlsRole,
     };
     Q_ENUM(Role)
 

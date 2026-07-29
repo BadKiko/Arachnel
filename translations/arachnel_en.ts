@@ -328,19 +328,11 @@
 <context>
     <name>CatalogGameCard</name>
     <message>
-        <location filename="../qml/components/CatalogGameCard.qml" line="28"/>
-        <location filename="../qml/components/CatalogGameCard.qml" line="30"/>
-        <location filename="../qml/components/CatalogGameCard.qml" line="31"/>
+        <location filename="../qml/components/CatalogGameCard.qml" line="55"/>
+        <location filename="../qml/components/CatalogGameCard.qml" line="57"/>
+        <location filename="../qml/components/CatalogGameCard.qml" line="58"/>
         <source>playing</source>
         <translation></translation>
-    </message>
-</context>
-<context>
-    <name>CatalogIndexScrubber</name>
-    <message>
-        <location filename="../qml/components/CatalogIndexScrubber.qml" line="118"/>
-        <source>Catalog index scrubber</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -353,6 +345,24 @@
     <message>
         <location filename="../qml/components/CatalogIntroHeader.qml" line="29"/>
         <source>Search and filter every game from your enabled sources.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>CatalogNavigator</name>
+    <message>
+        <location filename="../qml/components/CatalogNavigator.qml" line="343"/>
+        <source>Fine scrub</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CatalogNavigator.qml" line="367"/>
+        <source>%1 of %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CatalogNavigator.qml" line="379"/>
+        <source>Catalog navigator</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -634,13 +644,13 @@
     </message>
     <message>
         <location filename="../src/core/install/install_kind.cpp" line="11"/>
-        <location filename="../src/core/catalog/catalog_model.cpp" line="496"/>
+        <location filename="../src/core/catalog/catalog_model.cpp" line="499"/>
         <source>Portable</source>
         <translation></translation>
     </message>
     <message>
         <location filename="../src/core/install/install_kind.cpp" line="13"/>
-        <location filename="../src/core/catalog/catalog_model.cpp" line="498"/>
+        <location filename="../src/core/catalog/catalog_model.cpp" line="501"/>
         <source>Installer</source>
         <translation></translation>
     </message>
@@ -656,7 +666,7 @@
     </message>
     <message>
         <location filename="../src/core/install/install_kind.cpp" line="19"/>
-        <location filename="../src/core/catalog/catalog_model.cpp" line="554"/>
+        <location filename="../src/core/catalog/catalog_model.cpp" line="557"/>
         <source>Unknown</source>
         <translation></translation>
     </message>
@@ -874,7 +884,7 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_controller.cpp" line="61"/>
+        <location filename="../src/core/catalog/catalog_controller.cpp" line="82"/>
         <source>Catalog error: %1</source>
         <translation></translation>
     </message>
@@ -1123,22 +1133,22 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_controller.cpp" line="332"/>
+        <location filename="../src/core/catalog/catalog_controller.cpp" line="358"/>
         <source>%1 · %2 games</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_controller.cpp" line="336"/>
+        <location filename="../src/core/catalog/catalog_controller.cpp" line="362"/>
         <source>%1 sources · %2 games</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_controller.cpp" line="459"/>
+        <location filename="../src/core/catalog/catalog_controller.cpp" line="526"/>
         <source>Catalog empty or unavailable: %1</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_controller.cpp" line="481"/>
+        <location filename="../src/core/catalog/catalog_controller.cpp" line="550"/>
         <source>No catalog URL configured for source %1</source>
         <translation></translation>
     </message>
@@ -1668,7 +1678,8 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_feed_loader.cpp" line="88"/>
+        <location filename="../src/core/catalog/catalog_feed_loader.cpp" line="98"/>
+        <location filename="../src/core/catalog/catalog_feed_loader.cpp" line="133"/>
         <source>Catalog is empty or format not recognized</source>
         <translation></translation>
     </message>
@@ -1695,11 +1706,6 @@
     <message>
         <location filename="../src/core/catalog/catalog_parser.cpp" line="388"/>
         <source>Catalog entries array is empty</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../src/core/catalog/catalog_parser.cpp" line="393"/>
-        <source>Failed to parse games from catalog</source>
         <translation></translation>
     </message>
     <message>

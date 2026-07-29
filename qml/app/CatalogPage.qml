@@ -23,11 +23,11 @@ Item {
                                              || (!root.noSourceSelected && Core.catalog.count === 0))
     readonly property bool listViewMode: catalogPrefs.viewMode === 1
 
-    // Land the compact bar on the first nudge. Long ranges + header-height
-    // morphing fought Flickable contentY and left a scrolled grid with no bar.
+    // Land the compact bar slightly before the true top so a resting
+    // contentY of ~0 still keeps the mini catalog chrome visible.
     readonly property int compactRevealRange: 8
     readonly property real scrollContentY: root.listViewMode ? catalogContent.listContentY : catalogContent.gridContentY
-    readonly property real compactRevealStart: 0
+    readonly property real compactRevealStart: -10
     readonly property real compactBarOpacity: {
         if (!catalogContent.visible)
             return 0
@@ -41,9 +41,9 @@ Item {
             return 0
         const y = catalogContent.currentContentY
         const span = 12
-        if (y <= 0)
+        if (y <= root.compactRevealStart)
             return 0
-        return Math.min(1, y / span)
+        return Math.min(1, (y - root.compactRevealStart) / span)
     }
 
     readonly property var sortOptions: [

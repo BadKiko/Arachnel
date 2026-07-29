@@ -58,6 +58,8 @@ QVariant CatalogShelfModel::data(const QModelIndex& index, int role) const
         return installKindLabel(entry->installKind);
     case MetadataPendingRole:
         return entry->metadataPending;
+    case ScreenshotUrlsRole:
+        return QVariant::fromValue(entry->screenshotUrls);
     default:
         return {};
     }
@@ -78,6 +80,7 @@ QHash<int, QByteArray> CatalogShelfModel::roleNames() const
         {InstallKindRole, "installKind"},
         {InstallKindLabelRole, "installKindLabel"},
         {MetadataPendingRole, "metadataPending"},
+        {ScreenshotUrlsRole, "screenshotUrls"},
     };
 }
 

@@ -153,6 +153,8 @@ QVariant CatalogModel::data(const QModelIndex& index, int role) const
         return entry->currentPlayers;
     case HypeScoreRole:
         return entry->hypeScore;
+    case ScreenshotUrlsRole:
+        return QVariant::fromValue(entry->screenshotUrls);
     default:
         return {};
     }
@@ -179,6 +181,7 @@ QHash<int, QByteArray> CatalogModel::roleNames() const
         {MetadataPendingRole, "metadataPending"},
         {CurrentPlayersRole, "currentPlayers"},
         {HypeScoreRole, "hypeScore"},
+        {ScreenshotUrlsRole, "screenshotUrls"},
     };
 }
 

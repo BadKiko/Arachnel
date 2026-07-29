@@ -14,7 +14,7 @@ Item {
     property bool hovered: mouseArea.containsMouse
     property real fillProgress: -1
     property bool enableShimmer: true
-    property bool hoverScaleEnabled: true
+    property bool hoverScaleEnabled: false
     property int decodeWidth: 300
     property int decodeHeight: 450
     readonly property real fillRatio: Math.max(0, Math.min(1, fillProgress / 100))

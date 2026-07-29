@@ -30,6 +30,7 @@ public:
         InstallKindRole,
         InstallKindLabelRole,
         MetadataPendingRole,
+        ScreenshotUrlsRole,
     };
     Q_ENUM(Role)
 
