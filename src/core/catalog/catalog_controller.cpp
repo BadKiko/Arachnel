@@ -11,6 +11,7 @@
 #include <QFutureWatcher>
 #include <QTimer>
 #include <QUrl>
+#include <QWriteLocker>
 #include <QtConcurrent>
 
 #include <optional>
@@ -212,7 +213,12 @@ void CatalogController::rebuildMergedCatalog()
     m_entryIdToOfferGroup.clear();
 
     if (m_activeSourceIds.isEmpty()) {
-        m_mergedCache->clear();
+        if (m_mergedCacheLock) {
+            QWriteLocker locker(m_mergedCacheLock);
+            m_mergedCache->clear();
+        } else {
+            m_mergedCache->clear();
+        }
         m_catalog->clear();
         if (m_hooks.rebuildIdIndex)
             m_hooks.rebuildIdIndex();
@@ -301,7 +307,14 @@ void CatalogController::rebuildMergedCatalog()
         merged.append(std::move(showcase));
     }
 
-    *m_mergedCache = std::move(merged);
+    {
+        if (m_mergedCacheLock) {
+            QWriteLocker locker(m_mergedCacheLock);
+            *m_mergedCache = std::move(merged);
+        } else {
+            *m_mergedCache = std::move(merged);
+        }
+    }
     if (m_hooks.mergedEntriesReady)
         m_hooks.mergedEntriesReady(*m_mergedCache, m_activeSourceIds, m_activeQuery);
     if (m_hooks.rebuildIdIndex)
@@ -557,7 +570,14 @@ void CatalogController::clearCatalogView()
 {
     m_activeSourceIds.clear();
     m_activeQuery.clear();
-    m_mergedCache->clear();
+    {
+        if (m_mergedCacheLock) {
+            QWriteLocker locker(m_mergedCacheLock);
+            m_mergedCache->clear();
+        } else {
+            m_mergedCache->clear();
+        }
+    }
     m_catalog->clear();
     m_installOffers.clear();
     m_entryIdToOfferGroup.clear();

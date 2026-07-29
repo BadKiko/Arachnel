@@ -81,6 +81,9 @@ void CoreController::initializeServices()
     m_catalogController =
         new CatalogController(&m_catalog, &m_sources, m_pluginHost, &m_catalogCache,
                               std::move(catalogHooks), this);
+    m_catalogController->setMergedCacheLock(&m_catalogCacheLock);
+    if (m_catalogFilters)
+        m_catalogFilters->setCacheLock(&m_catalogCacheLock);
     if (m_pluginHost) {
         m_pluginHost->setBeforeUnloadHook([this]() {
             if (m_catalogController)

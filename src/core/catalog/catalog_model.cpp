@@ -7,9 +7,7 @@
 
 namespace arachnel::core {
 
-namespace {
-
-bool catalogIndexLess(const CatalogEntry& a, const CatalogEntry& b, CatalogModel::SortMode mode)
+bool catalogEntryLess(const CatalogEntry& a, const CatalogEntry& b, CatalogModel::SortMode mode)
 {
     switch (mode) {
     case CatalogModel::SortOldest:
@@ -66,8 +64,6 @@ bool catalogIndexLess(const CatalogEntry& a, const CatalogEntry& b, CatalogModel
     }
     return a.titleLower < b.titleLower;
 }
-
-} // namespace
 
 CatalogModel::CatalogModel(QObject* parent)
     : QAbstractListModel(parent)
@@ -200,7 +196,7 @@ void CatalogModel::sortIndices()
     if (!m_source)
         return;
     std::stable_sort(m_indices.begin(), m_indices.end(), [this](int ai, int bi) {
-        return catalogIndexLess(m_source->at(ai), m_source->at(bi), m_sortMode);
+        return catalogEntryLess(m_source->at(ai), m_source->at(bi), m_sortMode);
     });
 }
 
@@ -225,6 +221,17 @@ void CatalogModel::setVisibleIndices(QVector<int> indices)
     beginResetModel();
     m_indices = std::move(indices);
     sortIndices();
+    rebuildIdMap();
+    endResetModel();
+    emit countChanged();
+}
+
+void CatalogModel::setVisibleIndicesPresorted(QVector<int> indices)
+{
+    if (indices == m_indices)
+        return;
+    beginResetModel();
+    m_indices = std::move(indices);
     rebuildIdMap();
     endResetModel();
     emit countChanged();

@@ -8,6 +8,7 @@
 #include <QHash>
 #include <QList>
 #include <QObject>
+#include <QReadWriteLock>
 #include <QSet>
 #include <QStringList>
 #include <QVariantList>
@@ -43,6 +44,8 @@ public:
 
     CatalogController(CatalogModel* catalog, SourcePluginModel* sources, PluginHost* pluginHost,
                       QVector<CatalogEntry>* mergedCache, Hooks hooks = {}, QObject* parent = nullptr);
+
+    void setMergedCacheLock(QReadWriteLock* lock) { m_mergedCacheLock = lock; }
 
     bool catalogLoading() const;
     QString catalogStatus() const;
@@ -102,6 +105,7 @@ private:
     SourcePluginModel* m_sources = nullptr;
     PluginHost* m_pluginHost = nullptr;
     QVector<CatalogEntry>* m_mergedCache = nullptr;
+    QReadWriteLock* m_mergedCacheLock = nullptr;
     Hooks m_hooks;
     CatalogFeedLoader* m_loader = nullptr;
     CatalogFeedLoader* m_probeLoader = nullptr;

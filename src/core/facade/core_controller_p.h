@@ -106,6 +106,7 @@
     int m_autoUpdatePluginSuccessCount = 0;
     bool m_pluginInstallBusy = false;
     QVector<CatalogEntry> m_catalogCache;
+    QReadWriteLock m_catalogCacheLock;
     QHash<QString, int> m_catalogIdToCacheIndex;
     CatalogFilterService* m_catalogFilters = nullptr;
     CatalogDiscoveryService* m_catalogDiscovery = nullptr;

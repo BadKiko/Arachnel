@@ -109,29 +109,37 @@ QVector<int> CatalogDiscoveryService::indicesForEntryIds(const QStringList& entr
     if (!m_cache || entryIds.isEmpty())
         return indices;
 
-    QHash<QString, int> idToIndex;
-    QHash<QString, int> steamToIndex;
-    idToIndex.reserve(m_cache->size());
-    steamToIndex.reserve(m_cache->size());
-    for (int i = 0; i < m_cache->size(); ++i) {
-        const CatalogEntry& entry = m_cache->at(i);
-        idToIndex.insert(entry.id, i);
-        if (!entry.steamAppId.isEmpty())
-            steamToIndex.insert(entry.steamAppId, i);
-    }
-
     indices.reserve(entryIds.size());
     QSet<int> seen;
-    for (const QString& id : entryIds) {
-        int index = -1;
-        const auto it = idToIndex.constFind(id);
-        if (it != idToIndex.cend()) {
-            index = it.value();
-        } else if (id.startsWith(QLatin1String("steam-"))) {
-            const auto sit = steamToIndex.constFind(id.mid(6));
-            if (sit != steamToIndex.cend())
-                index = sit.value();
+
+    auto resolveIndex = [this](const QString& id) -> int {
+        if (m_idIndex) {
+            const auto it = m_idIndex->constFind(id);
+            if (it != m_idIndex->cend())
+                return it.value();
+            if (id.startsWith(QLatin1String("steam-"))) {
+                // Fallback: linear steamAppId scan only for unresolved steam-* ids.
+                const QString steamId = id.mid(6);
+                for (int i = 0; i < m_cache->size(); ++i) {
+                    if (m_cache->at(i).steamAppId == steamId)
+                        return i;
+                }
+            }
+            return -1;
         }
+
+        for (int i = 0; i < m_cache->size(); ++i) {
+            const CatalogEntry& entry = m_cache->at(i);
+            if (entry.id == id)
+                return i;
+            if (id.startsWith(QLatin1String("steam-")) && entry.steamAppId == id.mid(6))
+                return i;
+        }
+        return -1;
+    };
+
+    for (const QString& id : entryIds) {
+        const int index = resolveIndex(id);
         if (index < 0 || seen.contains(index))
             continue;
         seen.insert(index);

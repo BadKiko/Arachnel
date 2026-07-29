@@ -1,6 +1,7 @@
 #include "core_controller_impl.h"
 
 #include <QDate>
+#include <QWriteLocker>
 
 namespace arachnel::core {
 
@@ -243,12 +244,14 @@ void CoreController::syncCatalogInstallKind(const QString& entryId, InstallKind 
     if (it == m_catalogIdToCacheIndex.cend())
         return;
     const int idx = it.value();
+    QWriteLocker locker(&m_catalogCacheLock);
     if (idx < 0 || idx >= m_catalogCache.size())
         return;
     CatalogEntry& entry = m_catalogCache[idx];
     if (entry.installKind == kind)
         return;
     entry.installKind = kind;
+    locker.unlock();
     syncEntryToCatalogModel(entryId);
 }
 

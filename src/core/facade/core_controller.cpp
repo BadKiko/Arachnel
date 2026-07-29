@@ -212,6 +212,7 @@ CoreController::CoreController(QObject* parent)
     if (!m_catalogFilters) {
         m_catalogFilters = new CatalogFilterService(&m_catalog, this);
         m_catalogFilters->setCache(&m_catalogCache);
+        m_catalogFilters->setCacheLock(&m_catalogCacheLock);
         connect(m_catalogFilters, &CatalogFilterService::filtersChanged, this,
                 &CoreController::catalogFiltersChanged);
         connect(m_catalogFilters, &CatalogFilterService::availableGenresChanged, this,
@@ -220,6 +221,7 @@ CoreController::CoreController(QObject* parent)
     if (!m_catalogDiscovery) {
         m_catalogDiscovery = new CatalogDiscoveryService(this);
         m_catalogDiscovery->setCache(&m_catalogCache);
+        m_catalogDiscovery->setIdIndex(&m_catalogIdToCacheIndex);
     }
 
     if (m_catalogController)

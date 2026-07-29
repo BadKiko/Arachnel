@@ -68,6 +68,8 @@ public:
     void bindSource(const QVector<CatalogEntry>* source);
     /** Show cache rows by index (sorted in-place by current sortMode). No deep copy. */
     void setVisibleIndices(QVector<int> indices);
+    /** Same as setVisibleIndices but indices are already ordered for current sortMode. */
+    void setVisibleIndicesPresorted(QVector<int> indices);
     /** Notify a visible row that its cache entry changed. Returns false if not visible. */
     bool notifyEntryChanged(const QString& id);
     int indexOfEntry(const QString& id) const;
@@ -91,5 +93,8 @@ private:
     QHash<QString, int> m_idToRow;
     SortMode m_sortMode = SortNewest;
 };
+
+/** Shared by CatalogModel sort and async CatalogFilterService. */
+bool catalogEntryLess(const CatalogEntry& a, const CatalogEntry& b, CatalogModel::SortMode mode);
 
 } // namespace arachnel::core
