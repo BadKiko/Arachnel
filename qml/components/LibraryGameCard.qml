@@ -119,18 +119,22 @@ Item {
             }
 
             MD.AssistChip {
-                anchors.top: parent.top
-                anchors.left: parent.left
-                anchors.margins: MD.Token.spacing.small
+                anchors.bottom: parent.bottom
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.margins: MD.Token.spacing.medium
                 visible: root.hasUpdate
-                text: qsTr("Updating")
+                text: qsTr("Update")
+                icon.name: MD.Token.icon.update
                 elevated: true
-                enabled: false
+                mdState.backgroundColor: MD.Token.color.tertiary_container
+                mdState.textColor: MD.Token.color.on_tertiary_container
+                mdState.iconColor: MD.Token.color.on_tertiary_container
+                mdState.outlineColor: MD.Token.color.tertiary_container
             }
 
             MD.AssistChip {
                 anchors.bottom: parent.bottom
-                anchors.left: parent.left
+                anchors.right: parent.right
                 anchors.margins: MD.Token.spacing.small
                 visible: root.hasAddons
                 text: root.addonLabel

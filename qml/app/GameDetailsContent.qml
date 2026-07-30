@@ -163,6 +163,11 @@ Item {
                             visible: !!(page.info.hasUpdate)
                             text: qsTr("Update available")
                             icon.name: MD.Token.icon.update
+                            elevated: true
+                            mdState.backgroundColor: MD.Token.color.tertiary_container
+                            mdState.textColor: MD.Token.color.on_tertiary_container
+                            mdState.iconColor: MD.Token.color.on_tertiary_container
+                            mdState.outlineColor: MD.Token.color.tertiary_container
                         }
                     }
 

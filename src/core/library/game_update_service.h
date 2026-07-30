@@ -33,6 +33,7 @@ public:
 
 private:
     bool isRemoteUploadDateNewer(const QString& remote, const QString& local) const;
+    bool isRemoteVersionNewer(const QString& remote, const QString& local) const;
     LibraryStore* m_store;
     SettingsStore* m_settings;
     PluginHost* m_plugins;

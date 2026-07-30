@@ -44,6 +44,9 @@ JobEntry jobFromJson(const QJsonObject& obj)
     job.httpDownload = obj.value(QStringLiteral("httpDownload")).toBool(false);
     job.pluginDownload = obj.value(QStringLiteral("pluginDownload")).toBool(false);
     job.artifactPath = obj.value(QStringLiteral("artifactPath")).toString();
+    job.expectedVersion = obj.value(QStringLiteral("expectedVersion")).toString();
+    job.expectedUploadDate = obj.value(QStringLiteral("expectedUploadDate")).toString();
+    job.expectedSteamAppId = obj.value(QStringLiteral("expectedSteamAppId")).toString();
     job.createdAt = obj.value(QStringLiteral("createdAt")).toString();
     job.completedAt = obj.value(QStringLiteral("completedAt")).toString();
     return job;
@@ -71,6 +74,12 @@ QJsonObject jobToJson(const JobEntry& job)
     obj.insert(QStringLiteral("httpDownload"), job.httpDownload);
     obj.insert(QStringLiteral("pluginDownload"), job.pluginDownload);
     obj.insert(QStringLiteral("artifactPath"), job.artifactPath);
+    if (!job.expectedVersion.isEmpty())
+        obj.insert(QStringLiteral("expectedVersion"), job.expectedVersion);
+    if (!job.expectedUploadDate.isEmpty())
+        obj.insert(QStringLiteral("expectedUploadDate"), job.expectedUploadDate);
+    if (!job.expectedSteamAppId.isEmpty())
+        obj.insert(QStringLiteral("expectedSteamAppId"), job.expectedSteamAppId);
     obj.insert(QStringLiteral("createdAt"), job.createdAt);
     obj.insert(QStringLiteral("completedAt"), job.completedAt);
     return obj;

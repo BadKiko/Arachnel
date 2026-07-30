@@ -1299,6 +1299,11 @@
         <translation></translation>
     </message>
     <message>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="+0"/>
+        <source>Update finished, but version info is incomplete. Refresh the catalog and update again if the chip stays.</source>
+        <translation></translation>
+    </message>
+    <message>
         <location filename="../src/core/facade/core_wiring_services.cpp" line="234"/>
         <source>No catalog sources enabled</source>
         <translation></translation>
@@ -2583,7 +2588,7 @@
     </message>
     <message>
         <location filename="../qml/components/LibraryGameCard.qml" line="126"/>
-        <source>Updating</source>
+        <source>Update</source>
         <translation></translation>
     </message>
     <message>

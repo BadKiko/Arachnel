@@ -55,6 +55,8 @@ void InstallSessionService::startPluginInstall(const CatalogEntry& entry, const 
     ctx.downloadPath = savePath;
     ctx.magnetUri = entry.magnetUris.value(0);
     ctx.uploadDate = entry.uploadDate;
+    ctx.version = entry.version;
+    ctx.steamAppId = entry.steamAppId;
     m_hooks.fillProtonInstallFields(
         ctx.entryId, m_settings->resolvedProtonId(QString(), *m_protonManager),
         &ctx.protonExecutable, &ctx.compatDataPath, &ctx.steamCompatClientPath);

@@ -1319,6 +1319,11 @@
         <translation>Не удалось начать обновление %1</translation>
     </message>
     <message>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="+0"/>
+        <source>Update finished, but version info is incomplete. Refresh the catalog and update again if the chip stays.</source>
+        <translation>Обновление завершено, но сведения о версии неполные. Обновите каталог и повторите обновление, если метка останется.</translation>
+    </message>
+    <message>
         <location filename="../src/core/facade/core_wiring_services.cpp" line="234"/>
         <source>No catalog sources enabled</source>
         <translation>Нет включённых источников каталога</translation>
@@ -2584,8 +2589,8 @@
     </message>
     <message>
         <location filename="../qml/components/LibraryGameCard.qml" line="126"/>
-        <source>Updating</source>
-        <translation>Обновление</translation>
+        <source>Update</source>
+        <translation>Обновить</translation>
     </message>
     <message>
         <location filename="../qml/components/LibraryGameCard.qml" line="168"/>

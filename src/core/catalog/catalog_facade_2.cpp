@@ -1,5 +1,6 @@
 #include "core_controller_impl.h"
 
+#include <QDebug>
 #include <QFile>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -292,8 +293,14 @@ void CoreController::installCatalogEntry(const QString& entryId, const QString& 
             + (isUpdate ? QStringLiteral("update/") : QStringLiteral("install/")) + entry.id;
         ctx.magnetUri = entry.steamAppId;
         ctx.uploadDate = entry.uploadDate;
+        ctx.version = entry.version;
+        ctx.steamAppId = entry.steamAppId;
         ctx.installKind = entry.installKind;
         ctx.installMode = isUpdate ? QStringLiteral("update") : installMode;
+        qInfo().noquote() << "[owns-download]" << entry.id
+                          << "mode" << ctx.installMode
+                          << "forceUpdate" << isUpdate
+                          << "target" << ctx.targetPath;
 
         m_pluginHost->runOwnedDownloadAsync(
             plugin, ctx,

@@ -27,6 +27,22 @@ bool GameUpdateService::isRemoteUploadDateNewer(const QString& remote, const QSt
     const QDateTime localDate = QDateTime::fromString(local, Qt::ISODate);
     if (remoteDate.isValid() && localDate.isValid())
         return remoteDate > localDate;
+    const QDate remoteDay = QDate::fromString(remote.left(10), Qt::ISODate);
+    const QDate localDay = QDate::fromString(local.left(10), Qt::ISODate);
+    if (remoteDay.isValid() && localDay.isValid())
+        return remoteDay > localDay;
+    return remote > local;
+}
+
+bool GameUpdateService::isRemoteVersionNewer(const QString& remote, const QString& local) const
+{
+    if (remote.isEmpty() || local.isEmpty() || remote == local)
+        return false;
+    // Catalog often stores YYYY-MM-DD derived from uploadDate.
+    const QDate remoteDay = QDate::fromString(remote.left(10), Qt::ISODate);
+    const QDate localDay = QDate::fromString(local.left(10), Qt::ISODate);
+    if (remoteDay.isValid() && localDay.isValid())
+        return remoteDay > localDay;
     return remote > local;
 }
 
@@ -34,12 +50,22 @@ bool GameUpdateService::gameHasUpdate(const LibraryGame& game, const CatalogEntr
 {
     if (remote.id.isEmpty())
         return false;
-    if (ISourcePlugin* plugin = m_plugins ? m_plugins->plugin(game.sourceId) : nullptr) {
-        if (plugin->detectUpdate(game, remote))
+
+    const bool remoteHasMarkers = !remote.uploadDate.isEmpty() || !remote.version.isEmpty();
+    if (remoteHasMarkers) {
+        if (ISourcePlugin* plugin = m_plugins ? m_plugins->plugin(game.sourceId) : nullptr) {
+            if (plugin->detectUpdate(game, remote))
+                return true;
+        }
+        // Fallback for plugins that omit detectUpdate: compare uploadDate / version.
+        // Skip when remote markers are missing so we don't stick a false-positive chip.
+        if (isRemoteUploadDateNewer(remote.uploadDate, game.uploadDate))
+            return true;
+        if (remote.uploadDate.isEmpty()
+            && isRemoteVersionNewer(remote.version, game.version))
             return true;
     }
-    if (isRemoteUploadDateNewer(remote.uploadDate, game.uploadDate))
-        return true;
+
     for (const InstalledComponent& component : game.components) {
         if (!component.installed)
             continue;

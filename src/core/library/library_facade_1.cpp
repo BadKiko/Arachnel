@@ -240,47 +240,10 @@ bool CoreController::isRemoteUploadDateNewer(const QString& remote, const QStrin
     return remote > local;
 }
 
-namespace {
-
-bool installedGameMatchesCatalogTorrent(const LibraryGame& game, const CatalogEntry& remote)
-{
-    if (game.installPath.isEmpty() || !QFileInfo::exists(game.installPath))
-        return false;
-
-    const QString localHash = catalogMagnetInfoHash(
-        game.magnetUri.isEmpty() ? QStringList{} : QStringList{game.magnetUri});
-    const QString remoteHash = catalogMagnetInfoHash(remote.magnetUris);
-    return !localHash.isEmpty() && localHash == remoteHash;
-}
-
-} // namespace
-
 bool CoreController::gameHasUpdate(const LibraryGame& game, const CatalogEntry& remote) const
 {
-    if (remote.id.isEmpty())
-        return false;
-
-    if (!installedGameMatchesCatalogTorrent(game, remote)) {
-        if (ISourcePlugin* plugin = m_pluginHost ? m_pluginHost->plugin(game.sourceId) : nullptr) {
-            if (plugin->detectUpdate(game, remote))
-                return true;
-        }
-        // Fallback for plugins that omit detectUpdate: compare uploadDate.
-        if (isRemoteUploadDateNewer(remote.uploadDate, game.uploadDate))
-            return true;
-    }
-
-    for (const auto& component : game.components) {
-        if (!component.installed)
-            continue;
-        for (const auto& remoteAddon : remote.addons) {
-            if (remoteAddon.id != component.id)
-                continue;
-            if (isRemoteUploadDateNewer(remoteAddon.uploadDate, component.uploadDate))
-                return true;
-        }
-    }
-
+    if (m_gameUpdates)
+        return m_gameUpdates->gameHasUpdate(game, remote);
     return false;
 }
 

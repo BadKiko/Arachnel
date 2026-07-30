@@ -116,7 +116,10 @@ std::optional<CatalogEntry> CoreController::resolveCatalogEntry(const QString& e
     entry.sizeLabel = game->sizeLabel;
     entry.uploadDate = game->uploadDate;
     entry.installKind = game->installKind;
+    entry.steamAppId = game->steamAppId;
     entry.magnetUris.append(game->magnetUri);
+    if (entry.steamAppId.isEmpty() && game->magnetUri.startsWith(QStringLiteral("steam://app/")))
+        entry.steamAppId = game->magnetUri.mid(QStringLiteral("steam://app/").size());
     return entry;
 }
 
