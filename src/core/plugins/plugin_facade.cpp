@@ -253,6 +253,12 @@ void CoreController::runOfficialPluginAutoUpdate()
         if (!needsUpdate && !catalogVersion.isEmpty() && catalogVersion != localVersion) {
             needsUpdate = comparePluginVersions(catalogVersion, localVersion) > 0;
         }
+        // Never replace a newer local/dev plugin with an older catalog build
+        // (e.g. keep steamidra 0.4.9.1 over store 0.4.9 after an Arachnel "dev" restart).
+        if (needsUpdate && !catalogVersion.isEmpty() && !localVersion.isEmpty()
+            && comparePluginVersions(catalogVersion, localVersion) < 0) {
+            needsUpdate = false;
+        }
 
         if (needsUpdate)
             toInstall.append(id);
