@@ -24,6 +24,8 @@ struct RuntimeEnsureRequest {
     QString steamAppId;
     QString title;
     QString installPath;
+    /** Per-game Proton id (empty = settings default). Used when installing redists. */
+    QString protonId;
 };
 
 } // namespace arachnel::core

@@ -394,6 +394,9 @@ void CoreController::prepareShutdown()
 {
     if (m_applicationDataCleared)
         return;
+    if (m_prepareShutdownDone)
+        return;
+    m_prepareShutdownDone = true;
 
     if (m_runningGameTimer)
         m_runningGameTimer->stop();

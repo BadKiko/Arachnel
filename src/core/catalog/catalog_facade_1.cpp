@@ -41,6 +41,7 @@ QVariantMap CoreController::gameRuntimeContainerInfo(const QString& gameId) cons
         request.steamAppId = game->steamAppId;
         request.title = game->title;
         request.installPath = game->installPath;
+        request.protonId = game->protonId;
     }
     if (request.steamAppId.isEmpty()) {
         if (const CatalogEntry* entry = findCatalogEntry(gameId))
@@ -63,6 +64,7 @@ void CoreController::openGameRuntimeContainer(const QString& gameId)
         request.steamAppId = game->steamAppId;
         request.title = game->title;
         request.installPath = game->installPath;
+        request.protonId = game->protonId;
     }
     const QVariantMap info = m_runtimeDependencyService->containerInfoForGame(request);
     const QString path = info.value(QStringLiteral("containerPath")).toString();

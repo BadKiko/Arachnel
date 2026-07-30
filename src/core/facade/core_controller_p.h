@@ -124,4 +124,5 @@
     QString m_runtimeSetupStatus;
     QTimer* m_runningGameTimer = nullptr;
     bool m_applicationDataCleared = false;
+    bool m_prepareShutdownDone = false;
     bool m_startupLibraryUpdatesHandled = false;

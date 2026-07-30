@@ -115,7 +115,7 @@ bool RuntimeDependencyService::installDepotIntoContainer(
                 "Core", "Proton is required to install runtime dependencies");
         return false;
     }
-    const QString protonId = settings->resolvedProtonId(QString(), *protonManager);
+    const QString protonId = settings->resolvedProtonId(request.protonId, *protonManager);
     const QString protonExecutable = protonManager->executableForId(protonId);
     if (protonExecutable.isEmpty()) {
         if (errorOut)
@@ -124,18 +124,24 @@ bool RuntimeDependencyService::installDepotIntoContainer(
         return false;
     }
 
-    const QProcessEnvironment env = protonEnvForGame(protonManager, settings, request.gameId);
+    const QProcessEnvironment env =
+        protonEnvForGame(protonManager, settings, request.gameId, request.protonId);
     QStringList args = {QStringLiteral("run"), installerPath};
     args += silentArgs;
 
     int exitCode = -1;
-    bool installOk =
+    const bool installerReturnedOk =
         runSilentInstaller(protonExecutable, args, QFileInfo(installerPath).absolutePath(), env,
                            &exitCode, errorOut, installerPath);
-    if (!installOk && isDepotInstalledInPrefix(depot, prefixDir))
-        installOk = true;
-    if (!installOk)
+    // Quiet VC install under Proton often returns odd codes; trust the prefix probe.
+    if (!isDepotInstalledInPrefix(depot, prefixDir)) {
+        if (errorOut && (errorOut->isEmpty() || installerReturnedOk)) {
+            *errorOut = QCoreApplication::translate(
+                            "Core", "Runtime install did not register in the Proton prefix: %1")
+                            .arg(depot.label);
+        }
         return false;
+    }
 #else
     int exitCode = -1;
     if (!runSilentInstaller(installerPath, silentArgs, QFileInfo(installerPath).absolutePath(),
@@ -177,6 +183,13 @@ RuntimeEnsureResult RuntimeDependencyService::ensureInstalled(
         if (!executable.isEmpty()) {
             const ManifestRuntimeNeeds needs = probeExecutableManifest(executable);
             deps = mergeDependencies(deps, depotsFromManifestNeeds(needs));
+            // Windows .exe under Proton: always ensure unified VC++ 2015-2022 x64
+            // (Steam shared depots / PE probe often miss it; games then show MSVC dialog).
+            if (executable.endsWith(QStringLiteral(".exe"), Qt::CaseInsensitive)) {
+                ManifestRuntimeNeeds fallback;
+                fallback.needsVc2015x64 = true;
+                deps = mergeDependencies(deps, depotsFromManifestNeeds(fallback));
+            }
         }
     }
 

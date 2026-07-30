@@ -8,6 +8,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QProcess>
+#include <QProcessEnvironment>
 #include <QRegularExpression>
 
 namespace arachnel::core {
@@ -386,7 +387,19 @@ bool tryStartSteamClient()
     for (const QString& cmd : candidates) {
         if (cmd != QStringLiteral("steam") && !QFileInfo::exists(cmd))
             continue;
-        if (QProcess::startDetached(cmd, {}))
+        // Detach with a clean env so host Steam/Nix sessions do not poison
+        // /usr/bin/env inside steam.sh via LD_LIBRARY_PATH from steam-runtime.
+        QProcess process;
+        QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+        env.remove(QStringLiteral("LD_LIBRARY_PATH"));
+        env.remove(QStringLiteral("LD_PRELOAD"));
+        env.remove(QStringLiteral("STEAM_RUNTIME"));
+        env.remove(QStringLiteral("STEAM_RUNTIME_LIBRARY_PATH"));
+        process.setProcessEnvironment(env);
+        process.setProgram(cmd);
+        process.setArguments({});
+        qint64 pid = 0;
+        if (process.startDetached(&pid))
             return true;
     }
     return false;

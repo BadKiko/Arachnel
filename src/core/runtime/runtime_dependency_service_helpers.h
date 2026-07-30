@@ -228,15 +228,18 @@ bool downloadCdnFallbackInstaller(QNetworkAccessManager* network, const QString&
 }
 
 QProcessEnvironment protonEnvForGame(ProtonManager* protonManager, SettingsStore* settings,
-                                     const QString& gameId)
+                                     const QString& gameId, const QString& gameProtonId = {})
 {
     QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    env.remove(QStringLiteral("LD_LIBRARY_PATH"));
+    env.remove(QStringLiteral("STEAM_RUNTIME"));
+    env.remove(QStringLiteral("STEAM_RUNTIME_LIBRARY_PATH"));
     env.insert(QStringLiteral("STEAM_COMPAT_CLIENT_INSTALL_PATH"),
                protonManager->steamCompatClientPath());
     env.insert(QStringLiteral("STEAM_COMPAT_DATA_PATH"),
                protonManager->compatDataPathForGame(gameId));
     env.insert(QStringLiteral("WINEDEBUG"), QStringLiteral("-all"));
-    const QString protonId = settings->resolvedProtonId(QString(), *protonManager);
+    const QString protonId = settings->resolvedProtonId(gameProtonId, *protonManager);
     const QString installDir = protonManager->installDirForId(protonId);
     if (!installDir.isEmpty())
         env.insert(QStringLiteral("PROTON_PATH"), installDir);
@@ -358,10 +361,13 @@ bool isVcRedist2015InstalledInPrefix(const QString& prefixDir, bool wantX64)
 {
     const QStringList needles =
         wantX64 ? QStringList{QStringLiteral("Microsoft Visual C++ 2015-2022 Redistributable (x64)"),
-                              QStringLiteral("Visual C++ 2022 X64 Minimum Runtime")}
+                              QStringLiteral("Visual C++ 2022 X64 Minimum Runtime"),
+                              QStringLiteral("Visual C++ 2019 X64 Minimum Runtime")}
                 : QStringList{QStringLiteral("Microsoft Visual C++ 2015-2022 Redistributable (x86)"),
-                              QStringLiteral("Visual C++ 2022 X86 Minimum Runtime")};
+                              QStringLiteral("Visual C++ 2022 X86 Minimum Runtime"),
+                              QStringLiteral("Visual C++ 2019 X86 Minimum Runtime")};
 
+    bool regHit = false;
     for (const QString& regName :
          {QStringLiteral("user.reg"), QStringLiteral("system.reg")}) {
         QFile file(prefixDir + QLatin1Char('/') + regName);
@@ -369,15 +375,37 @@ bool isVcRedist2015InstalledInPrefix(const QString& prefixDir, bool wantX64)
             continue;
         const QString regText = QString::fromUtf8(file.readAll());
         for (const QString& needle : needles) {
-            if (regText.contains(needle))
-                return true;
+            if (regText.contains(needle)) {
+                regHit = true;
+                break;
+            }
         }
+        if (regHit)
+            break;
     }
 
-    const QString dllRel =
-        wantX64 ? QStringLiteral("Windows/System32/vcruntime140.dll")
-                : QStringLiteral("Windows/SysWOW64/vcruntime140.dll");
-    return prefixFileExists(prefixDir, dllRel);
+    // Proton 10 often ships stub vcruntime140.dll; require the full CRT set.
+    const QString sys = wantX64 ? QStringLiteral("Windows/System32/")
+                                : QStringLiteral("Windows/SysWOW64/");
+    const QStringList required = {
+        sys + QStringLiteral("vcruntime140.dll"),
+        sys + QStringLiteral("msvcp140.dll"),
+    };
+    const QStringList preferred = {
+        sys + QStringLiteral("vcruntime140_1.dll"),
+        sys + QStringLiteral("msvcp140_1.dll"),
+    };
+    for (const QString& rel : required) {
+        if (!prefixFileExists(prefixDir, rel))
+            return false;
+    }
+    int preferredHits = 0;
+    for (const QString& rel : preferred) {
+        if (prefixFileExists(prefixDir, rel))
+            ++preferredHits;
+    }
+    // Accept either uninstall registration or the extended CRT DLLs.
+    return regHit || preferredHits >= 1;
 }
 
 bool isDirectXRedistInstalledInPrefix(const QString& prefixDir)
