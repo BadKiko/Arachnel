@@ -7,6 +7,7 @@
 #include <QFileInfo>
 #include <QHash>
 #include <QRegularExpression>
+#include <QSettings>
 #include <QStandardPaths>
 #include <QStringList>
 
@@ -32,12 +33,19 @@ QStringList candidateSteamRoots()
 
 #if defined(Q_OS_LINUX)
     const QString home = QDir::homePath();
-    appendIfExists(home + QStringLiteral("/.local/share/Steam"));
+    // Match ProtonManager order: real client roots first, then flatpak variants.
     appendIfExists(home + QStringLiteral("/.steam/steam"));
     appendIfExists(home + QStringLiteral("/.steam/root"));
+    appendIfExists(home + QStringLiteral("/.steam/debian-installation"));
+    appendIfExists(home + QStringLiteral("/.local/share/Steam"));
+    appendIfExists(home
+                   + QStringLiteral("/.var/app/com.valvesoftware.Steam/.local/share/Steam"));
     appendIfExists(home + QStringLiteral("/.var/app/com.valvesoftware.Steam/data/Steam"));
     appendIfExists(QStringLiteral("/usr/share/steam"));
 #elif defined(Q_OS_WIN)
+    QSettings steam(QStringLiteral("HKEY_CURRENT_USER\\Software\\Valve\\Steam"),
+                    QSettings::NativeFormat);
+    appendIfExists(steam.value(QStringLiteral("SteamPath")).toString());
     appendIfExists(QStringLiteral("C:/Program Files (x86)/Steam"));
     appendIfExists(QStringLiteral("C:/Program Files/Steam"));
 #endif
@@ -63,7 +71,9 @@ QStringList libraryRootsForSteam(const QString& steamRoot)
         const QString text = QString::fromUtf8(file.readAll());
         auto it = pathRe.globalMatch(text);
         while (it.hasNext()) {
-            const QString lib = normalizePath(it.next().captured(1));
+            QString lib = it.next().captured(1);
+            lib.replace(QStringLiteral("\\\\"), QStringLiteral("\\"));
+            lib = normalizePath(lib);
             if (!lib.isEmpty() && QDir(lib).exists() && !libs.contains(lib))
                 libs.append(lib);
         }

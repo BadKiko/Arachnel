@@ -38,6 +38,22 @@ bool GameUpdateService::isRemoteVersionNewer(const QString& remote, const QStrin
 {
     if (remote.isEmpty() || local.isEmpty() || remote == local)
         return false;
+    // Steam public buildid (all digits) — any difference means remote moved.
+    bool remoteDigits = true, localDigits = true;
+    for (const QChar c : remote) {
+        if (!c.isDigit()) {
+            remoteDigits = false;
+            break;
+        }
+    }
+    for (const QChar c : local) {
+        if (!c.isDigit()) {
+            localDigits = false;
+            break;
+        }
+    }
+    if (remoteDigits && (localDigits || QDate::fromString(local.left(10), Qt::ISODate).isValid()))
+        return remote != local;
     // Catalog often stores YYYY-MM-DD derived from uploadDate.
     const QDate remoteDay = QDate::fromString(remote.left(10), Qt::ISODate);
     const QDate localDay = QDate::fromString(local.left(10), Qt::ISODate);
@@ -61,8 +77,8 @@ bool GameUpdateService::gameHasUpdate(const LibraryGame& game, const CatalogEntr
         // Skip when remote markers are missing so we don't stick a false-positive chip.
         if (isRemoteUploadDateNewer(remote.uploadDate, game.uploadDate))
             return true;
-        if (remote.uploadDate.isEmpty()
-            && isRemoteVersionNewer(remote.version, game.version))
+        // BuildId / version can move while Ryuu updated_date stays put.
+        if (isRemoteVersionNewer(remote.version, game.version))
             return true;
     }
 

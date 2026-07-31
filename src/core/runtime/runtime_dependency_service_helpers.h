@@ -208,8 +208,9 @@ bool downloadCdnFallbackInstaller(QNetworkAccessManager* network, const QString&
                                   const QString& destination, QString* errorOut)
 {
     QUrl url;
-    // VC only: Steam's bundled 2015-era packages are stale for 228986–228989; use aka.ms.
-    if (RuntimeDepotCatalog::isX64VcDepotId(depotId))
+    // VC only: Steam's bundled 2015-era packages are stale for modern depots; use aka.ms.
+    if (RuntimeDepotCatalog::isX64VcDepotId(depotId)
+        || RuntimeDepotCatalog::isModernVcDepotId(depotId))
         url = QUrl(QStringLiteral("https://aka.ms/vs/17/release/vc_redist.x64.exe"));
     else if (RuntimeDepotCatalog::isVcDepotId(depotId))
         url = QUrl(QStringLiteral("https://aka.ms/vs/17/release/vc_redist.x86.exe"));
@@ -289,7 +290,8 @@ QStringList installerNamesForDepot(const QString& depotId)
     // Secondary tree-walk fallback + VC CDN filename only.
     if (depotId == QStringLiteral("228990"))
         return {QStringLiteral("DXSETUP.exe")};
-    if (RuntimeDepotCatalog::isX64VcDepotId(depotId))
+    if (RuntimeDepotCatalog::isModernVcDepotId(depotId)
+        || RuntimeDepotCatalog::isX64VcDepotId(depotId))
         return {QStringLiteral("vc_redist.x64.exe")};
     if (RuntimeDepotCatalog::isVcDepotId(depotId))
         return {QStringLiteral("vc_redist.x86.exe"), QStringLiteral("vcredist_x86.exe")};
@@ -319,9 +321,8 @@ QString findInstallerInTree(const QString& root, const QString& depotId)
 
 QString findSteamCommonRedistInstaller(const QString& depotId)
 {
-    // Bundled Steam _CommonRedist VC is 2015-era; depots 228986–228989 need unified 2015-2022.
-    if (depotId == QStringLiteral("228986") || depotId == QStringLiteral("228987")
-        || depotId == QStringLiteral("228988") || depotId == QStringLiteral("228989"))
+    // Bundled Steam _CommonRedist VC is stale for modern unified 2015-2022 depots.
+    if (RuntimeDepotCatalog::isModernVcDepotId(depotId))
         return {};
 
     const QString root = steamCommonRedistRoot();

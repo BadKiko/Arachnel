@@ -35,6 +35,13 @@ bool RuntimeDepotCatalog::isSteamworksSharedDepot(const QString& depotId)
     return n >= 228980 && n <= 229099;
 }
 
+bool RuntimeDepotCatalog::isModernVcDepotId(const QString& depotId)
+{
+    // Steam 2015/2017/2019/2022 shared depots - use unified aka.ms 2015-2022 redist.
+    return depotId == QStringLiteral("228986") || depotId == QStringLiteral("228987")
+           || depotId == QStringLiteral("228988") || depotId == QStringLiteral("228989");
+}
+
 bool RuntimeDepotCatalog::isVcDepotId(const QString& depotId)
 {
     const QString path = installScriptPathLower(depotId);
@@ -47,10 +54,11 @@ bool RuntimeDepotCatalog::isVcDepotId(const QString& depotId)
 
 bool RuntimeDepotCatalog::isX64VcDepotId(const QString& depotId)
 {
-    // Steam InstallScripts don't split arch per depot; these IDs need the x64 CRT / CDN package.
-    return depotId == QStringLiteral("228982") || depotId == QStringLiteral("228984")
-           || depotId == QStringLiteral("228986") || depotId == QStringLiteral("228988")
-           || depotId == QStringLiteral("228989");
+    // Modern unified depots install both arches in Steam; CRT probe/CDN prefer x64.
+    if (isModernVcDepotId(depotId))
+        return true;
+    // Legacy Steam pair-ish IDs we still treat as x64 when CDN is used.
+    return depotId == QStringLiteral("228982") || depotId == QStringLiteral("228984");
 }
 
 bool RuntimeDepotCatalog::isDotNetDepotId(const QString& depotId)
