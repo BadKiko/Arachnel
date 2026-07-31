@@ -8,6 +8,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QProcess>
+#include <QProcessEnvironment>
 #include <QRegularExpression>
 
 namespace arachnel::core {
@@ -75,7 +76,8 @@ QString buildOverlayWineDllOverrides(const QString& overlayDir)
     // SOFL default Online-Fix overrides (=n,b). Scanned game DLLs are merged on top.
     QString overrides = QStringLiteral(
         "d3d11=n;d3d10=n;d3d10core=n;dxgi=n;openvr_api_dxvk=n;d3d12=n;d3d12core=n;d3d9=n;d3d8=n;"
-        "onlinefix64=n,b;steamoverlay64=n,b;winmm=n,b;dnet=n,b;steam_api64=n,b;steam_api=n,b;"
+        "onlinefix64=n,b;onlinefix=n,b;steamoverlay64=n,b;steamoverlay32=n,b;"
+        "winmm=n,b;dnet=n,b;steam_api64=n,b;steam_api=n,b;"
         "winhttp=n,b;steamfix64=n,b;steamfix32=n,b;epicfix64=n,b");
 
     const QDir dir(overlayDir);
@@ -386,7 +388,19 @@ bool tryStartSteamClient()
     for (const QString& cmd : candidates) {
         if (cmd != QStringLiteral("steam") && !QFileInfo::exists(cmd))
             continue;
-        if (QProcess::startDetached(cmd, {}))
+        // Detach with a clean env so host Steam/Nix sessions do not poison
+        // /usr/bin/env inside steam.sh via LD_LIBRARY_PATH from steam-runtime.
+        QProcess process;
+        QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+        env.remove(QStringLiteral("LD_LIBRARY_PATH"));
+        env.remove(QStringLiteral("LD_PRELOAD"));
+        env.remove(QStringLiteral("STEAM_RUNTIME"));
+        env.remove(QStringLiteral("STEAM_RUNTIME_LIBRARY_PATH"));
+        process.setProcessEnvironment(env);
+        process.setProgram(cmd);
+        process.setArguments({});
+        qint64 pid = 0;
+        if (process.startDetached(&pid))
             return true;
     }
     return false;
@@ -495,7 +509,8 @@ void applyOnlineFixLaunchInfo(const QString& installPath, LaunchInfo* info)
     QString overrides = buildOverlayWineDllOverrides(overlayDir);
     if (overrides.isEmpty()) {
         overrides = QStringLiteral(
-            "onlinefix64=n,b;steamoverlay64=n,b;winmm=n,b;dnet=n,b;steam_api64=n,b;winhttp=n,b");
+            "onlinefix64=n,b;onlinefix=n,b;steamoverlay64=n,b;steamoverlay32=n,b;"
+            "winmm=n,b;dnet=n,b;steam_api64=n,b;steam_api=n,b;winhttp=n,b");
     }
 
     if (info->wineDllOverrides.trimmed().isEmpty()) {

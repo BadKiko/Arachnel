@@ -1,5 +1,6 @@
 #include "core_controller_impl.h"
 
+#include <QDebug>
 #include <QFutureWatcher>
 #include <QTimer>
 #include <QtConcurrent>
@@ -394,15 +395,66 @@ void CoreController::initializeServices()
                    const QString& artifactPath, JobKind kind, const QString& libraryId) {
                 const JobEntry* job = m_jobStore.jobById(jobId);
                 if (job && job->pluginDownload) {
-                    const auto entry = resolveCatalogEntry(entryId, sourceId, job);
+                    auto entry = resolveCatalogEntry(entryId, sourceId, job);
                     if (!entry) {
                         showNotice(QCoreApplication::translate(
                                        "Core", "Could not find game to install: %1")
                                        .arg(entryId));
                         return;
                     }
+
+                    CatalogEntry resolved = *entry;
+                    if (kind == JobKind::Update) {
+                        // Prefer plugin live entry over a possibly stale merged cache.
+                        if (ISourcePlugin* plugin =
+                                m_pluginHost ? m_pluginHost->plugin(sourceId) : nullptr) {
+                            if (const auto live = plugin->entryById(entryId)) {
+                                if (!live->version.isEmpty()
+                                    && (resolved.version.isEmpty()
+                                        || live->version > resolved.version))
+                                    resolved.version = live->version;
+                                if (!live->uploadDate.isEmpty()
+                                    && (resolved.uploadDate.isEmpty()
+                                        || live->uploadDate > resolved.uploadDate))
+                                    resolved.uploadDate = live->uploadDate;
+                                if (resolved.steamAppId.isEmpty() && !live->steamAppId.isEmpty())
+                                    resolved.steamAppId = live->steamAppId;
+                            }
+                        }
+                        if (!job->expectedVersion.isEmpty()
+                            && (resolved.version.isEmpty()
+                                || job->expectedVersion > resolved.version))
+                            resolved.version = job->expectedVersion;
+                        if (!job->expectedUploadDate.isEmpty()
+                            && (resolved.uploadDate.isEmpty()
+                                || job->expectedUploadDate > resolved.uploadDate))
+                            resolved.uploadDate = job->expectedUploadDate;
+                        if (resolved.steamAppId.isEmpty() && !job->expectedSteamAppId.isEmpty())
+                            resolved.steamAppId = job->expectedSteamAppId;
+
+                        const bool weakMarkers =
+                            resolved.uploadDate.isEmpty() && resolved.version.isEmpty();
+                        if (weakMarkers) {
+                            qWarning().noquote()
+                                << "[update-commit] weak remote markers for" << entryId
+                                << "source" << sourceId
+                                << "- committing without advancing version/uploadDate";
+                            showNotice(QCoreApplication::translate(
+                                "Core",
+                                "Update finished, but version info is incomplete. "
+                                "Refresh the catalog and update again if the chip stays."));
+                            if (m_catalogController && !sourceId.isEmpty())
+                                m_catalogController->requestCatalogLoad(sourceId);
+                        } else {
+                            qInfo().noquote()
+                                << "[update-commit]" << entryId
+                                << "version" << resolved.version
+                                << "uploadDate" << resolved.uploadDate;
+                        }
+                    }
+
                     m_installSessionService->completePluginDownload(
-                        *entry, sourceId, job->savePath, libraryId, artifactPath, jobId);
+                        resolved, sourceId, job->savePath, libraryId, artifactPath, jobId);
                     return;
                 }
 

@@ -27,12 +27,15 @@ void parseManifestText(const QString& manifest, ManifestRuntimeNeeds* out)
         return;
 
     const QString lower = manifest.toLower();
+    const bool vc143 = lower.contains(QStringLiteral("microsoft.vc143.crt"))
+                       || lower.contains(QStringLiteral("vc143"));
     const bool vc142 = lower.contains(QStringLiteral("microsoft.vc142.crt"))
                        || lower.contains(QStringLiteral("vc142"))
-                       || lower.contains(QStringLiteral("vcruntime140"));
+                       || lower.contains(QStringLiteral("vcruntime140"))
+                       || lower.contains(QStringLiteral("msvcp140"));
     const bool vc140 = lower.contains(QStringLiteral("microsoft.vc140.crt"))
                        || lower.contains(QStringLiteral("vc140"));
-    const bool needsVc = vc142 || vc140;
+    const bool needsVc = vc143 || vc142 || vc140;
     if (!needsVc)
         return;
 
@@ -47,6 +50,21 @@ void parseManifestText(const QString& manifest, ManifestRuntimeNeeds* out)
         out->needsVc2015x86 = true;
 }
 
+void parsePeImportHints(const QByteArray& peData, ManifestRuntimeNeeds* out)
+{
+    if (!out || peData.isEmpty())
+        return;
+    const QByteArray lower = peData.toLower();
+    const bool needsVc = lower.contains("vcruntime140") || lower.contains("msvcp140")
+                         || lower.contains("concrt140") || lower.contains("vccorlib140");
+    if (!needsVc)
+        return;
+    // Default to x64 for modern Steam Windows builds; also mark x86 if wow64 hints exist.
+    out->needsVc2015x64 = true;
+    if (lower.contains("syswow64") || lower.contains("wow64"))
+        out->needsVc2015x86 = true;
+}
+
 } // namespace
 
 ManifestRuntimeNeeds probeExecutableManifest(const QString& executablePath)
@@ -56,8 +74,10 @@ ManifestRuntimeNeeds probeExecutableManifest(const QString& executablePath)
     if (!file.open(QIODevice::ReadOnly))
         return needs;
 
-    const QByteArray header = file.read(1024 * 1024);
+    const QByteArray header = file.read(2 * 1024 * 1024);
     parseManifestText(extractEmbeddedManifest(header), &needs);
+    if (!needs.needsVc2015x64 && !needs.needsVc2015x86)
+        parsePeImportHints(header, &needs);
     return needs;
 }
 

@@ -247,6 +247,14 @@ JobEntry JobOrchestrator::jobFromModelRow(int row) const
     job.artifactPath = m_jobs->data(idx, JobModel::ArtifactPathRole).toString();
     job.createdAt = m_jobs->data(idx, JobModel::CreatedAtRole).toString();
     job.completedAt = m_jobs->data(idx, JobModel::CompletedAtRole).toString();
+    // Expected markers live on the store (not QML roles); keep them across progress updates.
+    if (m_jobStore) {
+        if (const JobEntry* stored = m_jobStore->jobById(job.id)) {
+            job.expectedVersion = stored->expectedVersion;
+            job.expectedUploadDate = stored->expectedUploadDate;
+            job.expectedSteamAppId = stored->expectedSteamAppId;
+        }
+    }
     return job;
 }
 
@@ -312,6 +320,9 @@ QString JobOrchestrator::startPluginOwnedDownload(const CatalogEntry& entry, Job
     job.coverUrl = entry.coverUrl;
     job.libraryId = libId;
     job.pluginDownload = true;
+    job.expectedVersion = entry.version;
+    job.expectedUploadDate = entry.uploadDate;
+    job.expectedSteamAppId = entry.steamAppId;
     job.createdAt = isoNow();
     const qint64 estimatedTotal = parseSizeLabelBytes(entry.sizeLabel);
     if (estimatedTotal > 0) {

@@ -123,12 +123,74 @@ std::optional<CatalogEntry> CoreController::resolveCatalogEntry(const QString& e
                                                                 const QString& sourceId,
                                                                 const JobEntry* jobHint) const
 {
-    if (const CatalogEntry* cached = findCatalogEntry(entryId))
-        return *cached;
+    auto enrichFromLibraryAndJob = [&](CatalogEntry& entry) {
+        if (const LibraryGame* game = m_libraryStore.gameById(entryId)) {
+            if (entry.version.isEmpty())
+                entry.version = game->version;
+            if (entry.uploadDate.isEmpty())
+                entry.uploadDate = game->uploadDate;
+            if (entry.steamAppId.isEmpty())
+                entry.steamAppId = game->steamAppId;
+            if (entry.sourceId.isEmpty())
+                entry.sourceId = game->sourceId;
+            if (entry.title.isEmpty())
+                entry.title = game->title;
+            if (entry.coverUrl.isEmpty())
+                entry.coverUrl = game->coverUrl;
+            if (entry.magnetUris.isEmpty() && !game->magnetUri.isEmpty())
+                entry.magnetUris.append(game->magnetUri);
+            if (entry.sizeLabel.isEmpty())
+                entry.sizeLabel = game->sizeLabel;
+        }
+        if (!jobHint)
+            return;
+        if (entry.version.isEmpty() && !jobHint->expectedVersion.isEmpty())
+            entry.version = jobHint->expectedVersion;
+        if (entry.uploadDate.isEmpty() && !jobHint->expectedUploadDate.isEmpty())
+            entry.uploadDate = jobHint->expectedUploadDate;
+        if (entry.steamAppId.isEmpty() && !jobHint->expectedSteamAppId.isEmpty())
+            entry.steamAppId = jobHint->expectedSteamAppId;
+        if (entry.coverUrl.isEmpty())
+            entry.coverUrl = jobHint->coverUrl;
+        if (entry.sourceId.isEmpty())
+            entry.sourceId = sourceId.isEmpty() ? jobHint->sourceId : sourceId;
+    };
+
+    if (const CatalogEntry* cached = findCatalogEntry(entryId)) {
+        CatalogEntry entry = *cached;
+        // Job expected markers win when fresher / when cache omitted them (Steam updates).
+        if (jobHint) {
+            if (!jobHint->expectedVersion.isEmpty()
+                && (entry.version.isEmpty() || jobHint->expectedVersion > entry.version))
+                entry.version = jobHint->expectedVersion;
+            if (!jobHint->expectedUploadDate.isEmpty()
+                && (entry.uploadDate.isEmpty()
+                    || jobHint->expectedUploadDate > entry.uploadDate))
+                entry.uploadDate = jobHint->expectedUploadDate;
+            if (entry.steamAppId.isEmpty() && !jobHint->expectedSteamAppId.isEmpty())
+                entry.steamAppId = jobHint->expectedSteamAppId;
+        }
+        enrichFromLibraryAndJob(entry);
+        return entry;
+    }
 
     if (ISourcePlugin* plugin = m_pluginHost->plugin(sourceId)) {
-        if (const auto remote = plugin->entryById(entryId))
-            return *remote;
+        if (const auto remote = plugin->entryById(entryId)) {
+            CatalogEntry entry = *remote;
+            if (jobHint) {
+                if (!jobHint->expectedVersion.isEmpty()
+                    && (entry.version.isEmpty() || jobHint->expectedVersion > entry.version))
+                    entry.version = jobHint->expectedVersion;
+                if (!jobHint->expectedUploadDate.isEmpty()
+                    && (entry.uploadDate.isEmpty()
+                        || jobHint->expectedUploadDate > entry.uploadDate))
+                    entry.uploadDate = jobHint->expectedUploadDate;
+                if (entry.steamAppId.isEmpty() && !jobHint->expectedSteamAppId.isEmpty())
+                    entry.steamAppId = jobHint->expectedSteamAppId;
+            }
+            enrichFromLibraryAndJob(entry);
+            return entry;
+        }
     }
 
     if (!jobHint)
@@ -149,6 +211,10 @@ std::optional<CatalogEntry> CoreController::resolveCatalogEntry(const QString& e
     if (!jobHint->magnetUri.isEmpty())
         synthetic.magnetUris.append(jobHint->magnetUri);
     synthetic.coverUrl = jobHint->coverUrl;
+    synthetic.version = jobHint->expectedVersion;
+    synthetic.uploadDate = jobHint->expectedUploadDate;
+    synthetic.steamAppId = jobHint->expectedSteamAppId;
+    enrichFromLibraryAndJob(synthetic);
     return synthetic;
 }
 

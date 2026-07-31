@@ -41,6 +41,7 @@ QVariantMap CoreController::gameRuntimeContainerInfo(const QString& gameId) cons
         request.steamAppId = game->steamAppId;
         request.title = game->title;
         request.installPath = game->installPath;
+        request.protonId = game->protonId;
     }
     if (request.steamAppId.isEmpty()) {
         if (const CatalogEntry* entry = findCatalogEntry(gameId))
@@ -63,6 +64,7 @@ void CoreController::openGameRuntimeContainer(const QString& gameId)
         request.steamAppId = game->steamAppId;
         request.title = game->title;
         request.installPath = game->installPath;
+        request.protonId = game->protonId;
     }
     const QVariantMap info = m_runtimeDependencyService->containerInfoForGame(request);
     const QString path = info.value(QStringLiteral("containerPath")).toString();
@@ -116,7 +118,10 @@ std::optional<CatalogEntry> CoreController::resolveCatalogEntry(const QString& e
     entry.sizeLabel = game->sizeLabel;
     entry.uploadDate = game->uploadDate;
     entry.installKind = game->installKind;
+    entry.steamAppId = game->steamAppId;
     entry.magnetUris.append(game->magnetUri);
+    if (entry.steamAppId.isEmpty() && game->magnetUri.startsWith(QStringLiteral("steam://app/")))
+        entry.steamAppId = game->magnetUri.mid(QStringLiteral("steam://app/").size());
     return entry;
 }
 

@@ -51,12 +51,48 @@ QProcessEnvironment buildProtonEnvironment(const QString& gameId, const QString&
                                            ProtonManager& manager)
 {
     QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    // Host Steam / NixOS sessions often inject steam-runtime into LD_LIBRARY_PATH.
+    // That breaks /usr/bin/env (ATTR_1.3) and unrelated host tools. Keep a clean
+    // baseline; Proton and optional run.sh set up what they need themselves.
+    env.remove(QStringLiteral("LD_LIBRARY_PATH"));
+    env.remove(QStringLiteral("STEAM_RUNTIME"));
+    env.remove(QStringLiteral("STEAM_RUNTIME_LIBRARY_PATH"));
     env.insert(QStringLiteral("STEAM_COMPAT_CLIENT_INSTALL_PATH"), manager.steamCompatClientPath());
     env.insert(QStringLiteral("STEAM_COMPAT_DATA_PATH"), manager.compatDataPathForGame(gameId));
     env.insert(QStringLiteral("WINEDEBUG"), QStringLiteral("-all"));
     if (!protonInstallDir.trimmed().isEmpty())
         env.insert(QStringLiteral("PROTON_PATH"), protonInstallDir);
     return env;
+}
+
+bool hostBreaksWithLegacySteamRuntime()
+{
+    // Legacy ubuntu12_32/steam-runtime/run.sh puts old libs on LD_LIBRARY_PATH.
+    // NixOS (and some immutable hosts) then fail shebang `/usr/bin/env` with
+    // libattr ATTR_1.3. Prefer launching Proton directly on those systems.
+    if (QFileInfo::exists(QStringLiteral("/etc/NIXOS")))
+        return true;
+    if (!qEnvironmentVariableIsEmpty("NIX_STORE") || !qEnvironmentVariableIsEmpty("NIX_PATH"))
+        return true;
+    const QByteArray ld = qgetenv("LD_LIBRARY_PATH");
+    if (ld.contains("steam-runtime") && ld.contains("libattr"))
+        return true;
+    return false;
+}
+
+QString filterOverlayPreloadForHost(const QString& preload)
+{
+    // 32-bit gameoverlayrenderer cannot be preloaded into 64-bit Proton; keep 64-bit only.
+    QStringList kept;
+    for (const QString& part : preload.split(QLatin1Char(':'), Qt::SkipEmptyParts)) {
+        const QString p = part.trimmed();
+        if (p.isEmpty())
+            continue;
+        if (p.contains(QStringLiteral("ubuntu12_32/")))
+            continue;
+        kept.append(p);
+    }
+    return kept.join(QLatin1Char(':'));
 }
 
 } // namespace
@@ -93,11 +129,13 @@ ResolvedLaunch resolveLaunch(const LaunchInfo& pluginInfo, const LibraryGame& ga
         protonArgs += QStringList{QStringLiteral("run"), executable};
         protonArgs += arguments;
 
-        // SOFL Online-Fix: proton run <exe>, optionally prefixed with legacy steam-runtime/run.sh.
-        // Do not use SteamLinuxRuntime_sniper here — pressure-vessel needs userns Arachnel lacks.
+        // SOFL Online-Fix: optionally prefix with legacy steam-runtime/run.sh.
+        // Skip legacy on NixOS / hosts where steam-runtime breaks /usr/bin/env.
         const QString runtimeMode =
             pluginInfo.environmentExtras.value(QStringLiteral("ARACHNEL_USE_STEAM_RUNTIME"));
-        if (runtimeMode == QStringLiteral("legacy")) {
+        const bool allowLegacy = runtimeMode == QStringLiteral("legacy")
+                                 && !hostBreaksWithLegacySteamRuntime();
+        if (allowLegacy) {
             const QString legacyRuntime = manager.findLegacySteamRuntime();
             if (!legacyRuntime.isEmpty()) {
                 resolved.program = legacyRuntime;
@@ -106,7 +144,7 @@ ResolvedLaunch resolveLaunch(const LaunchInfo& pluginInfo, const LibraryGame& ga
                 resolved.program = proton;
                 resolved.arguments = protonArgs;
             }
-        } else if (runtimeMode == QStringLiteral("1")) {
+        } else if (runtimeMode == QStringLiteral("1") && !hostBreaksWithLegacySteamRuntime()) {
             const QString steamRuntime = manager.findSteamLinuxRuntime();
             if (!steamRuntime.isEmpty() && manager.steamLinuxRuntimeUsable()) {
                 resolved.program = steamRuntime;
@@ -144,12 +182,17 @@ ResolvedLaunch resolveLaunch(const LaunchInfo& pluginInfo, const LibraryGame& ga
                 continue;
             if (it.key() == QStringLiteral("LD_PRELOAD")) {
                 const QString existing = resolved.environment.value(QStringLiteral("LD_PRELOAD"));
-                QString added = it.value().trimmed();
+                QString added = filterOverlayPreloadForHost(it.value().trimmed());
                 while (added.startsWith(QLatin1Char(':')))
                     added.remove(0, 1);
+                if (added.isEmpty())
+                    continue;
                 resolved.environment.insert(QStringLiteral("LD_PRELOAD"),
                                             existing.isEmpty() ? added
                                                                : existing + QLatin1Char(':') + added);
+            } else if (it.key() == QStringLiteral("LD_LIBRARY_PATH")) {
+                // Never inherit Steam-runtime library paths from extras.
+                continue;
             } else {
                 resolved.environment.insert(it.key(), it.value());
             }

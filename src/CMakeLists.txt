@@ -65,6 +65,8 @@ set(ARACHNEL_APP_SOURCES
     src/core/runtime/runtime_manifest_probe.cpp
     src/core/runtime/runtime_depot_catalog.cpp
     src/core/runtime/runtime_container_manager.cpp
+    src/core/runtime/installscript_vdf.cpp
+    src/core/runtime/steamworks_install_scripts.cpp
     src/core/runtime/runtime_dependency_service.cpp
     src/core/runtime/runtime_dependency_service_install.cpp
     src/core/launch/process_launcher.cpp

@@ -1,11 +1,13 @@
 #include "runtime_dependency_service.h"
 
+#include "installscript_vdf.h"
 #include "proton_manager.h"
 #include "runtime_container_manager.h"
 #include "install_heuristics.h"
 #include "runtime_depot_catalog.h"
 #include "runtime_manifest_probe.h"
 #include "settings_store.h"
+#include "steamworks_install_scripts.h"
 
 #include <QCoreApplication>
 #include <QDir>

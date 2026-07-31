@@ -110,27 +110,27 @@ int main(int argc, char* argv[])
 
     arachnel::core::registerCoreTypes();
 
-    QQmlApplicationEngine engine;
-    configureQmlEngine(engine);
-    wireEngineLogging(engine, app);
+    int exitCode = 1;
+    {
+        QQmlApplicationEngine engine;
+        configureQmlEngine(engine);
+        wireEngineLogging(engine, app);
 
-    if (!crashDialogMode) {
-        if (auto* guiApp = qobject_cast<QGuiApplication*>(&app))
-            guiApp->setQuitOnLastWindowClosed(true);
-        QObject::connect(&app, &QCoreApplication::aboutToQuit, &app, []() {
-            arachnel::markApplicationShuttingDown();
-            arachnel::core::CoreController::instance().prepareShutdown();
-        });
-    } else {
-        arachnel::core::CoreController::setCrashReporterMode(true);
-        if (auto* guiApp = qobject_cast<QGuiApplication*>(&app))
-            guiApp->setQuitOnLastWindowClosed(true);
-        QObject::connect(&app, &QCoreApplication::aboutToQuit, &app, []() {
-            arachnel::markApplicationShuttingDown();
-        });
-    }
+        if (!crashDialogMode) {
+            if (auto* guiApp = qobject_cast<QGuiApplication*>(&app))
+                guiApp->setQuitOnLastWindowClosed(true);
+            QObject::connect(&app, &QCoreApplication::aboutToQuit, &app, []() {
+                arachnel::markApplicationShuttingDown();
+            });
+        } else {
+            arachnel::core::CoreController::setCrashReporterMode(true);
+            if (auto* guiApp = qobject_cast<QGuiApplication*>(&app))
+                guiApp->setQuitOnLastWindowClosed(true);
+            QObject::connect(&app, &QCoreApplication::aboutToQuit, &app, []() {
+                arachnel::markApplicationShuttingDown();
+            });
+        }
 
-    const int exitCode = [&]() {
         if (crashDialogMode)
             engine.loadFromModule(QStringLiteral("arachnel"), QStringLiteral("CrashReportWindow"));
         else
@@ -138,12 +138,20 @@ int main(int argc, char* argv[])
 
         if (!crashDialogMode)
             applyTranslations(engine, app);
-        return app.exec();
-    }();
 
-    if (!crashDialogMode) {
+        exitCode = app.exec();
+
+        // Tear down QML while Core is still alive, then shut Core down, then
+        // destroy the engine. Destroying QQmlEngine while plugins/sessions are
+        // mid-teardown caused free(): invalid size on Linux (NixOS AppImage).
         arachnel::markApplicationShuttingDown();
-        arachnel::core::CoreController::instance().prepareShutdown();
+        const QList<QObject*> roots = engine.rootObjects();
+        for (QObject* root : roots)
+            delete root;
+        engine.clearComponentCache();
+
+        if (!crashDialogMode)
+            arachnel::core::CoreController::instance().prepareShutdown();
     }
 
     arachnel::logRunFinished(exitCode);

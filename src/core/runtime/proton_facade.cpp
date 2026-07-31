@@ -28,6 +28,7 @@ bool CoreController::ensureRuntimeDependenciesForGame(const LibraryGame& game)
     request.steamAppId = steamAppId;
     request.title = game.title;
     request.installPath = game.installPath;
+    request.protonId = game.protonId;
 
     setRuntimeSetupActive(game,
                           QCoreApplication::translate("Core", "Preparing runtime environment…"));

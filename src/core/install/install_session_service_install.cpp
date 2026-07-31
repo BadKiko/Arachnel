@@ -10,6 +10,9 @@
 #include "settings_store.h"
 
 #include <QCoreApplication>
+#include <QDate>
+#include <QDateTime>
+#include <QDebug>
 #include <QDir>
 #include <QFileInfo>
 #include <QtConcurrent>
@@ -17,6 +20,29 @@
 namespace arachnel::core {
 
 namespace {
+
+/** Prefer remote marker when present and not older than local (never downgrade). */
+QString preferFresherMarker(const QString& remote, const QString& local)
+{
+    if (remote.isEmpty())
+        return local;
+    if (local.isEmpty())
+        return remote;
+    if (remote == local)
+        return remote;
+
+    const QDateTime remoteDt = QDateTime::fromString(remote, Qt::ISODate);
+    const QDateTime localDt = QDateTime::fromString(local, Qt::ISODate);
+    if (remoteDt.isValid() && localDt.isValid())
+        return remoteDt >= localDt ? remote : local;
+
+    const QDate remoteDay = QDate::fromString(remote.left(10), Qt::ISODate);
+    const QDate localDay = QDate::fromString(local.left(10), Qt::ISODate);
+    if (remoteDay.isValid() && localDay.isValid())
+        return remoteDay >= localDay ? remote : local;
+
+    return remote >= local ? remote : local;
+}
 
 bool pathIsUnderRoot(const QString& path, const QString& root)
 {
@@ -163,24 +189,43 @@ void InstallSessionService::commitInstalledCatalogGame(const CatalogEntry& entry
                                                        InstallKind installKind)
 {
     const CatalogEntry* fresh = m_hooks.findCatalogEntry(entryHint.id);
-    const CatalogEntry& catalog = fresh ? *fresh : entryHint;
+    CatalogEntry catalog = fresh ? *fresh : entryHint;
+    // Prefer non-empty markers from the entry used to start/finish the job when cache is stale.
+    if (catalog.version.isEmpty() && !entryHint.version.isEmpty())
+        catalog.version = entryHint.version;
+    else if (!entryHint.version.isEmpty())
+        catalog.version = preferFresherMarker(entryHint.version, catalog.version);
+    if (catalog.uploadDate.isEmpty() && !entryHint.uploadDate.isEmpty())
+        catalog.uploadDate = entryHint.uploadDate;
+    else if (!entryHint.uploadDate.isEmpty())
+        catalog.uploadDate = preferFresherMarker(entryHint.uploadDate, catalog.uploadDate);
+    if (catalog.steamAppId.isEmpty() && !entryHint.steamAppId.isEmpty())
+        catalog.steamAppId = entryHint.steamAppId;
+    if (catalog.magnetUris.isEmpty() && !entryHint.magnetUris.isEmpty())
+        catalog.magnetUris = entryHint.magnetUris;
+
     const QString libId = libraryId.isEmpty() ? m_settings->defaultLibraryId() : libraryId;
     LibraryGame game;
     if (const LibraryGame* existing = m_libraryStore->gameById(catalog.id))
         game = *existing;
+
+    const QString previousVersion = game.version;
+    const QString previousUploadDate = game.uploadDate;
 
     game.id = catalog.id;
     game.title = catalog.title;
     game.coverUrl = catalog.coverUrl;
     game.sourceId = sourceId;
     game.sourceName = m_hooks.sourceNameForId(sourceId);
-    game.version = catalog.version;
+    // Never wipe or downgrade local version/upload markers with empty/older catalog data.
+    game.version = preferFresherMarker(catalog.version, game.version);
     game.description = catalog.description;
     game.genres = catalog.genres;
     game.sizeLabel = catalog.sizeLabel;
     game.installKind = installKind;
-    game.uploadDate = catalog.uploadDate;
-    game.magnetUri = catalog.magnetUris.value(0);
+    game.uploadDate = preferFresherMarker(catalog.uploadDate, game.uploadDate);
+    if (!catalog.magnetUris.isEmpty())
+        game.magnetUri = catalog.magnetUris.value(0);
     game.downloadPath = savePath;
     game.libraryId = libId;
     game.hasUpdate = false;
@@ -214,15 +259,22 @@ void InstallSessionService::commitInstalledCatalogGame(const CatalogEntry& entry
     components.reserve(catalog.addons.size());
     for (const auto& addon : catalog.addons) {
         InstalledComponent component{addon.id, addon.title, addon.uploadDate};
-        if (const auto it = previousComponents.constFind(addon.id); it != previousComponents.cend())
+        if (const auto it = previousComponents.constFind(addon.id); it != previousComponents.cend()) {
             component.installed = it->installed;
+            component.uploadDate = preferFresherMarker(addon.uploadDate, it->uploadDate);
+        }
         components.append(component);
     }
     game.components = components;
-    if (game.steamAppId.isEmpty() && !catalog.steamAppId.isEmpty())
+    if (!catalog.steamAppId.isEmpty())
         game.steamAppId = catalog.steamAppId;
     if (game.steamAppId.isEmpty())
         game.steamAppId = m_hooks.metadataSteamAppIdForTitle(catalog.title);
+
+    qInfo().noquote() << "[install-commit]" << catalog.id
+                      << "version" << previousVersion << "->" << game.version
+                      << "uploadDate" << previousUploadDate << "->" << game.uploadDate
+                      << "steamAppId" << game.steamAppId;
 
     if (!game.installPath.isEmpty() && QFileInfo::exists(game.installPath))
         writeInstallMarker(game.installPath, game.id, game.sourceId);

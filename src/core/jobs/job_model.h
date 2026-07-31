@@ -28,6 +28,10 @@ struct JobEntry {
     bool httpDownload = false;
     bool pluginDownload = false;
     QString artifactPath;
+    /** Remote markers captured when the job started (Steam/plugin update commit). */
+    QString expectedVersion;
+    QString expectedUploadDate;
+    QString expectedSteamAppId;
     QString createdAt;
     QString completedAt;
 };

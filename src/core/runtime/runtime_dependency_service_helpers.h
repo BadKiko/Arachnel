@@ -188,6 +188,9 @@ bool isDepotInstalledInRegistry(const QString& depotId)
 
 QString steamCommonRedistRoot()
 {
+    const QString discovered = findSteamworksCommonRedistRoot();
+    if (!discovered.isEmpty())
+        return discovered;
 #if defined(Q_OS_WIN)
     QSettings steam(QStringLiteral("HKEY_CURRENT_USER\\Software\\Valve\\Steam"),
                     QSettings::NativeFormat);
@@ -197,18 +200,6 @@ QString steamCommonRedistRoot()
     return QDir(steamPath).filePath(
         QStringLiteral("steamapps/common/Steamworks Shared/_CommonRedist"));
 #else
-    const QString home = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
-    const QStringList candidates = {
-        home + QStringLiteral("/.steam/debian-installation/steamapps/common/Steamworks "
-                              "Shared/_CommonRedist"),
-        home + QStringLiteral("/.steam/root/steamapps/common/Steamworks Shared/_CommonRedist"),
-        home + QStringLiteral("/.local/share/Steam/steamapps/common/Steamworks "
-                              "Shared/_CommonRedist"),
-    };
-    for (const QString& path : candidates) {
-        if (QDir(path).exists())
-            return path;
-    }
     return {};
 #endif
 }
@@ -217,7 +208,9 @@ bool downloadCdnFallbackInstaller(QNetworkAccessManager* network, const QString&
                                   const QString& destination, QString* errorOut)
 {
     QUrl url;
-    if (RuntimeDepotCatalog::isX64VcDepotId(depotId))
+    // VC only: Steam's bundled 2015-era packages are stale for modern depots; use aka.ms.
+    if (RuntimeDepotCatalog::isX64VcDepotId(depotId)
+        || RuntimeDepotCatalog::isModernVcDepotId(depotId))
         url = QUrl(QStringLiteral("https://aka.ms/vs/17/release/vc_redist.x64.exe"));
     else if (RuntimeDepotCatalog::isVcDepotId(depotId))
         url = QUrl(QStringLiteral("https://aka.ms/vs/17/release/vc_redist.x86.exe"));
@@ -228,15 +221,18 @@ bool downloadCdnFallbackInstaller(QNetworkAccessManager* network, const QString&
 }
 
 QProcessEnvironment protonEnvForGame(ProtonManager* protonManager, SettingsStore* settings,
-                                     const QString& gameId)
+                                     const QString& gameId, const QString& gameProtonId = {})
 {
     QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    env.remove(QStringLiteral("LD_LIBRARY_PATH"));
+    env.remove(QStringLiteral("STEAM_RUNTIME"));
+    env.remove(QStringLiteral("STEAM_RUNTIME_LIBRARY_PATH"));
     env.insert(QStringLiteral("STEAM_COMPAT_CLIENT_INSTALL_PATH"),
                protonManager->steamCompatClientPath());
     env.insert(QStringLiteral("STEAM_COMPAT_DATA_PATH"),
                protonManager->compatDataPathForGame(gameId));
     env.insert(QStringLiteral("WINEDEBUG"), QStringLiteral("-all"));
-    const QString protonId = settings->resolvedProtonId(QString(), *protonManager);
+    const QString protonId = settings->resolvedProtonId(gameProtonId, *protonManager);
     const QString installDir = protonManager->installDirForId(protonId);
     if (!installDir.isEmpty())
         env.insert(QStringLiteral("PROTON_PATH"), installDir);
@@ -252,6 +248,8 @@ QStringList silentArgsForInstaller(const QString& installerPath)
     if (lower.contains(QStringLiteral("websetup"))
         || lower.contains(QStringLiteral("dxwebsetup")))
         return {};
+    if (lower.contains(QStringLiteral("oalinst")))
+        return {QStringLiteral("/s")};
     if (lower.contains(QStringLiteral("ndp48")) || lower.contains(QStringLiteral("dotnet")))
         return {QStringLiteral("/q"), QStringLiteral("/norestart")};
     return {QStringLiteral("/install"), QStringLiteral("/quiet"), QStringLiteral("/norestart")};
@@ -289,15 +287,22 @@ QString resolveSteamAppIdFromTitle(QNetworkAccessManager* network, const QString
 
 QStringList installerNamesForDepot(const QString& depotId)
 {
+    // Secondary tree-walk fallback + VC CDN filename only.
     if (depotId == QStringLiteral("228990"))
         return {QStringLiteral("DXSETUP.exe")};
-    if (RuntimeDepotCatalog::isX64VcDepotId(depotId))
+    if (RuntimeDepotCatalog::isModernVcDepotId(depotId)
+        || RuntimeDepotCatalog::isX64VcDepotId(depotId))
         return {QStringLiteral("vc_redist.x64.exe")};
     if (RuntimeDepotCatalog::isVcDepotId(depotId))
         return {QStringLiteral("vc_redist.x86.exe"), QStringLiteral("vcredist_x86.exe")};
-    if (depotId == QStringLiteral("229020"))
-        return {QStringLiteral("ndp48-x86-x64.exe"), QStringLiteral("NDP48-x86-x64-AllOS-ENU.exe")};
+    if (RuntimeDepotCatalog::isOpenALDepotId(depotId))
+        return {QStringLiteral("oalinst.exe")};
     return {};
+}
+
+bool depotHasCdnFallback(const QString& depotId)
+{
+    return RuntimeDepotCatalog::isVcDepotId(depotId);
 }
 
 QString findInstallerInTree(const QString& root, const QString& depotId)
@@ -316,9 +321,8 @@ QString findInstallerInTree(const QString& root, const QString& depotId)
 
 QString findSteamCommonRedistInstaller(const QString& depotId)
 {
-    // Bundled Steam _CommonRedist VC is 2015-era; depots 228986–228989 need unified 2015-2022.
-    if (depotId == QStringLiteral("228986") || depotId == QStringLiteral("228987")
-        || depotId == QStringLiteral("228988") || depotId == QStringLiteral("228989"))
+    // Bundled Steam _CommonRedist VC is stale for modern unified 2015-2022 depots.
+    if (RuntimeDepotCatalog::isModernVcDepotId(depotId))
         return {};
 
     const QString root = steamCommonRedistRoot();
@@ -354,14 +358,45 @@ bool prefixFileExists(const QString& prefixDir, const QString& wineRelativePath)
     return it.hasNext();
 }
 
+/** Real MSVC CRT DLLs are ~80KB+; Proton/Wine often ships tiny stubs that pass existence checks. */
+bool prefixHasRealCrtDll(const QString& prefixDir, const QString& wineRelativePath)
+{
+    constexpr qint64 kMinRealCrtBytes = 40 * 1024;
+    const QString base = prefixDir + QStringLiteral("/drive_c/");
+    const QStringList candidates = {
+        base + wineRelativePath,
+        base + wineRelativePath.toLower(),
+    };
+    for (const QString& path : candidates) {
+        const QFileInfo info(path);
+        if (info.isFile() && info.size() >= kMinRealCrtBytes)
+            return true;
+    }
+
+    const QString fileName = QFileInfo(wineRelativePath).fileName();
+    if (fileName.isEmpty())
+        return false;
+    QDirIterator it(prefixDir + QStringLiteral("/drive_c"), {fileName}, QDir::Files,
+                    QDirIterator::Subdirectories);
+    while (it.hasNext()) {
+        const QFileInfo info(it.next());
+        if (info.isFile() && info.size() >= kMinRealCrtBytes)
+            return true;
+    }
+    return false;
+}
+
 bool isVcRedist2015InstalledInPrefix(const QString& prefixDir, bool wantX64)
 {
     const QStringList needles =
         wantX64 ? QStringList{QStringLiteral("Microsoft Visual C++ 2015-2022 Redistributable (x64)"),
-                              QStringLiteral("Visual C++ 2022 X64 Minimum Runtime")}
+                              QStringLiteral("Visual C++ 2022 X64 Minimum Runtime"),
+                              QStringLiteral("Visual C++ 2019 X64 Minimum Runtime")}
                 : QStringList{QStringLiteral("Microsoft Visual C++ 2015-2022 Redistributable (x86)"),
-                              QStringLiteral("Visual C++ 2022 X86 Minimum Runtime")};
+                              QStringLiteral("Visual C++ 2022 X86 Minimum Runtime"),
+                              QStringLiteral("Visual C++ 2019 X86 Minimum Runtime")};
 
+    bool regHit = false;
     for (const QString& regName :
          {QStringLiteral("user.reg"), QStringLiteral("system.reg")}) {
         QFile file(prefixDir + QLatin1Char('/') + regName);
@@ -369,20 +404,77 @@ bool isVcRedist2015InstalledInPrefix(const QString& prefixDir, bool wantX64)
             continue;
         const QString regText = QString::fromUtf8(file.readAll());
         for (const QString& needle : needles) {
-            if (regText.contains(needle))
-                return true;
+            if (regText.contains(needle)) {
+                regHit = true;
+                break;
+            }
         }
+        if (regHit)
+            break;
     }
 
-    const QString dllRel =
-        wantX64 ? QStringLiteral("Windows/System32/vcruntime140.dll")
-                : QStringLiteral("Windows/SysWOW64/vcruntime140.dll");
-    return prefixFileExists(prefixDir, dllRel);
+    // Proton 10 often ships stub vcruntime140.dll; require real CRT sizes, not placeholders.
+    const QString sys = wantX64 ? QStringLiteral("Windows/System32/")
+                                : QStringLiteral("Windows/SysWOW64/");
+    const QStringList required = {
+        sys + QStringLiteral("vcruntime140.dll"),
+        sys + QStringLiteral("msvcp140.dll"),
+    };
+    for (const QString& rel : required) {
+        if (!prefixHasRealCrtDll(prefixDir, rel))
+            return false;
+    }
+    // Prefer extended CRT when present; uninstall registration alone is also enough
+    // once the core DLLs are real (not stubs).
+    const bool hasExtended =
+        prefixHasRealCrtDll(prefixDir, sys + QStringLiteral("vcruntime140_1.dll"))
+        || prefixHasRealCrtDll(prefixDir, sys + QStringLiteral("msvcp140_1.dll"));
+    return regHit || hasExtended;
 }
 
 bool isDirectXRedistInstalledInPrefix(const QString& prefixDir)
 {
     return prefixFileExists(prefixDir, QStringLiteral("Windows/System32/d3dx9_43.dll"));
+}
+
+bool isDotNetInstalledInPrefix(const QString& prefixDir)
+{
+    // Wine-Mono / Framework 4.x - either layout is enough for Stardew-class titles.
+    const QStringList markers = {
+        QStringLiteral("Windows/Microsoft.NET/Framework64/v4.0.30319/mscorlib.dll"),
+        QStringLiteral("Windows/Microsoft.NET/Framework/v4.0.30319/mscorlib.dll"),
+        QStringLiteral("windows/Microsoft.NET/Framework64/v4.0.30319/mscorlib.dll"),
+        QStringLiteral("windows/Microsoft.NET/Framework/v4.0.30319/mscorlib.dll"),
+    };
+    for (const QString& rel : markers) {
+        if (prefixFileExists(prefixDir, rel))
+            return true;
+    }
+    return false;
+}
+
+bool isOpenALInstalledInPrefix(const QString& prefixDir)
+{
+    return prefixFileExists(prefixDir, QStringLiteral("Windows/System32/OpenAL32.dll"))
+           || prefixFileExists(prefixDir, QStringLiteral("Windows/SysWOW64/OpenAL32.dll"));
+}
+
+bool isDepotSatisfiedByHasRunKey(const QString& depotId, const QString& prefixDir)
+{
+    const RedistInstallPlan plan = buildRedistInstallPlan(depotId);
+    // Plan may have empty steps if installers are missing; still parse HasRunKey from script.
+    if (plan.scriptAbsolutePath.isEmpty())
+        return false;
+    QFile file(plan.scriptAbsolutePath);
+    if (!file.open(QIODevice::ReadOnly))
+        return false;
+    const QVector<RedistInstallStep> steps =
+        parseInstallScriptRunProcess(QString::fromUtf8(file.readAll()));
+    for (const RedistInstallStep& step : steps) {
+        if (!step.hasRunKey.isEmpty() && prefixHasRunKey(prefixDir, step.hasRunKey))
+            return true;
+    }
+    return false;
 }
 
 bool isDepotInstalledInPrefix(const RuntimeDepotRef& depot, const QString& prefixDir)
@@ -392,6 +484,14 @@ bool isDepotInstalledInPrefix(const RuntimeDepotRef& depot, const QString& prefi
                                                RuntimeDepotCatalog::isX64VcDepotId(depot.depotId));
     if (depot.depotId == QStringLiteral("228990"))
         return isDirectXRedistInstalledInPrefix(prefixDir);
+    if (RuntimeDepotCatalog::isDotNetDepotId(depot.depotId))
+        return isDotNetInstalledInPrefix(prefixDir);
+    if (RuntimeDepotCatalog::isOpenALDepotId(depot.depotId))
+        return isOpenALInstalledInPrefix(prefixDir)
+               || isDepotSatisfiedByHasRunKey(depot.depotId, prefixDir);
+    // Other Steamworks Shared depots: Steam HasRunKey when present.
+    if (RuntimeDepotCatalog::isSteamworksSharedDepot(depot.depotId))
+        return isDepotSatisfiedByHasRunKey(depot.depotId, prefixDir);
     return false;
 }
 

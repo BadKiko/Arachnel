@@ -39,6 +39,9 @@ struct InstallContext {
     QString steamCompatClientPath;
     /** Plugin hint: "update" forces re-download for owns_download sources. */
     QString installMode;
+    // Append-only: keep above fields ABI-stable for already-shipped plugins (steamidra 0.4.x).
+    QString version;
+    QString steamAppId;
 };
 
 struct InstallResult {

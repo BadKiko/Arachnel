@@ -111,10 +111,14 @@ MD.ElevationRectangle {
             spacing: MD.Token.spacing.small
 
             Item {
-                visible: root.hasAddons
-                Layout.preferredWidth: root.expandColumnWidth
+                Layout.preferredWidth: root.hasAddons ? root.expandColumnWidth : 0
                 Layout.preferredHeight: root.expandColumnWidth
                 Layout.alignment: Qt.AlignTop
+                // Keep the item in the layout tree — toggling visible caused
+                // RowLayout "recursive rearrange" during job updates.
+                opacity: root.hasAddons ? 1 : 0
+                enabled: root.hasAddons
+                clip: true
 
                 MD.IconButton {
                     anchors.centerIn: parent
