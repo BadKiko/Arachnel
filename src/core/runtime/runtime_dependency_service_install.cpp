@@ -1,11 +1,13 @@
 #include "runtime_dependency_service.h"
 
+#include "installscript_vdf.h"
 #include "proton_manager.h"
 #include "runtime_container_manager.h"
 #include "install_heuristics.h"
 #include "runtime_depot_catalog.h"
 #include "runtime_manifest_probe.h"
 #include "settings_store.h"
+#include "steamworks_install_scripts.h"
 
 #include <QCoreApplication>
 #include <QDir>
@@ -48,6 +50,10 @@ bool RuntimeDependencyService::installDepotIntoContainer(
 #if defined(Q_OS_LINUX)
     if (!isWindowsRuntimeDepot(depot))
         return true;
+    // Windows .NET Framework redists are flaky under Proton; wine-mono covers Stardew-class
+    // titles. Don't block launch on Steamworks depots like 229002 (.NET 4.0).
+    if (RuntimeDepotCatalog::isDotNetDepotId(depot.depotId))
+        return true;
 #endif
 
     RuntimeContainerManager containers;
@@ -61,20 +67,23 @@ bool RuntimeDependencyService::installDepotIntoContainer(
         return true;
     }
 
-    QString installerPath = findInstallerInTree(cacheDir, depot.depotId);
-    if (installerPath.isEmpty())
-        installerPath = findSteamCommonRedistInstaller(depot.depotId);
+    RedistInstallPlan plan = buildRedistInstallPlan(depot.depotId);
+    QVector<RedistInstallStep> steps = plan.steps;
 
-    if (installerPath.isEmpty()) {
-        if (depot.depotId == QStringLiteral("229000")) {
-            containers.markDepotInstalled(request.gameId, request.steamAppId, depot.depotId);
-            return true;
-        }
+    // Steam's bundled VC for 228986–228989 is 2015-era; always prefer aka.ms unified redist.
+    const bool preferVcCdn = depot.depotId == QStringLiteral("228986")
+                             || depot.depotId == QStringLiteral("228987")
+                             || depot.depotId == QStringLiteral("228988")
+                             || depot.depotId == QStringLiteral("228989");
+    if (preferVcCdn)
+        steps.clear();
 
-        if (RuntimeDepotCatalog::isVcDepotId(depot.depotId)) {
-            const QStringList names = installerNamesForDepot(depot.depotId);
-            if (!names.isEmpty()) {
-                const QString cdnPath = cacheDir + QLatin1Char('/') + names.first();
+    // VC without Steamworks Shared content (or forced CDN): Microsoft CDN into cache.
+    if (steps.isEmpty() && depotHasCdnFallback(depot.depotId)) {
+        const QStringList names = installerNamesForDepot(depot.depotId);
+        if (!names.isEmpty()) {
+            const QString cdnPath = cacheDir + QLatin1Char('/') + names.first();
+            if (!QFileInfo::exists(cdnPath)) {
                 if (onStatus) {
                     onStatus(QCoreApplication::translate("Core", "Downloading runtime: %1")
                                  .arg(depot.label));
@@ -85,27 +94,33 @@ bool RuntimeDependencyService::installDepotIntoContainer(
                         *errorOut = downloadError;
                     return false;
                 }
-                installerPath = cdnPath;
             }
+            RedistInstallStep step;
+            step.processPath = cdnPath;
+            step.arguments = silentArgsForInstaller(cdnPath);
+            steps.append(step);
         }
     }
 
-    if (installerPath.isEmpty()) {
-        if (errorOut) {
-            *errorOut = QCoreApplication::translate("Core", "Installer not found for %1")
-                            .arg(depot.label);
+    // Secondary: tree-walk cache / local _CommonRedist by exe name (non-VC scripts missing).
+    if (steps.isEmpty()) {
+        QString installerPath = findInstallerInTree(cacheDir, depot.depotId);
+        if (installerPath.isEmpty())
+            installerPath = findSteamCommonRedistInstaller(depot.depotId);
+        if (!installerPath.isEmpty()) {
+            RedistInstallStep step;
+            step.processPath = installerPath;
+            step.arguments = silentArgsForInstaller(installerPath);
+            steps.append(step);
         }
-        return false;
     }
+
+    // Soft-skip when no installer content (OpenAL / XNA / unknown without Steamworks Shared).
+    if (steps.isEmpty())
+        return true;
 
     if (onStatus) {
         onStatus(QCoreApplication::translate("Core", "Installing runtime: %1").arg(depot.label));
-    }
-
-    const QStringList silentArgs = silentArgsForInstaller(installerPath);
-    if (silentArgs.isEmpty()) {
-        containers.markDepotInstalled(request.gameId, request.steamAppId, depot.depotId);
-        return true;
     }
 
 #if defined(Q_OS_LINUX)
@@ -123,32 +138,60 @@ bool RuntimeDependencyService::installDepotIntoContainer(
                 "Core", "Proton not found. Install Proton-GE in Settings → Launch.");
         return false;
     }
-
     const QProcessEnvironment env =
         protonEnvForGame(protonManager, settings, request.gameId, request.protonId);
-    QStringList args = {QStringLiteral("run"), installerPath};
-    args += silentArgs;
-
-    int exitCode = -1;
-    const bool installerReturnedOk =
-        runSilentInstaller(protonExecutable, args, QFileInfo(installerPath).absolutePath(), env,
-                           &exitCode, errorOut, installerPath);
-    // Quiet VC install under Proton often returns odd codes; trust the prefix probe.
-    if (!isDepotInstalledInPrefix(depot, prefixDir)) {
-        if (errorOut && (errorOut->isEmpty() || installerReturnedOk)) {
-            *errorOut = QCoreApplication::translate(
-                            "Core", "Runtime install did not register in the Proton prefix: %1")
-                            .arg(depot.label);
-        }
-        return false;
-    }
 #else
-    int exitCode = -1;
-    if (!runSilentInstaller(installerPath, silentArgs, QFileInfo(installerPath).absolutePath(),
-                            QProcessEnvironment::systemEnvironment(), &exitCode, errorOut,
-                            installerPath))
-        return false;
+    const QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
 #endif
+
+    for (const RedistInstallStep& step : steps) {
+        if (step.processPath.isEmpty() || !QFileInfo::exists(step.processPath))
+            continue;
+
+        QStringList silentArgs = step.arguments;
+        if (silentArgs.isEmpty())
+            silentArgs = silentArgsForInstaller(step.processPath);
+        // Empty silent args = interactive installer (e.g. some DX web setups) - skip.
+        if (silentArgs.isEmpty()
+            && step.processPath.toLower().contains(QStringLiteral("websetup"))) {
+            continue;
+        }
+
+        int exitCode = -1;
+        QString stepError;
+#if defined(Q_OS_LINUX)
+        QStringList args = {QStringLiteral("run"), step.processPath};
+        args += silentArgs;
+        runSilentInstaller(protonExecutable, args, QFileInfo(step.processPath).absolutePath(),
+                           env, &exitCode, &stepError, step.processPath);
+#else
+        runSilentInstaller(step.processPath, silentArgs,
+                           QFileInfo(step.processPath).absolutePath(), env, &exitCode, &stepError,
+                           step.processPath);
+#endif
+        // Continue remaining steps (x86 then x64); prefix probe decides final success.
+        Q_UNUSED(exitCode);
+        Q_UNUSED(stepError);
+    }
+
+    if (!isDepotInstalledInPrefix(depot, prefixDir)) {
+        // HasRunKey alone is enough when CRT/DX probes don't apply (OpenAL / XNA).
+        bool hasRunOk = false;
+        for (const RedistInstallStep& step : steps) {
+            if (!step.hasRunKey.isEmpty() && prefixHasRunKey(prefixDir, step.hasRunKey)) {
+                hasRunOk = true;
+                break;
+            }
+        }
+        if (!hasRunOk) {
+            if (errorOut && errorOut->isEmpty()) {
+                *errorOut = QCoreApplication::translate(
+                                "Core", "Runtime install did not register in the Proton prefix: %1")
+                                .arg(depot.label);
+            }
+            return false;
+        }
+    }
 
     containers.markDepotInstalled(request.gameId, request.steamAppId, depot.depotId);
     return true;
