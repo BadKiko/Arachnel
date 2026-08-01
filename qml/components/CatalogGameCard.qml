@@ -105,12 +105,11 @@ Item {
 
     Timer {
         id: requestTimer
-        interval: 0
+        interval: 60
         onTriggered: root.requestCover()
     }
 
-    // If the first pass failed (404 capsule → metadata queue), hover must retry cover
-    // without waiting for enrich alone.
+    // Hover nudge only - no periodic spam while empty.
     Timer {
         id: hoverCoverRetry
         interval: 0

@@ -461,7 +461,7 @@ void CoreController::warmActiveCatalogCovers()
     if (!m_catalogCovers || !m_catalogController)
         return;
     m_catalogCovers->warmActiveCatalogCovers(m_catalogController->activeCatalogSourceIds(),
-                                             m_catalogFilters->activeQuery());
+                                             m_catalogFilters->activeQuery(), 12);
 }
 
 void CoreController::rebuildCatalogIdIndex()

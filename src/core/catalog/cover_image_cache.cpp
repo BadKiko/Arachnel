@@ -187,31 +187,106 @@ void CoverImageCache::clearAllFailed()
     schedulePersistNegativeCache();
 }
 
+void CoverImageCache::noteCacheHit()
+{
+    ++m_cacheHits;
+}
+
+void CoverImageCache::removePending(const QString& remoteUrl)
+{
+    m_pendingPriority.remove(remoteUrl);
+    for (int i = m_pending.size() - 1; i >= 0; --i) {
+        if (m_pending.at(i).url == remoteUrl)
+            m_pending.removeAt(i);
+    }
+}
+
+void CoverImageCache::trimPending()
+{
+    while (m_pending.size() > kMaxPending) {
+        int dropIdx = -1;
+        for (int i = m_pending.size() - 1; i >= 0; --i) {
+            if (m_pending.at(i).priority != CoverFetchPriority::Visible) {
+                dropIdx = i;
+                break;
+            }
+        }
+        if (dropIdx < 0)
+            dropIdx = m_pending.size() - 1; // oldest Visible at the back
+        const QString url = m_pending.takeAt(dropIdx).url;
+        m_pendingPriority.remove(url);
+    }
+}
+
 void CoverImageCache::enqueue(const QString& remoteUrl, CoverFetchPriority priority)
 {
-    const auto existing = m_pendingPriority.constFind(remoteUrl);
-    if (existing != m_pendingPriority.cend()) {
-        if (static_cast<int>(priority) <= static_cast<int>(existing.value()))
-            return;
+    removePending(remoteUrl);
+    m_pendingPriority.insert(remoteUrl, priority);
+
+    int insertAt = 0;
+    if (priority == CoverFetchPriority::Visible) {
+        // Newest Visible always jumps the queue (what the user is looking at now).
+        insertAt = 0;
+    } else {
+        insertAt = m_pending.size();
         for (int i = 0; i < m_pending.size(); ++i) {
-            if (m_pending.at(i).url == remoteUrl) {
-                m_pending.removeAt(i);
+            if (static_cast<int>(m_pending.at(i).priority) < static_cast<int>(priority)) {
+                insertAt = i;
                 break;
             }
         }
     }
-
-    m_pendingPriority.insert(remoteUrl, priority);
-
-    // Higher priority starts sooner (Visible > Warm > Upgrade).
-    int insertAt = m_pending.size();
-    for (int i = 0; i < m_pending.size(); ++i) {
-        if (static_cast<int>(m_pending.at(i).priority) < static_cast<int>(priority)) {
-            insertAt = i;
-            break;
-        }
-    }
     m_pending.insert(insertAt, PendingItem{remoteUrl, priority});
+    trimPending();
+}
+
+void CoverImageCache::release(const QString& remoteUrl)
+{
+    if (remoteUrl.isEmpty())
+        return;
+    removePending(remoteUrl);
+    if (m_inFlight.contains(remoteUrl)) {
+        // Still downloading for a scrolled-away card - demote so Visible can steal the slot.
+        m_inFlightPriority.insert(remoteUrl, CoverFetchPriority::Upgrade);
+        preemptForVisible();
+    }
+    startNext();
+}
+
+void CoverImageCache::ensure(const QString& remoteUrl, CoverFetchPriority priority)
+{
+    if (!isRemoteHttpUrl(remoteUrl))
+        return;
+
+    ++m_ensureCalls;
+
+    if (hasFailed(remoteUrl)) {
+        ++m_negativeHits;
+        QMetaObject::invokeMethod(
+            this, [this, remoteUrl]() { emit failed(remoteUrl); }, Qt::QueuedConnection);
+        return;
+    }
+
+    const QString local = localUrlFor(remoteUrl);
+    if (!local.isEmpty()) {
+        ++m_cacheHits;
+        QMetaObject::invokeMethod(
+            this, [this, remoteUrl, local]() { emit ready(remoteUrl, local); },
+            Qt::QueuedConnection);
+        return;
+    }
+
+    if (m_inFlight.contains(remoteUrl)) {
+        if (static_cast<int>(priority)
+            > static_cast<int>(m_inFlightPriority.value(remoteUrl, CoverFetchPriority::Upgrade)))
+            m_inFlightPriority.insert(remoteUrl, priority);
+        return;
+    }
+
+    enqueue(remoteUrl, priority);
+    if (priority == CoverFetchPriority::Visible)
+        preemptForVisible();
+    startNext();
 }
 
 void CoverImageCache::noteLatency(qint64 ms)
@@ -305,40 +380,6 @@ void CoverImageCache::resetStats()
     m_recentLatenciesMs.fill(0);
 }
 
-void CoverImageCache::ensure(const QString& remoteUrl, CoverFetchPriority priority)
-{
-    if (!isRemoteHttpUrl(remoteUrl))
-        return;
-
-    ++m_ensureCalls;
-
-    if (hasFailed(remoteUrl)) {
-        ++m_negativeHits;
-        QMetaObject::invokeMethod(
-            this, [this, remoteUrl]() { emit failed(remoteUrl); }, Qt::QueuedConnection);
-        return;
-    }
-
-    const QString local = localUrlFor(remoteUrl);
-    if (!local.isEmpty()) {
-        ++m_cacheHits;
-        QMetaObject::invokeMethod(
-            this, [this, remoteUrl, local]() { emit ready(remoteUrl, local); },
-            Qt::QueuedConnection);
-        return;
-    }
-
-    if (m_inFlight.contains(remoteUrl)) {
-        // Already downloading - bump is unnecessary; waiter lives in coordinator.
-        return;
-    }
-
-    enqueue(remoteUrl, priority);
-    if (priority == CoverFetchPriority::Visible)
-        preemptForVisible();
-    startNext();
-}
-
 void CoverImageCache::preemptForVisible()
 {
     if (m_active < kMaxConcurrent)
@@ -402,11 +443,7 @@ void CoverImageCache::remove(const QString& remoteUrl)
     if (!path.isEmpty())
         QFile::remove(path);
 
-    m_pendingPriority.remove(remoteUrl);
-    for (int i = m_pending.size() - 1; i >= 0; --i) {
-        if (m_pending.at(i).url == remoteUrl)
-            m_pending.removeAt(i);
-    }
+    removePending(remoteUrl);
 
     if (m_inFlight.contains(remoteUrl)) {
         m_ignoreWhenFinished.insert(remoteUrl);

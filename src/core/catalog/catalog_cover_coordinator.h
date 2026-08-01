@@ -23,20 +23,19 @@ struct CoverCoordinatorStats {
     qint64 requests = 0;
     qint64 cancels = 0;
     qint64 applied = 0;
-    qint64 stuckRecoveries = 0;
     qint64 abandoned = 0;
-    qint64 orphanReclaims = 0;
+    qint64 dupSuppressed = 0;
+    qint64 ladderAdvances = 0;
     qint64 applyLatencySumMs = 0;
     qint64 applyLatencyMaxMs = 0;
     int applyP50Ms = 0;
     int applyP95Ms = 0;
     int interested = 0;
-    int downloading = 0;
+    int plansActive = 0;
 };
 
-// Owns cover policy: resolve → disk cache → file:-only model updates.
-// Prefer catalog/relay remoteCoverUrl, then Steam CDN/metadata.
-// Progressive: thumb first, then HQ upgrade. Never puts https into CatalogEntry.coverUrl.
+// Viewport-first cover policy: one CoverPlan per entry, one in-flight URL.
+// Never puts https into CatalogEntry.coverUrl (file: only).
 class CatalogCoverCoordinator : public QObject
 {
     Q_OBJECT
@@ -51,11 +50,9 @@ public:
 
     void warmCatalogCovers(const QString& sourceId, const QString& query, int limit);
     void warmActiveCatalogCovers(const QStringList& sourceIds, const QString& query,
-                                 int limit = 24);
+                                 int limit = 12);
 
-    /** Rebuild steamAppId → remoteCoverUrl index (call after catalog merge). */
     void rebuildRemoteCoverIndex();
-    /** Drop negative cache entries so a fresh catalog can retry covers. */
     void clearFailedCoverHints();
 
     void requestCatalogCover(const QString& entryId,
@@ -63,7 +60,6 @@ public:
     void cancelCatalogCover(const QString& entryId);
     void invalidateCatalogCover(const QString& entryId);
 
-    // Wide Steam banner for discovery hero (library_hero → header), file: only.
     void requestCatalogHeroCover(const QString& entryId);
     QString heroCoverUrl(const QString& entryId) const;
 
@@ -81,56 +77,55 @@ signals:
     void heroCoverApplied(const QString& entryId, const QString& coverUrl);
 
 private:
-    enum class Phase {
+    enum class PlanPhase {
         Idle = 0,
-        Resolving,
-        DownloadingThumb,
-        ShowingThumb,
-        DownloadingHq,
+        Fetching,
+        Showing,
         Done,
         Failed,
     };
 
-    struct EntryCoverState {
-        Phase phase = Phase::Idle;
+    struct CoverPlan {
+        PlanPhase phase = PlanPhase::Idle;
         CoverFetchPriority priority = CoverFetchPriority::Visible;
-        QString activeRemote;
-        QString catalogRemote; // relay/catalog URL being tried (or already failed)
+        quint64 generation = 0;
         bool interested = false;
+        QStringList urls; // ordered ladder (network only; disk hits applied immediately)
+        int index = 0;
+        QString activeRemote;
+        QString appliedLocal;
         bool hqQueued = false;
-        bool catalogRemoteTried = false;
     };
 
     void applyCoverToEntry(const QString& entryId, const QString& coverUrl, bool pending);
-    void setPhase(const QString& entryId, Phase phase);
     void markPending(CatalogEntry* entry);
+    void clearPendingFlag(CatalogEntry* entry);
     void handleCacheReady(const QString& remoteUrl, const QString& localUrl);
     void handleCacheFailed(const QString& remoteUrl);
-    void beginSteamPipeline(CatalogEntry* entry, CoverFetchPriority priority);
-    void beginMetadataPipeline(CatalogEntry* entry, CoverFetchPriority priority);
-    bool beginCatalogRemote(CatalogEntry* entry, CoverFetchPriority priority);
-    void continueAfterCatalogMiss(CatalogEntry* entry, CoverFetchPriority priority);
-    void queueHqUpgrade(const QString& entryId);
+    void handleMetadataCover(const QString& entryId, const QString& coverUrl);
+
+    void buildPlanUrls(CatalogEntry* entry, CoverPlan& plan) const;
+    void startOrContinuePlan(const QString& entryId, CoverPlan& plan);
+    void advancePlan(const QString& entryId, CoverPlan& plan);
+    void ensureCurrentUrl(const QString& entryId, CoverPlan& plan);
+    void releasePlanRemote(const QString& entryId, CoverPlan& plan);
+    void dropWaiter(const QString& entryId, const QString& remoteUrl);
     void queueHeroDownload(const QString& entryId, const QString& remoteUrl);
     void handleHeroReady(const QString& remoteUrl, const QString& localUrl);
     void handleHeroFailed(const QString& remoteUrl);
-    void dropWaitersForEntry(const QString& entryId);
-    bool entryHasWaiter(const QString& entryId) const;
-    bool tryResumeKnownCover(CatalogEntry* entry, CoverFetchPriority priority);
-    QSet<QString> takeWaitersForRemote(const QString& remoteUrl);
+
     void noteApplyLatency(const QString& entryId);
     void noteApplySample(qint64 ms);
     void refreshApplyPercentiles();
+
     QString resolveCatalogRemote(const CatalogEntry& entry) const;
-    QString firstCachedSteamCover(const QString& steamAppId) const;
     QString steamThumbUrl(const QString& steamAppId) const;
     QString steamHqUrl(const QString& steamAppId) const;
     QString steamHeroUrl(const QString& steamAppId) const;
     QString steamHeaderUrl(const QString& steamAppId) const;
     QString firstCached(const QStringList& remotes) const;
-    QString firstViableRemote(const QStringList& remotes) const;
     static bool isHttpUrl(const QString& url);
-    static bool looksLikeSteamCover(const QString& url);
+    static bool isHqUrl(const QString& url);
 
     CoverImageCache* m_coverCache = nullptr;
     GameMetadataService* m_metadataService = nullptr;
@@ -139,20 +134,20 @@ private:
     EntryLookup m_findEntry;
     EntryList m_entries;
 
-    QHash<QString, EntryCoverState> m_state;
-    QHash<QString, QSet<QString>> m_waiters;      // remote → entryIds
-    QHash<QString, QSet<QString>> m_heroWaiters;  // remote → entryIds
-    QHash<QString, QString> m_heroLocal;          // entryId → file:
-    QHash<QString, QString> m_remoteBySteamAppId; // steamAppId → remoteCoverUrl
+    QHash<QString, CoverPlan> m_plans;
+    QHash<QString, QSet<QString>> m_waiters;     // remote → entryIds
+    QHash<QString, QSet<QString>> m_heroWaiters; // remote → entryIds
+    QHash<QString, QString> m_heroLocal;         // entryId → file:
+    QHash<QString, QString> m_remoteBySteamAppId;
     QSet<QString> m_failedEntries;
     QHash<QString, qint64> m_requestAtMs;
 
     qint64 m_requests = 0;
     qint64 m_cancels = 0;
     qint64 m_applied = 0;
-    qint64 m_stuckRecoveries = 0;
     qint64 m_abandoned = 0;
-    qint64 m_orphanReclaims = 0;
+    qint64 m_dupSuppressed = 0;
+    qint64 m_ladderAdvances = 0;
     qint64 m_applyLatencySumMs = 0;
     qint64 m_applyLatencyMaxMs = 0;
     int m_applyP50Ms = 0;

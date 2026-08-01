@@ -19,12 +19,9 @@ bool CatalogCoverCoordinator::isHttpUrl(const QString& url)
         || url.startsWith(QStringLiteral("https://"));
 }
 
-bool CatalogCoverCoordinator::looksLikeSteamCover(const QString& url)
+bool CatalogCoverCoordinator::isHqUrl(const QString& url)
 {
-    return url.contains(QStringLiteral("library_capsule"))
-        || url.contains(QStringLiteral("library_600x900"))
-        || url.contains(QStringLiteral("library_hero"))
-        || url.contains(QStringLiteral("/header."));
+    return url.contains(QStringLiteral("library_600x900"));
 }
 
 CatalogCoverCoordinator::CatalogCoverCoordinator(CoverImageCache* coverCache,
@@ -42,30 +39,8 @@ CatalogCoverCoordinator::CatalogCoverCoordinator(CoverImageCache* coverCache,
 {
     connect(m_metadataService, &GameMetadataService::coverReady, this,
             [this](const QString& entryId, const QString& coverUrl) {
-                EntryCoverState& st = m_state[entryId];
-                if (!st.interested && st.phase == Phase::Idle)
-                    return;
-
-                if (coverUrl.isEmpty()) {
-                    m_failedEntries.insert(entryId);
-                    setPhase(entryId, Phase::Failed);
-                    applyCoverToEntry(entryId, {}, false);
-                    return;
-                }
-                if (coverUrl.startsWith(QStringLiteral("file:"))) {
-                    applyCoverToEntry(entryId, coverUrl, false);
-                    setPhase(entryId, Phase::Done);
-                    return;
-                }
-                if (!looksLikeSteamCover(coverUrl) && !isHttpUrl(coverUrl)) {
-                    applyCoverToEntry(entryId, {}, false);
-                    setPhase(entryId, Phase::Failed);
-                    return;
-                }
-                setPhase(entryId, Phase::DownloadingThumb);
-                ensureDiskCover(entryId, coverUrl, st.priority);
+                handleMetadataCover(entryId, coverUrl);
             });
-
     connect(m_coverCache, &CoverImageCache::ready, this,
             [this](const QString& remoteUrl, const QString& localUrl) {
                 handleHeroReady(remoteUrl, localUrl);
@@ -114,6 +89,8 @@ QString CatalogCoverCoordinator::steamHeaderUrl(const QString& steamAppId) const
 QString CatalogCoverCoordinator::firstCached(const QStringList& remotes) const
 {
     for (const QString& remote : remotes) {
+        if (remote.isEmpty())
+            continue;
         const QString local = m_coverCache->localUrlFor(remote);
         if (!local.isEmpty())
             return local;
@@ -121,21 +98,41 @@ QString CatalogCoverCoordinator::firstCached(const QStringList& remotes) const
     return {};
 }
 
-QString CatalogCoverCoordinator::firstViableRemote(const QStringList& remotes) const
+QString CatalogCoverCoordinator::resolveCatalogRemote(const CatalogEntry& entry) const
 {
-    for (const QString& remote : remotes) {
-        if (remote.isEmpty() || m_coverCache->hasFailed(remote))
-            continue;
-        if (!m_coverCache->localUrlFor(remote).isEmpty())
-            continue;
-        return remote;
-    }
-    return {};
+    if (isHttpUrl(entry.remoteCoverUrl))
+        return entry.remoteCoverUrl;
+    if (entry.steamAppId.isEmpty())
+        return {};
+    return m_remoteBySteamAppId.value(entry.steamAppId);
 }
 
-void CatalogCoverCoordinator::setPhase(const QString& entryId, Phase phase)
+void CatalogCoverCoordinator::rebuildRemoteCoverIndex()
 {
-    m_state[entryId].phase = phase;
+    m_remoteBySteamAppId.clear();
+    if (!m_entries)
+        return;
+    for (const CatalogEntry& entry : m_entries()) {
+        if (entry.steamAppId.isEmpty() || !isHttpUrl(entry.remoteCoverUrl))
+            continue;
+        const auto it = m_remoteBySteamAppId.constFind(entry.steamAppId);
+        if (it == m_remoteBySteamAppId.cend()) {
+            m_remoteBySteamAppId.insert(entry.steamAppId, entry.remoteCoverUrl);
+            continue;
+        }
+        const bool incomingBetter = entry.remoteCoverUrl.contains(QStringLiteral("library_600x900"))
+            || entry.remoteCoverUrl.contains(QStringLiteral("library_capsule"));
+        const bool existingHeader = it.value().contains(QStringLiteral("/header."));
+        if (incomingBetter && existingHeader)
+            m_remoteBySteamAppId.insert(entry.steamAppId, entry.remoteCoverUrl);
+    }
+}
+
+void CatalogCoverCoordinator::clearFailedCoverHints()
+{
+    m_failedEntries.clear();
+    if (m_coverCache)
+        m_coverCache->clearAllFailed();
 }
 
 void CatalogCoverCoordinator::applyCoverToEntry(const QString& entryId, const QString& coverUrl,
@@ -144,86 +141,42 @@ void CatalogCoverCoordinator::applyCoverToEntry(const QString& entryId, const QS
     CatalogEntry* entry = m_findEntry ? m_findEntry(entryId) : nullptr;
     if (!entry)
         return;
-
-    // Hard rule: model never gets remote CDN URLs.
     if (!coverUrl.isEmpty() && !coverUrl.startsWith(QStringLiteral("file:")))
         return;
-
     if (entry->coverUrl == coverUrl && entry->metadataPending == pending)
         return;
 
     entry->coverUrl = coverUrl;
     entry->metadataPending = pending;
     m_catalog->notifyEntryChanged(entryId);
-    if (!coverUrl.isEmpty())
+    if (!coverUrl.isEmpty()) {
+        m_plans[entryId].appliedLocal = coverUrl;
         noteApplyLatency(entryId);
+    }
     emit coverApplied(entryId, coverUrl);
 }
 
 void CatalogCoverCoordinator::applyCover(const QString& entryId, const QString& coverUrl)
 {
     applyCoverToEntry(entryId, coverUrl, false);
-    setPhase(entryId, coverUrl.isEmpty() ? Phase::Failed : Phase::Done);
+    CoverPlan& plan = m_plans[entryId];
+    plan.phase = coverUrl.isEmpty() ? PlanPhase::Failed : PlanPhase::Done;
 }
 
 void CatalogCoverCoordinator::markPending(CatalogEntry* entry)
 {
-    if (!entry)
+    if (!entry || entry->metadataPending)
         return;
-    bool changed = false;
-    if (!entry->metadataPending) {
-        entry->metadataPending = true;
-        changed = true;
-    }
-    if (!entry->coverUrl.isEmpty() && !entry->coverUrl.startsWith(QStringLiteral("file:"))) {
-        entry->coverUrl.clear();
-        changed = true;
-    }
-    if (!changed)
-        return;
+    entry->metadataPending = true;
     m_catalog->notifyEntryChanged(entry->id);
-    emit coverApplied(entry->id, entry->coverUrl);
 }
 
-void CatalogCoverCoordinator::dropWaitersForEntry(const QString& entryId)
+void CatalogCoverCoordinator::clearPendingFlag(CatalogEntry* entry)
 {
-    for (auto it = m_waiters.begin(); it != m_waiters.end();) {
-        it.value().remove(entryId);
-        if (it.value().isEmpty())
-            it = m_waiters.erase(it);
-        else
-            ++it;
-    }
-    for (auto it = m_heroWaiters.begin(); it != m_heroWaiters.end();) {
-        it.value().remove(entryId);
-        if (it.value().isEmpty())
-            it = m_heroWaiters.erase(it);
-        else
-            ++it;
-    }
-}
-
-bool CatalogCoverCoordinator::entryHasWaiter(const QString& entryId) const
-{
-    for (auto it = m_waiters.constBegin(); it != m_waiters.constEnd(); ++it) {
-        if (it.value().contains(entryId))
-            return true;
-    }
-    return false;
-}
-
-QSet<QString> CatalogCoverCoordinator::takeWaitersForRemote(const QString& remoteUrl)
-{
-    QSet<QString> waiters = m_waiters.take(remoteUrl);
-    for (auto it = m_state.begin(); it != m_state.end(); ++it) {
-        if (it->activeRemote != remoteUrl)
-            continue;
-        if (!waiters.contains(it.key())) {
-            waiters.insert(it.key());
-            ++m_orphanReclaims;
-        }
-    }
-    return waiters;
+    if (!entry || !entry->metadataPending)
+        return;
+    entry->metadataPending = false;
+    m_catalog->notifyEntryChanged(entry->id);
 }
 
 void CatalogCoverCoordinator::noteApplySample(qint64 ms)
@@ -270,59 +223,270 @@ void CatalogCoverCoordinator::refreshApplyPercentiles()
     m_applyP95Ms = sorted.at(qMin(n - 1, (n * 95) / 100));
 }
 
-bool CatalogCoverCoordinator::tryResumeKnownCover(CatalogEntry* entry, CoverFetchPriority priority)
+void CatalogCoverCoordinator::buildPlanUrls(CatalogEntry* entry, CoverPlan& plan) const
 {
-    if (!entry)
-        return false;
+    plan.urls.clear();
+    plan.index = 0;
 
-    EntryCoverState& st = m_state[entry->id];
+    const QString catalogRemote = resolveCatalogRemote(*entry);
 
-    if (const QString localSteam = firstCachedSteamCover(entry->steamAppId); !localSteam.isEmpty()) {
-        applyCoverToEntry(entry->id, localSteam, false);
-        setPhase(entry->id, Phase::ShowingThumb);
-        queueHqUpgrade(entry->id);
-        return true;
+    auto appendUnique = [&](const QString& url) {
+        if (!isHttpUrl(url) || plan.urls.contains(url))
+            return;
+        if (m_coverCache->hasFailed(url))
+            return;
+        plan.urls.append(url);
+    };
+
+    // Fast paint: capsule before heavy HQ when we have an app id.
+    if (!entry->steamAppId.isEmpty()) {
+        const bool remoteIsHq = isHqUrl(catalogRemote) || catalogRemote.isEmpty();
+        if (remoteIsHq)
+            appendUnique(steamThumbUrl(entry->steamAppId));
     }
 
-    if (!st.catalogRemote.isEmpty()) {
-        if (const QString local = m_coverCache->localUrlFor(st.catalogRemote); !local.isEmpty()) {
-            applyCoverToEntry(entry->id, local, false);
-            if (st.catalogRemote.contains(QStringLiteral("library_600x900"))) {
-                setPhase(entry->id, Phase::Done);
-            } else {
-                setPhase(entry->id, Phase::ShowingThumb);
-                queueHqUpgrade(entry->id);
+    appendUnique(catalogRemote);
+
+    const GameMetadata metadata = m_metadataService->metadataForTitle(entry->title);
+    appendUnique(metadata.coverUrl);
+
+    if (!entry->steamAppId.isEmpty()) {
+        appendUnique(steamHqUrl(entry->steamAppId));
+        if (!isHqUrl(catalogRemote))
+            appendUnique(steamThumbUrl(entry->steamAppId));
+    }
+}
+
+void CatalogCoverCoordinator::dropWaiter(const QString& entryId, const QString& remoteUrl)
+{
+    if (remoteUrl.isEmpty())
+        return;
+    auto it = m_waiters.find(remoteUrl);
+    if (it == m_waiters.end())
+        return;
+    it.value().remove(entryId);
+    if (it.value().isEmpty())
+        m_waiters.erase(it);
+}
+
+void CatalogCoverCoordinator::releasePlanRemote(const QString& entryId, CoverPlan& plan)
+{
+    if (plan.activeRemote.isEmpty())
+        return;
+    const QString remote = plan.activeRemote;
+    dropWaiter(entryId, remote);
+    plan.activeRemote.clear();
+    if (!m_waiters.contains(remote) || m_waiters.value(remote).isEmpty())
+        m_coverCache->release(remote);
+}
+
+void CatalogCoverCoordinator::ensureCurrentUrl(const QString& entryId, CoverPlan& plan)
+{
+    while (plan.index < plan.urls.size()) {
+        const QString remote = plan.urls.at(plan.index);
+        if (const QString local = m_coverCache->localUrlFor(remote); !local.isEmpty()) {
+            m_coverCache->noteCacheHit();
+            applyCoverToEntry(entryId, local, false);
+            plan.phase = isHqUrl(remote) ? PlanPhase::Done : PlanPhase::Showing;
+            if (plan.phase == PlanPhase::Showing && plan.interested && !plan.hqQueued) {
+                // Continue ladder for HQ while still watching.
+                ++plan.index;
+                ++m_ladderAdvances;
+                continue;
             }
-            return true;
+            if (plan.phase == PlanPhase::Done)
+                return;
+            // Not interested or no further URLs - stop.
+            if (!plan.interested || plan.index >= plan.urls.size()) {
+                plan.phase = PlanPhase::Done;
+                return;
+            }
+            continue;
         }
 
-        if (st.catalogRemote.contains(QStringLiteral("library_600x900"))
-            && !entry->steamAppId.isEmpty()) {
-            const QString thumb = steamThumbUrl(entry->steamAppId);
-            if (!thumb.isEmpty() && !m_coverCache->hasFailed(thumb)) {
-                if (const QString localThumb = m_coverCache->localUrlFor(thumb);
-                    !localThumb.isEmpty()) {
-                    applyCoverToEntry(entry->id, localThumb, false);
-                    setPhase(entry->id, Phase::ShowingThumb);
-                    queueHqUpgrade(entry->id);
-                    return true;
-                }
-                markPending(entry);
-                setPhase(entry->id, Phase::DownloadingThumb);
-                ensureDiskCover(entry->id, thumb, priority);
-                return true;
-            }
-        }
-
-        if (!m_coverCache->hasFailed(st.catalogRemote)) {
+        CatalogEntry* entry = m_findEntry ? m_findEntry(entryId) : nullptr;
+        if (entry)
             markPending(entry);
-            setPhase(entry->id, Phase::DownloadingThumb);
-            ensureDiskCover(entry->id, st.catalogRemote, priority);
-            return true;
+
+        plan.phase = PlanPhase::Fetching;
+        plan.activeRemote = remote;
+        m_waiters[remote].insert(entryId);
+
+        CoverFetchPriority fetchPri = plan.priority;
+        if (plan.appliedLocal.startsWith(QStringLiteral("file:")) && isHqUrl(remote)) {
+            fetchPri = CoverFetchPriority::Upgrade;
+            plan.hqQueued = true;
         }
+        m_coverCache->ensure(remote, fetchPri);
+        return;
     }
 
-    return false;
+    CatalogEntry* entry = m_findEntry ? m_findEntry(entryId) : nullptr;
+    if (plan.appliedLocal.startsWith(QStringLiteral("file:"))) {
+        plan.phase = PlanPhase::Done;
+        clearPendingFlag(entry);
+        return;
+    }
+
+    // Ask metadata once if we still have nothing.
+    if (entry && plan.interested) {
+        plan.phase = PlanPhase::Fetching;
+        markPending(entry);
+        m_metadataService->queueFetch(entryId, entry->title, MetadataFetchMode::CoverOnly,
+                                      m_settings->uiLanguage(), entry->steamAppId);
+        return;
+    }
+
+    plan.phase = PlanPhase::Failed;
+    m_failedEntries.insert(entryId);
+    applyCoverToEntry(entryId, {}, false);
+}
+
+void CatalogCoverCoordinator::startOrContinuePlan(const QString& entryId, CoverPlan& plan)
+{
+    CatalogEntry* entry = m_findEntry ? m_findEntry(entryId) : nullptr;
+    if (!entry)
+        return;
+
+    // Instant disk hits before any network.
+    const QString catalogRemote = resolveCatalogRemote(*entry);
+    if (entry->remoteCoverUrl.isEmpty() && !catalogRemote.isEmpty())
+        entry->remoteCoverUrl = catalogRemote;
+
+    QStringList probe;
+    if (!entry->steamAppId.isEmpty()) {
+        probe << steamHqUrl(entry->steamAppId) << steamThumbUrl(entry->steamAppId)
+              << steamHeaderUrl(entry->steamAppId);
+    }
+    if (!catalogRemote.isEmpty())
+        probe.prepend(catalogRemote);
+    if (const QString local = firstCached(probe); !local.isEmpty()) {
+        m_coverCache->noteCacheHit();
+        applyCoverToEntry(entryId, local, false);
+        plan.phase = PlanPhase::Showing;
+        plan.appliedLocal = local;
+        // Build ladder only for optional HQ upgrade when interested.
+        buildPlanUrls(entry, plan);
+        // Skip URLs already satisfied / failed; jump to first HQ not yet applied.
+        for (int i = 0; i < plan.urls.size(); ++i) {
+            if (isHqUrl(plan.urls.at(i))
+                && m_coverCache->localUrlFor(plan.urls.at(i)).isEmpty()
+                && !m_coverCache->hasFailed(plan.urls.at(i))) {
+                plan.index = i;
+                if (plan.interested)
+                    ensureCurrentUrl(entryId, plan);
+                else
+                    plan.phase = PlanPhase::Done;
+                return;
+            }
+        }
+        plan.phase = PlanPhase::Done;
+        clearPendingFlag(entry);
+        return;
+    }
+
+    if (plan.urls.isEmpty())
+        buildPlanUrls(entry, plan);
+    ensureCurrentUrl(entryId, plan);
+}
+
+void CatalogCoverCoordinator::advancePlan(const QString& entryId, CoverPlan& plan)
+{
+    ++plan.index;
+    ++m_ladderAdvances;
+    plan.activeRemote.clear();
+    if (!plan.interested) {
+        plan.phase = plan.appliedLocal.startsWith(QStringLiteral("file:")) ? PlanPhase::Done
+                                                                           : PlanPhase::Idle;
+        return;
+    }
+    ensureCurrentUrl(entryId, plan);
+}
+
+void CatalogCoverCoordinator::handleCacheReady(const QString& remoteUrl, const QString& localUrl)
+{
+    const QSet<QString> waiters = m_waiters.take(remoteUrl);
+    if (waiters.isEmpty())
+        return;
+
+    const bool hq = isHqUrl(remoteUrl);
+    for (const QString& entryId : waiters) {
+        CoverPlan& plan = m_plans[entryId];
+        if (plan.activeRemote == remoteUrl)
+            plan.activeRemote.clear();
+
+        applyCoverToEntry(entryId, localUrl, false);
+        plan.phase = hq ? PlanPhase::Done : PlanPhase::Showing;
+
+        if (!plan.interested) {
+            if (hq)
+                plan.phase = PlanPhase::Done;
+            continue;
+        }
+
+        // Still watching: continue ladder for HQ only (one URL at a time).
+        if (!hq) {
+            advancePlan(entryId, plan);
+        } else {
+            plan.hqQueued = false;
+            plan.phase = PlanPhase::Done;
+            CatalogEntry* entry = m_findEntry ? m_findEntry(entryId) : nullptr;
+            clearPendingFlag(entry);
+        }
+    }
+}
+
+void CatalogCoverCoordinator::handleCacheFailed(const QString& remoteUrl)
+{
+    const QSet<QString> waiters = m_waiters.take(remoteUrl);
+    if (waiters.isEmpty())
+        return;
+
+    for (const QString& entryId : waiters) {
+        CoverPlan& plan = m_plans[entryId];
+        if (plan.activeRemote == remoteUrl)
+            plan.activeRemote.clear();
+        if (!plan.interested) {
+            plan.phase = plan.appliedLocal.startsWith(QStringLiteral("file:")) ? PlanPhase::Done
+                                                                               : PlanPhase::Idle;
+            continue;
+        }
+        advancePlan(entryId, plan);
+    }
+}
+
+void CatalogCoverCoordinator::handleMetadataCover(const QString& entryId, const QString& coverUrl)
+{
+    CoverPlan& plan = m_plans[entryId];
+    if (!plan.interested && plan.phase != PlanPhase::Fetching)
+        return;
+
+    if (coverUrl.isEmpty()) {
+        if (!plan.appliedLocal.startsWith(QStringLiteral("file:"))) {
+            m_failedEntries.insert(entryId);
+            plan.phase = PlanPhase::Failed;
+            applyCoverToEntry(entryId, {}, false);
+        }
+        return;
+    }
+    if (coverUrl.startsWith(QStringLiteral("file:"))) {
+        applyCoverToEntry(entryId, coverUrl, false);
+        plan.phase = PlanPhase::Done;
+        return;
+    }
+    if (!isHttpUrl(coverUrl)) {
+        if (!plan.appliedLocal.startsWith(QStringLiteral("file:"))) {
+            plan.phase = PlanPhase::Failed;
+            applyCoverToEntry(entryId, {}, false);
+        }
+        return;
+    }
+
+    if (!plan.urls.contains(coverUrl))
+        plan.urls.insert(plan.index, coverUrl);
+    else
+        plan.index = plan.urls.indexOf(coverUrl);
+    ensureCurrentUrl(entryId, plan);
 }
 
 void CatalogCoverCoordinator::ensureDiskCover(const QString& entryId, const QString& remoteUrl,
@@ -330,410 +494,39 @@ void CatalogCoverCoordinator::ensureDiskCover(const QString& entryId, const QStr
 {
     if (remoteUrl.isEmpty()) {
         applyCoverToEntry(entryId, {}, false);
-        setPhase(entryId, Phase::Failed);
         return;
     }
+    if (remoteUrl.startsWith(QStringLiteral("file:"))) {
+        if (!m_coverCache->localUrlFor(remoteUrl).isEmpty())
+            applyCoverToEntry(entryId, remoteUrl, false);
+        return;
+    }
+    if (!isHttpUrl(remoteUrl))
+        return;
 
-    const QString local = m_coverCache->localUrlFor(remoteUrl);
-    if (!local.isEmpty()) {
+    CoverPlan& plan = m_plans[entryId];
+    plan.interested = true;
+    if (static_cast<int>(priority) > static_cast<int>(plan.priority))
+        plan.priority = priority;
+
+    if (const QString local = m_coverCache->localUrlFor(remoteUrl); !local.isEmpty()) {
+        m_coverCache->noteCacheHit();
         applyCoverToEntry(entryId, local, false);
-        if (remoteUrl.contains(QStringLiteral("library_600x900"))) {
-            setPhase(entryId, Phase::Done);
-            m_state[entryId].hqQueued = false;
-        } else {
-            setPhase(entryId, Phase::ShowingThumb);
-            queueHqUpgrade(entryId);
-        }
+        plan.phase = PlanPhase::Done;
         return;
     }
-
     if (m_coverCache->hasFailed(remoteUrl)) {
-        m_waiters[remoteUrl].insert(entryId);
-        handleCacheFailed(remoteUrl);
+        applyCoverToEntry(entryId, {}, false);
         return;
     }
 
-    m_state[entryId].activeRemote = remoteUrl;
+    plan.phase = PlanPhase::Fetching;
+    plan.activeRemote = remoteUrl;
+    if (!plan.urls.contains(remoteUrl))
+        plan.urls.prepend(remoteUrl);
+    plan.index = plan.urls.indexOf(remoteUrl);
     m_waiters[remoteUrl].insert(entryId);
     m_coverCache->ensure(remoteUrl, priority);
-}
-
-void CatalogCoverCoordinator::queueHqUpgrade(const QString& entryId)
-{
-    CatalogEntry* entry = m_findEntry ? m_findEntry(entryId) : nullptr;
-    if (!entry)
-        return;
-
-    EntryCoverState& st = m_state[entryId];
-    if (st.hqQueued || st.phase == Phase::Done || st.phase == Phase::Failed)
-        return;
-
-    // Catalog/relay HQ after we showed a fast capsule thumb first.
-    if (!st.catalogRemote.isEmpty() && st.catalogRemoteTried
-        && st.catalogRemote.contains(QStringLiteral("library_600x900"))) {
-        if (const QString local = m_coverCache->localUrlFor(st.catalogRemote); !local.isEmpty()) {
-            applyCoverToEntry(entryId, local, false);
-            setPhase(entryId, Phase::Done);
-            return;
-        }
-        if (!m_coverCache->hasFailed(st.catalogRemote)) {
-            st.hqQueued = true;
-            setPhase(entryId, Phase::DownloadingHq);
-            m_waiters[st.catalogRemote].insert(entryId);
-            m_coverCache->ensure(st.catalogRemote, CoverFetchPriority::Upgrade);
-            return;
-        }
-    }
-
-    if (entry->steamAppId.isEmpty()) {
-        setPhase(entryId, Phase::Done);
-        return;
-    }
-
-    const QString hq = steamHqUrl(entry->steamAppId);
-    if (hq.isEmpty() || m_coverCache->hasFailed(hq)) {
-        setPhase(entryId, Phase::Done);
-        return;
-    }
-    if (!st.catalogRemote.isEmpty() && hq == st.catalogRemote) {
-        setPhase(entryId, Phase::Done);
-        return;
-    }
-
-    if (const QString local = m_coverCache->localUrlFor(hq); !local.isEmpty()) {
-        applyCoverToEntry(entryId, local, false);
-        setPhase(entryId, Phase::Done);
-        return;
-    }
-
-    st.hqQueued = true;
-    setPhase(entryId, Phase::DownloadingHq);
-    m_waiters[hq].insert(entryId);
-    m_coverCache->ensure(hq, CoverFetchPriority::Upgrade);
-}
-
-QString CatalogCoverCoordinator::resolveCatalogRemote(const CatalogEntry& entry) const
-{
-    if (isHttpUrl(entry.remoteCoverUrl))
-        return entry.remoteCoverUrl;
-
-    if (entry.steamAppId.isEmpty())
-        return {};
-    return m_remoteBySteamAppId.value(entry.steamAppId);
-}
-
-QString CatalogCoverCoordinator::firstCachedSteamCover(const QString& steamAppId) const
-{
-    if (steamAppId.isEmpty())
-        return {};
-    return firstCached({steamHqUrl(steamAppId), steamThumbUrl(steamAppId),
-                        steamHeaderUrl(steamAppId)});
-}
-
-void CatalogCoverCoordinator::rebuildRemoteCoverIndex()
-{
-    m_remoteBySteamAppId.clear();
-    if (!m_entries)
-        return;
-    for (const CatalogEntry& entry : m_entries()) {
-        if (entry.steamAppId.isEmpty() || !isHttpUrl(entry.remoteCoverUrl))
-            continue;
-        // Prefer vertical library art over header.jpg when multiple sources collide.
-        const auto it = m_remoteBySteamAppId.constFind(entry.steamAppId);
-        if (it == m_remoteBySteamAppId.cend()) {
-            m_remoteBySteamAppId.insert(entry.steamAppId, entry.remoteCoverUrl);
-            continue;
-        }
-        const bool incomingBetter =
-            entry.remoteCoverUrl.contains(QStringLiteral("library_600x900"))
-            || entry.remoteCoverUrl.contains(QStringLiteral("library_capsule"));
-        const bool existingHeader = it.value().contains(QStringLiteral("/header."));
-        if (incomingBetter && existingHeader)
-            m_remoteBySteamAppId.insert(entry.steamAppId, entry.remoteCoverUrl);
-    }
-}
-
-void CatalogCoverCoordinator::clearFailedCoverHints()
-{
-    m_failedEntries.clear();
-    if (!m_coverCache)
-        return;
-    m_coverCache->clearAllFailed();
-}
-
-bool CatalogCoverCoordinator::beginCatalogRemote(CatalogEntry* entry, CoverFetchPriority priority)
-{
-    if (!entry)
-        return false;
-
-    EntryCoverState& st = m_state[entry->id];
-    if (st.catalogRemoteTried)
-        return false;
-
-    const QString remote = resolveCatalogRemote(*entry);
-    st.catalogRemoteTried = true;
-    st.catalogRemote = remote;
-
-    // Reuse previously downloaded Steam CDN files for this app even if the relay URL is new.
-    if (const QString localSteam = firstCachedSteamCover(entry->steamAppId); !localSteam.isEmpty()) {
-        applyCoverToEntry(entry->id, localSteam, false);
-        setPhase(entry->id, Phase::ShowingThumb);
-        if (!entry->steamAppId.isEmpty())
-            queueHqUpgrade(entry->id);
-        else
-            setPhase(entry->id, Phase::Done);
-        // Still try the relay URL in the background if present and not yet cached.
-        if (!remote.isEmpty() && m_coverCache->localUrlFor(remote).isEmpty()
-            && !m_coverCache->hasFailed(remote)) {
-            m_coverCache->ensure(remote, CoverFetchPriority::Upgrade);
-            m_waiters[remote].insert(entry->id);
-        }
-        return true;
-    }
-
-    if (remote.isEmpty())
-        return false;
-
-    // Persist cross-source relay hit onto this entry for later retries / library.
-    if (entry->remoteCoverUrl.isEmpty())
-        entry->remoteCoverUrl = remote;
-
-    if (const QString local = m_coverCache->localUrlFor(remote); !local.isEmpty()) {
-        applyCoverToEntry(entry->id, local, false);
-        if (remote.contains(QStringLiteral("library_600x900"))
-            || remote.contains(QStringLiteral("library_capsule"))) {
-            setPhase(entry->id, Phase::Done);
-        } else {
-            setPhase(entry->id, Phase::ShowingThumb);
-            queueHqUpgrade(entry->id);
-        }
-        return true;
-    }
-
-    if (m_coverCache->hasFailed(remote))
-        return false;
-
-    // Fast first paint: capsule is much smaller than library_600x900.
-    // Visible/Warm get the thumb now; HQ upgrades in the background.
-    if (remote.contains(QStringLiteral("library_600x900")) && !entry->steamAppId.isEmpty()) {
-        const QString thumb = steamThumbUrl(entry->steamAppId);
-        if (!thumb.isEmpty() && !m_coverCache->hasFailed(thumb)) {
-            if (const QString localThumb = m_coverCache->localUrlFor(thumb); !localThumb.isEmpty()) {
-                applyCoverToEntry(entry->id, localThumb, false);
-                setPhase(entry->id, Phase::ShowingThumb);
-                queueHqUpgrade(entry->id);
-                return true;
-            }
-            markPending(entry);
-            setPhase(entry->id, Phase::DownloadingThumb);
-            ensureDiskCover(entry->id, thumb, priority);
-            // Start catalog HQ in parallel - many apps 404 on library_capsule.
-            if (!m_coverCache->hasFailed(remote)
-                && m_coverCache->localUrlFor(remote).isEmpty()) {
-                m_waiters[remote].insert(entry->id);
-                m_coverCache->ensure(remote, priority == CoverFetchPriority::Visible
-                                                 ? CoverFetchPriority::Warm
-                                                 : CoverFetchPriority::Upgrade);
-            }
-            return true;
-        }
-    }
-
-    markPending(entry);
-    setPhase(entry->id, Phase::DownloadingThumb);
-    ensureDiskCover(entry->id, remote, priority);
-    return true;
-}
-
-void CatalogCoverCoordinator::continueAfterCatalogMiss(CatalogEntry* entry,
-                                                       CoverFetchPriority priority)
-{
-    if (!entry)
-        return;
-    if (!entry->steamAppId.isEmpty()) {
-        beginSteamPipeline(entry, priority);
-        return;
-    }
-    beginMetadataPipeline(entry, priority);
-}
-
-void CatalogCoverCoordinator::beginMetadataPipeline(CatalogEntry* entry,
-                                                    CoverFetchPriority priority)
-{
-    if (!entry)
-        return;
-
-    const GameMetadata metadata = m_metadataService->metadataForTitle(entry->title);
-    if (!metadata.coverUrl.isEmpty()) {
-        if (const QString local = m_coverCache->localUrlFor(metadata.coverUrl); !local.isEmpty()) {
-            applyCoverToEntry(entry->id, local, false);
-            setPhase(entry->id, Phase::Done);
-            return;
-        }
-        if (!m_coverCache->hasFailed(metadata.coverUrl)) {
-            markPending(entry);
-            setPhase(entry->id, Phase::DownloadingThumb);
-            ensureDiskCover(entry->id, metadata.coverUrl, priority);
-            return;
-        }
-    }
-
-    markPending(entry);
-    setPhase(entry->id, Phase::Resolving);
-    m_metadataService->queueFetch(entry->id, entry->title, MetadataFetchMode::CoverOnly,
-                                  m_settings->uiLanguage(), entry->steamAppId);
-}
-
-void CatalogCoverCoordinator::beginSteamPipeline(CatalogEntry* entry, CoverFetchPriority priority)
-{
-    const QString appId = entry->steamAppId;
-    const QString hq = steamHqUrl(appId);
-    const QString thumb = steamThumbUrl(appId);
-
-    if (const QString localHq = m_coverCache->localUrlFor(hq); !localHq.isEmpty()) {
-        applyCoverToEntry(entry->id, localHq, false);
-        setPhase(entry->id, Phase::Done);
-        return;
-    }
-
-    // Prefer canonical metadata cover (correct CDN path) when already resolved.
-    const GameMetadata metadata = m_metadataService->metadataForTitle(entry->title);
-    if (!metadata.coverUrl.isEmpty()) {
-        if (const QString localMeta = m_coverCache->localUrlFor(metadata.coverUrl);
-            !localMeta.isEmpty()) {
-            applyCoverToEntry(entry->id, localMeta, false);
-            setPhase(entry->id, Phase::ShowingThumb);
-            queueHqUpgrade(entry->id);
-            return;
-        }
-        if (!m_coverCache->hasFailed(metadata.coverUrl)) {
-            markPending(entry);
-            setPhase(entry->id, Phase::DownloadingThumb);
-            ensureDiskCover(entry->id, metadata.coverUrl, priority);
-            return;
-        }
-    }
-
-    if (const QString localThumb = m_coverCache->localUrlFor(thumb); !localThumb.isEmpty()) {
-        applyCoverToEntry(entry->id, localThumb, false);
-        setPhase(entry->id, Phase::ShowingThumb);
-        queueHqUpgrade(entry->id);
-        return;
-    }
-
-    // One fast guess only — no multi-URL ladder spam.
-    if (!thumb.isEmpty() && !m_coverCache->hasFailed(thumb)) {
-        markPending(entry);
-        setPhase(entry->id, Phase::DownloadingThumb);
-        ensureDiskCover(entry->id, thumb, priority);
-        // Also resolve canonical asset via metadata for next time / HQ path.
-        m_metadataService->queueFetch(entry->id, entry->title, MetadataFetchMode::CoverOnly,
-                                      m_settings->uiLanguage(), appId);
-        return;
-    }
-
-    markPending(entry);
-    setPhase(entry->id, Phase::Resolving);
-    m_metadataService->queueFetch(entry->id, entry->title, MetadataFetchMode::CoverOnly,
-                                  m_settings->uiLanguage(), appId);
-}
-
-void CatalogCoverCoordinator::handleCacheReady(const QString& remoteUrl, const QString& localUrl)
-{
-    const QSet<QString> waiters = takeWaitersForRemote(remoteUrl);
-    if (waiters.isEmpty())
-        return;
-
-    const bool isHq = remoteUrl.contains(QStringLiteral("library_600x900"));
-    for (const QString& entryId : waiters) {
-        EntryCoverState& st = m_state[entryId];
-        if (!st.interested && st.phase == Phase::Idle)
-            continue;
-
-        applyCoverToEntry(entryId, localUrl, false);
-        st.activeRemote.clear();
-        if (isHq) {
-            st.hqQueued = false;
-            setPhase(entryId, Phase::Done);
-        } else {
-            setPhase(entryId, Phase::ShowingThumb);
-            queueHqUpgrade(entryId);
-        }
-        m_failedEntries.remove(entryId);
-    }
-}
-
-void CatalogCoverCoordinator::handleCacheFailed(const QString& remoteUrl)
-{
-    const QSet<QString> waiters = takeWaitersForRemote(remoteUrl);
-    if (waiters.isEmpty())
-        return;
-
-    const bool isHq = remoteUrl.contains(QStringLiteral("library_600x900"));
-    for (const QString& entryId : waiters) {
-        CatalogEntry* entry = m_findEntry ? m_findEntry(entryId) : nullptr;
-        EntryCoverState& st = m_state[entryId];
-        st.activeRemote.clear();
-
-        if (isHq && remoteUrl != st.catalogRemote) {
-            // Keep whatever thumb we already showed.
-            st.hqQueued = false;
-            if (entry && entry->coverUrl.startsWith(QStringLiteral("file:"))) {
-                setPhase(entryId, Phase::ShowingThumb);
-                if (entry->metadataPending) {
-                    entry->metadataPending = false;
-                    m_catalog->notifyEntryChanged(entryId);
-                }
-            } else {
-                setPhase(entryId, Phase::Failed);
-                applyCoverToEntry(entryId, {}, false);
-            }
-            continue;
-        }
-
-        // Catalog/relay cover missed - fall back to Steam / metadata.
-        if (entry && !st.catalogRemote.isEmpty() && remoteUrl == st.catalogRemote) {
-            continueAfterCatalogMiss(entry, st.priority);
-            continue;
-        }
-
-        // Capsule / non-catalog URL missed - prefer known catalog HQ before metadata queue.
-        if (entry && !st.catalogRemote.isEmpty() && remoteUrl != st.catalogRemote
-            && !m_coverCache->hasFailed(st.catalogRemote)) {
-            setPhase(entryId, Phase::DownloadingThumb);
-            ensureDiskCover(entryId, st.catalogRemote, st.priority);
-            continue;
-        }
-
-        // Thumb failed - fall back to metadata resolve, then optional HQ.
-        if (entry && !entry->steamAppId.isEmpty()) {
-            const GameMetadata metadata = m_metadataService->metadataForTitle(entry->title);
-            if (!metadata.coverUrl.isEmpty() && metadata.coverUrl != remoteUrl
-                && !m_coverCache->hasFailed(metadata.coverUrl)) {
-                setPhase(entryId, Phase::DownloadingThumb);
-                ensureDiskCover(entryId, metadata.coverUrl, st.priority);
-                continue;
-            }
-
-            const QString hq = steamHqUrl(entry->steamAppId);
-            if (!hq.isEmpty() && hq != remoteUrl && !m_coverCache->hasFailed(hq)) {
-                setPhase(entryId, Phase::DownloadingHq);
-                ensureDiskCover(entryId, hq, st.priority);
-                continue;
-            }
-
-            // Ask metadata service if we haven't resolved assets yet.
-            setPhase(entryId, Phase::Resolving);
-            markPending(entry);
-            m_metadataService->queueFetch(entryId, entry->title, MetadataFetchMode::CoverOnly,
-                                          m_settings->uiLanguage(), entry->steamAppId);
-            continue;
-        }
-
-        m_failedEntries.insert(entryId);
-        setPhase(entryId, Phase::Failed);
-        applyCoverToEntry(entryId, {}, false);
-    }
 }
 
 void CatalogCoverCoordinator::warmCatalogCovers(const QString& sourceId, const QString& query,
@@ -771,7 +564,6 @@ void CatalogCoverCoordinator::requestCatalogCover(const QString& entryId,
     if (!m_requestAtMs.contains(entryId))
         m_requestAtMs.insert(entryId, QDateTime::currentMSecsSinceEpoch());
 
-    // Visible cards must be able to retry after a previous miss (hover / recycle).
     if (priority == CoverFetchPriority::Visible)
         m_failedEntries.remove(entryId);
 
@@ -779,17 +571,17 @@ void CatalogCoverCoordinator::requestCatalogCover(const QString& entryId,
         && !entry->coverUrl.startsWith(QStringLiteral("file:")))
         return;
 
-    EntryCoverState& st = m_state[entryId];
-    st.interested = true;
-    if (static_cast<int>(priority) > static_cast<int>(st.priority))
-        st.priority = priority;
+    CoverPlan& plan = m_plans[entryId];
+    const bool wasInterested = plan.interested;
+    plan.interested = true;
+    if (static_cast<int>(priority) > static_cast<int>(plan.priority))
+        plan.priority = priority;
 
-    // Strip plugin / remote leftovers from the display field, and stale file: paths.
+    // Strip stale non-file display URLs.
     if (!entry->coverUrl.isEmpty()) {
         const bool okLocal = entry->coverUrl.startsWith(QStringLiteral("file:"))
             && !m_coverCache->localUrlFor(entry->coverUrl).isEmpty();
         if (!okLocal) {
-            // Migrate leftover https on coverUrl into remoteCoverUrl once.
             if (isHttpUrl(entry->coverUrl) && entry->remoteCoverUrl.isEmpty())
                 entry->remoteCoverUrl = entry->coverUrl;
             entry->coverUrl.clear();
@@ -798,69 +590,62 @@ void CatalogCoverCoordinator::requestCatalogCover(const QString& entryId,
     }
 
     if (entry->coverUrl.startsWith(QStringLiteral("file:"))) {
-        // Already showing something - still try HQ upgrade if possible.
-        setPhase(entryId, Phase::ShowingThumb);
-        if (!entry->steamAppId.isEmpty())
-            queueHqUpgrade(entryId);
-        else
-            setPhase(entryId, Phase::Done);
+        plan.appliedLocal = entry->coverUrl;
+        plan.phase = PlanPhase::Showing;
+        // Optional HQ only when Visible and still interested.
+        if (priority == CoverFetchPriority::Visible && !entry->steamAppId.isEmpty()) {
+            buildPlanUrls(entry, plan);
+            for (int i = 0; i < plan.urls.size(); ++i) {
+                if (isHqUrl(plan.urls.at(i))
+                    && m_coverCache->localUrlFor(plan.urls.at(i)).isEmpty()
+                    && !m_coverCache->hasFailed(plan.urls.at(i))) {
+                    plan.index = i;
+                    ensureCurrentUrl(entryId, plan);
+                    return;
+                }
+            }
+        }
+        plan.phase = PlanPhase::Done;
         return;
     }
 
-    // Stuck after recycle: phase still Downloading* but waiter was dropped.
-    if (st.phase == Phase::DownloadingThumb || st.phase == Phase::DownloadingHq
-        || st.phase == Phase::Resolving) {
-        if (entryHasWaiter(entryId))
-            return;
-        ++m_stuckRecoveries;
-        st.phase = Phase::Idle;
-        st.hqQueued = false;
-        st.activeRemote.clear();
-    }
-
-    if (st.catalogRemoteTried) {
-        if (tryResumeKnownCover(entry, st.priority))
-            return;
-        continueAfterCatalogMiss(entry, st.priority);
+    // Already fetching this generation - just bump priority / re-front queue.
+    if (plan.phase == PlanPhase::Fetching && !plan.activeRemote.isEmpty()) {
+        ++m_dupSuppressed;
+        m_coverCache->ensure(plan.activeRemote, plan.priority);
         return;
     }
 
-    // 1) Catalog / relay cover (including cross-source by steamAppId).
-    if (beginCatalogRemote(entry, st.priority))
-        return;
+    if (!wasInterested || plan.urls.isEmpty() || plan.phase == PlanPhase::Idle
+        || plan.phase == PlanPhase::Failed) {
+        ++plan.generation;
+        plan.hqQueued = false;
+        releasePlanRemote(entryId, plan);
+        buildPlanUrls(entry, plan);
+    }
 
-    // 2) Steam CDN / metadata fallback.
-    continueAfterCatalogMiss(entry, st.priority);
+    startOrContinuePlan(entryId, plan);
 }
 
 void CatalogCoverCoordinator::cancelCatalogCover(const QString& entryId)
 {
     ++m_cancels;
-    EntryCoverState& st = m_state[entryId];
-    const bool abandoned = st.phase == Phase::DownloadingThumb
-        || st.phase == Phase::DownloadingHq || st.phase == Phase::Resolving;
-    st.interested = false;
-    dropWaitersForEntry(entryId);
-    m_metadataService->cancelPending(entryId);
-    if (abandoned) {
+    CoverPlan& plan = m_plans[entryId];
+    const bool abandoned = plan.phase == PlanPhase::Fetching;
+    plan.interested = false;
+    if (abandoned)
         ++m_abandoned;
-        // Allow a later request to restart; keep catalogRemote for fast resume.
-        st.phase = Phase::Idle;
-        st.hqQueued = false;
-        st.activeRemote.clear();
+
+    releasePlanRemote(entryId, plan);
+    m_metadataService->cancelPending(entryId);
+
+    if (abandoned) {
+        plan.phase = PlanPhase::Idle;
+        plan.hqQueued = false;
     }
 
     CatalogEntry* entry = m_findEntry ? m_findEntry(entryId) : nullptr;
-    if (!entry || !entry->metadataPending)
-        return;
-    // Keep pending if we already have a local cover (upgrade in background is fine).
-    if (entry->coverUrl.startsWith(QStringLiteral("file:"))) {
-        entry->metadataPending = false;
-        m_catalog->notifyEntryChanged(entryId);
-        return;
-    }
-    entry->metadataPending = false;
-    m_catalog->notifyEntryChanged(entryId);
+    clearPendingFlag(entry);
 }
 
 void CatalogCoverCoordinator::invalidateCatalogCover(const QString& entryId)
@@ -870,9 +655,8 @@ void CatalogCoverCoordinator::invalidateCatalogCover(const QString& entryId)
         return;
 
     m_failedEntries.remove(entryId);
-    dropWaitersForEntry(entryId);
-    m_state.remove(entryId);
-    m_heroLocal.remove(entryId);
+    CoverPlan& plan = m_plans[entryId];
+    releasePlanRemote(entryId, plan);
 
     if (!entry->coverUrl.isEmpty())
         m_coverCache->remove(entry->coverUrl);
@@ -880,24 +664,24 @@ void CatalogCoverCoordinator::invalidateCatalogCover(const QString& entryId)
         m_coverCache->remove(entry->remoteCoverUrl);
         m_coverCache->clearFailed(entry->remoteCoverUrl);
     }
-
     const GameMetadata metadata = m_metadataService->metadataForTitle(entry->title);
     if (!metadata.coverUrl.isEmpty())
         m_coverCache->remove(metadata.coverUrl);
     if (!entry->steamAppId.isEmpty()) {
-        m_coverCache->clearFailed(steamThumbUrl(entry->steamAppId));
-        m_coverCache->clearFailed(steamHqUrl(entry->steamAppId));
-        m_coverCache->remove(steamThumbUrl(entry->steamAppId));
-        m_coverCache->remove(steamHqUrl(entry->steamAppId));
-        m_coverCache->clearFailed(steamHeroUrl(entry->steamAppId));
-        m_coverCache->clearFailed(steamHeaderUrl(entry->steamAppId));
+        for (const QString& u :
+             {steamThumbUrl(entry->steamAppId), steamHqUrl(entry->steamAppId),
+              steamHeroUrl(entry->steamAppId), steamHeaderUrl(entry->steamAppId)}) {
+            m_coverCache->clearFailed(u);
+            m_coverCache->remove(u);
+        }
     }
 
     m_metadataService->clearCachedCover(entry->title);
+    m_heroLocal.remove(entryId);
+    plan = CoverPlan{};
     entry->coverUrl.clear();
     entry->metadataPending = true;
     m_catalog->notifyEntryChanged(entryId);
-
     requestCatalogCover(entryId, CoverFetchPriority::Visible);
 }
 
@@ -924,25 +708,26 @@ void CatalogCoverCoordinator::queueHeroDownload(const QString& entryId, const QS
 void CatalogCoverCoordinator::requestCatalogHeroCover(const QString& entryId)
 {
     CatalogEntry* entry = m_findEntry ? m_findEntry(entryId) : nullptr;
-    if (!entry || entry->steamAppId.isEmpty())
+    if (!entry)
         return;
-
     if (m_heroLocal.contains(entryId)) {
         emit heroCoverApplied(entryId, m_heroLocal.value(entryId));
         return;
     }
-
-    const QString hero = steamHeroUrl(entry->steamAppId);
-    const QString header = steamHeaderUrl(entry->steamAppId);
-    if (const QString local = firstCached({hero, header}); !local.isEmpty()) {
+    if (entry->coverUrl.startsWith(QStringLiteral("file:"))) {
+        m_heroLocal.insert(entryId, entry->coverUrl);
+        emit heroCoverApplied(entryId, entry->coverUrl);
+    }
+    if (entry->steamAppId.isEmpty())
+        return;
+    if (const QString local = firstCached(
+            {steamHeroUrl(entry->steamAppId), steamHeaderUrl(entry->steamAppId)});
+        !local.isEmpty()) {
         m_heroLocal.insert(entryId, local);
         emit heroCoverApplied(entryId, local);
         return;
     }
-
-    const QString next = firstViableRemote({hero, header});
-    if (!next.isEmpty())
-        queueHeroDownload(entryId, next);
+    queueHeroDownload(entryId, steamHeroUrl(entry->steamAppId));
 }
 
 void CatalogCoverCoordinator::handleHeroReady(const QString& remoteUrl, const QString& localUrl)
@@ -967,7 +752,6 @@ void CatalogCoverCoordinator::handleHeroFailed(const QString& remoteUrl)
             queueHeroDownload(entryId, header);
             continue;
         }
-        // Fall back to card cover if we have one.
         if (entry->coverUrl.startsWith(QStringLiteral("file:"))) {
             m_heroLocal.insert(entryId, entry->coverUrl);
             emit heroCoverApplied(entryId, entry->coverUrl);
@@ -981,19 +765,18 @@ CoverCoordinatorStats CatalogCoverCoordinator::stats() const
     s.requests = m_requests;
     s.cancels = m_cancels;
     s.applied = m_applied;
-    s.stuckRecoveries = m_stuckRecoveries;
     s.abandoned = m_abandoned;
-    s.orphanReclaims = m_orphanReclaims;
+    s.dupSuppressed = m_dupSuppressed;
+    s.ladderAdvances = m_ladderAdvances;
     s.applyLatencySumMs = m_applyLatencySumMs;
     s.applyLatencyMaxMs = m_applyLatencyMaxMs;
     s.applyP50Ms = m_applyP50Ms;
     s.applyP95Ms = m_applyP95Ms;
-    for (auto it = m_state.constBegin(); it != m_state.constEnd(); ++it) {
+    for (auto it = m_plans.constBegin(); it != m_plans.constEnd(); ++it) {
         if (it->interested)
             ++s.interested;
-        if (it->phase == Phase::DownloadingThumb || it->phase == Phase::DownloadingHq
-            || it->phase == Phase::Resolving)
-            ++s.downloading;
+        if (it->phase == PlanPhase::Fetching || it->phase == PlanPhase::Showing)
+            ++s.plansActive;
     }
     return s;
 }
@@ -1005,16 +788,16 @@ QVariantMap CatalogCoverCoordinator::statsMap() const
         {QStringLiteral("requests"), s.requests},
         {QStringLiteral("cancels"), s.cancels},
         {QStringLiteral("applied"), s.applied},
-        {QStringLiteral("stuckRecoveries"), s.stuckRecoveries},
         {QStringLiteral("abandoned"), s.abandoned},
-        {QStringLiteral("orphanReclaims"), s.orphanReclaims},
+        {QStringLiteral("dupSuppressed"), s.dupSuppressed},
+        {QStringLiteral("ladderAdvances"), s.ladderAdvances},
         {QStringLiteral("applyAvgMs"),
          s.applied > 0 ? static_cast<qint64>(s.applyLatencySumMs / s.applied) : 0},
         {QStringLiteral("applyMaxMs"), s.applyLatencyMaxMs},
         {QStringLiteral("applyP50Ms"), s.applyP50Ms},
         {QStringLiteral("applyP95Ms"), s.applyP95Ms},
         {QStringLiteral("interested"), s.interested},
-        {QStringLiteral("downloading"), s.downloading},
+        {QStringLiteral("plansActive"), s.plansActive},
     };
 }
 
@@ -1023,9 +806,9 @@ void CatalogCoverCoordinator::resetStats()
     m_requests = 0;
     m_cancels = 0;
     m_applied = 0;
-    m_stuckRecoveries = 0;
     m_abandoned = 0;
-    m_orphanReclaims = 0;
+    m_dupSuppressed = 0;
+    m_ladderAdvances = 0;
     m_applyLatencySumMs = 0;
     m_applyLatencyMaxMs = 0;
     m_applyP50Ms = 0;
@@ -1040,23 +823,23 @@ QString CatalogCoverCoordinator::metricsText() const
     const CoverCoordinatorStats c = stats();
     const CoverCacheStats net = m_coverCache ? m_coverCache->stats() : CoverCacheStats{};
     return QStringLiteral(
-               "cover req=%1 apply=%2 stuck=%3 abandon=%4 | "
-               "net ok=%5 fail=%6 hit=%7 neg=%8 preempt=%9 | "
-               "q=%10/%11 apply p50=%12 p95=%13 max=%14 | dl p50=%15 p95=%16")
+               "cover req=%1 apply=%2 int=%3 plans=%4 dup=%5 abandon=%6 | "
+               "net ok=%7 fail=%8 hit=%9 preempt=%10 | "
+               "q=%11/%12 apply p50=%13 p95=%14 | dl p50=%15 p95=%16")
         .arg(c.requests)
         .arg(c.applied)
-        .arg(c.stuckRecoveries)
+        .arg(c.interested)
+        .arg(c.plansActive)
+        .arg(c.dupSuppressed)
         .arg(c.abandoned)
         .arg(net.downloadsOk)
         .arg(net.downloadsFail)
         .arg(net.cacheHits)
-        .arg(net.negativeHits)
         .arg(net.preempts)
         .arg(net.active)
         .arg(net.pending)
         .arg(c.applyP50Ms)
         .arg(c.applyP95Ms)
-        .arg(c.applyLatencyMaxMs)
         .arg(net.p50Ms)
         .arg(net.p95Ms);
 }

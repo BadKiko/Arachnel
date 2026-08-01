@@ -55,11 +55,15 @@ public:
     void ensure(const QString& remoteUrl,
                 CoverFetchPriority priority = CoverFetchPriority::Visible);
 
+    // Drop from pending queue. In-flight is demoted so Visible can preempt the slot.
+    void release(const QString& remoteUrl);
+
     // Delete disk file, clear negative cache for this URL, drop from pending.
     // In-flight replies are marked ignored so they cannot rewrite the file.
     void remove(const QString& remoteUrl);
     void clearFailed(const QString& remoteUrl);
     void clearAllFailed();
+    void noteCacheHit(); // coordinator applied a disk/memory hit without ensure()
 
     CoverCacheStats stats() const;
     QVariantMap statsMap() const;
@@ -78,6 +82,8 @@ private:
     void handleFinished(QNetworkReply* reply);
     void startNext();
     void enqueue(const QString& remoteUrl, CoverFetchPriority priority);
+    void removePending(const QString& remoteUrl);
+    void trimPending();
     void preemptForVisible();
     void markFailed(const QString& remoteUrl);
     void loadNegativeCache();
@@ -121,8 +127,9 @@ private:
     QVector<int> m_recentLatenciesMs;
     int m_recentWrite = 0;
 
-    // Grid shows ~20+ cards; Visible must not wait behind Warm/Upgrade HQ.
-    static constexpr int kMaxConcurrent = 16;
+    // Viewport covers first; keep queue short so scroll-churn cannot bury them.
+    static constexpr int kMaxConcurrent = 8;
+    static constexpr int kMaxPending = 24;
     static constexpr int kLatencyWindow = 64;
     // Soft negative TTL - catalog refresh also clears via clearAllFailed().
     static constexpr qint64 kNegativeTtlMs = 60LL * 60 * 1000;

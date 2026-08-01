@@ -205,7 +205,7 @@ Item {
         model: Core.catalog
         cellWidth: page.cellWidth
         cellHeight: page.cellHeight
-        cacheBuffer: page.cellHeight * 6
+        cacheBuffer: page.cellHeight * 2
         reuseItems: true
         boundsBehavior: Flickable.StopAtBounds
         pixelAligned: true
@@ -269,7 +269,7 @@ Item {
         clip: true
         model: Core.catalog
         spacing: MD.Token.spacing.extra_small
-        cacheBuffer: page.listRowHeight * 8
+        cacheBuffer: page.listRowHeight * 3
         reuseItems: true
         boundsBehavior: Flickable.StopAtBounds
         interactive: true
