@@ -6,16 +6,33 @@ Inputs:
 
 | Field | Meaning |
 |-------|---------|
-| `version` | Semver without `v`, e.g. `0.1.0` → tag `v0.1.0` |
+| `version` | Semver without `v`, e.g. `0.1.39` → tag `v0.1.39`. Not `dev`. |
 | `prerelease` | Pre-release flag on GitHub |
 
 Artifacts:
 
-- `Arachnel-<version>-Setup.exe` — Windows installer (setup + embedded app)
+- `Arachnel-<version>-Setup.exe` — Windows installer (Inno Setup + app from dist-win)
 - `Arachnel-<version>-x86_64.AppImage` — Linux portable build
 - `checksums.sha256` — SHA-256 for both files
 
 The release notes body lists commits since the previous `v*` tag.
+
+## Versioning
+
+| Context | Version source |
+|---------|----------------|
+| Local `.\run.ps1` (dev run) | `dev` unless `ARACHNEL_VERSION` is set |
+| `.\run.ps1 --package` / `--installer` | `ARACHNEL_VERSION`, else nearest `v*` git tag (`git describe`). Refuses bare `dev` for `--installer` |
+| CI Release | workflow input `version` (validated, not `dev`) |
+
+The app shows whatever was baked in at CMake configure time (`ARACHNEL_VERSION`).
+
+## Upgrade / player data safety
+
+- **Game libraries and settings** live under AppData / user library folders, not inside the launcher install dir. Updating the launcher only replaces files under `{app}` (binaries, Qt, etc.).
+- **In-app update** downloads `Arachnel-*-Setup.exe` and runs Inno with `/SILENT /DIR=<current install>` (shows progress, no folder prompts; closes the running app first). Legacy Program Files installs also pass `/ALLUSERS` so elevation can work.
+- **Legacy installs** (`C:\Program Files\Arachnel`, uninstall key `...\Uninstall\Arachnel`): the Inno installer detects that `InstallLocation`, offers it as the default folder, writes the new Inno uninstall entry, removes the old uninstall registry key, and deletes leftover `uninstall.exe` / setup stubs under `{app}`. It does **not** run the old uninstaller.
+- New default for fresh installs: `%LOCALAPPDATA%\Programs\Arachnel` (`PrivilegesRequired=lowest`, elevates only when the target needs it).
 
 ## CI speed (caching)
 
@@ -32,7 +49,7 @@ First release after a toolchain/dep bump is still cold; later runs reuse hits. C
 
 ## Windows code signing (required for public releases)
 
-Without secrets the EXE is **unsigned**. Windows Defender ML and SmartScreen often flag unsigned self-extracting installers.
+Without secrets the EXE is **unsigned**. Windows Defender ML and SmartScreen often flag unsigned installers from unknown publishers.
 
 Add repository secrets:
 
@@ -50,24 +67,13 @@ Export PFX (PowerShell):
 
 You need an **Authenticode** certificate (OV/EV from a public CA). Self-signed certs do not remove SmartScreen for unknown publishers.
 
-When secrets are set, release packaging signs:
-
-1. Inner PE before zip (`arachnel_setup.exe`, `uninstall.exe`, `arachnel_app.exe`, launcher)
-2. Final `Arachnel-*-Setup.exe` again after payloads are appended (append invalidates a pre-pack signature)
-
-Locally the same happens if those env vars are set when you run `.\run.ps1 --installer` (via `setup/pack.ps1`).
+When secrets are set, `.\run.ps1 --installer` (via `setup\inno\pack-inno.ps1`) signs the final Inno `Arachnel-Setup.exe`.
 
 ### Defender false positives (`Sabsik.TE.A!ml`)
 
-`Trojan:Win32/Sabsik.TE.A!ml` is a **Microsoft ML heuristic** (`!ml`), not a known malware signature. It often fires on unsigned SFX-style droppers: stub EXE + appended zip → extract under `%LOCALAPPDATA%` → spawn a child process.
+`Trojan:Win32/Sabsik.TE.A!ml` is a **Microsoft ML heuristic** (`!ml`), not a known malware signature. It often fires on unsigned installers from unknown publishers.
 
-Arachnel Setup is that shape on purpose (custom stub + embedded runtime/app zips). Mitigations in the product:
-
-- Extract with `tar.exe` only (no PowerShell `Expand-Archive`)
-- PE `VERSIONINFO` on setup / launcher / uninstall
-- Sign **all** PE when Authenticode secrets are present
-
-**Still required for quiet public releases:** an OV/EV code-signing cert. Without it, Defender/SmartScreen can still warn on new hashes.
+Shipping Windows builds use **Inno Setup**. That is usually quieter than a hand-rolled dropper, but **OV/EV signing is still required** for sane public releases. Without a cert, Defender/SmartScreen can still warn on new hashes.
 
 If a signed build is still quarantined:
 
@@ -77,7 +83,8 @@ If a signed build is still quarantined:
 ## Local dry run
 
 ```powershell
-# Windows
+# Windows - set a real version (or have a v* git tag)
+$env:ARACHNEL_VERSION = "0.1.39"
 $env:BUILD_TYPE = "Release"
 $env:ARACHNEL_FAST_BUILD = "0"
 .\run.ps1 --installer
@@ -85,7 +92,7 @@ $env:ARACHNEL_FAST_BUILD = "0"
 
 ```bash
 # Linux AppImage
-export ARACHNEL_VERSION=0.1.0-dev
+export ARACHNEL_VERSION=0.1.39
 export CMAKE_PREFIX_PATH=/path/to/Qt/6.8/gcc_64
 bash scripts/ci/package-appimage.sh
 ```

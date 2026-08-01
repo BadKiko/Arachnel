@@ -18,12 +18,15 @@ dist-win/
 Arachnel-win64-*.zip
 Arachnel-win64-*/
 Arachnel-Setup.exe
+Arachnel-*-Setup.exe
 
 build-linux/
 dist-linux/
 
-# Windows installer pack staging
-setup/staging/
+# Windows installer (Inno) - keep sources, ignore build junk
+setup/inno/output/
+setup/inno/_ref_freetp/
+setup/inno/payload/
 
 # Local archives and debug listings
 *.7z
@@ -44,7 +47,10 @@ scripts/deploy-media.ps1
 /_mcp_*
 /_meccha_*
 /_progress_*
+_*.log
+_*.out
+_*.json
+System.Drawing.*
 
 __pycache__/
 *.py[cod]
-

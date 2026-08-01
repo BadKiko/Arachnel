@@ -63,6 +63,8 @@ private:
     bool launchInstaller(const QString& installerPath, QString* errorOut);
     static QString assetDownloadUrl(const QJsonObject& release);
     static int compareVersions(const QString& left, const QString& right);
+    static int compareVersionsPreferPlain(const QString& left, const QString& right);
+    static int compareVersionParts(const QString& left, const QString& right, bool letteredNewer);
     static QString normalizeVersion(const QString& version);
 
     QNetworkAccessManager* m_network = nullptr;

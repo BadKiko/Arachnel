@@ -15,6 +15,38 @@ function Initialize-DevPath {
     $env:Path = "$machinePath;$userPath"
 }
 
+function Resolve-ArachnelPackageVersion {
+    <#
+      Version for packaged builds / installer. Never returns bare "dev".
+      Order: ARACHNEL_VERSION env → nearest v* git tag (describe) → error for --installer.
+    #>
+    if ($env:ARACHNEL_VERSION) {
+        $v = $env:ARACHNEL_VERSION.Trim()
+        if ($v.StartsWith('v') -or $v.StartsWith('V')) { $v = $v.Substring(1) }
+        if ($v -and $v -ne 'dev' -and $v -ne '0.0.0-dev') {
+            return $v
+        }
+    }
+    Push-Location $ROOT
+    try {
+        $desc = & git describe --tags --match 'v*' --dirty 2>$null
+        if ($LASTEXITCODE -eq 0 -and $desc) {
+            $v = $desc.Trim()
+            if ($v.StartsWith('v') -or $v.StartsWith('V')) { $v = $v.Substring(1) }
+            if ($v -and $v -ne 'dev') { return $v }
+        }
+        $tag = & git describe --tags --match 'v*' --abbrev=0 2>$null
+        if ($LASTEXITCODE -eq 0 -and $tag) {
+            $v = $tag.Trim()
+            if ($v.StartsWith('v') -or $v.StartsWith('V')) { $v = $v.Substring(1) }
+            if ($v) { return $v }
+        }
+    } finally {
+        Pop-Location
+    }
+    return $null
+}
+
 function Add-QtInstallRoot {
     param(
         [System.Collections.Generic.List[string]]$Roots,
@@ -213,7 +245,7 @@ or QT_INSTALL_DIR to your Qt root (the folder that contains version dirs / Tools
         "-DCMAKE_PREFIX_PATH=$($qt.Prefix)",
         "-DARACHNEL_FAST_BUILD=$(if ($env:ARACHNEL_FAST_BUILD -eq '0') { 'OFF' } else { 'ON' })",
         "-DARACHNEL_LIBTORRENT_SHARED=$(if ($env:ARACHNEL_LIBTORRENT_SHARED -eq '0') { 'OFF' } else { 'ON' })",
-        "-DARACHNEL_VERSION=$(if ($env:ARACHNEL_VERSION) { $env:ARACHNEL_VERSION } else { 'dev' })"
+        "-DARACHNEL_VERSION=$(if ($env:ARACHNEL_VERSION -and $env:ARACHNEL_VERSION -ne 'dev') { $env:ARACHNEL_VERSION } else { 'dev' })"
     )
 
     if ($env:CMAKE_C_COMPILER_LAUNCHER) {
@@ -306,56 +338,24 @@ or QT_INSTALL_DIR to your Qt root (the folder that contains version dirs / Tools
     throw "MSVC kit found but Visual Studio Build Tools are missing."
 }
 
-function Get-SetupPath {
-    $candidates = @(
-        (Join-Path $BUILD_DIR "arachnel_setup.exe"),
-        (Join-Path $BUILD_DIR "$BUILD_TYPE\arachnel_setup.exe"),
-        (Join-Path $BUILD_DIR "Release\arachnel_setup.exe")
-    )
-    foreach ($path in $candidates) {
-        if (Test-Path -LiteralPath $path) { return (Resolve-Path -LiteralPath $path).Path }
-    }
-    return (Join-Path $BUILD_DIR $candidates[0])
-}
-
 function New-InstallerPackage {
+    $version = Resolve-ArachnelPackageVersion
+    if (-not $version) {
+        throw @"
+No package version. Set ARACHNEL_VERSION (e.g. 0.1.39) or create a git tag v0.1.39.
+Refusing to ship a 'dev' installer.
+"@
+    }
+    $env:ARACHNEL_VERSION = $version
+    Write-Host "Installer version: $version" -ForegroundColor Cyan
+
     if (-not (Test-Path -LiteralPath (Join-Path $DIST_DIR "arachnel_app.exe"))) {
         Write-Host "dist-win missing — building release package first ..."
         New-ReleasePackage
     }
 
-    Enable-CompileCache
-    $plan = Get-BuildArgs
-    Ensure-BuildDir $plan.Qt
-    Initialize-QtRuntime $plan.Qt
-
-    if (Test-NeedsCmakeConfigure) {
-        Write-Host "CMake configure ..."
-        & $plan.Cmake @($plan.Configure)
-        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-    }
-
-    Write-Host "Build arachnel_setup + launcher + uninstall ..."
-    & $plan.Cmake --build $BUILD_DIR --target arachnel_setup arachnel_setup_launcher arachnel_uninstall -j $env:NUMBER_OF_PROCESSORS
-    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
-    $setupPath = Get-SetupPath
-    if (-not (Test-Path -LiteralPath $setupPath)) {
-        throw "arachnel_setup.exe not found after build."
-    }
-
-    $launcherPath = Join-Path $BUILD_DIR "arachnel_setup_launcher.exe"
-    if (-not (Test-Path -LiteralPath $launcherPath)) {
-        throw "arachnel_setup_launcher.exe not found after build."
-    }
-
-    $uninstallPath = Join-Path $BUILD_DIR "uninstall.exe"
-    if (-not (Test-Path -LiteralPath $uninstallPath)) {
-        throw "uninstall.exe not found after build."
-    }
-
-    $packScript = Join-Path $ROOT "setup\pack.ps1"
-    & $packScript -BuildDir $BUILD_DIR -DistDir $DIST_DIR -QtPrefix $plan.Qt.Prefix
+    $packScript = Join-Path $ROOT "setup\inno\pack-inno.ps1"
+    & $packScript -Version $version -DistDir $DIST_DIR -OutputPath (Join-Path $ROOT "Arachnel-Setup.exe")
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 
@@ -537,11 +537,21 @@ function Deploy-QtRuntime {
 
 function New-ReleasePackage {
     Enable-CompileCache
+    $resolved = Resolve-ArachnelPackageVersion
+    if ($resolved) {
+        $env:ARACHNEL_VERSION = $resolved
+        Write-Host "Package version: $resolved" -ForegroundColor Cyan
+    }
     $plan = Get-BuildArgs
     Ensure-BuildDir $plan.Qt
     Initialize-QtRuntime $plan.Qt
 
-    if (Test-NeedsCmakeConfigure) {
+    $needsConfigure = Test-NeedsCmakeConfigure
+    if ($resolved) {
+        # Stamp real version into the binary (avoid shipping leftover "dev" from day-to-day builds)
+        $needsConfigure = $true
+    }
+    if ($needsConfigure) {
         Write-Host "CMake configure ..."
         $configureArgs = $plan.Configure
         & $plan.Cmake @configureArgs
@@ -951,7 +961,7 @@ Arachnel dev launcher
   .\run.ps1 --rebuild    clean build-win, then build + run
   .\run.ps1 --run        run without build (exe must exist)
   .\run.ps1 --package    build Release + create dist-win ZIP (Arachnel-win64-Release.zip)
-  .\run.ps1 --installer  build single Arachnel-Setup.exe (embedded app + runtime payload)
+  .\run.ps1 --installer  build Arachnel-Setup.exe (Inno + dist-win, Botva2 UI)
   .\run.ps1 --release    use Release build type (still runs app unless combined with --package)
   BUILD_TYPE=RelWithDebInfo .\run.ps1 --package   debug symbols in the package (larger ZIP)
 
