@@ -87,6 +87,22 @@ function Append-PayloadFooter {
     }
 }
 
+function Invoke-OptionalSign {
+    param([string[]]$Files)
+    if (-not $env:WINDOWS_SIGN_CERT_PFX_BASE64) {
+        Write-Host "Code signing skipped (WINDOWS_SIGN_CERT_PFX_BASE64 is not set)."
+        return
+    }
+    $signScript = Join-Path $ROOT "scripts\ci\sign-windows.ps1"
+    if (-not (Test-Path -LiteralPath $signScript)) {
+        throw "sign-windows.ps1 not found at $signScript"
+    }
+    & $signScript -Files $Files
+    if ($LASTEXITCODE -ne 0) {
+        throw "sign-windows.ps1 failed (exit $LASTEXITCODE)"
+    }
+}
+
 if (-not (Test-Path -LiteralPath $DistDir)) {
     throw "dist-win not found at $DistDir. Run .\run.ps1 --package first."
 }
@@ -195,6 +211,11 @@ if (Test-Path -LiteralPath $qmlMaterialDll) {
 
 Copy-MingwRuntimeDlls -QtPrefix $QtPrefix -DestDir $RUNTIME_DIR
 
+# Sign PE before zip so extracted setup/app are Authenticode-valid (outer Setup is resigned after append).
+$runtimeSetup = Join-Path $RUNTIME_DIR "arachnel_setup.exe"
+$runtimeUninstall = Join-Path $RUNTIME_DIR "uninstall.exe"
+Invoke-OptionalSign -Files @($runtimeSetup, $runtimeUninstall, $distApp, $launcherExe)
+
 $runtimeZip = Join-Path $STAGING "runtime.zip"
 $appZip = Join-Path $STAGING "app.zip"
 if (Test-Path -LiteralPath $runtimeZip) { Remove-Item -LiteralPath $runtimeZip -Force }
@@ -235,6 +256,9 @@ Append-PayloadFooter -ExePath $OutputPath `
     -RuntimeSize ([uint64]$runtimeSize) `
     -AppOffset $appOffset `
     -AppSize ([uint64]$appSize)
+
+# Appended zip payload invalidates any pre-append signature on the launcher copy.
+Invoke-OptionalSign -Files @($OutputPath)
 
 Write-Host ""
 Write-Host "Done: $OutputPath" -ForegroundColor Green

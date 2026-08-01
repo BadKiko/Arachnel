@@ -32,7 +32,8 @@ if (-not $env:WINDOWS_SIGN_CERT_PASSWORD) {
     throw "WINDOWS_SIGN_CERT_PASSWORD is required when WINDOWS_SIGN_CERT_PFX_BASE64 is set."
 }
 
-$pfxPath = Join-Path $env:RUNNER_TEMP "arachnel-sign.pfx"
+$tempRoot = if ($env:RUNNER_TEMP) { $env:RUNNER_TEMP } else { [IO.Path]::GetTempPath() }
+$pfxPath = Join-Path $tempRoot "arachnel-sign.pfx"
 $pfxBytes = [Convert]::FromBase64String($env:WINDOWS_SIGN_CERT_PFX_BASE64)
 [IO.File]::WriteAllBytes($pfxPath, $pfxBytes)
 

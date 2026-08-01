@@ -16,6 +16,39 @@ set_target_properties(arachnel_setup PROPERTIES
 
 set(_setup_icon_ico "${CMAKE_SOURCE_DIR}/resources/icons/arachnel.ico")
 
+# Parse ARACHNEL_VERSION (e.g. 0.1.38 / 0.1.38a / dev) into numeric FILEVERSION fields.
+set(_arachnel_ver_major 0)
+set(_arachnel_ver_minor 0)
+set(_arachnel_ver_patch 0)
+set(_arachnel_ver_build 0)
+if(ARACHNEL_VERSION MATCHES "^([0-9]+)(\\.([0-9]+))?(\\.([0-9]+))?")
+    set(_arachnel_ver_major "${CMAKE_MATCH_1}")
+    if(CMAKE_MATCH_3)
+        set(_arachnel_ver_minor "${CMAKE_MATCH_3}")
+    endif()
+    if(CMAKE_MATCH_5)
+        set(_arachnel_ver_patch "${CMAKE_MATCH_5}")
+    endif()
+endif()
+
+function(_arachnel_setup_versioninfo target description internal_name original_filename)
+    set(ARACHNEL_VER_MAJOR "${_arachnel_ver_major}")
+    set(ARACHNEL_VER_MINOR "${_arachnel_ver_minor}")
+    set(ARACHNEL_VER_PATCH "${_arachnel_ver_patch}")
+    set(ARACHNEL_VER_BUILD "${_arachnel_ver_build}")
+    set(ARACHNEL_VERSION_STR "${ARACHNEL_VERSION}")
+    set(ARACHNEL_FILE_DESCRIPTION "${description}")
+    set(ARACHNEL_INTERNAL_NAME "${internal_name}")
+    set(ARACHNEL_ORIGINAL_FILENAME "${original_filename}")
+    set(_vi_rc "${CMAKE_CURRENT_BINARY_DIR}/${target}_versioninfo.rc")
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/arachnel_versioninfo.rc.in"
+        "${_vi_rc}"
+        @ONLY
+    )
+    target_sources(${target} PRIVATE "${_vi_rc}")
+endfunction()
+
 function(_arachnel_setup_admin_manifest target)
     if(MSVC)
         target_link_options(${target} PRIVATE
@@ -32,6 +65,7 @@ if(EXISTS "${_setup_icon_ico}")
 endif()
 
 _arachnel_setup_admin_manifest(arachnel_setup)
+_arachnel_setup_versioninfo(arachnel_setup "Arachnel Setup" "arachnel_setup" "arachnel_setup.exe")
 
 qt_add_resources(arachnel_setup "arachnel_setup_icons"
     PREFIX "/icons"
@@ -118,6 +152,8 @@ if(EXISTS "${_setup_icon_ico}")
 endif()
 
 _arachnel_setup_admin_manifest(arachnel_setup_launcher)
+_arachnel_setup_versioninfo(arachnel_setup_launcher "Arachnel Setup" "arachnel_setup_launcher"
+                            "Arachnel-Setup.exe")
 
 target_link_libraries(arachnel_setup_launcher PRIVATE shell32 ole32)
 
@@ -142,6 +178,7 @@ if(EXISTS "${_setup_icon_ico}")
 endif()
 
 _arachnel_setup_admin_manifest(arachnel_uninstall)
+_arachnel_setup_versioninfo(arachnel_uninstall "Arachnel Uninstall" "uninstall" "uninstall.exe")
 
 target_link_libraries(arachnel_uninstall PRIVATE shell32 ole32 advapi32)
 

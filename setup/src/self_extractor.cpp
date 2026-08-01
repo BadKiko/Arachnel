@@ -15,23 +15,19 @@ namespace arachnel::setup {
 
 namespace {
 
-bool runPowerShellExpand(const QString& zipPath, const QString& destinationDir, QString* errorOut)
+bool runTarExpand(const QString& zipPath, const QString& destinationDir, QString* errorOut)
 {
     QDir().mkpath(destinationDir);
 
-    const QString script = QStringLiteral(
-        "$ErrorActionPreference = 'Stop'; "
-        "Expand-Archive -LiteralPath '%1' -DestinationPath '%2' -Force")
-                               .arg(zipPath, destinationDir);
-
+    // Prefer Windows tar - avoids PowerShell Expand-Archive (Defender ML dropper signal).
     QProcess process;
-    process.setProgram(QStringLiteral("powershell"));
-    process.setArguments({QStringLiteral("-NoProfile"), QStringLiteral("-ExecutionPolicy"),
-                          QStringLiteral("Bypass"), QStringLiteral("-Command"), script});
+    process.setProgram(QStringLiteral("tar"));
+    process.setArguments({QStringLiteral("-xf"), zipPath, QStringLiteral("-C"), destinationDir});
+    process.setProcessChannelMode(QProcess::MergedChannels);
     process.start();
     if (!process.waitForStarted(15000)) {
         if (errorOut)
-            *errorOut = QStringLiteral("Could not start PowerShell");
+            *errorOut = QStringLiteral("Could not start tar.exe (Windows 10 or newer required)");
         return false;
     }
     if (!process.waitForFinished(600000)) {
@@ -42,9 +38,8 @@ bool runPowerShellExpand(const QString& zipPath, const QString& destinationDir, 
     }
     if (process.exitStatus() != QProcess::NormalExit || process.exitCode() != 0) {
         if (errorOut) {
-            const QString stderrText = QString::fromLocal8Bit(process.readAllStandardError()).trimmed();
-            *errorOut = stderrText.isEmpty() ? QStringLiteral("Archive extraction failed")
-                                             : stderrText;
+            const QString err = QString::fromLocal8Bit(process.readAll()).trimmed();
+            *errorOut = err.isEmpty() ? QStringLiteral("Archive extraction failed (tar)") : err;
         }
         return false;
     }
@@ -140,14 +135,14 @@ bool extractZipSlice(const QString& containerPath, quint64 offset, quint64 size,
         onProgress(38, QCoreApplication::translate("Setup", "Extracting files…"));
     }
 
-    const bool ok = runPowerShellExpand(tempZip, destinationDir, errorOut);
+    const bool ok = runTarExpand(tempZip, destinationDir, errorOut);
     QFile::remove(tempZip);
     return ok;
 }
 
 bool extractZipArchive(const QString& zipPath, const QString& destinationDir, QString* errorOut)
 {
-    return runPowerShellExpand(zipPath, destinationDir, errorOut);
+    return runTarExpand(zipPath, destinationDir, errorOut);
 }
 
 bool ensureRuntimeBootstrapped(const QString& executablePath, QString* errorOut)

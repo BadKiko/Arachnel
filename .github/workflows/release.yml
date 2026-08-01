@@ -110,6 +110,10 @@ jobs:
           ARACHNEL_QT_KIT: ${{ env.ARACHNEL_QT_KIT }}
           CMAKE_PREFIX_PATH: ${{ env.QT_ROOT_DIR }}
           FETCHCONTENT_BASE_DIR: ${{ github.workspace }}/.cache/fetchcontent
+          # pack.ps1 signs inner PE before zip, then resigns final Setup when these are set
+          WINDOWS_SIGN_CERT_PFX_BASE64: ${{ secrets.WINDOWS_SIGN_CERT_PFX_BASE64 }}
+          WINDOWS_SIGN_CERT_PASSWORD: ${{ secrets.WINDOWS_SIGN_CERT_PASSWORD }}
+          WINDOWS_SIGN_TIMESTAMP_URL: ${{ secrets.WINDOWS_SIGN_TIMESTAMP_URL }}
         run: |
           git lfs install
           .\run.ps1 --installer
@@ -121,6 +125,10 @@ jobs:
 
       - name: Sign installer (optional)
         shell: pwsh
+        env:
+          WINDOWS_SIGN_CERT_PFX_BASE64: ${{ secrets.WINDOWS_SIGN_CERT_PFX_BASE64 }}
+          WINDOWS_SIGN_CERT_PASSWORD: ${{ secrets.WINDOWS_SIGN_CERT_PASSWORD }}
+          WINDOWS_SIGN_TIMESTAMP_URL: ${{ secrets.WINDOWS_SIGN_TIMESTAMP_URL }}
         run: .\scripts\ci\sign-windows.ps1 -Files Arachnel-Setup.exe
 
       - name: Rename artifact
