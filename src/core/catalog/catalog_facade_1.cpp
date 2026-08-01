@@ -175,7 +175,7 @@ void CoreController::applyMetadataToEntry(CatalogEntry& entry,
             entry.genres += QStringLiteral("DRM");
         }
     }
-    if (!metadata.steamAppId.isEmpty())
+    if (!metadata.steamAppId.isEmpty() && entry.steamAppId.isEmpty())
         entry.steamAppId = metadata.steamAppId;
     if (!metadata.sizeLabel.isEmpty())
         entry.sizeLabel = metadata.sizeLabel;

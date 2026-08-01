@@ -2,6 +2,7 @@
 
 #include <QCoreApplication>
 #include <QDateTime>
+#include <QDebug>
 #include <QDesktopServices>
 #include <QDir>
 #include <QFile>
@@ -13,6 +14,7 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QProcess>
+#include <QSettings>
 #include <QStandardPaths>
 #include <QUrl>
 #include <QVersionNumber>
@@ -473,43 +475,130 @@ void AppUpdater::startDownload(const QUrl& url)
     });
 }
 
-bool AppUpdater::launchInstaller(const QString& installerPath, QString* errorOut)
-{
-#if defined(Q_OS_WIN)
-    const QString appDir =
-        QDir::toNativeSeparators(QCoreApplication::applicationDirPath());
+namespace {
 
-    const auto underEnvRoot = [&appDir](const char* envName) {
+#if defined(Q_OS_WIN)
+QString readUninstallInstallLocation(const QString& uninstallKey)
+{
+    const QString valueName = QStringLiteral("InstallLocation");
+    for (const QString& root : {
+             QStringLiteral("HKEY_LOCAL_MACHINE\\%1").arg(uninstallKey),
+             QStringLiteral("HKEY_CURRENT_USER\\%1").arg(uninstallKey),
+         }) {
+        QSettings reg(root, QSettings::NativeFormat);
+        const QString loc = QDir::toNativeSeparators(reg.value(valueName).toString().trimmed());
+        if (!loc.isEmpty())
+            return QDir::cleanPath(loc);
+    }
+    return {};
+}
+
+QString resolveUpdateInstallDir(const QString& runningAppDir)
+{
+    const QString running = QDir::toNativeSeparators(QDir::cleanPath(runningAppDir));
+    const QString runningLower = running.toLower();
+    const bool unpackaged =
+        runningLower.contains(QLatin1String("build-win"))
+        || runningLower.contains(QLatin1String("\\build\\"))
+        || runningLower.contains(QLatin1String("/build/"))
+        || runningLower.contains(QLatin1String("relwithdebinfo"))
+        || runningLower.contains(QLatin1String("\\debug"))
+        || runningLower.contains(QLatin1String("/debug"));
+
+    if (!unpackaged && QFileInfo::exists(running + QLatin1String("/arachnel_app.exe")))
+        return running;
+
+    // Inno AppId uninstall key (per-user lowest privileges).
+    const QString innoDir = readUninstallInstallLocation(QStringLiteral(
+        "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\"
+        "{A8E3C1B2-4D5F-6A70-8B9C-0D1E2F3A4B5C}_is1"));
+    if (!innoDir.isEmpty()
+        && QFileInfo::exists(innoDir + QLatin1String("/arachnel_app.exe")))
+        return innoDir;
+
+    // Legacy Qt SFX uninstall key.
+    const QString legacyDir = readUninstallInstallLocation(
+        QStringLiteral("Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Arachnel"));
+    if (!legacyDir.isEmpty()
+        && QFileInfo::exists(legacyDir + QLatin1String("/arachnel_app.exe")))
+        return legacyDir;
+
+    // Default per-user install location used by Inno ({localappdata}\Programs\Arachnel).
+    const QString localAppData = QString::fromLocal8Bit(qgetenv("LOCALAPPDATA"));
+    const QString perUser = QDir::toNativeSeparators(QDir::cleanPath(
+        localAppData.isEmpty()
+            ? (QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation)
+               + QStringLiteral("/Programs/Arachnel"))
+            : (localAppData + QStringLiteral("/Programs/Arachnel"))));
+    if (QFileInfo::exists(perUser + QLatin1String("/arachnel_app.exe")))
+        return perUser;
+
+    if (!innoDir.isEmpty())
+        return innoDir;
+    if (!legacyDir.isEmpty())
+        return legacyDir;
+    if (!unpackaged)
+        return running;
+    return perUser;
+}
+
+bool pathNeedsAllUsers(const QString& dir)
+{
+    const QString native = QDir::toNativeSeparators(dir);
+    const auto underEnvRoot = [&native](const char* envName) {
         const QByteArray raw = qgetenv(envName);
         if (raw.isEmpty())
             return false;
         const QString root = QDir::toNativeSeparators(QString::fromLocal8Bit(raw));
-        return !root.isEmpty() && appDir.startsWith(root, Qt::CaseInsensitive);
+        return !root.isEmpty() && native.startsWith(root, Qt::CaseInsensitive);
     };
-    const bool needsAllUsers = underEnvRoot("ProgramFiles") || underEnvRoot("ProgramFiles(x86)")
-                               || underEnvRoot("ProgramW6432");
+    return underEnvRoot("ProgramFiles") || underEnvRoot("ProgramFiles(x86)")
+           || underEnvRoot("ProgramW6432");
+}
+#endif
 
-    // Inno Setup update into the running install dir.
-    // /SILENT shows install progress (no folder prompts). /VERYSILENT would hide all UI.
-    // Games/settings stay in AppData / library folders - only {app} binaries are replaced.
+} // namespace
+
+bool AppUpdater::launchInstaller(const QString& installerPath, QString* errorOut)
+{
+#if defined(Q_OS_WIN)
+    const QString runningDir =
+        QDir::toNativeSeparators(QCoreApplication::applicationDirPath());
+    const QString targetDir = resolveUpdateInstallDir(runningDir);
+    if (targetDir.isEmpty()) {
+        if (errorOut) {
+            *errorOut = QCoreApplication::translate(
+                "Core", "Could not find an Arachnel install folder to update");
+        }
+        return false;
+    }
+
+    // In-app update: /SILENT shows unpack progress (no folder wizard), then [Run]
+    // relaunches Arachnel (skipifnotsilent). Never /VERYSILENT - that hides progress.
     QStringList args = {
         QStringLiteral("/SILENT"),
-        QStringLiteral("/SUPPRESSMSGBOXES"),
         QStringLiteral("/NORESTART"),
         QStringLiteral("/CLOSEAPPLICATIONS"),
         QStringLiteral("/FORCECLOSEAPPLICATIONS"),
-        QStringLiteral("/DIR=%1").arg(appDir),
+        QStringLiteral("/DIR=%1").arg(targetDir),
     };
-    if (needsAllUsers)
+    if (pathNeedsAllUsers(targetDir))
         args.append(QStringLiteral("/ALLUSERS"));
+    // Older GitHub Setup builds (Qt SFX) only honor --update. Inno ignores unknown args.
+    args.append(QStringLiteral("--update"));
 
-    if (!QProcess::startDetached(installerPath, args, QFileInfo(installerPath).absolutePath())) {
+    qint64 pid = 0;
+    if (!QProcess::startDetached(installerPath, args, QFileInfo(installerPath).absolutePath(),
+                                 &pid)
+        || pid == 0) {
         if (errorOut) {
             *errorOut = QCoreApplication::translate("Core",
                                                     "Could not start the Arachnel installer");
         }
         return false;
     }
+    qInfo().noquote() << "[app-updater] started installer pid" << pid << installerPath << args
+                      << "target=" << targetDir;
     return true;
 #else
     Q_UNUSED(installerPath);

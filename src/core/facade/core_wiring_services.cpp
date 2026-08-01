@@ -321,7 +321,8 @@ void CoreController::initializeServices()
             });
     connect(m_appUpdater, &AppUpdater::installerLaunchRequested, this, [this]() {
         prepareShutdown();
-        QTimer::singleShot(300, qApp, []() { QCoreApplication::quit(); });
+        // Give the Setup process time to create its window before we exit.
+        QTimer::singleShot(1200, qApp, []() { QCoreApplication::quit(); });
     });
     connect(m_protonManager, &ProtonManager::downloadStateChanged, this,
             &CoreController::protonDownloadChanged);

@@ -372,33 +372,19 @@ void CatalogController::rebuildMergedCatalog()
                     }
                 }
                 CatalogEntry showcase = offers.at(bestIdx);
+                // Keep showcase.id from the winning offer. Never swap in another offer's id —
+                // that produced Frankenstein cards (Car Mechanic art + Undying Flower entryId).
+                // Only fill missing fields from peers with the same normalized title.
+                const QString showcaseTitleKey = normalizeTitleKey(showcase.title);
                 for (const CatalogEntry& offer : offers) {
-                    if (offer.id.startsWith(QStringLiteral("steam-"))
-                        && !offer.steamAppId.isEmpty()) {
-                        showcase.id = offer.id;
+                    if (normalizeTitleKey(offer.title) != showcaseTitleKey)
+                        continue;
+                    if (showcase.remoteCoverUrl.isEmpty() && !offer.remoteCoverUrl.isEmpty())
+                        showcase.remoteCoverUrl = offer.remoteCoverUrl;
+                    if (showcase.coverUrl.isEmpty() && !offer.coverUrl.isEmpty())
+                        showcase.coverUrl = offer.coverUrl;
+                    if (showcase.steamAppId.isEmpty() && !offer.steamAppId.isEmpty())
                         showcase.steamAppId = offer.steamAppId;
-                        if (!offer.coverUrl.isEmpty())
-                            showcase.coverUrl = offer.coverUrl;
-                        if (!offer.remoteCoverUrl.isEmpty())
-                            showcase.remoteCoverUrl = offer.remoteCoverUrl;
-                        break;
-                    }
-                }
-                if (showcase.remoteCoverUrl.isEmpty()) {
-                    for (const CatalogEntry& offer : offers) {
-                        if (!offer.remoteCoverUrl.isEmpty()) {
-                            showcase.remoteCoverUrl = offer.remoteCoverUrl;
-                            break;
-                        }
-                    }
-                }
-                if (showcase.steamAppId.isEmpty()) {
-                    for (const CatalogEntry& offer : offers) {
-                        if (!offer.steamAppId.isEmpty()) {
-                            showcase.steamAppId = offer.steamAppId;
-                            break;
-                        }
-                    }
                 }
 
                 out.entryIdToOfferGroup.insert(showcase.id, key);

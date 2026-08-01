@@ -30,7 +30,7 @@ Sign when `WINDOWS_SIGN_CERT_PFX_BASE64` + password are set.
 - Fresh install default: `%LOCALAPPDATA%\Programs\Arachnel`
 - Existing **Inno** install: same folder (`UsePreviousAppDir`)
 - Existing **legacy** installs (`Program Files\Arachnel` from older builds): detected via uninstall registry, offered as default; old uninstall key removed after install; leftover `uninstall.exe` deleted from `{app}`
-- In-app updates: Inno `/SILENT /DIR=<app dir>` (progress window, no folder picker). Does not touch AppData game libraries/settings
+- In-app updates: Inno `/SILENT /DIR=<install dir>` - progress window, no folder picker, then auto-launches Arachnel. Does not touch AppData game libraries/settings
 
 ## UI experiment only
 

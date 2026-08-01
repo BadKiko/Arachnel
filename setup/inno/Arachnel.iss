@@ -76,7 +76,9 @@ Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"; 
 Name: "{userdesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Check: WantDesktopIcon
 
 [Run]
-Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent unchecked
+; In-app update uses /SILENT - relaunch Arachnel when unpack finishes.
+; Interactive wizard has its own Launch button (skipifnotsilent).
+Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifnotsilent
 
 [Code]
 const
@@ -593,10 +595,10 @@ end;
 
 function ShouldSkipPage(PageID: Integer): Boolean;
 begin
-  { Silent/in-app update: skip the Botva custom pages, go straight to install. }
+  { Silent uses stock Inno pages (no Botva). Inno already drives /SILENT itself. }
   if WizardSilent then
   begin
-    Result := True;
+    Result := False;
     Exit;
   end;
   Result := (PageID = wpSelectDir) or (PageID = wpSelectTasks) or
@@ -605,20 +607,23 @@ end;
 
 function NextButtonClick(CurPageID: Integer): Boolean;
 begin
+  if WizardSilent then
+  begin
+    Result := True;
+    Exit;
+  end;
   Log('NextButtonClick page=' + IntToStr(CurPageID) +
       ' lang=' + IntToStr(LangPage.ID) +
       ' ready=' + IntToStr(Ord(ReadyToInstall)) +
-      ' phase=' + IntToStr(UiPhase) +
-      ' silent=' + IntToStr(Ord(WizardSilent)));
+      ' phase=' + IntToStr(UiPhase));
   if CurPageID = wpFinished then
   begin
     Result := True;
     Exit;
   end;
-  if WizardSilent or ReadyToInstall then
+  if ReadyToInstall then
   begin
-    if not WizardSilent then
-      WizardForm.DirEdit.Text := Trim(PathEdit.Text);
+    WizardForm.DirEdit.Text := Trim(PathEdit.Text);
     Log('Starting install to ' + WizardForm.DirEdit.Text);
     Result := True;
     Exit;
@@ -628,7 +633,8 @@ end;
 
 function BackButtonClick(CurPageID: Integer): Boolean;
 begin
-  Result := False;
+  { Botva owns Back; stock Back must not move pages underneath the skin. }
+  Result := WizardSilent;
 end;
 
 procedure FinishedCancelClick(Sender: TObject);
@@ -639,6 +645,8 @@ end;
 
 procedure CurPageChanged(CurPageID: Integer);
 begin
+  if WizardSilent or not SkinReady then
+    Exit;
   HideStd;
   if CurPageID = wpInstalling then
   begin
@@ -685,7 +693,6 @@ procedure InitializeWizard;
 var
   WideFilled, WideOutline, PillFilled, PillOutline, PillGhost, BrowseImg: AnsiString;
 begin
-  ExtractSkin;
   LangIsRu := True;
   UiPhase := 0;
   ReadyToInstall := False;
@@ -695,7 +702,17 @@ begin
   ArmTimerId := 0;
   WantDesk := False;
   WantStart := True;
+  SkinReady := False;
+  LangPage := nil;
 
+  { In-app update (/SILENT): skip Botva skin. Stock Inno progress window + [Run] relaunch. }
+  if WizardSilent then
+  begin
+    Log('Silent update: stock progress UI');
+    Exit;
+  end;
+
+  ExtractSkin;
   ArmTimerProc := WrapTimerCallback(@OnArmTimer, 4);
 
   WizardForm.ClientWidth := WndW;

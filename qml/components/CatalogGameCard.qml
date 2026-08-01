@@ -27,6 +27,8 @@ Item {
 
     signal openDetails(string entryId)
 
+    clip: true
+
     readonly property var shotUrls: {
         if (!root.peekArmed && !root.peekWaiting)
             return []

@@ -30,7 +30,7 @@ The app shows whatever was baked in at CMake configure time (`ARACHNEL_VERSION`)
 ## Upgrade / player data safety
 
 - **Game libraries and settings** live under AppData / user library folders, not inside the launcher install dir. Updating the launcher only replaces files under `{app}` (binaries, Qt, etc.).
-- **In-app update** downloads `Arachnel-*-Setup.exe` and runs Inno with `/SILENT /DIR=<current install>` (shows progress, no folder prompts; closes the running app first). Legacy Program Files installs also pass `/ALLUSERS` so elevation can work.
+- **In-app update** downloads `Arachnel-*-Setup.exe` and runs Inno with `/SILENT /DIR=<install dir>` (unpack progress, no folder prompts, then auto-launches Arachnel). Legacy Program Files installs also pass `/ALLUSERS` so elevation can work.
 - **Legacy installs** (`C:\Program Files\Arachnel`, uninstall key `...\Uninstall\Arachnel`): the Inno installer detects that `InstallLocation`, offers it as the default folder, writes the new Inno uninstall entry, removes the old uninstall registry key, and deletes leftover `uninstall.exe` / setup stubs under `{app}`. It does **not** run the old uninstaller.
 - New default for fresh installs: `%LOCALAPPDATA%\Programs\Arachnel` (`PrivilegesRequired=lowest`, elevates only when the target needs it).
 
