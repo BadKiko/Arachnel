@@ -89,7 +89,8 @@ QJsonObject entryToJson(const CatalogEntry& e)
     QJsonObject o;
     o.insert(QStringLiteral("id"), e.id);
     o.insert(QStringLiteral("title"), e.title);
-    o.insert(QStringLiteral("coverUrl"), e.coverUrl);
+    o.insert(QStringLiteral("coverUrl"),
+             !e.remoteCoverUrl.isEmpty() ? e.remoteCoverUrl : e.coverUrl);
     o.insert(QStringLiteral("sourceId"), e.sourceId);
     o.insert(QStringLiteral("articleUrl"), e.sourcePageUrl);
     o.insert(QStringLiteral("version"), e.version);
@@ -132,7 +133,15 @@ CatalogEntry entryFromJson(const QJsonObject& o, const QString& defaultSourceId)
     CatalogEntry e;
     e.id = o.value(QStringLiteral("id")).toString();
     e.title = o.value(QStringLiteral("title")).toString();
-    e.coverUrl = o.value(QStringLiteral("coverUrl")).toString();
+    {
+        const QString feedCover = o.value(QStringLiteral("coverUrl")).toString().trimmed();
+        if (feedCover.startsWith(QStringLiteral("http://"), Qt::CaseInsensitive)
+            || feedCover.startsWith(QStringLiteral("https://"), Qt::CaseInsensitive)) {
+            e.remoteCoverUrl = feedCover;
+        } else {
+            e.coverUrl = feedCover;
+        }
+    }
     e.sourceId = o.value(QStringLiteral("sourceId")).toString();
     if (e.sourceId.isEmpty())
         e.sourceId = defaultSourceId;

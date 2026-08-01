@@ -138,10 +138,16 @@ const CatalogComponent* CoreController::findCatalogAddon(const CatalogEntry& ent
 void CoreController::applyCachedMetadata(CatalogEntry& entry) const
 {
     const GameMetadata metadata = m_metadataService->metadataForTitle(entry.title);
-    // Covers resolve lazily in CatalogCoverCoordinator. Skipping localUrlFor here
-    // avoids tens of thousands of filesystem stats during catalog commit.
-    if (!entry.coverUrl.startsWith(QStringLiteral("file:")))
+    // Display covers resolve lazily in CatalogCoverCoordinator (file: only).
+    // Migrate plugin/feed HTTPS covers into remoteCoverUrl before clearing display.
+    if (!entry.coverUrl.startsWith(QStringLiteral("file:"))) {
+        if (entry.remoteCoverUrl.isEmpty()
+            && (entry.coverUrl.startsWith(QStringLiteral("http://"), Qt::CaseInsensitive)
+                || entry.coverUrl.startsWith(QStringLiteral("https://"), Qt::CaseInsensitive))) {
+            entry.remoteCoverUrl = entry.coverUrl;
+        }
         entry.coverUrl.clear();
+    }
     applyMetadataToEntry(entry, metadata);
 }
 
@@ -169,7 +175,7 @@ void CoreController::applyMetadataToEntry(CatalogEntry& entry,
             entry.genres += QStringLiteral("DRM");
         }
     }
-    if (!metadata.steamAppId.isEmpty())
+    if (!metadata.steamAppId.isEmpty() && entry.steamAppId.isEmpty())
         entry.steamAppId = metadata.steamAppId;
     if (!metadata.sizeLabel.isEmpty())
         entry.sizeLabel = metadata.sizeLabel;
@@ -281,6 +287,29 @@ void CoreController::requestCatalogHeroCover(const QString& entryId)
 QString CoreController::catalogHeroCoverUrl(const QString& entryId) const
 {
     return m_catalogCovers ? m_catalogCovers->heroCoverUrl(entryId) : QString{};
+}
+
+QVariantMap CoreController::coverFetchMetrics() const
+{
+    QVariantMap out;
+    if (m_coverCache)
+        out.insert(QStringLiteral("cache"), m_coverCache->statsMap());
+    if (m_catalogCovers)
+        out.insert(QStringLiteral("coordinator"), m_catalogCovers->statsMap());
+    return out;
+}
+
+QString CoreController::coverMetricsText() const
+{
+    return m_catalogCovers ? m_catalogCovers->metricsText() : QStringLiteral("cover n/a");
+}
+
+void CoreController::resetCoverFetchMetrics()
+{
+    if (m_coverCache)
+        m_coverCache->resetStats();
+    if (m_catalogCovers)
+        m_catalogCovers->resetStats();
 }
 
 void CoreController::enrichCatalogEntry(const QString& entryId)
@@ -432,7 +461,7 @@ void CoreController::warmActiveCatalogCovers()
     if (!m_catalogCovers || !m_catalogController)
         return;
     m_catalogCovers->warmActiveCatalogCovers(m_catalogController->activeCatalogSourceIds(),
-                                             m_catalogFilters->activeQuery());
+                                             m_catalogFilters->activeQuery(), 12);
 }
 
 void CoreController::rebuildCatalogIdIndex()

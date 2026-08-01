@@ -78,10 +78,12 @@ jobs:
         shell: pwsh
         run: |
           choco install ninja -y --no-progress --allow-downgrade
+          if ($LASTEXITCODE -ne 0) { throw "choco install ninja failed" }
+          choco install innosetup -y --no-progress --allow-downgrade
+          if ($LASTEXITCODE -ne 0) { throw "choco install innosetup failed" }
           choco install pkgconfiglite -y --no-progress --allow-downgrade
           if ($LASTEXITCODE -ne 0) {
             Write-Host "::warning::pkgconfiglite install failed (non-fatal on Windows)"
-            exit 0
           }
 
       - name: Add MinGW to PATH
@@ -110,7 +112,18 @@ jobs:
           ARACHNEL_QT_KIT: ${{ env.ARACHNEL_QT_KIT }}
           CMAKE_PREFIX_PATH: ${{ env.QT_ROOT_DIR }}
           FETCHCONTENT_BASE_DIR: ${{ github.workspace }}/.cache/fetchcontent
+          # pack-inno.ps1 signs final Inno Setup when these are set
+          WINDOWS_SIGN_CERT_PFX_BASE64: ${{ secrets.WINDOWS_SIGN_CERT_PFX_BASE64 }}
+          WINDOWS_SIGN_CERT_PASSWORD: ${{ secrets.WINDOWS_SIGN_CERT_PASSWORD }}
+          WINDOWS_SIGN_TIMESTAMP_URL: ${{ secrets.WINDOWS_SIGN_TIMESTAMP_URL }}
         run: |
+          $v = "${{ inputs.version }}".Trim()
+          if (-not $v -or $v -eq "dev" -or $v -eq "0.0.0-dev") {
+            throw "Refuse to release version '$v'. Pass a real semver (e.g. 0.1.39)."
+          }
+          if ($v.StartsWith("v") -or $v.StartsWith("V")) {
+            throw "version input must not include a leading v (got '$v')"
+          }
           git lfs install
           .\run.ps1 --installer
 
@@ -119,15 +132,16 @@ jobs:
         shell: pwsh
         run: sccache --show-stats
 
-      - name: Sign installer (optional)
-        shell: pwsh
-        run: .\scripts\ci\sign-windows.ps1 -Files Arachnel-Setup.exe
-
       - name: Rename artifact
         shell: pwsh
         run: |
           $v = "${{ inputs.version }}"
-          Move-Item -LiteralPath Arachnel-Setup.exe -Destination "Arachnel-$v-Setup.exe"
+          if (-not (Test-Path -LiteralPath Arachnel-Setup.exe)) {
+            throw "Arachnel-Setup.exe missing after --installer"
+          }
+          Move-Item -LiteralPath Arachnel-Setup.exe -Destination "Arachnel-$v-Setup.exe" -Force
+          # Guard against accidental "dev" stamped into the binary via file name only;
+          # the app version comes from ARACHNEL_VERSION during cmake package.
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

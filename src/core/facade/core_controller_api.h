@@ -98,5 +98,8 @@
     Q_INVOKABLE void invalidateCatalogCover(const QString&);
     Q_INVOKABLE void requestCatalogHeroCover(const QString& entryId);
     Q_INVOKABLE QString catalogHeroCoverUrl(const QString& entryId) const;
+    Q_INVOKABLE QVariantMap coverFetchMetrics() const;
+    Q_INVOKABLE QString coverMetricsText() const;
+    Q_INVOKABLE void resetCoverFetchMetrics();
     Q_INVOKABLE void enrichCatalogEntry(const QString&);
     void prepareShutdown();

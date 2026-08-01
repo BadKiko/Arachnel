@@ -59,7 +59,8 @@ public:
     void processCatalogLoadQueue();
     void loadCatalogSourceNow(const QString& sourceId);
     void commitCatalogLoad(const QString& sourceId, QVector<CatalogEntry> entries);
-    void storeCatalogForSource(const QString& sourceId, QVector<CatalogEntry> entries);
+    void storeCatalogForSource(const QString& sourceId, QVector<CatalogEntry> entries,
+                               bool prepareEntries = true);
     void rebuildMergedCatalog();
     void refreshCatalog(const QString& sourceId);
     void refreshSelectedCatalogs();
@@ -98,6 +99,10 @@ private:
     bool isSourceCacheFresh(const QString& sourceId) const;
     void refreshStaleSources();
     void revalidateCatalogSource(const QString& sourceId, const QByteArray& etag = {});
+    void loadCatalogSourceNowFromNetwork(const QString& sourceId);
+    void applyMergedCatalogResult(quint64 generation, QVector<CatalogEntry> merged,
+                                  QHash<QString, QVector<CatalogEntry>> installOffers,
+                                  QHash<QString, QString> entryIdToOfferGroup);
     static QString offerGroupKey(const CatalogEntry& entry);
     static QString normalizeTitleKey(const QString& title);
     static int showcaseScore(const CatalogEntry& entry);
@@ -126,6 +131,7 @@ private:
     QString m_activeQuery;
     QString m_catalogStatus;
     bool m_catalogHttpLoadActive = false;
+    quint64 m_mergeGeneration = 0;
     QList<QObject*> m_inFlightPluginCatalogWatchers;
 };
 

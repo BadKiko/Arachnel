@@ -62,8 +62,32 @@ CatalogController::CatalogController(CatalogModel* catalog, SourcePluginModel* s
                 }
                 if (!payloadSha.isEmpty())
                     m_sourcePayloadSha.insert(sourceId, payloadSha);
-                storeCatalogForSource(sourceId, std::move(entries));
-                processCatalogLoadQueue();
+
+                // Prepare on a worker (same as disk/plugin paths) — avoid 55k prepare on UI.
+                auto* watcher = new QFutureWatcher<QVector<CatalogEntry>>(this);
+                m_inFlightPluginCatalogWatchers.append(watcher);
+                const auto prepare = m_hooks.prepareEntry;
+                connect(watcher, &QFutureWatcher<QVector<CatalogEntry>>::finished, this,
+                        [this, watcher, sourceId]() {
+                            m_inFlightPluginCatalogWatchers.removeAll(watcher);
+                            QVector<CatalogEntry> prepared = watcher->result();
+                            watcher->deleteLater();
+                            storeCatalogForSource(sourceId, std::move(prepared),
+                                                  /*prepareEntries=*/false);
+                            processCatalogLoadQueue();
+                        });
+                watcher->setFuture(QtConcurrent::run(
+                    [entries = std::move(entries), sourceId, prepare]() mutable {
+                        for (CatalogEntry& entry : entries) {
+                            entry.sourceId = sourceId;
+                            entry.id = repairCatalogEntryId(entry.id);
+                            if (prepare)
+                                prepare(entry);
+                            else
+                                prepareCatalogEntry(entry);
+                        }
+                        return entries;
+                    }));
             });
     connect(m_loader, &CatalogFeedLoader::feedNotModified, this,
             [this](const QString& sourceId) {
@@ -158,7 +182,7 @@ QString CatalogController::offerGroupKey(const CatalogEntry& entry)
 int CatalogController::showcaseScore(const CatalogEntry& entry)
 {
     int score = 0;
-    if (!entry.coverUrl.isEmpty())
+    if (!entry.coverUrl.isEmpty() || !entry.remoteCoverUrl.isEmpty())
         score += 100;
     if (!entry.steamAppId.isEmpty())
         score += 50;
@@ -207,15 +231,18 @@ void CatalogController::normalizeCatalogSourceIds(QVector<CatalogEntry>& entries
     }
 }
 
-void CatalogController::storeCatalogForSource(const QString& sourceId, QVector<CatalogEntry> entries)
+void CatalogController::storeCatalogForSource(const QString& sourceId, QVector<CatalogEntry> entries,
+                                              bool prepareEntries)
 {
     normalizeCatalogSourceIds(entries, sourceId);
-    for (CatalogEntry& entry : entries) {
-        // prepareEntry (metadata) calls prepareCatalogEntry; otherwise prepare once here.
-        if (m_hooks.prepareEntry)
-            m_hooks.prepareEntry(entry);
-        else
-            prepareCatalogEntry(entry);
+    if (prepareEntries) {
+        for (CatalogEntry& entry : entries) {
+            // prepareEntry (metadata) calls prepareCatalogEntry; otherwise prepare once here.
+            if (m_hooks.prepareEntry)
+                m_hooks.prepareEntry(entry);
+            else
+                prepareCatalogEntry(entry);
+        }
     }
     m_catalogBySource.insert(sourceId, std::move(entries));
     m_sourceLoadedAtMs.insert(sourceId, QDateTime::currentMSecsSinceEpoch());
@@ -235,10 +262,10 @@ void CatalogController::commitCatalogLoad(const QString& sourceId, QVector<Catal
 
 void CatalogController::rebuildMergedCatalog()
 {
-    m_installOffers.clear();
-    m_entryIdToOfferGroup.clear();
-
     if (m_activeSourceIds.isEmpty()) {
+        ++m_mergeGeneration;
+        m_installOffers.clear();
+        m_entryIdToOfferGroup.clear();
         if (m_mergedCacheLock) {
             QWriteLocker locker(m_mergedCacheLock);
             m_mergedCache->clear();
@@ -255,83 +282,131 @@ void CatalogController::rebuildMergedCatalog()
         return;
     }
 
-    QHash<QString, QVector<CatalogEntry>> groups;
-    QStringList groupOrder;
-
+    // Kick loads for missing sources on the UI thread; heavy merge runs off-thread.
     for (const QString& sourceId : m_activeSourceIds) {
         const SourcePluginInfo* source = m_sources->pluginById(sourceId);
         if (!source || !source->enabled)
             continue;
-        if (m_catalogBySource.contains(sourceId)) {
-            const QVector<CatalogEntry>& entries = m_catalogBySource.value(sourceId);
-            for (const CatalogEntry& entry : entries) {
-                CatalogEntry copy = entry;
-                copy.id = repairCatalogEntryId(copy.id);
-                const QString key = offerGroupKey(copy);
-                if (!groups.contains(key))
-                    groupOrder.append(key);
-                groups[key].append(std::move(copy));
-            }
-        } else if (!m_loadingSourceIds.contains(sourceId)) {
+        if (!m_catalogBySource.contains(sourceId) && !m_loadingSourceIds.contains(sourceId))
             requestCatalogLoad(sourceId);
-        }
     }
 
-    QVector<CatalogEntry> merged;
-    merged.reserve(groups.size());
-    for (const QString& key : groupOrder) {
-        QVector<CatalogEntry> offers = groups.value(key);
-        if (offers.isEmpty())
-            continue;
+    struct MergeResult {
+        QVector<CatalogEntry> merged;
+        QHash<QString, QVector<CatalogEntry>> installOffers;
+        QHash<QString, QString> entryIdToOfferGroup;
+    };
 
-        // Prefer distinct sources; keep first occurrence per sourceId.
-        QVector<CatalogEntry> uniqueOffers;
-        QSet<QString> seenSources;
-        for (const CatalogEntry& offer : offers) {
-            if (seenSources.contains(offer.sourceId))
-                continue;
-            seenSources.insert(offer.sourceId);
-            uniqueOffers.append(offer);
-        }
-        offers = std::move(uniqueOffers);
-        m_installOffers.insert(key, offers);
+    const quint64 generation = ++m_mergeGeneration;
+    const QStringList activeSourceIds = m_activeSourceIds;
+    QHash<QString, QVector<CatalogEntry>> bySource;
+    bySource.reserve(activeSourceIds.size());
+    for (const QString& sourceId : activeSourceIds) {
+        if (m_catalogBySource.contains(sourceId))
+            bySource.insert(sourceId, m_catalogBySource.value(sourceId));
+    }
 
-        int bestIdx = 0;
-        int bestScore = showcaseScore(offers.first());
-        for (int i = 1; i < offers.size(); ++i) {
-            const int score = showcaseScore(offers.at(i));
-            if (score > bestScore) {
-                bestScore = score;
-                bestIdx = i;
-            }
-        }
-        CatalogEntry showcase = offers.at(bestIdx);
-        // Prefer a stable steam-* id when available for discovery matching.
-        for (const CatalogEntry& offer : offers) {
-            if (offer.id.startsWith(QStringLiteral("steam-")) && !offer.steamAppId.isEmpty()) {
-                showcase.id = offer.id;
-                showcase.steamAppId = offer.steamAppId;
-                if (!offer.coverUrl.isEmpty())
-                    showcase.coverUrl = offer.coverUrl;
-                break;
-            }
-        }
-        // If showcase itself has no steamAppId, steal it from any offer that does.
-        if (showcase.steamAppId.isEmpty()) {
-            for (const CatalogEntry& offer : offers) {
-                if (!offer.steamAppId.isEmpty()) {
-                    showcase.steamAppId = offer.steamAppId;
-                    break;
+    // Snapshot which sources look enabled (name only needed on UI later).
+    QSet<QString> enabledIds;
+    for (const QString& sourceId : activeSourceIds) {
+        const SourcePluginInfo* source = m_sources->pluginById(sourceId);
+        if (source && source->enabled)
+            enabledIds.insert(sourceId);
+    }
+
+    auto* watcher = new QFutureWatcher<MergeResult>(this);
+    connect(watcher, &QFutureWatcher<MergeResult>::finished, this,
+            [this, watcher, generation]() {
+                MergeResult result = watcher->result();
+                watcher->deleteLater();
+                applyMergedCatalogResult(generation, std::move(result.merged),
+                                         std::move(result.installOffers),
+                                         std::move(result.entryIdToOfferGroup));
+            });
+    watcher->setFuture(QtConcurrent::run(
+        [bySource = std::move(bySource), activeSourceIds, enabledIds]() -> MergeResult {
+            MergeResult out;
+            QHash<QString, QVector<CatalogEntry>> groups;
+            QStringList groupOrder;
+
+            for (const QString& sourceId : activeSourceIds) {
+                if (!enabledIds.contains(sourceId))
+                    continue;
+                const auto it = bySource.constFind(sourceId);
+                if (it == bySource.cend())
+                    continue;
+                for (const CatalogEntry& entry : it.value()) {
+                    CatalogEntry copy = entry;
+                    copy.id = repairCatalogEntryId(copy.id);
+                    const QString key = offerGroupKey(copy);
+                    if (!groups.contains(key))
+                        groupOrder.append(key);
+                    groups[key].append(std::move(copy));
                 }
             }
-        }
 
-        m_entryIdToOfferGroup.insert(showcase.id, key);
-        for (const CatalogEntry& offer : offers)
-            m_entryIdToOfferGroup.insert(offer.id, key);
+            out.merged.reserve(groups.size());
+            for (const QString& key : groupOrder) {
+                QVector<CatalogEntry> offers = groups.value(key);
+                if (offers.isEmpty())
+                    continue;
 
-        merged.append(std::move(showcase));
-    }
+                QVector<CatalogEntry> uniqueOffers;
+                QSet<QString> seenSources;
+                for (const CatalogEntry& offer : offers) {
+                    if (seenSources.contains(offer.sourceId))
+                        continue;
+                    seenSources.insert(offer.sourceId);
+                    uniqueOffers.append(offer);
+                }
+                offers = std::move(uniqueOffers);
+                out.installOffers.insert(key, offers);
+
+                int bestIdx = 0;
+                int bestScore = showcaseScore(offers.first());
+                for (int i = 1; i < offers.size(); ++i) {
+                    const int score = showcaseScore(offers.at(i));
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestIdx = i;
+                    }
+                }
+                CatalogEntry showcase = offers.at(bestIdx);
+                // Keep showcase.id from the winning offer. Never swap in another offer's id —
+                // that produced Frankenstein cards (Car Mechanic art + Undying Flower entryId).
+                // Only fill missing fields from peers with the same normalized title.
+                const QString showcaseTitleKey = normalizeTitleKey(showcase.title);
+                for (const CatalogEntry& offer : offers) {
+                    if (normalizeTitleKey(offer.title) != showcaseTitleKey)
+                        continue;
+                    if (showcase.remoteCoverUrl.isEmpty() && !offer.remoteCoverUrl.isEmpty())
+                        showcase.remoteCoverUrl = offer.remoteCoverUrl;
+                    if (showcase.coverUrl.isEmpty() && !offer.coverUrl.isEmpty())
+                        showcase.coverUrl = offer.coverUrl;
+                    if (showcase.steamAppId.isEmpty() && !offer.steamAppId.isEmpty())
+                        showcase.steamAppId = offer.steamAppId;
+                }
+
+                out.entryIdToOfferGroup.insert(showcase.id, key);
+                for (const CatalogEntry& offer : offers)
+                    out.entryIdToOfferGroup.insert(offer.id, key);
+
+                out.merged.append(std::move(showcase));
+            }
+            return out;
+        }));
+}
+
+void CatalogController::applyMergedCatalogResult(
+    quint64 generation, QVector<CatalogEntry> merged,
+    QHash<QString, QVector<CatalogEntry>> installOffers,
+    QHash<QString, QString> entryIdToOfferGroup)
+{
+    if (generation != m_mergeGeneration)
+        return;
+
+    m_installOffers = std::move(installOffers);
+    m_entryIdToOfferGroup = std::move(entryIdToOfferGroup);
 
     {
         if (m_mergedCacheLock) {
@@ -460,56 +535,86 @@ void CatalogController::processCatalogLoadQueue()
 
 void CatalogController::loadCatalogSourceNow(const QString& sourceId)
 {
-    // Fast path: parse disk cache on a worker, show UI, then revalidate in background.
-    QByteArray diskPayload;
-    QByteArray diskEtag;
-    if (!m_catalogBySource.contains(sourceId)
-        && CatalogDiskCache::loadPayload(sourceId, &diskPayload, &diskEtag)
-        && !diskPayload.isEmpty()) {
-        auto* watcher = new QFutureWatcher<QVector<CatalogEntry>>(this);
+    struct DiskCatalogLoad {
+        QVector<CatalogEntry> entries;
+        QByteArray payloadSha;
+        QByteArray etag;
+        bool hadDiskPayload = false;
+    };
+
+    // Fast path: read+parse disk cache on a worker (not the UI thread), then revalidate.
+    if (!m_catalogBySource.contains(sourceId)) {
+        auto* watcher = new QFutureWatcher<DiskCatalogLoad>(this);
         m_inFlightPluginCatalogWatchers.append(watcher);
-        connect(watcher, &QFutureWatcher<QVector<CatalogEntry>>::finished, this,
-                [this, watcher, sourceId, diskEtag]() {
+        const auto prepare = m_hooks.prepareEntry;
+        connect(watcher, &QFutureWatcher<DiskCatalogLoad>::finished, this,
+                [this, watcher, sourceId]() {
                     m_inFlightPluginCatalogWatchers.removeAll(watcher);
-                    QVector<CatalogEntry> entries = watcher->result();
+                    const DiskCatalogLoad loaded = watcher->result();
                     watcher->deleteLater();
-                    if (!entries.isEmpty()) {
-                        QByteArray sha;
-                        QByteArray payload;
-                        if (CatalogDiskCache::loadPayload(sourceId, &payload))
-                            sha = CatalogDiskCache::payloadSha256(payload);
-                        if (!sha.isEmpty())
-                            m_sourcePayloadSha.insert(sourceId, sha);
-                        storeCatalogForSource(sourceId, std::move(entries));
+                    if (!loaded.hadDiskPayload) {
+                        // Fall through to plugin/network on the UI thread.
+                        loadCatalogSourceNowFromNetwork(sourceId);
+                        return;
                     }
-                    // Always refresh from plugin/network; unchanged payload is a no-op.
-                    revalidateCatalogSource(sourceId, diskEtag);
+                    if (!loaded.entries.isEmpty()) {
+                        if (!loaded.payloadSha.isEmpty())
+                            m_sourcePayloadSha.insert(sourceId, loaded.payloadSha);
+                        storeCatalogForSource(sourceId, loaded.entries, /*prepareEntries=*/false);
+                    }
+                    revalidateCatalogSource(sourceId, loaded.etag);
                 });
-        const QByteArray payloadCopy = diskPayload;
-        watcher->setFuture(QtConcurrent::run([payloadCopy, sourceId]() {
-            QVector<CatalogEntry> entries = parseCatalogFeed(payloadCopy, sourceId);
+        watcher->setFuture(QtConcurrent::run([sourceId, prepare]() -> DiskCatalogLoad {
+            DiskCatalogLoad out;
+            QByteArray payload;
+            QByteArray etag;
+            if (!CatalogDiskCache::loadPayload(sourceId, &payload, &etag) || payload.isEmpty())
+                return out;
+            out.hadDiskPayload = true;
+            out.etag = etag;
+            out.payloadSha = CatalogDiskCache::payloadSha256(payload);
+            QVector<CatalogEntry> entries = parseCatalogFeed(payload, sourceId);
             if (entries.isEmpty())
-                entries = parsePluginCatalogJson(payloadCopy, sourceId);
-            return entries;
+                entries = parsePluginCatalogJson(payload, sourceId);
+            for (CatalogEntry& entry : entries) {
+                entry.sourceId = sourceId;
+                entry.id = repairCatalogEntryId(entry.id);
+                if (prepare)
+                    prepare(entry);
+                else
+                    prepareCatalogEntry(entry);
+            }
+            out.entries = std::move(entries);
+            return out;
         }));
         return;
     }
 
+    loadCatalogSourceNowFromNetwork(sourceId);
+}
+
+void CatalogController::loadCatalogSourceNowFromNetwork(const QString& sourceId)
+{
+    struct PluginCatalogLoad {
+        QVector<CatalogEntry> entries;
+        QByteArray payloadSha;
+    };
+
     if (m_pluginHost) {
         if (m_pluginHost->hasPlugin(sourceId)) {
-            auto* watcher = new QFutureWatcher<QVector<CatalogEntry>>(this);
+            auto* watcher = new QFutureWatcher<PluginCatalogLoad>(this);
             m_inFlightPluginCatalogWatchers.append(watcher);
-            connect(watcher, &QFutureWatcher<QVector<CatalogEntry>>::finished, this,
+            const auto prepare = m_hooks.prepareEntry;
+            connect(watcher, &QFutureWatcher<PluginCatalogLoad>::finished, this,
                     [this, watcher, sourceId]() {
                         m_inFlightPluginCatalogWatchers.removeAll(watcher);
-                        QVector<CatalogEntry> entries = watcher->result();
+                        PluginCatalogLoad loaded = watcher->result();
                         watcher->deleteLater();
-                        if (!entries.isEmpty()) {
-                            QByteArray payload;
-                            if (CatalogDiskCache::loadPayload(sourceId, &payload) && !payload.isEmpty())
-                                m_sourcePayloadSha.insert(sourceId,
-                                                          CatalogDiskCache::payloadSha256(payload));
-                            storeCatalogForSource(sourceId, std::move(entries));
+                        if (!loaded.entries.isEmpty()) {
+                            if (!loaded.payloadSha.isEmpty())
+                                m_sourcePayloadSha.insert(sourceId, loaded.payloadSha);
+                            storeCatalogForSource(sourceId, std::move(loaded.entries),
+                                                  /*prepareEntries=*/false);
                             return;
                         }
                         const QString url = m_sources->catalogUrlFor(sourceId);
@@ -530,8 +635,21 @@ void CatalogController::loadCatalogSourceNow(const QString& sourceId)
                         rebuildMergedCatalog();
                     });
             PluginHost* host = m_pluginHost;
-            watcher->setFuture(QtConcurrent::run([host, sourceId]() {
-                return host->loadPluginCatalog(sourceId);
+            watcher->setFuture(QtConcurrent::run([host, sourceId, prepare]() {
+                PluginCatalogLoad out;
+                out.entries = host->loadPluginCatalog(sourceId);
+                QByteArray payload;
+                if (CatalogDiskCache::loadPayload(sourceId, &payload) && !payload.isEmpty())
+                    out.payloadSha = CatalogDiskCache::payloadSha256(payload);
+                for (CatalogEntry& entry : out.entries) {
+                    entry.sourceId = sourceId;
+                    entry.id = repairCatalogEntryId(entry.id);
+                    if (prepare)
+                        prepare(entry);
+                    else
+                        prepareCatalogEntry(entry);
+                }
+                return out;
             }));
             return;
         }
@@ -554,29 +672,46 @@ void CatalogController::loadCatalogSourceNow(const QString& sourceId)
 
 void CatalogController::revalidateCatalogSource(const QString& sourceId, const QByteArray& etag)
 {
+    struct PluginCatalogLoad {
+        QVector<CatalogEntry> entries;
+        QByteArray payloadSha;
+    };
+
     if (m_pluginHost && m_pluginHost->hasPlugin(sourceId)) {
-        auto* watcher = new QFutureWatcher<QVector<CatalogEntry>>(this);
+        auto* watcher = new QFutureWatcher<PluginCatalogLoad>(this);
         m_inFlightPluginCatalogWatchers.append(watcher);
-        connect(watcher, &QFutureWatcher<QVector<CatalogEntry>>::finished, this,
+        const auto prepare = m_hooks.prepareEntry;
+        connect(watcher, &QFutureWatcher<PluginCatalogLoad>::finished, this,
                 [this, watcher, sourceId]() {
                     m_inFlightPluginCatalogWatchers.removeAll(watcher);
-                    QVector<CatalogEntry> entries = watcher->result();
+                    PluginCatalogLoad loaded = watcher->result();
                     watcher->deleteLater();
-                    if (entries.isEmpty())
+                    if (loaded.entries.isEmpty())
                         return;
-                    QByteArray payload;
-                    QByteArray sha;
-                    if (CatalogDiskCache::loadPayload(sourceId, &payload) && !payload.isEmpty())
-                        sha = CatalogDiskCache::payloadSha256(payload);
-                    if (!sha.isEmpty() && m_sourcePayloadSha.value(sourceId) == sha)
+                    if (!loaded.payloadSha.isEmpty()
+                        && m_sourcePayloadSha.value(sourceId) == loaded.payloadSha)
                         return;
-                    if (!sha.isEmpty())
-                        m_sourcePayloadSha.insert(sourceId, sha);
-                    storeCatalogForSource(sourceId, std::move(entries));
+                    if (!loaded.payloadSha.isEmpty())
+                        m_sourcePayloadSha.insert(sourceId, loaded.payloadSha);
+                    storeCatalogForSource(sourceId, std::move(loaded.entries),
+                                          /*prepareEntries=*/false);
                 });
         PluginHost* host = m_pluginHost;
-        watcher->setFuture(QtConcurrent::run([host, sourceId]() {
-            return host->loadPluginCatalog(sourceId);
+        watcher->setFuture(QtConcurrent::run([host, sourceId, prepare]() {
+            PluginCatalogLoad out;
+            out.entries = host->loadPluginCatalog(sourceId);
+            QByteArray payload;
+            if (CatalogDiskCache::loadPayload(sourceId, &payload) && !payload.isEmpty())
+                out.payloadSha = CatalogDiskCache::payloadSha256(payload);
+            for (CatalogEntry& entry : out.entries) {
+                entry.sourceId = sourceId;
+                entry.id = repairCatalogEntryId(entry.id);
+                if (prepare)
+                    prepare(entry);
+                else
+                    prepareCatalogEntry(entry);
+            }
+            return out;
         }));
         return;
     }

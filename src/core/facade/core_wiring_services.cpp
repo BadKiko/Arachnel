@@ -38,6 +38,16 @@ void CoreController::initializeServices()
             return nullptr;
         },
         [this]() -> QVector<CatalogEntry>& { return m_catalogCache; }, this);
+
+    if (qEnvironmentVariableIntValue("ARACHNEL_COVER_METRICS") > 0) {
+        auto* logTimer = new QTimer(this);
+        logTimer->setInterval(2000);
+        QObject::connect(logTimer, &QTimer::timeout, this, [this]() {
+            if (m_catalogCovers)
+                qInfo().noquote() << "[cover-metrics]" << m_catalogCovers->metricsText();
+        });
+        logTimer->start();
+    }
     connect(m_catalogCovers, &CatalogCoverCoordinator::coverApplied, this,
             [this](const QString& entryId, const QString& coverUrl) {
                 // Discovery shelves use CatalogShelfModel, not CatalogModel - refresh them too.
@@ -71,7 +81,13 @@ void CoreController::initializeServices()
         for (const QString& sourceId : sourceIds)
             m_installKindProbe->queueCatalog(sourceId, entries, query);
     };
-    catalogHooks.rebuildIdIndex = [this]() { rebuildCatalogIdIndex(); };
+    catalogHooks.rebuildIdIndex = [this]() {
+        rebuildCatalogIdIndex();
+        if (m_catalogCovers) {
+            m_catalogCovers->rebuildRemoteCoverIndex();
+            m_catalogCovers->clearFailedCoverHints();
+        }
+    };
     catalogHooks.applyFilter = [this](const QString& query) { applyCatalogFilter(query); };
     catalogHooks.rebuildGenres = [this]() { rebuildAvailableCatalogGenres(); };
     catalogHooks.warmCovers = [this]() {
@@ -181,26 +197,30 @@ void CoreController::initializeServices()
     libraryHooks.removeJobs = [this](const QString& entryId) { removeJobsForEntry(entryId); };
     libraryHooks.notice = [this](const QString& message) { showNotice(message); };
     libraryHooks.deleteGameFilesAsync = [this](const QStringList& paths, const QString& title) {
-        auto* watcher = new QFutureWatcher<QString>(this);
-        QObject::connect(watcher, &QFutureWatcher<QString>::finished, this,
-                         [this, watcher, title]() {
-                             const QString error = watcher->result();
-                             watcher->deleteLater();
-                             if (!error.isEmpty()) {
-                                 showNotice(error);
-                                 return;
-                             }
-                             showNotice(QCoreApplication::translate("Core", "Game removed: %1")
-                                            .arg(title));
-                         });
-        watcher->setFuture(QtConcurrent::run([paths]() -> QString {
-            QString error;
-            for (const QString& path : paths) {
-                if (!removePathRecursive(path, &error))
-                    return error;
-            }
-            return {};
-        }));
+        // Jobs were already cancelled on the UI thread; give torrent/HTTP a beat to drop
+        // file handles before the wipe worker hits the same folders (Windows locks).
+        QTimer::singleShot(400, this, [this, paths, title]() {
+            auto* watcher = new QFutureWatcher<QString>(this);
+            QObject::connect(watcher, &QFutureWatcher<QString>::finished, this,
+                             [this, watcher, title]() {
+                                 const QString error = watcher->result();
+                                 watcher->deleteLater();
+                                 if (!error.isEmpty()) {
+                                     showNotice(error);
+                                     return;
+                                 }
+                                 showNotice(QCoreApplication::translate("Core", "Game removed: %1")
+                                                .arg(title));
+                             });
+            watcher->setFuture(QtConcurrent::run([paths]() -> QString {
+                QString error;
+                for (const QString& path : paths) {
+                    if (!removePathRecursive(path, &error))
+                        return error;
+                }
+                return {};
+            }));
+        });
     };
     libraryHooks.findCatalogEntry = [this](const QString& entryId) {
         return findCatalogEntry(entryId);
@@ -301,7 +321,8 @@ void CoreController::initializeServices()
             });
     connect(m_appUpdater, &AppUpdater::installerLaunchRequested, this, [this]() {
         prepareShutdown();
-        QTimer::singleShot(300, qApp, []() { QCoreApplication::quit(); });
+        // Give the Setup process time to create its window before we exit.
+        QTimer::singleShot(1200, qApp, []() { QCoreApplication::quit(); });
     });
     connect(m_protonManager, &ProtonManager::downloadStateChanged, this,
             &CoreController::protonDownloadChanged);

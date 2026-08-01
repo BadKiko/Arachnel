@@ -290,7 +290,7 @@ Item {
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
                     mdState.type: MD.Enum.IBtFilled
-                    icon.name: MD.Token.icon.arrow_back
+                    icon.name: MD.Token.icon.chevron_left
                     onClicked: screenshotPreview.currentIndex--
                 }
 

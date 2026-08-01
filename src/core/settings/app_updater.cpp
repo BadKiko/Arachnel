@@ -1,6 +1,8 @@
 #include "app_updater.h"
 
 #include <QCoreApplication>
+#include <QDateTime>
+#include <QDebug>
 #include <QDesktopServices>
 #include <QDir>
 #include <QFile>
@@ -12,6 +14,7 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QProcess>
+#include <QSettings>
 #include <QStandardPaths>
 #include <QUrl>
 #include <QVersionNumber>
@@ -75,6 +78,17 @@ QString AppUpdater::normalizeVersion(const QString& version)
 
 int AppUpdater::compareVersions(const QString& left, const QString& right)
 {
+    return compareVersionParts(left, right, /*letteredNewer=*/true);
+}
+
+int AppUpdater::compareVersionsPreferPlain(const QString& left, const QString& right)
+{
+    // Stable channel: plain 0.1.38 is preferred over lettered 0.1.38a (leave pre builds).
+    return compareVersionParts(left, right, /*letteredNewer=*/false);
+}
+
+int AppUpdater::compareVersionParts(const QString& left, const QString& right, bool letteredNewer)
+{
     const QString a = normalizeVersion(left);
     const QString b = normalizeVersion(right);
     if (a == QLatin1String("dev") && b != QLatin1String("dev"))
@@ -105,12 +119,13 @@ int AppUpdater::compareVersions(const QString& left, const QString& right)
         const int numberCmp = QVersionNumber::compare(leftVersion.first, rightVersion.first);
         if (numberCmp != 0)
             return numberCmp;
-        // Same numeric core: final release (no suffix) wins over lettered/pre builds
-        // (0.1.34 > 0.1.34b > 0.1.34a).
+        // Same numeric core (0.1.38 / 0.1.38a / 0.1.38b).
+        // Pre channel: plain < a < b (lettered hotfixes after stable).
+        // Stable channel: plain > lettered (move off pre builds onto plain tag).
         if (leftVersion.second.isEmpty() && !rightVersion.second.isEmpty())
-            return 1;
+            return letteredNewer ? -1 : 1;
         if (!leftVersion.second.isEmpty() && rightVersion.second.isEmpty())
-            return -1;
+            return letteredNewer ? 1 : -1;
         return QString::compare(leftVersion.second, rightVersion.second, Qt::CaseInsensitive);
     }
 
@@ -226,9 +241,10 @@ void AppUpdater::handleReleasesListPayload(const QByteArray& payload, bool notif
         return;
     }
 
-    // Pick the newest installable release (stable or pre), not just API order.
+    // Newest publish wins. Needed because lettered tags (0.1.38a) can ship after the
+    // plain stable (0.1.38), and semver-style "plain > letter" would hide pre-releases.
     QJsonObject best;
-    QString bestTag;
+    QDateTime bestPublished;
     for (const QJsonValue& value : releases) {
         if (!value.isObject())
             continue;
@@ -242,13 +258,29 @@ void AppUpdater::handleReleasesListPayload(const QByteArray& payload, bool notif
         const QString tag = normalizeVersion(release.value(QStringLiteral("tag_name")).toString());
         if (tag.isEmpty())
             continue;
-        if (bestTag.isEmpty() || compareVersions(bestTag, tag) < 0) {
+
+        QDateTime published =
+            QDateTime::fromString(release.value(QStringLiteral("published_at")).toString(),
+                                  Qt::ISODate);
+        if (!published.isValid()) {
+            published = QDateTime::fromString(
+                release.value(QStringLiteral("created_at")).toString(), Qt::ISODate);
+        }
+        if (!published.isValid())
+            published = QDateTime::fromSecsSinceEpoch(0);
+
+        const bool take = best.isEmpty() || published > bestPublished
+                          || (published == bestPublished
+                              && compareVersions(best.value(QStringLiteral("tag_name")).toString(),
+                                                 tag)
+                                     < 0);
+        if (take) {
             best = release;
-            bestTag = tag;
+            bestPublished = published;
         }
     }
 
-    if (bestTag.isEmpty()) {
+    if (best.isEmpty()) {
         const QString error =
             QCoreApplication::translate("Core", "Could not parse GitHub release information");
         setLastError(error);
@@ -286,7 +318,9 @@ void AppUpdater::handleReleaseObject(const QJsonObject& release, bool notifyIfUp
     m_latestVersion = tag;
     m_downloadUrl = assetDownloadUrl(release);
 
-    const bool available = compareVersions(currentVersion(), tag) < 0 && !m_downloadUrl.isEmpty();
+    const int cmp = m_includePreReleases ? compareVersions(currentVersion(), tag)
+                                         : compareVersionsPreferPlain(currentVersion(), tag);
+    const bool available = cmp < 0 && !m_downloadUrl.isEmpty();
     m_updateAvailable = available;
 
     if (available) {
@@ -297,7 +331,7 @@ void AppUpdater::handleReleaseObject(const QJsonObject& release, bool notifyIfUp
         } else {
             setStatusText(QCoreApplication::translate("Core", "Arachnel %1 is available").arg(tag));
         }
-    } else if (compareVersions(currentVersion(), tag) >= 0) {
+    } else if (cmp >= 0) {
         setStatusText(QCoreApplication::translate("Core", "Arachnel is up to date (%1)")
                           .arg(currentVersion()));
         Q_UNUSED(notifyIfUpToDate);
@@ -426,7 +460,7 @@ void AppUpdater::startDownload(const QUrl& url)
 
         m_downloadProgress = 100;
         emit downloadProgressChanged();
-        setStatusText(QCoreApplication::translate("Core", "Starting updater…"));
+        setStatusText(QCoreApplication::translate("Core", "Updating Arachnel…"));
 
         QString launchError;
         if (!launchInstaller(targetPath, &launchError)) {
@@ -441,17 +475,130 @@ void AppUpdater::startDownload(const QUrl& url)
     });
 }
 
+namespace {
+
+#if defined(Q_OS_WIN)
+QString readUninstallInstallLocation(const QString& uninstallKey)
+{
+    const QString valueName = QStringLiteral("InstallLocation");
+    for (const QString& root : {
+             QStringLiteral("HKEY_LOCAL_MACHINE\\%1").arg(uninstallKey),
+             QStringLiteral("HKEY_CURRENT_USER\\%1").arg(uninstallKey),
+         }) {
+        QSettings reg(root, QSettings::NativeFormat);
+        const QString loc = QDir::toNativeSeparators(reg.value(valueName).toString().trimmed());
+        if (!loc.isEmpty())
+            return QDir::cleanPath(loc);
+    }
+    return {};
+}
+
+QString resolveUpdateInstallDir(const QString& runningAppDir)
+{
+    const QString running = QDir::toNativeSeparators(QDir::cleanPath(runningAppDir));
+    const QString runningLower = running.toLower();
+    const bool unpackaged =
+        runningLower.contains(QLatin1String("build-win"))
+        || runningLower.contains(QLatin1String("\\build\\"))
+        || runningLower.contains(QLatin1String("/build/"))
+        || runningLower.contains(QLatin1String("relwithdebinfo"))
+        || runningLower.contains(QLatin1String("\\debug"))
+        || runningLower.contains(QLatin1String("/debug"));
+
+    if (!unpackaged && QFileInfo::exists(running + QLatin1String("/arachnel_app.exe")))
+        return running;
+
+    // Inno AppId uninstall key (per-user lowest privileges).
+    const QString innoDir = readUninstallInstallLocation(QStringLiteral(
+        "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\"
+        "{A8E3C1B2-4D5F-6A70-8B9C-0D1E2F3A4B5C}_is1"));
+    if (!innoDir.isEmpty()
+        && QFileInfo::exists(innoDir + QLatin1String("/arachnel_app.exe")))
+        return innoDir;
+
+    // Legacy Qt SFX uninstall key.
+    const QString legacyDir = readUninstallInstallLocation(
+        QStringLiteral("Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Arachnel"));
+    if (!legacyDir.isEmpty()
+        && QFileInfo::exists(legacyDir + QLatin1String("/arachnel_app.exe")))
+        return legacyDir;
+
+    // Default per-user install location used by Inno ({localappdata}\Programs\Arachnel).
+    const QString localAppData = QString::fromLocal8Bit(qgetenv("LOCALAPPDATA"));
+    const QString perUser = QDir::toNativeSeparators(QDir::cleanPath(
+        localAppData.isEmpty()
+            ? (QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation)
+               + QStringLiteral("/Programs/Arachnel"))
+            : (localAppData + QStringLiteral("/Programs/Arachnel"))));
+    if (QFileInfo::exists(perUser + QLatin1String("/arachnel_app.exe")))
+        return perUser;
+
+    if (!innoDir.isEmpty())
+        return innoDir;
+    if (!legacyDir.isEmpty())
+        return legacyDir;
+    if (!unpackaged)
+        return running;
+    return perUser;
+}
+
+bool pathNeedsAllUsers(const QString& dir)
+{
+    const QString native = QDir::toNativeSeparators(dir);
+    const auto underEnvRoot = [&native](const char* envName) {
+        const QByteArray raw = qgetenv(envName);
+        if (raw.isEmpty())
+            return false;
+        const QString root = QDir::toNativeSeparators(QString::fromLocal8Bit(raw));
+        return !root.isEmpty() && native.startsWith(root, Qt::CaseInsensitive);
+    };
+    return underEnvRoot("ProgramFiles") || underEnvRoot("ProgramFiles(x86)")
+           || underEnvRoot("ProgramW6432");
+}
+#endif
+
+} // namespace
+
 bool AppUpdater::launchInstaller(const QString& installerPath, QString* errorOut)
 {
 #if defined(Q_OS_WIN)
-    if (!QProcess::startDetached(installerPath, {QStringLiteral("--update")},
-                                 QFileInfo(installerPath).absolutePath())) {
+    const QString runningDir =
+        QDir::toNativeSeparators(QCoreApplication::applicationDirPath());
+    const QString targetDir = resolveUpdateInstallDir(runningDir);
+    if (targetDir.isEmpty()) {
+        if (errorOut) {
+            *errorOut = QCoreApplication::translate(
+                "Core", "Could not find an Arachnel install folder to update");
+        }
+        return false;
+    }
+
+    // In-app update: /SILENT shows unpack progress (no folder wizard), then [Run]
+    // relaunches Arachnel (skipifnotsilent). Never /VERYSILENT - that hides progress.
+    QStringList args = {
+        QStringLiteral("/SILENT"),
+        QStringLiteral("/NORESTART"),
+        QStringLiteral("/CLOSEAPPLICATIONS"),
+        QStringLiteral("/FORCECLOSEAPPLICATIONS"),
+        QStringLiteral("/DIR=%1").arg(targetDir),
+    };
+    if (pathNeedsAllUsers(targetDir))
+        args.append(QStringLiteral("/ALLUSERS"));
+    // Older GitHub Setup builds (Qt SFX) only honor --update. Inno ignores unknown args.
+    args.append(QStringLiteral("--update"));
+
+    qint64 pid = 0;
+    if (!QProcess::startDetached(installerPath, args, QFileInfo(installerPath).absolutePath(),
+                                 &pid)
+        || pid == 0) {
         if (errorOut) {
             *errorOut = QCoreApplication::translate("Core",
                                                     "Could not start the Arachnel installer");
         }
         return false;
     }
+    qInfo().noquote() << "[app-updater] started installer pid" << pid << installerPath << args
+                      << "target=" << targetDir;
     return true;
 #else
     Q_UNUSED(installerPath);

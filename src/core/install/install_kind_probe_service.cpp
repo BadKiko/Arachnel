@@ -75,9 +75,13 @@ void InstallKindProbeService::queueCatalog(const QString& sourceId,
         return;
 
     const QString needle = priorityQuery.trimmed().toLower();
+    constexpr int kMaxNewTasks = 256;
+    int enqueued = 0;
 
     // Priority pass: matching search titles first (no full-cache sort).
-    auto enqueueEntry = [this, &sourceId](const CatalogEntry& entry, bool front) {
+    auto enqueueEntry = [this, &sourceId, &enqueued](const CatalogEntry& entry, bool front) {
+        if (enqueued >= kMaxNewTasks)
+            return;
         if (entry.sourceId != sourceId)
             return;
         const QString magnet = pickMagnet(entry.magnetUris);
@@ -93,16 +97,22 @@ void InstallKindProbeService::queueCatalog(const QString& sourceId,
         task.magnetUri = magnet;
         task.hashKey = hashKey;
         enqueueTask(task, front);
+        ++enqueued;
     };
 
     if (!needle.isEmpty()) {
         for (const CatalogEntry& entry : entries) {
+            if (enqueued >= kMaxNewTasks)
+                break;
             if (entry.titleLower.contains(needle))
                 enqueueEntry(entry, true);
         }
     }
-    for (const CatalogEntry& entry : entries)
+    for (const CatalogEntry& entry : entries) {
+        if (enqueued >= kMaxNewTasks)
+            break;
         enqueueEntry(entry, false);
+    }
 
     pumpQueue();
 }

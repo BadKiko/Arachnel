@@ -39,7 +39,10 @@ struct CatalogComponent {
 struct CatalogEntry {
     QString id;
     QString title;
+    /** Display path only (`file:` after CatalogCoverCoordinator). */
     QString coverUrl;
+    /** Catalog/relay HTTPS cover hint. Tried before Steam metadata/CDN. */
+    QString remoteCoverUrl;
     QString sourceId;
     QString sourcePageUrl;
     QString version;

@@ -53,6 +53,17 @@ public:
     bool removeStorageLibrary(const QString& libraryId, bool force);
     /** Scan storage roots for on-disk installs missing from library.json. Returns newly added count. */
     int scanInstalledGames();
+    /** Filesystem-only discovery (safe off the UI thread). */
+    struct ScanCandidate {
+        QString folderName;
+        QString installPath;
+        QString executable;
+        QString libraryId;
+        QString sourceId;
+    };
+    QVector<ScanCandidate> discoverInstallCandidates() const;
+    /** Apply discover results on the UI thread (catalog hooks / store). */
+    int commitScanCandidates(const QVector<ScanCandidate>& candidates);
 
 private:
     void sync() const;

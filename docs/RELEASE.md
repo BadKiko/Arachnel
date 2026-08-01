@@ -6,16 +6,33 @@ Inputs:
 
 | Field | Meaning |
 |-------|---------|
-| `version` | Semver without `v`, e.g. `0.1.0` → tag `v0.1.0` |
+| `version` | Semver without `v`, e.g. `0.1.39` → tag `v0.1.39`. Not `dev`. |
 | `prerelease` | Pre-release flag on GitHub |
 
 Artifacts:
 
-- `Arachnel-<version>-Setup.exe` — Windows installer (setup + embedded app)
+- `Arachnel-<version>-Setup.exe` — Windows installer (Inno Setup + app from dist-win)
 - `Arachnel-<version>-x86_64.AppImage` — Linux portable build
 - `checksums.sha256` — SHA-256 for both files
 
 The release notes body lists commits since the previous `v*` tag.
+
+## Versioning
+
+| Context | Version source |
+|---------|----------------|
+| Local `.\run.ps1` (dev run) | `dev` unless `ARACHNEL_VERSION` is set |
+| `.\run.ps1 --package` / `--installer` | `ARACHNEL_VERSION`, else nearest `v*` git tag (`git describe`). Refuses bare `dev` for `--installer` |
+| CI Release | workflow input `version` (validated, not `dev`) |
+
+The app shows whatever was baked in at CMake configure time (`ARACHNEL_VERSION`).
+
+## Upgrade / player data safety
+
+- **Game libraries and settings** live under AppData / user library folders, not inside the launcher install dir. Updating the launcher only replaces files under `{app}` (binaries, Qt, etc.).
+- **In-app update** downloads `Arachnel-*-Setup.exe` and runs Inno with `/SILENT /DIR=<install dir>` (unpack progress, no folder prompts, then auto-launches Arachnel). Legacy Program Files installs also pass `/ALLUSERS` so elevation can work.
+- **Legacy installs** (`C:\Program Files\Arachnel`, uninstall key `...\Uninstall\Arachnel`): the Inno installer detects that `InstallLocation`, offers it as the default folder, writes the new Inno uninstall entry, removes the old uninstall registry key, and deletes leftover `uninstall.exe` / setup stubs under `{app}`. It does **not** run the old uninstaller.
+- New default for fresh installs: `%LOCALAPPDATA%\Programs\Arachnel` (`PrivilegesRequired=lowest`, elevates only when the target needs it).
 
 ## CI speed (caching)
 
@@ -30,9 +47,9 @@ Release builds already cache:
 
 First release after a toolchain/dep bump is still cold; later runs reuse hits. Check the **sccache stats** step in the Actions log.
 
-## Windows code signing (optional)
+## Windows code signing (required for public releases)
 
-Without secrets the EXE is **unsigned** (SmartScreen may warn).
+Without secrets the EXE is **unsigned**. Windows Defender ML and SmartScreen often flag unsigned installers from unknown publishers.
 
 Add repository secrets:
 
@@ -50,10 +67,24 @@ Export PFX (PowerShell):
 
 You need an **Authenticode** certificate (OV/EV from a public CA). Self-signed certs do not remove SmartScreen for unknown publishers.
 
+When secrets are set, `.\run.ps1 --installer` (via `setup\inno\pack-inno.ps1`) signs the final Inno `Arachnel-Setup.exe`.
+
+### Defender false positives (`Sabsik.TE.A!ml`)
+
+`Trojan:Win32/Sabsik.TE.A!ml` is a **Microsoft ML heuristic** (`!ml`), not a known malware signature. It often fires on unsigned installers from unknown publishers.
+
+Shipping Windows builds use **Inno Setup**. That is usually quieter than a hand-rolled dropper, but **OV/EV signing is still required** for sane public releases. Without a cert, Defender/SmartScreen can still warn on new hashes.
+
+If a signed build is still quarantined:
+
+1. Prefer distributing via **GitHub Releases HTTPS**, not Telegram Desktop downloads (Telegram paths get hit harder)
+2. Submit a false positive at [Microsoft WDSI file submission](https://www.microsoft.com/wdsi/filesubmission) → Software developer → false positive, attach the Setup hash
+
 ## Local dry run
 
 ```powershell
-# Windows
+# Windows - set a real version (or have a v* git tag)
+$env:ARACHNEL_VERSION = "0.1.39"
 $env:BUILD_TYPE = "Release"
 $env:ARACHNEL_FAST_BUILD = "0"
 .\run.ps1 --installer
@@ -61,7 +92,7 @@ $env:ARACHNEL_FAST_BUILD = "0"
 
 ```bash
 # Linux AppImage
-export ARACHNEL_VERSION=0.1.0-dev
+export ARACHNEL_VERSION=0.1.39
 export CMAKE_PREFIX_PATH=/path/to/Qt/6.8/gcc_64
 bash scripts/ci/package-appimage.sh
 ```
