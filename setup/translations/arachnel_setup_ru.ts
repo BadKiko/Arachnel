@@ -106,22 +106,12 @@
 <context>
     <name>CatalogDiscoveryHeader</name>
     <message>
-        <location filename="../../qml/components/CatalogDiscoveryHeader.qml" line="43"/>
+        <location filename="../../qml/components/CatalogDiscoveryHeader.qml" line="37"/>
         <source>All games</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/components/CatalogDiscoveryHeader.qml" line="86"/>
-        <source>Jump back in</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../qml/components/CatalogDiscoveryHeader.qml" line="102"/>
-        <source>Continue</source>
-        <translation type="unfinished">Далее</translation>
-    </message>
-    <message>
-        <location filename="../../qml/components/CatalogDiscoveryHeader.qml" line="28"/>
+        <location filename="../../qml/components/CatalogDiscoveryHeader.qml" line="22"/>
         <source>Surprise me</source>
         <translation type="unfinished"></translation>
     </message>
@@ -879,7 +869,7 @@
     <message>
         <location filename="../../src/core/jobs/job_display.cpp" line="35"/>
         <location filename="../../src/core/jobs/job_status.cpp" line="37"/>
-        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="309"/>
+        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="316"/>
         <source>Install failed</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1016,7 +1006,7 @@
     </message>
     <message>
         <location filename="../../src/core/plugins/plugin_catalog_service.cpp" line="440"/>
-        <location filename="../../src/core/settings/app_updater.cpp" line="361"/>
+        <location filename="../../src/core/settings/app_updater.cpp" line="408"/>
         <source>Download failed: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1036,101 +1026,106 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/settings/app_updater.cpp" line="47"/>
+        <location filename="../../src/core/settings/app_updater.cpp" line="49"/>
         <source>Not checked yet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/settings/app_updater.cpp" line="127"/>
+        <location filename="../../src/core/settings/app_updater.cpp" line="159"/>
         <source>Checking for Arachnel updates…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/settings/app_updater.cpp" line="154"/>
+        <location filename="../../src/core/settings/app_updater.cpp" line="186"/>
         <source>Update check failed: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/settings/app_updater.cpp" line="190"/>
-        <location filename="../../src/core/settings/app_updater.cpp" line="210"/>
-        <location filename="../../src/core/settings/app_updater.cpp" line="232"/>
+        <location filename="../../src/core/settings/app_updater.cpp" line="222"/>
+        <location filename="../../src/core/settings/app_updater.cpp" line="253"/>
+        <location filename="../../src/core/settings/app_updater.cpp" line="279"/>
         <source>Could not parse GitHub release information</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/settings/app_updater.cpp" line="248"/>
+        <location filename="../../src/core/settings/app_updater.cpp" line="295"/>
         <source>Arachnel %1 (pre-release) is available</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/settings/app_updater.cpp" line="251"/>
-        <location filename="../../src/core/facade/core_wiring_services.cpp" line="298"/>
+        <location filename="../../src/core/settings/app_updater.cpp" line="298"/>
+        <location filename="../../src/core/facade/core_wiring_services.cpp" line="303"/>
         <source>Arachnel %1 is available</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/settings/app_updater.cpp" line="254"/>
+        <location filename="../../src/core/settings/app_updater.cpp" line="301"/>
         <source>Arachnel is up to date (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/settings/app_updater.cpp" line="258"/>
+        <location filename="../../src/core/settings/app_updater.cpp" line="305"/>
         <source>Update found, but no installer package is available for this platform</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/settings/app_updater.cpp" line="277"/>
+        <location filename="../../src/core/settings/app_updater.cpp" line="324"/>
         <source>Open the release page to download the latest package for your platform</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/settings/app_updater.cpp" line="292"/>
+        <location filename="../../src/core/settings/app_updater.cpp" line="339"/>
         <source>Downloading Arachnel update…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/settings/app_updater.cpp" line="308"/>
-        <location filename="../../src/core/settings/app_updater.cpp" line="373"/>
+        <location filename="../../src/core/settings/app_updater.cpp" line="355"/>
+        <location filename="../../src/core/settings/app_updater.cpp" line="420"/>
         <source>Could not save the downloaded installer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/settings/app_updater.cpp" line="382"/>
+        <location filename="../../src/core/settings/app_updater.cpp" line="429"/>
         <source>Starting updater…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/settings/app_updater.cpp" line="403"/>
+        <location filename="../../src/core/settings/app_updater.cpp" line="450"/>
         <source>Could not start the Arachnel installer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/settings/app_updater.cpp" line="412"/>
+        <location filename="../../src/core/settings/app_updater.cpp" line="459"/>
         <source>Automatic installer launch is only available on Windows</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/facade/core_wiring_services.cpp" line="269"/>
+        <location filename="../../src/core/facade/core_wiring_services.cpp" line="274"/>
         <source>Plugin install failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/facade/core_wiring_services.cpp" line="283"/>
+        <location filename="../../src/core/facade/core_wiring_services.cpp" line="288"/>
         <source>Plugin installed: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/facade/core_wiring_services.cpp" line="324"/>
+        <location filename="../../src/core/facade/core_wiring_services.cpp" line="329"/>
         <source>Proton-GE installed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/facade/core_wiring_services.cpp" line="326"/>
+        <location filename="../../src/core/facade/core_wiring_services.cpp" line="331"/>
         <source>Proton-GE download failed: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/facade/core_wiring_services.cpp" line="458"/>
+        <location filename="../../src/core/facade/core_wiring_services.cpp" line="446"/>
+        <source>Update finished, but version info is incomplete. Refresh the catalog and update again if the chip stays.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/core/facade/core_wiring_services.cpp" line="514"/>
         <source>Download complete - install manually</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1140,23 +1135,23 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/facade/core_wiring_services.cpp" line="399"/>
-        <location filename="../../src/core/facade/core_wiring_services.cpp" line="428"/>
+        <location filename="../../src/core/facade/core_wiring_services.cpp" line="404"/>
+        <location filename="../../src/core/facade/core_wiring_services.cpp" line="484"/>
         <source>Could not find game to install: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/facade/core_wiring_services.cpp" line="412"/>
+        <location filename="../../src/core/facade/core_wiring_services.cpp" line="468"/>
         <source>Game not found for add-on</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/facade/core_wiring_services.cpp" line="417"/>
+        <location filename="../../src/core/facade/core_wiring_services.cpp" line="473"/>
         <source>Add-on not found in catalog</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/facade/core_wiring_services.cpp" line="464"/>
+        <location filename="../../src/core/facade/core_wiring_services.cpp" line="520"/>
         <source>Download error: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1166,53 +1161,53 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/install/install_session_service.cpp" line="69"/>
+        <location filename="../../src/core/install/install_session_service.cpp" line="71"/>
         <source>Can&apos;t install %1 - install a plugin for this source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/install/install_session_service.cpp" line="99"/>
+        <location filename="../../src/core/install/install_session_service.cpp" line="101"/>
         <source>Install failed for %1: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/install/install_session_service.cpp" line="131"/>
+        <location filename="../../src/core/install/install_session_service.cpp" line="133"/>
         <source>Update installed: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/install/install_session_service.cpp" line="132"/>
+        <location filename="../../src/core/install/install_session_service.cpp" line="134"/>
         <source>Installed: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/install/install_session_service_install.cpp" line="71"/>
+        <location filename="../../src/core/install/install_session_service_install.cpp" line="97"/>
         <source>Add-on installation is already in progress</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/install/install_session_service_install.cpp" line="78"/>
+        <location filename="../../src/core/install/install_session_service_install.cpp" line="104"/>
         <source>Install the game first</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/install/install_session_service_install.cpp" line="84"/>
+        <location filename="../../src/core/install/install_session_service_install.cpp" line="110"/>
         <source>Plugin not found for %1 - install it in Settings → Plugins</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/install/install_session_service_install.cpp" line="135"/>
+        <location filename="../../src/core/install/install_session_service_install.cpp" line="161"/>
         <source>Add-on install failed for %1: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/install/install_session_service_install.cpp" line="150"/>
+        <location filename="../../src/core/install/install_session_service_install.cpp" line="176"/>
         <source>Add-on installed: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/runtime/proton_facade.cpp" line="33"/>
-        <location filename="../../src/core/facade/core_wiring_services.cpp" line="165"/>
+        <location filename="../../src/core/runtime/proton_facade.cpp" line="34"/>
+        <location filename="../../src/core/facade/core_wiring_services.cpp" line="166"/>
         <source>Preparing runtime environment…</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1225,7 +1220,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="351"/>
+        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="358"/>
         <location filename="../../src/core/jobs/job_facade_1.cpp" line="107"/>
         <source>Add-on not found</source>
         <translation type="unfinished"></translation>
@@ -1236,7 +1231,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/library/library_facade_1.cpp" line="304"/>
+        <location filename="../../src/core/library/library_facade_1.cpp" line="267"/>
         <source>%1 update(s) available</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1322,69 +1317,70 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/runtime/proton_facade.cpp" line="236"/>
+        <location filename="../../src/core/runtime/proton_facade.cpp" line="237"/>
         <source>Install Proton-GE in Settings → Launch before downloading games</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/runtime/proton_facade.cpp" line="239"/>
+        <location filename="../../src/core/runtime/proton_facade.cpp" line="240"/>
         <source>Install %1 (Proton-GE) in Settings → Launch before downloading games</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_controller.cpp" line="358"/>
+        <location filename="../../src/core/catalog/catalog_controller.cpp" line="361"/>
         <source>%1 · %2 games</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_controller.cpp" line="362"/>
+        <location filename="../../src/core/catalog/catalog_controller.cpp" line="365"/>
         <source>%1 sources · %2 games</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_controller.cpp" line="526"/>
+        <location filename="../../src/core/catalog/catalog_controller.cpp" line="559"/>
         <source>Catalog empty or unavailable: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_controller.cpp" line="550"/>
+        <location filename="../../src/core/catalog/catalog_controller.cpp" line="596"/>
         <source>No catalog URL configured for source %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="345"/>
+        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="352"/>
         <source>Game not found: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/runtime/runtime_dependency_service.cpp" line="117"/>
+        <location filename="../../src/core/runtime/runtime_dependency_service.cpp" line="119"/>
         <source>Steam App ID is missing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/runtime/runtime_dependency_service_install.cpp" line="79"/>
+        <location filename="../../src/core/runtime/runtime_dependency_service_install.cpp" line="123"/>
         <source>Downloading runtime: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/runtime/runtime_dependency_service_install.cpp" line="95"/>
-        <source>Installer not found for %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../src/core/runtime/runtime_dependency_service_install.cpp" line="102"/>
+        <location filename="../../src/core/runtime/runtime_dependency_service_install.cpp" line="242"/>
+        <location filename="../../src/core/runtime/runtime_dependency_service_install.cpp" line="295"/>
         <source>Installing runtime: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/runtime/runtime_dependency_service_install.cpp" line="114"/>
+        <location filename="../../src/core/runtime/runtime_dependency_service_install.cpp" line="248"/>
         <source>Proton is required to install runtime dependencies</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/runtime/runtime_dependency_service_install.cpp" line="122"/>
+        <location filename="../../src/core/runtime/runtime_dependency_service_install.cpp" line="256"/>
         <location filename="../../src/core/launch/launch_facade.cpp" line="128"/>
         <source>Proton not found. Install Proton-GE in Settings → Launch.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/core/runtime/runtime_dependency_service_install.cpp" line="311"/>
+        <source>Runtime install did not register in the Proton prefix: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1420,69 +1416,69 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="30"/>
+        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="31"/>
         <source>Unknown source: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="34"/>
+        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="35"/>
         <source>Source &quot;%1&quot; is disabled in settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="114"/>
+        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="115"/>
         <source>Could not resolve application data folder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="137"/>
+        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="138"/>
         <source>Failed to delete application data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="143"/>
+        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="144"/>
         <source>Failed to reset application data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="155"/>
+        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="156"/>
         <source>Application data deleted. Arachnel will quit now.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="172"/>
+        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="173"/>
         <source>Enter a catalog URL</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="180"/>
+        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="181"/>
         <source>Invalid URL - http or https required</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="205"/>
-        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="225"/>
+        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="206"/>
+        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="226"/>
         <source>Catalog entry not found: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="235"/>
+        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="236"/>
         <source>No download link for %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="240"/>
+        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="241"/>
         <source>No Steam App ID for %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="250"/>
+        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="251"/>
         <source>Plugin not loaded: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="262"/>
-        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="317"/>
+        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="263"/>
+        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="324"/>
         <source>Could not start download for %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1493,23 +1489,23 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="357"/>
+        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="364"/>
         <source>Could not start add-on download</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="366"/>
+        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="373"/>
         <source>Entry not found: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="260"/>
-        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="381"/>
+        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="261"/>
+        <location filename="../../src/core/catalog/catalog_facade_2.cpp" line="388"/>
         <source>Could not start update for %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/facade/core_wiring_services.cpp" line="234"/>
+        <location filename="../../src/core/facade/core_wiring_services.cpp" line="239"/>
         <source>No catalog sources enabled</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1588,22 +1584,22 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/plugins/plugin_facade.cpp" line="282"/>
+        <location filename="../../src/core/plugins/plugin_facade.cpp" line="288"/>
         <source>Plugins updated</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/plugins/plugin_facade.cpp" line="324"/>
+        <location filename="../../src/core/plugins/plugin_facade.cpp" line="330"/>
         <source>Install plugin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/plugins/plugin_facade.cpp" line="326"/>
+        <location filename="../../src/core/plugins/plugin_facade.cpp" line="332"/>
         <source>Plugin files (*.arach)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/plugins/plugin_facade.cpp" line="337"/>
+        <location filename="../../src/core/plugins/plugin_facade.cpp" line="343"/>
         <source>Could not open plugins folder</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1618,32 +1614,32 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/util/file_utils.cpp" line="34"/>
+        <location filename="../../src/core/util/file_utils.cpp" line="76"/>
         <source>Failed to delete file: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/util/file_utils.cpp" line="54"/>
+        <location filename="../../src/core/util/file_utils.cpp" line="77"/>
         <source>Failed to delete folder: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/util/file_utils.cpp" line="65"/>
+        <location filename="../../src/core/util/file_utils.cpp" line="87"/>
         <source>Source not found: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/util/file_utils.cpp" line="73"/>
+        <location filename="../../src/core/util/file_utils.cpp" line="95"/>
         <source>Failed to replace: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/util/file_utils.cpp" line="79"/>
+        <location filename="../../src/core/util/file_utils.cpp" line="101"/>
         <source>Failed to copy: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/util/file_utils.cpp" line="87"/>
+        <location filename="../../src/core/util/file_utils.cpp" line="109"/>
         <source>Failed to create folder: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1684,32 +1680,32 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/install/online_fix_overlay.cpp" line="305"/>
+        <location filename="../../src/core/install/online_fix_overlay.cpp" line="307"/>
         <source>Failed to enable Online Fix: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/install/online_fix_overlay.cpp" line="317"/>
+        <location filename="../../src/core/install/online_fix_overlay.cpp" line="319"/>
         <source>Failed to disable Online Fix: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/install/online_fix_overlay.cpp" line="445"/>
+        <location filename="../../src/core/install/online_fix_overlay.cpp" line="459"/>
         <source>Online Fix overlay not found in this install</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/install/online_fix_overlay.cpp" line="461"/>
+        <location filename="../../src/core/install/online_fix_overlay.cpp" line="475"/>
         <source>Not installed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/install/online_fix_overlay.cpp" line="463"/>
+        <location filename="../../src/core/install/online_fix_overlay.cpp" line="477"/>
         <source>Enabled</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/install/online_fix_overlay.cpp" line="465"/>
+        <location filename="../../src/core/install/online_fix_overlay.cpp" line="479"/>
         <source>Disabled</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1770,13 +1766,13 @@
     <message>
         <location filename="../../src/core/library/library_controller.cpp" line="258"/>
         <location filename="../../src/core/library/library_controller.cpp" line="279"/>
-        <location filename="../../src/core/facade/core_wiring_services.cpp" line="192"/>
+        <location filename="../../src/core/facade/core_wiring_services.cpp" line="196"/>
         <source>Game removed: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../src/core/library/library_controller.cpp" line="266"/>
-        <source>Removing “%1”…</source>
+        <source>Removing %1...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1887,7 +1883,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/components/DownloadJobGroupCard.qml" line="196"/>
+        <location filename="../../qml/components/DownloadJobGroupCard.qml" line="200"/>
         <source>Add-ons</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2001,83 +1997,83 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="182"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="187"/>
         <source>Source page</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="183"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="188"/>
         <source>Source website</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="194"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="199"/>
         <source>Steam</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="202"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="207"/>
         <source>Plugin source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="211"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="216"/>
         <source>Catalog URL</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="233"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="238"/>
         <source>Ready to download from Steam CDN. Online Fix can be included when needed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="242"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="247"/>
         <source>Install failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="256"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="261"/>
         <source>Stop</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="260"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="265"/>
         <source>Preparing…</source>
         <translation type="unfinished">Подготовка…</translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="261"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="266"/>
         <source>Play</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="303"/>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="423"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="308"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="428"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="320"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="325"/>
         <source>Update</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="372"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="377"/>
         <source>Description</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="378"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="383"/>
         <source>Description is not available yet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="395"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="400"/>
         <source>Remove game?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/app/GameDetailsContent.qml" line="417"/>
+        <location filename="../../qml/app/GameDetailsContent.qml" line="422"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2584,11 +2580,11 @@
     </message>
     <message>
         <location filename="../../qml/components/LibraryGameCard.qml" line="126"/>
-        <source>Updating</source>
+        <source>Update</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../qml/components/LibraryGameCard.qml" line="168"/>
+        <location filename="../../qml/components/LibraryGameCard.qml" line="172"/>
         <source>Running</source>
         <translation type="unfinished"></translation>
     </message>

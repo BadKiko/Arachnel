@@ -167,8 +167,9 @@ void CatalogFilterService::applyFilter(const QString& query)
 
         QVector<int> indices;
         int cacheSize = 0;
+        CatalogModel::SortMode mode = CatalogModel::SortNewest;
         {
-            // Filter/sort under a read lock - avoid deep-copying ~55k CatalogEntry.
+            // Filter under a short read lock; sort after releasing so merge writers aren't blocked.
             if (lock) {
                 QReadLocker locker(lock);
                 if (!cachePtr)
@@ -201,15 +202,7 @@ void CatalogFilterService::applyFilter(const QString& query)
                         indices.append(i);
                     }
                 }
-
-                if (generation != m_filterGeneration.load(std::memory_order_relaxed))
-                    return;
-
-                const auto mode = static_cast<CatalogModel::SortMode>(snap.sortMode);
-                std::stable_sort(indices.begin(), indices.end(),
-                                 [cachePtr, mode](int ai, int bi) {
-                                     return catalogEntryLess(cachePtr->at(ai), cachePtr->at(bi), mode);
-                                 });
+                mode = static_cast<CatalogModel::SortMode>(snap.sortMode);
             } else if (cachePtr) {
                 cacheSize = cachePtr->size();
                 indices.reserve(cacheSize);
@@ -235,14 +228,32 @@ void CatalogFilterService::applyFilter(const QString& query)
                         indices.append(i);
                     }
                 }
-                const auto mode = static_cast<CatalogModel::SortMode>(snap.sortMode);
-                std::stable_sort(indices.begin(), indices.end(),
-                                 [cachePtr, mode](int ai, int bi) {
-                                     return catalogEntryLess(cachePtr->at(ai), cachePtr->at(bi), mode);
-                                 });
+                mode = static_cast<CatalogModel::SortMode>(snap.sortMode);
             } else {
                 return;
             }
+        }
+
+        if (generation != m_filterGeneration.load(std::memory_order_relaxed))
+            return;
+
+        // Sort outside the read lock. Snapshot titles/sizes needed via cache indices —
+        // take a brief lock only while comparing, or copy the needed fields.
+        // Safe approach: re-acquire read lock for sort (still shorter than filter+sort together
+        // was when filter is heavy). Prefer locked sort with generation checks.
+        if (lock && cachePtr) {
+            QReadLocker locker(lock);
+            if (cacheSize != cachePtr->size())
+                return;
+            std::stable_sort(indices.begin(), indices.end(),
+                             [cachePtr, mode](int ai, int bi) {
+                                 return catalogEntryLess(cachePtr->at(ai), cachePtr->at(bi), mode);
+                             });
+        } else if (cachePtr) {
+            std::stable_sort(indices.begin(), indices.end(),
+                             [cachePtr, mode](int ai, int bi) {
+                                 return catalogEntryLess(cachePtr->at(ai), cachePtr->at(bi), mode);
+                             });
         }
 
         if (generation != m_filterGeneration.load(std::memory_order_relaxed))

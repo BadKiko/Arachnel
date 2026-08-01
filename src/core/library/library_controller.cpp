@@ -20,6 +20,7 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QFileInfo>
+#include <QSet>
 
 namespace arachnel::core {
 
@@ -263,7 +264,7 @@ void LibraryController::removeGame(const QString& gameId, bool deleteFiles)
     if (m_hooks.deleteGameFilesAsync) {
         if (m_hooks.notice) {
             m_hooks.notice(
-                QCoreApplication::translate("Core", "Removing “%1”…").arg(removed.title));
+                QCoreApplication::translate("Core", "Removing %1...").arg(removed.title));
         }
         m_hooks.deleteGameFilesAsync(pathsToDelete, removed.title);
         return;
@@ -468,18 +469,23 @@ bool installPathTaken(const LibraryStore* store, const QString& installPath)
 
 int LibraryController::scanInstalledGames()
 {
-    if (!m_settings || !m_store)
-        return 0;
+    return commitScanCandidates(discoverInstallCandidates());
+}
 
-    // Stamp known library installs so re-scan keeps only Arachnel-managed folders.
+QVector<LibraryController::ScanCandidate> LibraryController::discoverInstallCandidates() const
+{
+    QVector<ScanCandidate> out;
+    if (!m_settings || !m_store)
+        return out;
+
+    QSet<QString> knownIds;
+    QSet<QString> knownPaths;
     for (const LibraryGame& game : m_store->games()) {
-        if (game.installPath.isEmpty() || !QFileInfo::exists(game.installPath))
-            continue;
-        if (!hasInstallMarker(game.installPath))
-            writeInstallMarker(game.installPath, game.id, game.sourceId);
+        knownIds.insert(game.id);
+        if (!game.installPath.isEmpty())
+            knownPaths.insert(QDir::cleanPath(game.installPath).toLower());
     }
 
-    int added = 0;
     for (const StorageLibrary& library : m_settings->storageLibraries()->libraries()) {
         const QString rootPath = normalizedStoragePath(library.path);
         if (rootPath.isEmpty() || !QFileInfo::exists(rootPath))
@@ -494,7 +500,8 @@ int LibraryController::scanInstalledGames()
                 continue;
 
             const QString installPath = QDir::cleanPath(dirInfo.absoluteFilePath());
-            if (m_store->gameById(folderName) || installPathTaken(m_store, installPath))
+            if (knownIds.contains(folderName)
+                || knownPaths.contains(installPath.toLower()))
                 continue;
 
             // Only folders Arachnel itself installed (marker written on commit).
@@ -505,54 +512,81 @@ int LibraryController::scanInstalledGames()
             if (executable.isEmpty())
                 continue;
 
-            const QString sourceId = guessSourceIdFromFolder(folderName);
-            LibraryGame game;
-            game.id = folderName;
-            game.installPath = installPath;
-            game.executableOverride = executable;
-            game.libraryId = library.id;
-            game.sourceId = sourceId;
-            game.sourceName = pluginDisplayName(m_plugins, sourceId);
-            game.installKind = InstallKind::PortableArchive;
-
-            if (m_hooks.findCatalogEntry) {
-                if (const CatalogEntry* entry = m_hooks.findCatalogEntry(folderName)) {
-                    game.title = entry->title;
-                    // UI models accept file: covers only — never plant remote URLs.
-                    if (entry->coverUrl.startsWith(QStringLiteral("file:")))
-                        game.coverUrl = entry->coverUrl;
-                    game.sourceId = entry->sourceId.isEmpty() ? sourceId : entry->sourceId;
-                    game.sourceName = pluginDisplayName(m_plugins, game.sourceId);
-                    game.version = entry->version;
-                    game.description = entry->description;
-                    game.genres = entry->genres;
-                    game.sizeLabel = entry->sizeLabel;
-                    game.uploadDate = entry->uploadDate;
-                    game.magnetUri = entry->magnetUris.value(0);
-                    game.steamAppId = entry->steamAppId;
-                    game.installKind = entry->installKind;
-                    QVector<InstalledComponent> components;
-                    components.reserve(entry->addons.size());
-                    for (const auto& addon : entry->addons)
-                        components.append({addon.id, addon.title, addon.uploadDate, false});
-                    game.components = components;
-                }
-            }
-
-            if (game.title.isEmpty())
-                game.title = titleFromFolderName(folderName, game.sourceId);
-
-            if (m_hooks.detectInstallKind)
-                game.installKind = m_hooks.detectInstallKind(game.sourceId, installPath);
-
-            if (game.steamAppId.isEmpty() && m_metadata) {
-                const GameMetadata meta = m_metadata->metadataForTitle(game.title);
-                game.steamAppId = meta.steamAppId;
-            }
-
-            m_store->upsertGame(game);
-            ++added;
+            ScanCandidate c;
+            c.folderName = folderName;
+            c.installPath = installPath;
+            c.executable = executable;
+            c.libraryId = library.id;
+            c.sourceId = guessSourceIdFromFolder(folderName);
+            out.append(std::move(c));
         }
+    }
+    return out;
+}
+
+int LibraryController::commitScanCandidates(const QVector<ScanCandidate>& candidates)
+{
+    if (!m_settings || !m_store)
+        return 0;
+
+    // Stamp known library installs so re-scan keeps only Arachnel-managed folders.
+    for (const LibraryGame& game : m_store->games()) {
+        if (game.installPath.isEmpty() || !QFileInfo::exists(game.installPath))
+            continue;
+        if (!hasInstallMarker(game.installPath))
+            writeInstallMarker(game.installPath, game.id, game.sourceId);
+    }
+
+    int added = 0;
+    for (const ScanCandidate& c : candidates) {
+        if (m_store->gameById(c.folderName) || installPathTaken(m_store, c.installPath))
+            continue;
+
+        LibraryGame game;
+        game.id = c.folderName;
+        game.installPath = c.installPath;
+        game.executableOverride = c.executable;
+        game.libraryId = c.libraryId;
+        game.sourceId = c.sourceId;
+        game.sourceName = pluginDisplayName(m_plugins, c.sourceId);
+        game.installKind = InstallKind::PortableArchive;
+
+        if (m_hooks.findCatalogEntry) {
+            if (const CatalogEntry* entry = m_hooks.findCatalogEntry(c.folderName)) {
+                game.title = entry->title;
+                if (entry->coverUrl.startsWith(QStringLiteral("file:")))
+                    game.coverUrl = entry->coverUrl;
+                game.sourceId = entry->sourceId.isEmpty() ? c.sourceId : entry->sourceId;
+                game.sourceName = pluginDisplayName(m_plugins, game.sourceId);
+                game.version = entry->version;
+                game.description = entry->description;
+                game.genres = entry->genres;
+                game.sizeLabel = entry->sizeLabel;
+                game.uploadDate = entry->uploadDate;
+                game.magnetUri = entry->magnetUris.value(0);
+                game.steamAppId = entry->steamAppId;
+                game.installKind = entry->installKind;
+                QVector<InstalledComponent> components;
+                components.reserve(entry->addons.size());
+                for (const auto& addon : entry->addons)
+                    components.append({addon.id, addon.title, addon.uploadDate, false});
+                game.components = components;
+            }
+        }
+
+        if (game.title.isEmpty())
+            game.title = titleFromFolderName(c.folderName, game.sourceId);
+
+        if (m_hooks.detectInstallKind)
+            game.installKind = m_hooks.detectInstallKind(game.sourceId, c.installPath);
+
+        if (game.steamAppId.isEmpty() && m_metadata) {
+            const GameMetadata meta = m_metadata->metadataForTitle(game.title);
+            game.steamAppId = meta.steamAppId;
+        }
+
+        m_store->upsertGame(game);
+        ++added;
     }
 
     if (added > 0) {

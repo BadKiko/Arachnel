@@ -138,10 +138,16 @@ const CatalogComponent* CoreController::findCatalogAddon(const CatalogEntry& ent
 void CoreController::applyCachedMetadata(CatalogEntry& entry) const
 {
     const GameMetadata metadata = m_metadataService->metadataForTitle(entry.title);
-    // Covers resolve lazily in CatalogCoverCoordinator. Skipping localUrlFor here
-    // avoids tens of thousands of filesystem stats during catalog commit.
-    if (!entry.coverUrl.startsWith(QStringLiteral("file:")))
+    // Display covers resolve lazily in CatalogCoverCoordinator (file: only).
+    // Migrate plugin/feed HTTPS covers into remoteCoverUrl before clearing display.
+    if (!entry.coverUrl.startsWith(QStringLiteral("file:"))) {
+        if (entry.remoteCoverUrl.isEmpty()
+            && (entry.coverUrl.startsWith(QStringLiteral("http://"), Qt::CaseInsensitive)
+                || entry.coverUrl.startsWith(QStringLiteral("https://"), Qt::CaseInsensitive))) {
+            entry.remoteCoverUrl = entry.coverUrl;
+        }
         entry.coverUrl.clear();
+    }
     applyMetadataToEntry(entry, metadata);
 }
 
@@ -281,6 +287,29 @@ void CoreController::requestCatalogHeroCover(const QString& entryId)
 QString CoreController::catalogHeroCoverUrl(const QString& entryId) const
 {
     return m_catalogCovers ? m_catalogCovers->heroCoverUrl(entryId) : QString{};
+}
+
+QVariantMap CoreController::coverFetchMetrics() const
+{
+    QVariantMap out;
+    if (m_coverCache)
+        out.insert(QStringLiteral("cache"), m_coverCache->statsMap());
+    if (m_catalogCovers)
+        out.insert(QStringLiteral("coordinator"), m_catalogCovers->statsMap());
+    return out;
+}
+
+QString CoreController::coverMetricsText() const
+{
+    return m_catalogCovers ? m_catalogCovers->metricsText() : QStringLiteral("cover n/a");
+}
+
+void CoreController::resetCoverFetchMetrics()
+{
+    if (m_coverCache)
+        m_coverCache->resetStats();
+    if (m_catalogCovers)
+        m_catalogCovers->resetStats();
 }
 
 void CoreController::enrichCatalogEntry(const QString& entryId)

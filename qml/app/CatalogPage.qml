@@ -275,4 +275,16 @@ Item {
         page: root
         prefs: catalogPrefs
     }
+
+    CatalogCoverMetricsHud {
+        id: coverMetricsHud
+        anchors.left: parent.left
+        anchors.bottom: parent.bottom
+        anchors.margins: 12
+    }
+
+    Shortcut {
+        sequence: "Ctrl+Shift+M"
+        onActivated: coverMetricsHud.expanded = !coverMetricsHud.expanded
+    }
 }

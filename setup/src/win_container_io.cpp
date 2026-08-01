@@ -1,6 +1,10 @@
 #include "win_container_io.h"
 
-#include <fstream>
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
+#include <algorithm>
+#include <cstdint>
 #include <vector>
 
 namespace arachnel::setup {
@@ -59,8 +63,9 @@ bool copyContainerSlice(const std::filesystem::path& containerPath, std::uint64_
         return false;
     }
 
-    std::ofstream output(outputPath, std::ios::binary | std::ios::trunc);
-    if (!output) {
+    const HANDLE output = CreateFileW(outputPath.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS,
+                                      FILE_ATTRIBUTE_NORMAL, nullptr);
+    if (output == INVALID_HANDLE_VALUE) {
         CloseHandle(input);
         if (errorOut)
             *errorOut = L"Could not create temporary archive";
@@ -71,6 +76,7 @@ bool copyContainerSlice(const std::filesystem::path& containerPath, std::uint64_
     position.QuadPart = static_cast<LONGLONG>(offset);
     if (!SetFilePointerEx(input, position, nullptr, FILE_BEGIN)) {
         CloseHandle(input);
+        CloseHandle(output);
         if (errorOut)
             *errorOut = L"Invalid payload offset";
         return false;
@@ -86,13 +92,15 @@ bool copyContainerSlice(const std::filesystem::path& containerPath, std::uint64_
         DWORD read = 0;
         if (!ReadFile(input, buffer.data(), toRead, &read, nullptr) || read == 0) {
             CloseHandle(input);
+            CloseHandle(output);
             if (errorOut)
                 *errorOut = L"Unexpected end of installer payload";
             return false;
         }
-        output.write(buffer.data(), static_cast<std::streamsize>(read));
-        if (!output) {
+        DWORD written = 0;
+        if (!WriteFile(output, buffer.data(), read, &written, nullptr) || written != read) {
             CloseHandle(input);
+            CloseHandle(output);
             if (errorOut)
                 *errorOut = L"Could not write temporary archive";
             return false;
@@ -101,6 +109,7 @@ bool copyContainerSlice(const std::filesystem::path& containerPath, std::uint64_
     }
 
     CloseHandle(input);
+    CloseHandle(output);
     return true;
 }
 

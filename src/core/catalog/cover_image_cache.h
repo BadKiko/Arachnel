@@ -5,6 +5,8 @@
 #include <QPointer>
 #include <QSet>
 #include <QString>
+#include <QTimer>
+#include <QVariantMap>
 #include <QVector>
 
 class QNetworkAccessManager;
@@ -18,8 +20,24 @@ enum class CoverFetchPriority {
     Visible = 2, // on-screen cards
 };
 
+struct CoverCacheStats {
+    qint64 ensureCalls = 0;
+    qint64 cacheHits = 0;
+    qint64 negativeHits = 0;
+    qint64 downloadsStarted = 0;
+    qint64 downloadsOk = 0;
+    qint64 downloadsFail = 0;
+    qint64 preempts = 0;
+    qint64 latencySumMs = 0;
+    qint64 latencyMaxMs = 0;
+    int pending = 0;
+    int active = 0;
+    int p50Ms = 0;
+    int p95Ms = 0;
+};
+
 // Downloads remote covers once and serves them from AppData/cover-cache/.
-// Never exposes https to callers of localUrlFor after ensure succeeds — only file: URLs.
+// Never exposes https to callers of localUrlFor after ensure succeeds - only file: URLs.
 class CoverImageCache : public QObject
 {
     Q_OBJECT
@@ -27,7 +45,7 @@ class CoverImageCache : public QObject
 public:
     explicit CoverImageCache(QObject* parent = nullptr);
 
-    // file:///… if already on disk, otherwise empty.
+    // file:///… if already on disk / memory, otherwise empty.
     QString localUrlFor(const QString& remoteUrl) const;
     bool has(const QString& remoteUrl) const;
     bool hasFailed(const QString& remoteUrl) const;
@@ -41,6 +59,11 @@ public:
     // In-flight replies are marked ignored so they cannot rewrite the file.
     void remove(const QString& remoteUrl);
     void clearFailed(const QString& remoteUrl);
+    void clearAllFailed();
+
+    CoverCacheStats stats() const;
+    QVariantMap statsMap() const;
+    void resetStats();
 
 signals:
     void ready(const QString& remoteUrl, const QString& localUrl);
@@ -55,9 +78,14 @@ private:
     void handleFinished(QNetworkReply* reply);
     void startNext();
     void enqueue(const QString& remoteUrl, CoverFetchPriority priority);
+    void preemptForVisible();
     void markFailed(const QString& remoteUrl);
     void loadNegativeCache();
     void persistNegativeCache() const;
+    void schedulePersistNegativeCache();
+    void rememberPositive(const QString& remoteUrl, const QString& localUrl) const;
+    void noteLatency(qint64 ms);
+    void refreshPercentiles();
     QString cacheDir() const;
     QString failedCachePath() const;
     QString filePathFor(const QString& remoteUrl) const;
@@ -67,15 +95,36 @@ private:
     QNetworkAccessManager* m_network = nullptr;
     QSet<QString> m_inFlight;
     QSet<QString> m_ignoreWhenFinished;
+    QSet<QString> m_preempted; // aborted for Visible - requeue, do not fail
     QHash<QString, CoverFetchPriority> m_pendingPriority;
+    QHash<QString, CoverFetchPriority> m_inFlightPriority;
+    QHash<QString, qint64> m_downloadStartedAtMs;
     QVector<PendingItem> m_pending;
     QHash<QString, qint64> m_failedAtMs; // remoteUrl → epoch ms
+    mutable QHash<QString, QString> m_positiveLocal; // remoteUrl → file:
     QHash<QString, QPointer<QNetworkReply>> m_replies;
+    QTimer m_persistTimer;
     int m_active = 0;
-    bool m_negativeDirty = false;
+    mutable bool m_negativeDirty = false;
 
-    static constexpr int kMaxConcurrent = 8;
-    static constexpr qint64 kNegativeTtlMs = 7LL * 24 * 60 * 60 * 1000;
+    qint64 m_ensureCalls = 0;
+    qint64 m_cacheHits = 0;
+    qint64 m_negativeHits = 0;
+    qint64 m_downloadsStarted = 0;
+    qint64 m_downloadsOk = 0;
+    qint64 m_downloadsFail = 0;
+    qint64 m_preempts = 0;
+    qint64 m_latencySumMs = 0;
+    qint64 m_latencyMaxMs = 0;
+    int m_p50Ms = 0;
+    int m_p95Ms = 0;
+    QVector<int> m_recentLatenciesMs;
+    int m_recentWrite = 0;
+
+    // Grid shows ~20+ cards; Visible must not wait behind Warm/Upgrade HQ.
+    static constexpr int kMaxConcurrent = 16;
+    static constexpr int kLatencyWindow = 64;
+    // Soft negative TTL - catalog refresh also clears via clearAllFailed().
+    static constexpr qint64 kNegativeTtlMs = 60LL * 60 * 1000;
 };
-
 } // namespace arachnel::core

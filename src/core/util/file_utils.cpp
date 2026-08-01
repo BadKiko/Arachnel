@@ -1,10 +1,11 @@
 #include "file_utils.h"
 
+#include <QCoreApplication>
 #include <QDir>
 #include <QDirIterator>
 #include <QFile>
 #include <QFileInfo>
-#include <QCoreApplication>
+#include <QThread>
 
 #if defined(Q_OS_WIN)
 #ifndef NOMINMAX
@@ -14,6 +15,38 @@
 #endif
 
 namespace arachnel::core {
+namespace {
+
+void clearReadOnlyAttribute(const QString& filePath)
+{
+#if defined(Q_OS_WIN)
+    SetFileAttributesW(reinterpret_cast<LPCWSTR>(filePath.utf16()), FILE_ATTRIBUTE_NORMAL);
+#else
+    QFile::setPermissions(filePath, QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner
+                                        | QFile::ReadUser | QFile::WriteUser);
+#endif
+}
+
+bool tryRemoveFile(const QString& path)
+{
+    clearReadOnlyAttribute(path);
+    return QFile::remove(path);
+}
+
+bool tryRemoveDirectoryOnce(const QString& path)
+{
+    // Clear read-only on nested files so removeRecursively can succeed on Windows.
+    QDirIterator it(path, QDir::Files | QDir::Hidden | QDir::System | QDir::NoDotAndDotDot,
+                    QDirIterator::Subdirectories);
+    while (it.hasNext()) {
+        clearReadOnlyAttribute(it.next());
+    }
+
+    QDir dir(path);
+    return dir.removeRecursively();
+}
+
+} // namespace
 
 bool removePathRecursive(const QString& path, QString* errorOut)
 {
@@ -24,37 +57,26 @@ bool removePathRecursive(const QString& path, QString* errorOut)
     if (!info.exists())
         return true;
 
-    if (info.isFile()) {
-#if defined(Q_OS_WIN)
-        SetFileAttributesW(reinterpret_cast<LPCWSTR>(path.utf16()), FILE_ATTRIBUTE_NORMAL);
-#endif
-        if (QFile::remove(path))
+    constexpr int kAttempts = 5;
+    for (int attempt = 0; attempt < kAttempts; ++attempt) {
+        if (attempt > 0)
+            QThread::msleep(static_cast<unsigned long>(100 * attempt));
+
+        info.refresh();
+        if (!info.exists())
             return true;
-        if (errorOut)
-            *errorOut = QCoreApplication::translate("Core", "Failed to delete file: %1").arg(path);
-        return false;
+
+        const bool ok = info.isFile() ? tryRemoveFile(path) : tryRemoveDirectoryOnce(path);
+        if (ok)
+            return true;
     }
 
-    // Clear read-only on nested files so removeRecursively can succeed on Windows.
-    QDirIterator it(path, QDir::Files | QDir::Hidden | QDir::System | QDir::NoDotAndDotDot,
-                    QDirIterator::Subdirectories);
-    while (it.hasNext()) {
-        const QString filePath = it.next();
-#if defined(Q_OS_WIN)
-        SetFileAttributesW(reinterpret_cast<LPCWSTR>(filePath.utf16()), FILE_ATTRIBUTE_NORMAL);
-#else
-        QFile::setPermissions(filePath, QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner
-                                            | QFile::ReadUser | QFile::WriteUser);
-#endif
+    if (errorOut) {
+        *errorOut = info.isFile()
+                        ? QCoreApplication::translate("Core", "Failed to delete file: %1").arg(path)
+                        : QCoreApplication::translate("Core", "Failed to delete folder: %1").arg(path);
     }
-
-    QDir dir(path);
-    if (!dir.removeRecursively()) {
-        if (errorOut)
-            *errorOut = QCoreApplication::translate("Core", "Failed to delete folder: %1").arg(path);
-        return false;
-    }
-    return true;
+    return false;
 }
 
 bool copyPathRecursive(const QString& src, const QString& dst, QString* errorOut)

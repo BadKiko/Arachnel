@@ -205,7 +205,7 @@ Item {
         model: Core.catalog
         cellWidth: page.cellWidth
         cellHeight: page.cellHeight
-        cacheBuffer: page.cellHeight * 2
+        cacheBuffer: page.cellHeight * 6
         reuseItems: true
         boundsBehavior: Flickable.StopAtBounds
         pixelAligned: true

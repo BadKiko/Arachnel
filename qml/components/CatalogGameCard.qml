@@ -15,7 +15,7 @@ Item {
     required property string sizeLabel
     required property string installKindLabel
     required property bool metadataPending
-    // Must be required - GridView only injects model roles into required props.
+    // Required so GridView injects the role; shotUrls stays empty until peek arms.
     required property var screenshotUrls
 
     property bool compactRow: false
@@ -28,6 +28,8 @@ Item {
     signal openDetails(string entryId)
 
     readonly property var shotUrls: {
+        if (!root.peekArmed && !root.peekWaiting)
+            return []
         const raw = root.screenshotUrls
         if (raw === undefined || raw === null)
             return []
@@ -76,6 +78,8 @@ Item {
     readonly property string displayCoverUrl: coverUrl.startsWith("file:") ? coverUrl : ""
 
     property bool invalidateArmed: true
+    // Track id we asked covers for - GridView updates entryId before we can cancel the old one.
+    property string coverWatchId: ""
 
     function requestCover() {
         if (!entryId.length)
@@ -86,9 +90,10 @@ Item {
     }
 
     function cancelCover() {
-        if (!entryId.length)
+        const id = root.coverWatchId.length ? root.coverWatchId : root.entryId
+        if (!id.length)
             return
-        Core.cancelCatalogCover(entryId)
+        Core.cancelCatalogCover(id)
     }
 
     function onPosterFailed() {
@@ -100,8 +105,20 @@ Item {
 
     Timer {
         id: requestTimer
-        interval: 40
+        interval: 0
         onTriggered: root.requestCover()
+    }
+
+    // If the first pass failed (404 capsule → metadata queue), hover must retry cover
+    // without waiting for enrich alone.
+    Timer {
+        id: hoverCoverRetry
+        interval: 0
+        onTriggered: {
+            if (!root.entryId.length || root.displayCoverUrl.length)
+                return
+            Core.requestCatalogCover(root.entryId)
+        }
     }
 
     function dismissPeek() {
@@ -133,6 +150,7 @@ Item {
     Connections {
         target: root.hostFlickable
         enabled: root.hostFlickable !== null
+        // Avoid contentX/contentY - those fire every pixel for every visible card.
         function onMovementStarted() {
             scrollSettleTimer.stop()
             root.dismissPeek()
@@ -140,14 +158,6 @@ Item {
         function onFlickStarted() {
             scrollSettleTimer.stop()
             root.dismissPeek()
-        }
-        function onContentXChanged() {
-            root.dismissPeek()
-            scrollSettleTimer.restart()
-        }
-        function onContentYChanged() {
-            root.dismissPeek()
-            scrollSettleTimer.restart()
         }
         function onMovingChanged() {
             if (root.hostFlickable && !root.hostFlickable.moving && !root.hostFlickable.flicking)
@@ -159,13 +169,16 @@ Item {
         }
     }
 
-    Component.onCompleted: requestTimer.start()
+    Component.onCompleted: {
+        root.coverWatchId = root.entryId
+        requestTimer.start()
+    }
     Component.onDestruction: {
         cancelCover()
         root.dismissPeek()
     }
 
-    // GridView reuse was missing — pooled cards left Overlay popups behind.
+    // GridView reuse was missing - pooled cards left Overlay popups behind.
     function onDelegateRecycled() {
         invalidateArmed = true
         root.dismissPeek()
@@ -173,9 +186,15 @@ Item {
     }
 
     ListView.onReused: root.onDelegateRecycled()
-    ListView.onPooled: root.dismissPeek()
+    ListView.onPooled: {
+        root.cancelCover()
+        root.dismissPeek()
+    }
     GridView.onReused: root.onDelegateRecycled()
-    GridView.onPooled: root.dismissPeek()
+    GridView.onPooled: {
+        root.cancelCover()
+        root.dismissPeek()
+    }
 
     onVisibleChanged: {
         if (!visible)
@@ -188,7 +207,9 @@ Item {
     }
 
     onEntryIdChanged: {
-        cancelCover()
+        if (root.coverWatchId.length && root.coverWatchId !== root.entryId)
+            Core.cancelCatalogCover(root.coverWatchId)
+        root.coverWatchId = root.entryId
         invalidateArmed = true
         root.dismissPeek()
         requestTimer.restart()
@@ -282,10 +303,13 @@ Item {
                         root.dismissPeek()
                         return
                     }
-                    if (containsMouse)
+                    if (containsMouse) {
+                        if (!root.displayCoverUrl.length)
+                            hoverCoverRetry.restart()
                         peekArmTimer.restart()
-                    else
+                    } else {
                         root.dismissPeek()
+                    }
                 }
             }
 

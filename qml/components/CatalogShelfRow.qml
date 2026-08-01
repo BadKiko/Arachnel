@@ -41,7 +41,7 @@ Column {
 
         MD.IconButton {
             mdState.type: MD.Enum.IBtStandard
-            icon.name: MD.Token.icon.arrow_back
+            icon.name: MD.Token.icon.chevron_left
             enabled: root.canScrollLeft
             visible: shelfList.contentWidth > shelfList.width
             onClicked: root.scrollBy(-root.scrollStep)
@@ -66,7 +66,7 @@ Column {
         model: root.shelfModel
         boundsBehavior: Flickable.StopAtBounds
         reuseItems: true
-        cacheBuffer: page.cardWidth * 2
+        cacheBuffer: page.cardWidth * 4
         // Carousel arrows replace the scrollbar.
         ScrollBar.horizontal: ScrollBar {
             policy: ScrollBar.AlwaysOff

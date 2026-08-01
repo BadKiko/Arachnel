@@ -79,6 +79,15 @@ CatalogEntry parseDownloadObject(const QJsonObject& obj, const QString& sourceId
     entry.itemKind = itemKindFromString(obj.value(QStringLiteral("kind")).toString());
     entry.parentEntryId = obj.value(QStringLiteral("parentTitle")).toString();
     entry.metadataPending = false;
+    {
+        const QString feedCover = obj.value(QStringLiteral("coverUrl")).toString().trimmed();
+        if (feedCover.startsWith(QStringLiteral("http://"), Qt::CaseInsensitive)
+            || feedCover.startsWith(QStringLiteral("https://"), Qt::CaseInsensitive)) {
+            entry.remoteCoverUrl = feedCover;
+        } else if (feedCover.startsWith(QStringLiteral("file:"))) {
+            entry.coverUrl = feedCover;
+        }
+    }
 
     const int rawInstallKind = obj.value(QStringLiteral("installKind")).toInt(-1);
     if (rawInstallKind >= static_cast<int>(InstallKind::PortableArchive)
@@ -107,7 +116,15 @@ CatalogEntry parseRyuuEntryObject(const QJsonObject& obj, const QString& sourceI
     entry.id = obj.value(QStringLiteral("id")).toString();
     entry.sourceId = sourceId;
     entry.steamAppId = obj.value(QStringLiteral("steamAppId")).toString();
-    entry.coverUrl = obj.value(QStringLiteral("coverUrl")).toString();
+    {
+        const QString feedCover = obj.value(QStringLiteral("coverUrl")).toString().trimmed();
+        if (feedCover.startsWith(QStringLiteral("http://"), Qt::CaseInsensitive)
+            || feedCover.startsWith(QStringLiteral("https://"), Qt::CaseInsensitive)) {
+            entry.remoteCoverUrl = feedCover;
+        } else if (feedCover.startsWith(QStringLiteral("file:"))) {
+            entry.coverUrl = feedCover;
+        }
+    }
     entry.description = obj.value(QStringLiteral("description")).toString();
     entry.genres = obj.value(QStringLiteral("genres")).toString();
     entry.sizeLabel = obj.value(QStringLiteral("sizeLabel")).toString();
@@ -132,13 +149,6 @@ CatalogEntry parseRyuuEntryObject(const QJsonObject& obj, const QString& sourceI
         entry.id = QStringLiteral("steam-%1").arg(entry.steamAppId);
     if (entry.id.isEmpty())
         entry.id = slugifyCatalogId(entry.title, sourceId);
-    // Prefer Steam library art over plugin-provided covers (usually lower quality).
-    if (!entry.steamAppId.isEmpty()) {
-        entry.coverUrl =
-            QStringLiteral(
-                "https://cdn.akamai.steamstatic.com/steam/apps/%1/library_600x900_2x.jpg")
-                .arg(entry.steamAppId);
-    }
 
     const QJsonArray addons = obj.value(QStringLiteral("addons")).toArray();
     entry.addons.reserve(addons.size());

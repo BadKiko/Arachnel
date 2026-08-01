@@ -160,7 +160,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         }
 
         if (!arachnel::setup::isRuntimeReadyNative(runtimeDir)) {
-            showError(L"Installer runtime extraction is incomplete.");
+            showError(L"Installer runtime extraction is incomplete.\n"
+                      L"Expected arachnel_setup.exe, Qt6Core.dll, uninstall.exe under\n"
+                      L"%LOCALAPPDATA%\\Arachnel Setup\\cache\\runtime\n"
+                      L"If that folder is empty, antivirus may be deleting files, or the setup "
+                      L"build is broken.");
             return 1;
         }
 

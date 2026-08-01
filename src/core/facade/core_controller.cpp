@@ -205,8 +205,6 @@ CoreController::CoreController(QObject* parent)
     connect(&m_sources, &SourcePluginModel::sourcesChanged, this,
             &CoreController::persistSourcesToSettings);
     syncLibraryFromStore();
-    if (m_libraryController)
-        m_libraryController->scanInstalledGames();
 
     m_catalog.bindSource(&m_catalogCache);
     if (!m_catalogFilters) {
@@ -224,8 +222,27 @@ CoreController::CoreController(QObject* parent)
         m_catalogDiscovery->setIdIndex(&m_catalogIdToCacheIndex);
     }
 
-    if (m_catalogController)
-        m_catalogController->selectAllEnabledSources();
+    // Let the first frame paint before disk-heavy library scan + catalog commit.
+    QTimer::singleShot(0, this, [this]() {
+        if (m_catalogController)
+            m_catalogController->selectAllEnabledSources();
+    });
+    QTimer::singleShot(0, this, [this]() {
+        if (!m_libraryController)
+            return;
+        using Candidates = QVector<LibraryController::ScanCandidate>;
+        auto* watcher = new QFutureWatcher<Candidates>(this);
+        connect(watcher, &QFutureWatcher<Candidates>::finished, this, [this, watcher]() {
+            const Candidates found = watcher->result();
+            watcher->deleteLater();
+            if (m_libraryController)
+                m_libraryController->commitScanCandidates(found);
+        });
+        LibraryController* library = m_libraryController;
+        watcher->setFuture(QtConcurrent::run([library]() {
+            return library->discoverInstallCandidates();
+        }));
+    });
 
     if (m_settings.autoCheckAppUpdates() && m_appUpdater) {
         QTimer::singleShot(4000, this, [this]() {
