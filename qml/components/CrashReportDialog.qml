@@ -11,7 +11,12 @@ MD.Dialog {
 
     parent: Overlay.overlay
     modal: true
-    title: qsTr("Application crashed")
+    title: {
+        const s = (Core.pendingCrashSummary() || "").toLowerCase()
+        if (s.indexOf("hang") >= 0 || s.indexOf("not responding") >= 0)
+            return qsTr("Arachnel stopped responding")
+        return qsTr("Application crashed")
+    }
     standardButtons: Dialog.NoButton
 
     width: Math.min(620, parent ? parent.width - MD.Token.spacing.large * 2 : 620)

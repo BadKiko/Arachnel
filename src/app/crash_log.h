@@ -11,6 +11,8 @@ void installCrashLogging();
 void logRunStarted(int argc, char* argv[]);
 void logRunFinished(int exitCode);
 void logDiagnostic(const QString& line);
+/** Short trail for crash reports (catalog load, launch, …). */
+void logBreadcrumb(const QString& where, const QString& detail = {});
 void logQmlWarning(const QUrl& url, int line, int column, const QString& description);
 
 bool hasPendingCrashReport();

@@ -7,8 +7,14 @@ QString g_runArgsLine;
 bool g_isCrashDialogProcess = false;
 bool g_shuttingDown = false;
 QStringList g_recentLines;
+QStringList g_breadcrumbs;
+qint64 g_appStartMs = 0;
+#if defined(Q_OS_WIN)
+DWORD g_mainThreadId = 0;
+#endif
 
-constexpr int kRecentLogLines = 80;
+constexpr int kRecentLogLines = 200;
+constexpr int kBreadcrumbLines = 48;
 
 constexpr const char* kGithubIssuesNew =
     "https://github.com/BadKiko/Arachnel/issues/new";
@@ -89,11 +95,23 @@ void removePendingMarker()
     QFile::remove(pendingCrashMarkerPath());
 }
 
+QString latestCrashDumpPath()
+{
+    return logDirectory() + QStringLiteral("/crash-latest.dmp");
+}
+
 void rememberRecentLine(const QString& line)
 {
     g_recentLines.append(line);
     while (g_recentLines.size() > kRecentLogLines)
         g_recentLines.removeFirst();
+}
+
+void rememberBreadcrumb(const QString& line)
+{
+    g_breadcrumbs.append(line);
+    while (g_breadcrumbs.size() > kBreadcrumbLines)
+        g_breadcrumbs.removeFirst();
 }
 
 void writeLine(const QString& line, bool toStderr = true)
@@ -162,10 +180,18 @@ CrashReportData buildCrashReport(const QString& summary, const QString& extraDet
     CrashReportData report;
     report.summary = summary;
 
+    const qint64 uptimeSec =
+        g_appStartMs > 0
+            ? qMax<qint64>(0, (QDateTime::currentMSecsSinceEpoch() - g_appStartMs) / 1000)
+            : 0;
+
     QStringList body;
     body.append(QStringLiteral("Arachnel %1").arg(QCoreApplication::applicationVersion()));
+    body.append(QStringLiteral("Qt %1").arg(QString::fromLatin1(qVersion())));
     body.append(QStringLiteral("Time: %1")
                     .arg(QDateTime::currentDateTime().toString(Qt::ISODate)));
+    if (uptimeSec > 0)
+        body.append(QStringLiteral("Uptime: %1s").arg(uptimeSec));
     body.append(QStringLiteral("Executable: %1").arg(g_runExePath));
     if (!g_runArgsLine.isEmpty())
         body.append(QStringLiteral("Args: %1").arg(g_runArgsLine));
@@ -177,18 +203,34 @@ CrashReportData buildCrashReport(const QString& summary, const QString& extraDet
     if (!stackTrace.isEmpty())
         body.append(stackTrace);
 
+    if (!g_breadcrumbs.isEmpty()) {
+        body.append(QStringLiteral("Breadcrumbs (%1):").arg(g_breadcrumbs.size()));
+        body.append(g_breadcrumbs.join(QStringLiteral("\n")));
+    }
+
     if (!g_recentLines.isEmpty()) {
         body.append(QStringLiteral("Recent log (%1 lines):").arg(g_recentLines.size()));
         body.append(g_recentLines.join(QStringLiteral("\n")));
     }
 
     if (summary.contains(QStringLiteral("Access violation"))
-        && extraDetails.contains(QStringLiteral("0x0000000000000001"))) {
+        && extraDetails.contains(QStringLiteral("0x0000000000000000"))) {
         body.append(QStringLiteral(
-            "Hint: null or invalid pointer read. If this appeared after updating Arachnel, "
-            "rebuild and redeploy source plugins (run.ps1) so plugin DLLs match the app."));
+            "Hint: null pointer access. Check the fault module + last breadcrumbs "
+            "(plugin DLL mismatch after app update is a common cause)."));
+    } else if (summary.contains(QStringLiteral("Access violation"))
+               && extraDetails.contains(QStringLiteral("0x0000000000000001"))) {
+        body.append(QStringLiteral(
+            "Hint: near-null pointer. Rebuild/redeploy source plugins if this followed an update."));
+    } else if (summary.contains(QStringLiteral("not responding"), Qt::CaseInsensitive)
+               || summary.contains(QStringLiteral("UI hang"), Qt::CaseInsensitive)) {
+        body.append(QStringLiteral(
+            "Hint: main thread blocked (catalog parse/merge, plugin call, or sync I/O). "
+            "See breadcrumbs and the hung-thread stack."));
     }
 
+    if (QFileInfo::exists(latestCrashDumpPath()))
+        body.append(QStringLiteral("Minidump: %1").arg(latestCrashDumpPath()));
     body.append(QStringLiteral("Report file: %1").arg(latestCrashReportPath()));
     body.append(QStringLiteral("Run log: %1").arg(runLogPath()));
 
@@ -286,9 +328,15 @@ QString formatAccessViolationDetails(const EXCEPTION_RECORD* record)
         return {};
     }
 
-    const ULONG_PTR readAttempt = record->ExceptionInformation[0];
+    const ULONG_PTR access = record->ExceptionInformation[0];
     const ULONG_PTR address = record->ExceptionInformation[1];
-    const QString accessType = readAttempt ? QStringLiteral("read") : QStringLiteral("write");
+    QString accessType = QStringLiteral("access");
+    if (access == 0)
+        accessType = QStringLiteral("read");
+    else if (access == 1)
+        accessType = QStringLiteral("write");
+    else if (access == 8)
+        accessType = QStringLiteral("execute");
     return QStringLiteral("Invalid %1 at address 0x%2")
         .arg(accessType)
         .arg(address, QT_POINTER_SIZE * 2, 16, QLatin1Char('0'));
@@ -413,6 +461,74 @@ QString captureStackTraceWindows(CONTEXT* optionalContext)
     return lines.join(QLatin1Char('\n'));
 }
 
+void writeMinidumpWindows(EXCEPTION_POINTERS* info)
+{
+    const QString path = latestCrashDumpPath();
+    HANDLE file = CreateFileW(reinterpret_cast<LPCWSTR>(path.utf16()), GENERIC_WRITE,
+                              0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+    if (file == INVALID_HANDLE_VALUE)
+        return;
+
+    MINIDUMP_EXCEPTION_INFORMATION mei = {};
+    MINIDUMP_EXCEPTION_INFORMATION* meiPtr = nullptr;
+    if (info) {
+        mei.ThreadId = GetCurrentThreadId();
+        mei.ExceptionPointers = info;
+        mei.ClientPointers = FALSE;
+        meiPtr = &mei;
+    }
+
+    MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), file, MiniDumpWithDataSegs,
+                      meiPtr, nullptr, nullptr);
+    CloseHandle(file);
+}
+
+QString captureHungMainThreadStack()
+{
+    if (g_mainThreadId == 0 || g_mainThreadId == GetCurrentThreadId())
+        return QStringLiteral("Hung thread stack: (unavailable)");
+
+    HANDLE thread = OpenThread(THREAD_SUSPEND_RESUME | THREAD_GET_CONTEXT
+                                   | THREAD_QUERY_INFORMATION,
+                               FALSE, g_mainThreadId);
+    if (!thread)
+        return QStringLiteral("Hung thread stack: (OpenThread failed)");
+
+    SuspendThread(thread);
+    CONTEXT context = {};
+    context.ContextFlags = CONTEXT_FULL;
+    QString stack = QStringLiteral("Hung main-thread stack:");
+    if (GetThreadContext(thread, &context)) {
+        const QString walked = captureStackTraceWindows(&context);
+        stack = walked.isEmpty() ? stack : walked;
+        if (!stack.startsWith(QStringLiteral("Stack trace:")))
+            stack.prepend(QStringLiteral("Hung main-thread stack:\n"));
+        else
+            stack.replace(0, QStringLiteral("Stack trace:").size(),
+                          QStringLiteral("Hung main-thread stack:"));
+    } else {
+        stack += QStringLiteral("\n  (GetThreadContext failed)");
+    }
+    ResumeThread(thread);
+    CloseHandle(thread);
+    return stack;
+}
+
+void reportUiHang(int hungSeconds)
+{
+    if (g_shuttingDown || g_isCrashDialogProcess)
+        return;
+
+    const QString summary =
+        QStringLiteral("UI hang / not responding (~%1s)").arg(hungSeconds);
+    QStringList extra;
+    extra.append(QStringLiteral(
+        "Main thread did not process the event loop. Arachnel was frozen for the user."));
+    extra.append(QStringLiteral("Main thread id: %1").arg(static_cast<qulonglong>(g_mainThreadId)));
+    const QString stack = captureHungMainThreadStack();
+    handleCrashReport(buildCrashReport(summary, extra.join(QStringLiteral("\n")), stack));
+}
+
 LONG WINAPI unhandledExceptionFilter(EXCEPTION_POINTERS* info)
 {
     if (g_shuttingDown)
@@ -420,6 +536,8 @@ LONG WINAPI unhandledExceptionFilter(EXCEPTION_POINTERS* info)
 
     if (!info || !info->ExceptionRecord || !info->ContextRecord)
         return EXCEPTION_CONTINUE_SEARCH;
+
+    writeMinidumpWindows(info);
 
     const EXCEPTION_RECORD* record = info->ExceptionRecord;
     const DWORD code = record->ExceptionCode;
@@ -434,6 +552,7 @@ LONG WINAPI unhandledExceptionFilter(EXCEPTION_POINTERS* info)
         extra.append(avDetails);
     extra.append(QStringLiteral("Fault module: %1")
                      .arg(moduleForAddress(reinterpret_cast<DWORD64>(record->ExceptionAddress))));
+    extra.append(QStringLiteral("Exception thread: %1").arg(GetCurrentThreadId()));
 
     CONTEXT context = *info->ContextRecord;
     const QString stackTrace = captureStackTraceWindows(&context);
@@ -564,6 +683,20 @@ void handleQtFatalMessage(const QString& message)
     const QString summary = QStringLiteral("Fatal Qt error");
     const QString extra = QStringLiteral("Message: %1").arg(message);
     handleCrashReport(buildCrashReport(summary, extra, captureStackTraceUnix()));
+}
+#endif
+
+#if !defined(Q_OS_WIN)
+void reportUiHang(int hungSeconds)
+{
+    if (g_shuttingDown || g_isCrashDialogProcess)
+        return;
+    const QString summary =
+        QStringLiteral("UI hang / not responding (~%1s)").arg(hungSeconds);
+    const QString extra = QStringLiteral(
+        "Main thread did not process the event loop. Arachnel was frozen for the user.");
+    handleCrashReport(buildCrashReport(
+        summary, extra, QStringLiteral("Hung thread stack: (not captured on this platform)")));
 }
 #endif
 

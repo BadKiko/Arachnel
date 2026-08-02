@@ -418,7 +418,6 @@ OnlineFixOverlayState detectOnlineFixOverlay(const QString& installPath)
     state.overlayDir = dirs.first();
     for (const QString& path : dirs) {
         const QDir dir(path);
-        // Enabled only when overlay DLLs are active. SteamFix.ini alone stays after disable.
         bool hasActiveDll = false;
         for (const QString& name : overlayDllNames()) {
             if (dir.exists(name)) {
@@ -426,7 +425,14 @@ OnlineFixOverlayState detectOnlineFixOverlay(const QString& installPath)
                 break;
             }
         }
-        if (hasActiveDll) {
+        const bool hasDisabled = dirHasDisabledOverlay(dir);
+        // Default on: live DLLs, or FakeAppId mode (ini/txt + steam_appid) when nothing was
+        // renamed off. Disable renames both DLLs and steam_appid.txt.
+        const bool fakeAppIdMode = dir.exists(QStringLiteral("steam_appid.txt"))
+            && (dir.exists(QStringLiteral("SteamFix.ini"))
+                || dir.exists(QStringLiteral("OnlineFix.ini"))
+                || dir.exists(QStringLiteral("winmm.txt")));
+        if (hasActiveDll || (fakeAppIdMode && !hasDisabled)) {
             state.enabled = true;
             state.overlayDir = path;
             break;

@@ -65,7 +65,7 @@
         <translation></translation>
     </message>
     <message>
-        <location line="+114"/>
+        <location line="+136"/>
         <source>Library</source>
         <translation></translation>
     </message>
@@ -318,7 +318,7 @@
 <context>
     <name>CatalogGameCard</name>
     <message>
-        <location filename="../qml/components/CatalogGameCard.qml" line="+57"/>
+        <location filename="../qml/components/CatalogGameCard.qml" line="+61"/>
         <location line="+2"/>
         <location line="+1"/>
         <source>playing</source>
@@ -602,7 +602,7 @@
 <context>
     <name>Core</name>
     <message>
-        <location filename="../src/core/catalog/catalog_types.cpp" line="+142"/>
+        <location filename="../src/core/catalog/catalog_types.cpp" line="+163"/>
         <source>Game</source>
         <translation></translation>
     </message>
@@ -634,7 +634,7 @@
     </message>
     <message>
         <location filename="../src/core/install/install_kind.cpp" line="+11"/>
-        <location filename="../src/core/catalog/catalog_model.cpp" line="+499"/>
+        <location filename="../src/core/catalog/catalog_model.cpp" line="+520"/>
         <source>Portable</source>
         <translation></translation>
     </message>
@@ -874,12 +874,12 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_controller.cpp" line="+82"/>
+        <location filename="../src/core/catalog/catalog_controller.cpp" line="+108"/>
         <source>Catalog error: %1</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="+468"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="+494"/>
         <source>Game not found for add-on</source>
         <translation></translation>
     </message>
@@ -956,7 +956,7 @@
     </message>
     <message>
         <location filename="../src/core/runtime/proton_facade.cpp" line="+34"/>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="-354"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="-355"/>
         <source>Preparing runtime environment…</source>
         <translation></translation>
     </message>
@@ -1042,7 +1042,7 @@
         <translation></translation>
     </message>
     <message>
-        <location line="+41"/>
+        <location line="+42"/>
         <source>Proton-GE installed</source>
         <translation></translation>
     </message>
@@ -1123,7 +1123,8 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_controller.cpp" line="+279"/>
+        <location filename="../src/core/catalog/catalog_controller.cpp" line="+220"/>
+        <location line="+154"/>
         <source>%1 · %2 games</source>
         <translation></translation>
     </message>
@@ -1133,12 +1134,12 @@
         <translation></translation>
     </message>
     <message>
-        <location line="+194"/>
+        <location line="+251"/>
         <source>Catalog empty or unavailable: %1</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+37"/>
+        <location line="+41"/>
         <source>No catalog URL configured for source %1</source>
         <translation></translation>
     </message>
@@ -1180,12 +1181,12 @@
         <translation>Runtime install did not register in the Proton prefix: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/launch/launch_controller.cpp" line="+64"/>
+        <location filename="../src/core/launch/launch_controller.cpp" line="+65"/>
         <source>Game is not installed yet</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+33"/>
         <location filename="../src/core/launch/launch_facade.cpp" line="-16"/>
         <source>Steam is not running - Online Fix needs it for SpaceWar/overlay. Starting Steam…</source>
         <translation type="unfinished"></translation>
@@ -1207,7 +1208,7 @@
         <translation></translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+19"/>
         <source>Failed to stop game</source>
         <translation></translation>
     </message>
@@ -1295,7 +1296,7 @@
         <translation></translation>
     </message>
     <message>
-        <location line="-207"/>
+        <location line="-208"/>
         <source>No catalog sources enabled</source>
         <translation></translation>
     </message>
@@ -1484,12 +1485,12 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/settings/app_updater.cpp" line="+49"/>
+        <location filename="../src/core/settings/app_updater.cpp" line="+52"/>
         <source>Not checked yet</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+110"/>
+        <location line="+122"/>
         <source>Checking for Arachnel updates…</source>
         <translation></translation>
     </message>
@@ -1500,13 +1501,13 @@
     </message>
     <message>
         <location line="+36"/>
-        <location line="+31"/>
+        <location line="+48"/>
         <location line="+26"/>
         <source>Could not parse GitHub release information</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+18"/>
         <source>Arachnel %1 (pre-release) is available</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1537,6 +1538,16 @@
         <translation></translation>
     </message>
     <message>
+        <location line="+90"/>
+        <source>Updating Arachnel…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+107"/>
+        <source>Could not find an Arachnel install folder to update</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../src/core/plugins/plugin_catalog_service.cpp" line="+201"/>
         <source>Could not load plugin list: %1</source>
         <translation></translation>
@@ -1563,7 +1574,7 @@
     </message>
     <message>
         <location line="+4"/>
-        <location filename="../src/core/settings/app_updater.cpp" line="+69"/>
+        <location filename="../src/core/settings/app_updater.cpp" line="-128"/>
         <source>Download failed: %1</source>
         <translation></translation>
     </message>
@@ -1589,22 +1600,17 @@
         <translation></translation>
     </message>
     <message>
-        <location line="+9"/>
-        <source>Starting updater…</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location line="+21"/>
+        <location line="+141"/>
         <source>Could not start the Arachnel installer</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+11"/>
         <source>Automatic installer launch is only available on Windows</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/install/online_fix_overlay.cpp" line="+475"/>
+        <location filename="../src/core/install/online_fix_overlay.cpp" line="+473"/>
         <source>Not installed</source>
         <translation></translation>
     </message>
@@ -1624,7 +1630,7 @@
         <translation></translation>
     </message>
     <message>
-        <location line="-152"/>
+        <location line="-150"/>
         <source>Failed to enable Online Fix: %1</source>
         <translation></translation>
     </message>
@@ -1680,7 +1686,7 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_parser.cpp" line="+358"/>
+        <location filename="../src/core/catalog/catalog_parser.cpp" line="+368"/>
         <source>Empty server response</source>
         <translation></translation>
     </message>
@@ -1764,7 +1770,7 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/library/library_controller.cpp" line="+258"/>
+        <location filename="../src/core/library/library_controller.cpp" line="+259"/>
         <location line="+21"/>
         <location filename="../src/core/facade/core_wiring_services.cpp" line="-107"/>
         <source>Game removed: %1</source>
@@ -1794,7 +1800,12 @@
 <context>
     <name>CrashReportDialog</name>
     <message>
-        <location filename="../qml/components/CrashReportDialog.qml" line="+14"/>
+        <location filename="../qml/components/CrashReportDialog.qml" line="+17"/>
+        <source>Arachnel stopped responding</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Application crashed</source>
         <translation></translation>
     </message>
@@ -1802,19 +1813,29 @@
 <context>
     <name>CrashReportPanel</name>
     <message>
-        <location filename="../qml/components/CrashReportPanel.qml" line="+28"/>
+        <location filename="../qml/components/CrashReportPanel.qml" line="+32"/>
+        <source>Arachnel stopped responding</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Application crashed</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+7"/>
-        <location line="+12"/>
+        <location line="+8"/>
+        <source>The UI froze. A report was saved with the hung thread stack and recent activity.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <location line="+13"/>
         <source>Arachnel has crashed.</source>
         <translation></translation>
     </message>
     <message>
-        <location line="-11"/>
-        <location line="+12"/>
+        <location line="-12"/>
+        <location line="+13"/>
         <source>Arachnel stopped unexpectedly during the last session.</source>
         <translation></translation>
     </message>

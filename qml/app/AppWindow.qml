@@ -110,6 +110,22 @@ MD.ApplicationWindow {
             Qt.callLater(function () { crashReportDialog.open() })
     }
 
+    // Hang watchdog writes a pending report while the app is still alive.
+    Timer {
+        interval: 4000
+        running: true
+        repeat: true
+        onTriggered: {
+            if (!Core.hasPendingCrashReport())
+                return
+            if (crashReportDialog.opened || crashReportDialog.visible)
+                return
+            if (onboardingSheet.visible)
+                return
+            crashReportDialog.open()
+        }
+    }
+
     onClosing: function (close) {
         close.accepted = true
         Qt.quit()

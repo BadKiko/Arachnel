@@ -4,6 +4,7 @@
 #include "catalog_feed_loader.h"
 #include "catalog_model.h"
 #include "catalog_parser.h"
+#include "crash_log.h"
 #include "plugin_catalog_json.h"
 #include "plugin_host.h"
 #include "source_plugin_model.h"
@@ -236,6 +237,8 @@ void CatalogController::normalizeCatalogSourceIds(QVector<CatalogEntry>& entries
 void CatalogController::storeCatalogForSource(const QString& sourceId, QVector<CatalogEntry> entries,
                                               bool prepareEntries)
 {
+    arachnel::logBreadcrumb(QStringLiteral("catalog.store"),
+                            QStringLiteral("%1 n=%2").arg(sourceId).arg(entries.size()));
     normalizeCatalogSourceIds(entries, sourceId);
     if (prepareEntries) {
         for (CatalogEntry& entry : entries) {

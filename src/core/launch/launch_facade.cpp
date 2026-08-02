@@ -154,6 +154,11 @@ void CoreController::stopRunningGame()
 {
     if (m_launchController)
         m_launchController->stopRunningGame();
+    // launchGameAfterRuntimeSetup still tracks pid on CoreController.
+    if (m_runningProcessId > 0) {
+        ProcessTracker::terminateProcess(m_runningProcessId);
+        clearRunningGame();
+    }
 }
 
 } // namespace arachnel::core

@@ -13,6 +13,10 @@ ColumnLayout {
     property bool showSubtitle: !root.showHeader
     property bool expandReport: false
 
+    readonly property string pendingSummary: Core.pendingCrashSummary()
+    readonly property bool isHangReport: pendingSummary.toLowerCase().indexOf("hang") >= 0
+                                      || pendingSummary.toLowerCase().indexOf("not responding") >= 0
+
     signal dismissRequested()
     signal issueRequested()
 
@@ -25,15 +29,20 @@ ColumnLayout {
 
         MD.Label {
             Layout.fillWidth: true
-            text: qsTr("Application crashed")
+            text: root.isHangReport ? qsTr("Arachnel stopped responding")
+                                    : qsTr("Application crashed")
             typescale: MD.Token.typescale.headline_small
         }
 
         MD.Label {
             Layout.fillWidth: true
-            text: root.immediateCrash
-                  ? qsTr("Arachnel has crashed.")
-                  : qsTr("Arachnel stopped unexpectedly during the last session.")
+            text: {
+                if (root.isHangReport)
+                    return qsTr("The UI froze. A report was saved with the hung thread stack and recent activity.")
+                if (root.immediateCrash)
+                    return qsTr("Arachnel has crashed.")
+                return qsTr("Arachnel stopped unexpectedly during the last session.")
+            }
             wrapMode: Text.WordWrap
             color: MD.Token.color.on_surface_variant
             typescale: MD.Token.typescale.body_medium

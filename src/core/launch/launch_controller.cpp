@@ -1,5 +1,6 @@
 #include "launch_controller.h"
 
+#include "crash_log.h"
 #include "launch_resolver.h"
 #include "install_heuristics.h"
 #include "online_fix_overlay.h"
@@ -67,6 +68,8 @@ void LaunchController::launchGame(const QString& gameId)
     if (gameRunning() && m_gameId == gameId)
         return;
 
+    arachnel::logBreadcrumb(QStringLiteral("launch"), gameId);
+
     // Leave QML Button.onClicked before any blocking runtime work (steamcmd / installers).
     // Nested event loops on the GUI thread abort with QML "object destroyed while handler
     // is in progress" (seen on Linux AppImage when launching via GameDetailsContent).
@@ -126,6 +129,7 @@ void LaunchController::stopRunningGame()
 {
     if (!gameRunning())
         return;
+    arachnel::logBreadcrumb(QStringLiteral("stop"), m_gameId);
     if (m_processId <= 0 || ProcessTracker::terminateProcess(m_processId))
         QTimer::singleShot(0, this, &LaunchController::clearRunning);
     else if (m_hooks.notice)
