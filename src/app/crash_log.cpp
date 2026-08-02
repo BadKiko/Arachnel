@@ -1,46 +1,28 @@
 #include "crash_log.h"
+#include "crash_log_internal.h"
 
 #include <QCoreApplication>
 #include <QDateTime>
-#include <QDesktopServices>
 #include <QDir>
-#include <QFile>
-#include <QFileInfo>
-#include <QJsonDocument>
-#include <QJsonObject>
 #include <QMetaObject>
-#include <QMutex>
 #include <QMutexLocker>
-#include <QStandardPaths>
-#include <QSysInfo>
-#include <QTextStream>
 #include <QUrl>
 
 #include <atomic>
 #include <chrono>
-#include <cstdio>
 #include <exception>
 #include <thread>
-#include <vector>
 
 #if defined(Q_OS_WIN)
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
 #include <windows.h>
-#include <dbghelp.h>
 #else
 #include <csignal>
-#include <cstring>
-#include <cxxabi.h>
-#include <dlfcn.h>
-#include <execinfo.h>
-#include <unistd.h>
 #endif
 
 namespace arachnel {
-
-#include "crash_log_internal.h"
 
 namespace {
 

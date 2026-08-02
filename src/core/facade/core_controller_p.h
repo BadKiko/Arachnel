@@ -43,10 +43,7 @@
     void removeJobsForEntry(const QString&);
     void pruneUnselectedAddonJobs(const QString&, const QStringList&);
     void pruneCancelledAddonJobs();
-    void markGameRunning(const LibraryGame&, qint64);
     void touchLastPlayed(const QString&);
-    void clearRunningGame();
-    void pollRunningGame();
     const JobEntry* findLatestJobForEntry(const QString&) const;
     bool entryHasActiveJob(const QString&) const;
     void showNotice(const QString&, bool = true);
@@ -68,7 +65,6 @@
     bool ensureRuntimeDependenciesForGame(const LibraryGame&);
     void setRuntimeSetupActive(const LibraryGame&, const QString&);
     void clearRuntimeSetup();
-    void launchGameAfterRuntimeSetup(const QString&);
     void scheduleOfficialPluginAutoUpdate();
     void runOfficialPluginAutoUpdate();
     void finishOfficialPluginAutoUpdate();
@@ -113,16 +109,11 @@
     QString m_userNotice;
     int m_userNoticeSerial = 0;
     QString m_lastPluginError;
-    QString m_runningGameId;
-    QString m_runningGameTitle;
-    QString m_runningGameCoverUrl;
-    qint64 m_runningProcessId = 0;
     bool m_runtimeSetupInProgress = false;
     QString m_runtimeSetupGameId;
     QString m_runtimeSetupTitle;
     QString m_runtimeSetupCoverUrl;
     QString m_runtimeSetupStatus;
-    QTimer* m_runningGameTimer = nullptr;
     bool m_applicationDataCleared = false;
     bool m_prepareShutdownDone = false;
     bool m_startupLibraryUpdatesHandled = false;

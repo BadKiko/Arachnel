@@ -4,6 +4,7 @@
 set(ARACHNEL_APP_SOURCES
     src/app/main.cpp
     src/app/crash_log.cpp
+    src/app/crash_log_internal.cpp
     src/app/settings_identity.cpp
     src/app/crash_log_report.cpp
 
@@ -81,15 +82,15 @@ set(ARACHNEL_APP_SOURCES
     src/core/platform/steam_shortcut_service.cpp
     src/core/settings/app_updater.cpp
     src/core/facade/core_controller.cpp
-    src/core/catalog/catalog_facade_1.cpp
-    src/core/catalog/catalog_facade_2.cpp
-    src/core/catalog/catalog_facade_3.cpp
+    src/core/catalog/catalog_facade_presentation.cpp
+    src/core/catalog/catalog_facade_query.cpp
+    src/core/catalog/catalog_facade_install.cpp
     src/core/facade/crash_facade.cpp
-    src/core/jobs/job_facade_1.cpp
-    src/core/jobs/job_facade_2.cpp
+    src/core/jobs/job_facade_lifecycle.cpp
+    src/core/jobs/job_facade_manual.cpp
     src/core/launch/launch_facade.cpp
-    src/core/library/library_facade_1.cpp
-    src/core/library/library_facade_2.cpp
+    src/core/library/library_facade_sync.cpp
+    src/core/library/library_facade_ops.cpp
     src/core/plugins/plugin_facade.cpp
     src/core/runtime/proton_facade.cpp
     src/core/facade/core_wiring_services.cpp

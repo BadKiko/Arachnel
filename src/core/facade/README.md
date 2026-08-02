@@ -9,9 +9,13 @@ properties and invokables while delegating work to domain services.
 - `core_controller.h/.cpp` define the QML singleton and lifecycle.
 - `core_controller_p.h` keeps composed state private.
 - `core_wiring_services.cpp` constructs services and connects their signals.
-- `catalog_facade_*`, `job_facade_*`, `library_facade_*`, `launch_facade.cpp`,
-  `plugin_facade.cpp` and `proton_facade.cpp` contain forwarding operations.
+- Domain façade TUs live next to their domain (`catalog_facade_*.cpp`,
+  `job_facade_*.cpp`, `library_facade_*.cpp`, `launch_facade.cpp`,
+  `plugin_facade.cpp`, `proton_facade.cpp`) and hold forwarding operations.
 - `crash_facade.*` forwards crash-report interactions.
+
+Façade splits are by concern (presentation / query / install, lifecycle /
+manual, sync / ops), not by line-count digit suffixes.
 
 ## Rules
 
@@ -20,5 +24,5 @@ models/properties, and present domain notices. Put new workflow state and logic
 in the domain that owns it, then wire the dependency here.
 
 Do not make QML construct domain services or access stores directly. Do not add
-source-specific branches here. If a façade `.cpp` approaches 400 lines, split
-the forwarding methods by domain as the existing files do.
+source-specific branches here. If a façade `.cpp` grows large, split forwarding
+methods by concern.
