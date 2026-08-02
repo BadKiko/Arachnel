@@ -151,6 +151,17 @@ bool GameMetadataService::cancelPending(const QString& entryId)
     return true;
 }
 
+bool GameMetadataService::cancelPendingCoverOnly(const QString& entryId)
+{
+    const int idx = indexOfPending(entryId);
+    if (idx < 0)
+        return false;
+    if (m_pending.at(idx).mode != MetadataFetchMode::CoverOnly)
+        return false;
+    m_pending.removeAt(idx);
+    return true;
+}
+
 void GameMetadataService::prependPending(PendingRequest request)
 {
     if (!request.playersOnly
@@ -242,11 +253,24 @@ void GameMetadataService::queueFetch(const QString& entryId, const QString& titl
             }
             return;
         }
+        // Screenshots alone are enough for peek - don't block on trailer refresh.
+        if (!cached.screenshotUrls.isEmpty()) {
+            emit metadataReady(entryId, cached);
+            if (!sizeAppId.isEmpty() && needsMediaRefresh(cached)) {
+                startKnownAppFetch(entryId, title, sizeAppId, mode, uiLanguage, cached);
+                return;
+            }
+            if (cached.sizeLabel.isEmpty() && !sizeAppId.isEmpty()) {
+                m_inFlight.insert(entryId);
+                requestDepotSize(entryId, title, sizeAppId);
+            }
+            return;
+        }
         if (!sizeAppId.isEmpty() && needsMediaRefresh(cached)) {
             startKnownAppFetch(entryId, title, sizeAppId, mode, uiLanguage, cached);
             return;
         }
-        if (!cached.screenshotUrls.isEmpty() || !cached.trailerUrl.isEmpty()) {
+        if (!cached.trailerUrl.isEmpty()) {
             emit metadataReady(entryId, cached);
             if (cached.sizeLabel.isEmpty() && !sizeAppId.isEmpty()) {
                 m_inFlight.insert(entryId);

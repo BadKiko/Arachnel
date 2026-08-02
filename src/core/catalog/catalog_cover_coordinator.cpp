@@ -626,7 +626,7 @@ void CatalogCoverCoordinator::cancelCatalogCover(const QString& entryId)
     ++m_cancels;
     auto it = m_plans.find(entryId);
     if (it == m_plans.end()) {
-        m_metadataService->cancelPending(entryId);
+        m_metadataService->cancelPendingCoverOnly(entryId);
         CatalogEntry* entry = m_findEntry ? m_findEntry(entryId) : nullptr;
         clearPendingFlag(entry);
         return;
@@ -638,7 +638,7 @@ void CatalogCoverCoordinator::cancelCatalogCover(const QString& entryId)
         ++m_abandoned;
 
     releasePlanRemote(entryId, plan);
-    m_metadataService->cancelPending(entryId);
+    m_metadataService->cancelPendingCoverOnly(entryId);
 
     if (abandoned) {
         plan.phase = PlanPhase::Idle;

@@ -249,7 +249,10 @@ Popup {
         if (!p)
             return false
         while (p) {
-            if (p.visible === false || p.opacity < 0.01 || p.enabled === false)
+            if (p.visible === false)
+                return false
+            // Only treat fully faded ancestors as hidden (tab unload / intentional hide).
+            if (p.opacity !== undefined && p.opacity < 0.01)
                 return false
             p = p.parent
         }

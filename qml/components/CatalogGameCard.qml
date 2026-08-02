@@ -141,6 +141,16 @@ Item {
         root.peekScreenshotUrls = (info && info.screenshotUrls) ? info.screenshotUrls : []
     }
 
+    function refreshPeekAfterEnrich() {
+        if (!root.peekArmed && !root.peekWaiting)
+            return
+        root.loadPeekScreenshots()
+        if (root.shotUrls.length > 0) {
+            root.peekWaiting = false
+            peekTimeout.stop()
+        }
+    }
+
     onPeekArmedChanged: {
         if (root.peekArmed)
             root.loadPeekScreenshots()
@@ -148,7 +158,18 @@ Item {
 
     onMetadataPendingChanged: {
         if (root.peekArmed || root.peekWaiting)
-            root.loadPeekScreenshots()
+            root.refreshPeekAfterEnrich()
+    }
+
+    // Full enrich does not flip metadataPending when the cover is already local —
+    // shelves hit this every time. Reload peek when metadata lands.
+    Connections {
+        target: Core
+        function onEntryMetadataChanged(entryId) {
+            if (entryId !== root.entryId)
+                return
+            root.refreshPeekAfterEnrich()
+        }
     }
 
     // After scroll stops, hover won't re-fire if the pointer never moved.
@@ -159,8 +180,21 @@ Item {
     }
 
     // GridView / ListView (catalog + shelves) expose the host flickable here.
+    // Discovery shelves also sit in a vertical Flickable - dismiss on that too.
     readonly property var hostFlickable: GridView.view ? GridView.view
                                                        : (ListView.view ? ListView.view : null)
+
+    readonly property var outerFlickable: {
+        let p = root.parent
+        while (p) {
+            if (p !== root.hostFlickable
+                    && p.contentY !== undefined
+                    && typeof p.moving === "boolean")
+                return p
+            p = p.parent
+        }
+        return null
+    }
 
     Timer {
         id: scrollSettleTimer
@@ -186,6 +220,27 @@ Item {
         }
         function onFlickingChanged() {
             if (root.hostFlickable && !root.hostFlickable.moving && !root.hostFlickable.flicking)
+                scrollSettleTimer.restart()
+        }
+    }
+
+    Connections {
+        target: root.outerFlickable
+        enabled: root.outerFlickable !== null
+        function onMovementStarted() {
+            scrollSettleTimer.stop()
+            root.dismissPeek()
+        }
+        function onFlickStarted() {
+            scrollSettleTimer.stop()
+            root.dismissPeek()
+        }
+        function onMovingChanged() {
+            if (root.outerFlickable && !root.outerFlickable.moving && !root.outerFlickable.flicking)
+                scrollSettleTimer.restart()
+        }
+        function onFlickingChanged() {
+            if (root.outerFlickable && !root.outerFlickable.moving && !root.outerFlickable.flicking)
                 scrollSettleTimer.restart()
         }
     }
@@ -354,13 +409,16 @@ Item {
                     }
                     root.peekWaiting = true
                     Core.enrichCatalogEntry(root.entryId)
+                    // Cache hits emit metadataReady synchronously inside enrich —
+                    // entryInfo is empty until that apply finishes; pull next tick.
+                    Qt.callLater(root.refreshPeekAfterEnrich)
                     peekTimeout.restart()
                 }
             }
 
             Timer {
                 id: peekTimeout
-                interval: 6500
+                interval: 12000
                 repeat: false
                 onTriggered: root.peekWaiting = false
             }

@@ -56,6 +56,8 @@ public:
     // Drop pending (not in-flight) work when a GridView delegate is recycled.
     // Returns true if a queued request was removed.
     bool cancelPending(const QString& entryId);
+    /** Only drops CoverOnly queue items — keeps Full enrich for screenshot peek. */
+    bool cancelPendingCoverOnly(const QString& entryId);
     void clearCachedCover(const QString& title);
     GameMetadata metadataForTitle(const QString& title) const;
 

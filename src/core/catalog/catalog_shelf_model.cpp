@@ -116,7 +116,8 @@ bool CatalogShelfModel::notifyEntryChanged(const QString& id)
         return false;
     const QModelIndex idx = index(it.value());
     emit dataChanged(idx, idx,
-                     {CoverUrlRole, MetadataPendingRole, TitleRole, CurrentPlayersRole});
+                     {CoverUrlRole, MetadataPendingRole, TitleRole, CurrentPlayersRole,
+                      ScreenshotUrlsRole, SizeLabelRole, HypeScoreRole});
     return true;
 }
 
