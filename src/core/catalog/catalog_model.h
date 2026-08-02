@@ -74,8 +74,10 @@ public:
     void setVisibleIndices(QVector<int> indices);
     /** Same as setVisibleIndices but indices are already ordered for current sortMode. */
     void setVisibleIndicesPresorted(QVector<int> indices);
-    /** Notify a visible row that its cache entry changed. Returns false if not visible. */
-    bool notifyEntryChanged(const QString& id);
+    /** Notify a visible row that its cache entry changed. Returns false if not visible.
+     *  Empty roles → cover/metadata/players only (not all roles — avoids QML rebinding
+     *  screenshotUrls/description on every cover apply). */
+    bool notifyEntryChanged(const QString& id, const QList<int>& roles = {});
     int indexOfEntry(const QString& id) const;
     const CatalogEntry* entryById(const QString& id) const;
     Q_INVOKABLE QVariantMap entryInfo(const QString& id) const;

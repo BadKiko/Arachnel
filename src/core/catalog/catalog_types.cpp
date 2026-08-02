@@ -52,6 +52,27 @@ void prepareCatalogEntry(CatalogEntry& entry)
             entry.playModeMask |= kPlayModeMulti;
     }
     entry.hypeScore = computeHypeScore(entry);
+
+    // List-resident row: drop cold fields (enriched again on open).
+    entry.genreTokens.clear();
+    entry.genreTokens.squeeze();
+    entry.genres.clear();
+    entry.description.clear();
+    entry.screenshotUrls.clear();
+    entry.screenshotUrls.squeeze();
+    entry.trailerUrl.clear();
+    entry.trailerThumbnailUrl.clear();
+    entry.parentEntryId.clear();
+    entry.uploadDate.clear();
+    if (!entry.steamAppId.isEmpty()) {
+        if (entry.coverUrl.startsWith(QLatin1String("http"), Qt::CaseInsensitive))
+            entry.coverUrl.clear();
+        entry.remoteCoverUrl.clear();
+        entry.magnetUris.clear();
+        entry.magnetUris.squeeze();
+        entry.sourcePageUrl.clear();
+    }
+    entry.genreKeys.squeeze();
 }
 
 quint8 playModeMaskFromEntry(const QStringList& genreTokens, InstallKind installKind)

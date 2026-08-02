@@ -58,12 +58,18 @@ MD.ApplicationWindow {
     function openCatalogWithQuery(query) {
         // Discover "All games" / search / filters → Catalog tab in the rail.
         root.goToPage(2)
-        Qt.callLater(function () {
+        const q = query || ""
+        function tryShow(attempt) {
             const pages = pageStack.currentItem
-            if (!pages || !pages.catalogBrowsePage)
+            const page = pages && pages.catalogBrowsePage
+            if (page) {
+                page.showBrowseAll(q)
                 return
-            pages.catalogBrowsePage.showBrowseAll(query || "")
-        })
+            }
+            if (attempt < 30)
+                Qt.callLater(function () { tryShow(attempt + 1) })
+        }
+        Qt.callLater(function () { tryShow(0) })
     }
 
     function openGameDetails(gameId, fromCatalog) {
@@ -156,7 +162,8 @@ MD.ApplicationWindow {
             // Always follow the window rail index. Writing this property used to
             // break the binding and leave Discover visible while Catalog was selected.
             readonly property int pageIndex: root.pageIndex
-            property alias catalogBrowsePage: catalogBrowsePage
+            // Loader.item — null until Catalog tab is opened once.
+            readonly property var catalogBrowsePage: catalogBrowseLoader.item
 
             transformOrigin: Item.Center
 
@@ -166,6 +173,9 @@ MD.ApplicationWindow {
                     const child = children[i]
                     if (child && child.fixViewport)
                         child.fixViewport()
+                    // Loader hosts CatalogPage as item.
+                    if (child && child.item && child.item.fixViewport)
+                        child.item.fixViewport()
                 }
             }
 
@@ -197,19 +207,26 @@ MD.ApplicationWindow {
                 }
             }
 
-            CatalogPage {
+            Loader {
+                id: discoverLoader
                 anchors.fill: parent
+                active: mainPages.pageIndex === 1
+                visible: status === Loader.Ready
                 opacity: mainPages.pageIndex === 1 ? 1 : 0
-                enabled: mainPages.pageIndex === 1 && opacity > 0.99
-                browseOnly: false
-                peekLeftEdge: navRail.width
-                onOpenGame: function (id) { root.openGameDetails(id, true) }
-                onOpenSettings: settingsSheet.openSettings()
-                onAddSourceRequested: settingsSheet.openPlugins()
-                onOpenFullCatalog: function (query) {
-                    // Leave Discover shelves as-is; Catalog tab owns the full list.
-                    browseAllMode = false
-                    root.openCatalogWithQuery(query)
+                // Unload Discover tree while on other tabs — saves QML/bindings RAM.
+                sourceComponent: Component {
+                    CatalogPage {
+                        anchors.fill: parent
+                        browseOnly: false
+                        peekLeftEdge: navRail.width
+                        onOpenGame: function (id) { root.openGameDetails(id, true) }
+                        onOpenSettings: settingsSheet.openSettings()
+                        onAddSourceRequested: settingsSheet.openPlugins()
+                        onOpenFullCatalog: function (query) {
+                            browseAllMode = false
+                            root.openCatalogWithQuery(query)
+                        }
+                    }
                 }
 
                 Behavior on opacity {
@@ -220,16 +237,22 @@ MD.ApplicationWindow {
                 }
             }
 
-            CatalogPage {
-                id: catalogBrowsePage
+            Loader {
+                id: catalogBrowseLoader
                 anchors.fill: parent
+                active: mainPages.pageIndex === 2
+                visible: status === Loader.Ready
                 opacity: mainPages.pageIndex === 2 ? 1 : 0
-                enabled: mainPages.pageIndex === 2 && opacity > 0.99
-                browseOnly: true
-                peekLeftEdge: navRail.width
-                onOpenGame: function (id) { root.openGameDetails(id, true) }
-                onOpenSettings: settingsSheet.openSettings()
-                onAddSourceRequested: settingsSheet.openPlugins()
+                sourceComponent: Component {
+                    CatalogPage {
+                        anchors.fill: parent
+                        browseOnly: true
+                        peekLeftEdge: navRail.width
+                        onOpenGame: function (id) { root.openGameDetails(id, true) }
+                        onOpenSettings: settingsSheet.openSettings()
+                        onAddSourceRequested: settingsSheet.openPlugins()
+                    }
+                }
 
                 Behavior on opacity {
                     NumberAnimation {

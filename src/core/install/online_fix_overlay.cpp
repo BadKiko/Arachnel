@@ -418,29 +418,21 @@ OnlineFixOverlayState detectOnlineFixOverlay(const QString& installPath)
     state.overlayDir = dirs.first();
     for (const QString& path : dirs) {
         const QDir dir(path);
-        if (dir.exists(QStringLiteral("winmm.dll")) || dir.exists(QStringLiteral("SteamFix64.dll"))
-            || dir.exists(QStringLiteral("SteamFix32.dll"))
-            || dir.exists(QStringLiteral("OnlineFix64.dll"))
-            || dir.exists(QStringLiteral("OnlineFix32.dll"))
-            || dir.exists(QStringLiteral("OnlineFix.dll"))
-            || dir.exists(QStringLiteral("SteamOverlay32.dll"))
-            || dir.exists(QStringLiteral("SteamFix.ini"))
-            || dir.exists(QStringLiteral("OnlineFix.ini"))) {
-            state.enabled = true;
-            state.overlayDir = path;
-            break;
+        // Enabled only when overlay DLLs are active. SteamFix.ini alone stays after disable.
+        bool hasActiveDll = false;
+        for (const QString& name : overlayDllNames()) {
+            if (dir.exists(name)) {
+                hasActiveDll = true;
+                break;
+            }
         }
-        // Fallback mode: FakeAppId via steam_appid.txt when only SteamFix.ini remains
-        // (e.g. 32-bit Unity where x64 winmm was removed because it blocked LoadLibrary).
-        if ((dir.exists(QStringLiteral("SteamFix.ini")) || dir.exists(QStringLiteral("OnlineFix.ini")))
-            && dir.exists(QStringLiteral("steam_appid.txt"))) {
+        if (hasActiveDll) {
             state.enabled = true;
             state.overlayDir = path;
             break;
         }
     }
     if (!state.enabled) {
-        // Disabled-only: still present.
         for (const QString& path : dirs) {
             if (dirHasDisabledOverlay(QDir(path))) {
                 state.overlayDir = path;

@@ -117,6 +117,10 @@ void CoverImageCache::rememberPositive(const QString& remoteUrl, const QString& 
 {
     if (remoteUrl.isEmpty() || localUrl.isEmpty())
         return;
+    // Soft cap on the positive URL map.
+    constexpr int kMaxPositive = 8192;
+    if (m_positiveLocal.size() >= kMaxPositive)
+        m_positiveLocal.clear();
     m_positiveLocal.insert(remoteUrl, localUrl);
 }
 
@@ -211,8 +215,9 @@ void CoverImageCache::trimPending()
                 break;
             }
         }
+        // Never drop Visible - jump-scroll can briefly queue a full viewport.
         if (dropIdx < 0)
-            dropIdx = m_pending.size() - 1; // oldest Visible at the back
+            break;
         const QString url = m_pending.takeAt(dropIdx).url;
         m_pendingPriority.remove(url);
     }
@@ -251,6 +256,11 @@ void CoverImageCache::release(const QString& remoteUrl)
         preemptForVisible();
     }
     startNext();
+}
+
+bool CoverImageCache::isInFlight(const QString& remoteUrl) const
+{
+    return !remoteUrl.isEmpty() && m_inFlight.contains(remoteUrl);
 }
 
 void CoverImageCache::ensure(const QString& remoteUrl, CoverFetchPriority priority)

@@ -5,6 +5,7 @@
 
 #include <QCoreApplication>
 #include <QDate>
+#include <QHash>
 #include <QLocale>
 
 #include <algorithm>
@@ -132,7 +133,8 @@ QVariant CatalogModel::data(const QModelIndex& index, int role) const
     case DescriptionRole:
         return entry->description;
     case GenresRole:
-        return entry->genres;
+        return entry->genreKeys.isEmpty() ? entry->genres
+                                          : entry->genreKeys.join(QStringLiteral(", "));
     case InstallKindRole:
         return static_cast<int>(entry->installKind);
     case InstallKindLabelRole:
@@ -154,7 +156,9 @@ QVariant CatalogModel::data(const QModelIndex& index, int role) const
     case HypeScoreRole:
         return entry->hypeScore;
     case ScreenshotUrlsRole:
-        return QVariant::fromValue(entry->screenshotUrls);
+        // List/grid cards must not bind screenshots — peek/details use entryInfo().
+        // Returning empty here avoids QStringList wrapping on every cover dataChanged.
+        return QVariant::fromValue(QStringList{});
     default:
         return {};
     }
@@ -267,13 +271,19 @@ void CatalogModel::setVisibleIndicesPresorted(QVector<int> indices)
     invalidateScrubStops();
 }
 
-bool CatalogModel::notifyEntryChanged(const QString& id)
+bool CatalogModel::notifyEntryChanged(const QString& id, const QList<int>& roles)
 {
     const auto it = m_idToRow.constFind(id);
     if (it == m_idToRow.cend())
         return false;
     const QModelIndex idx = index(it.value());
-    emit dataChanged(idx, idx);
+    if (roles.isEmpty()) {
+        emit dataChanged(idx, idx,
+                         {CoverUrlRole, MetadataPendingRole, TitleRole, CurrentPlayersRole,
+                          HypeScoreRole});
+    } else {
+        emit dataChanged(idx, idx, roles);
+    }
     return true;
 }
 
@@ -446,12 +456,23 @@ QVariantList CatalogModel::buildScrubStops() const
     switch (m_sortMode) {
     case SortTitleAsc:
     case SortTitleDesc: {
+        // One pass for A-Z + '#'.
         static const char kLetters[] = "#ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        QHash<QChar, int> firstRow;
+        firstRow.reserve(28);
+        for (int row = 0; row < m_indices.size(); ++row) {
+            const CatalogEntry* entry = entryAtRow(row);
+            if (!entry)
+                continue;
+            const QChar letter = catalogIndexLetter(entry->titleLower);
+            if (!firstRow.contains(letter))
+                firstRow.insert(letter, row);
+        }
         for (const char* p = kLetters; *p; ++p) {
-            const QString letter = QString(QLatin1Char(*p));
-            const int row = indexForLetter(letter);
-            if (row >= 0)
-                stops.append(scrubStop(letter, row));
+            const QChar letter = QLatin1Char(*p);
+            const auto it = firstRow.constFind(letter);
+            if (it != firstRow.cend())
+                stops.append(scrubStop(QString(letter), it.value()));
         }
         break;
     }

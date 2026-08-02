@@ -202,7 +202,9 @@ Item {
         anchors.bottomMargin: MD.Token.spacing.medium
         visible: !page.listViewMode
         clip: true
-        model: Core.catalog
+        // Unbind when off-tab / hidden — a second CatalogPage otherwise still eats
+        // beginResetModel for the full Steam catalog (~55k) and freezes the UI.
+        model: (root.visible && page.enabled) ? Core.catalog : null
         cellWidth: page.cellWidth
         cellHeight: page.cellHeight
         cacheBuffer: page.cellHeight * 2
@@ -267,7 +269,7 @@ Item {
         anchors.bottomMargin: MD.Token.spacing.medium
         visible: page.listViewMode
         clip: true
-        model: Core.catalog
+        model: (root.visible && page.enabled) ? Core.catalog : null
         spacing: MD.Token.spacing.extra_small
         cacheBuffer: page.listRowHeight * 3
         reuseItems: true

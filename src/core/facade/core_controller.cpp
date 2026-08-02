@@ -229,12 +229,12 @@ CoreController::CoreController(QObject* parent)
     });
     QTimer::singleShot(0, this, [this]() {
         if (!m_libraryController)
-            return;
+                    return;
         using Candidates = QVector<LibraryController::ScanCandidate>;
         auto* watcher = new QFutureWatcher<Candidates>(this);
         connect(watcher, &QFutureWatcher<Candidates>::finished, this, [this, watcher]() {
             const Candidates found = watcher->result();
-            watcher->deleteLater();
+                        watcher->deleteLater();
             if (m_libraryController)
                 m_libraryController->commitScanCandidates(found);
         });

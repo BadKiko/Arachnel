@@ -104,7 +104,9 @@ QString CatalogCoverCoordinator::resolveCatalogRemote(const CatalogEntry& entry)
         return entry.remoteCoverUrl;
     if (entry.steamAppId.isEmpty())
         return {};
-    return m_remoteBySteamAppId.value(entry.steamAppId);
+    if (const QString mapped = m_remoteBySteamAppId.value(entry.steamAppId); isHttpUrl(mapped))
+        return mapped;
+    return steamThumbUrl(entry.steamAppId);
 }
 
 void CatalogCoverCoordinator::rebuildRemoteCoverIndex()
@@ -112,18 +114,10 @@ void CatalogCoverCoordinator::rebuildRemoteCoverIndex()
     m_remoteBySteamAppId.clear();
     if (!m_entries)
         return;
-    for (const CatalogEntry& entry : m_entries()) {
+    for (const CatalogEntry& entry : std::as_const(m_entries())) {
         if (entry.steamAppId.isEmpty() || !isHttpUrl(entry.remoteCoverUrl))
             continue;
-        const auto it = m_remoteBySteamAppId.constFind(entry.steamAppId);
-        if (it == m_remoteBySteamAppId.cend()) {
-            m_remoteBySteamAppId.insert(entry.steamAppId, entry.remoteCoverUrl);
-            continue;
-        }
-        const bool incomingBetter = entry.remoteCoverUrl.contains(QStringLiteral("library_600x900"))
-            || entry.remoteCoverUrl.contains(QStringLiteral("library_capsule"));
-        const bool existingHeader = it.value().contains(QStringLiteral("/header."));
-        if (incomingBetter && existingHeader)
+        if (!m_remoteBySteamAppId.contains(entry.steamAppId))
             m_remoteBySteamAppId.insert(entry.steamAppId, entry.remoteCoverUrl);
     }
 }
@@ -350,8 +344,6 @@ void CatalogCoverCoordinator::startOrContinuePlan(const QString& entryId, CoverP
 
     // Instant disk hits before any network.
     const QString catalogRemote = resolveCatalogRemote(*entry);
-    if (entry->remoteCoverUrl.isEmpty() && !catalogRemote.isEmpty())
-        entry->remoteCoverUrl = catalogRemote;
 
     QStringList probe;
     if (!entry->steamAppId.isEmpty()) {
@@ -577,15 +569,17 @@ void CatalogCoverCoordinator::requestCatalogCover(const QString& entryId,
     if (static_cast<int>(priority) > static_cast<int>(plan.priority))
         plan.priority = priority;
 
-    // Strip stale non-file display URLs.
+    // Strip stale non-file display URLs without spamming QML (http was never shown).
     if (!entry->coverUrl.isEmpty()) {
         const bool okLocal = entry->coverUrl.startsWith(QStringLiteral("file:"))
             && !m_coverCache->localUrlFor(entry->coverUrl).isEmpty();
         if (!okLocal) {
             if (isHttpUrl(entry->coverUrl) && entry->remoteCoverUrl.isEmpty())
                 entry->remoteCoverUrl = entry->coverUrl;
+            const bool wasFile = entry->coverUrl.startsWith(QStringLiteral("file:"));
             entry->coverUrl.clear();
-            m_catalog->notifyEntryChanged(entryId);
+            if (wasFile)
+                m_catalog->notifyEntryChanged(entryId);
         }
     }
 
@@ -630,7 +624,14 @@ void CatalogCoverCoordinator::requestCatalogCover(const QString& entryId,
 void CatalogCoverCoordinator::cancelCatalogCover(const QString& entryId)
 {
     ++m_cancels;
-    CoverPlan& plan = m_plans[entryId];
+    auto it = m_plans.find(entryId);
+    if (it == m_plans.end()) {
+        m_metadataService->cancelPending(entryId);
+        CatalogEntry* entry = m_findEntry ? m_findEntry(entryId) : nullptr;
+        clearPendingFlag(entry);
+        return;
+    }
+    CoverPlan& plan = it.value();
     const bool abandoned = plan.phase == PlanPhase::Fetching;
     plan.interested = false;
     if (abandoned)
@@ -646,6 +647,9 @@ void CatalogCoverCoordinator::cancelCatalogCover(const QString& entryId)
 
     CatalogEntry* entry = m_findEntry ? m_findEntry(entryId) : nullptr;
     clearPendingFlag(entry);
+
+    if (!abandoned && plan.phase != PlanPhase::Fetching)
+        m_plans.erase(it);
 }
 
 void CatalogCoverCoordinator::invalidateCatalogCover(const QString& entryId)

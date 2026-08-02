@@ -1,6 +1,7 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QIcon>
+#include <QPixmapCache>
 #include <QQmlApplicationEngine>
 #include <QQmlError>
 #include <QStyleHints>
@@ -109,6 +110,7 @@ int main(int argc, char* argv[])
         app.setWindowIcon(windowIcon);
 
     arachnel::core::registerCoreTypes();
+    QPixmapCache::setCacheLimit(24 * 1024);
 
     int exitCode = 1;
     {

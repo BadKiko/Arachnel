@@ -15,13 +15,13 @@ Item {
     required property string sizeLabel
     required property string installKindLabel
     required property bool metadataPending
-    // Required so GridView injects the role; shotUrls stays empty until peek arms.
-    required property var screenshotUrls
 
     property bool compactRow: false
     property int currentPlayers: -1
     property bool peekArmed: false
     property bool peekWaiting: false
+    /** Loaded from entryInfo only when peek arms — not a GridView model role. */
+    property var peekScreenshotUrls: []
     /** Pass navRail.width so screenshot peek doesn't render over the nav rail. */
     property real peekLeftEdge: 0
 
@@ -32,7 +32,7 @@ Item {
     readonly property var shotUrls: {
         if (!root.peekArmed && !root.peekWaiting)
             return []
-        const raw = root.screenshotUrls
+        const raw = root.peekScreenshotUrls
         if (raw === undefined || raw === null)
             return []
         const len = raw.length !== undefined ? raw.length : 0
@@ -80,13 +80,13 @@ Item {
     readonly property string displayCoverUrl: coverUrl.startsWith("file:") ? coverUrl : ""
 
     property bool invalidateArmed: true
-    // Track id we asked covers for - GridView updates entryId before we can cancel the old one.
+    // coverWatchId: GridView can change entryId before we cancel the previous request.
     property string coverWatchId: ""
 
     function requestCover() {
-        if (!entryId.length)
+        if (!root.enabled || !root.visible)
             return
-        if (displayCoverUrl.length)
+        if (!entryId.length)
             return
         Core.requestCatalogCover(entryId)
     }
@@ -128,7 +128,27 @@ Item {
         scrollSettleTimer.stop()
         root.peekArmed = false
         root.peekWaiting = false
+        root.peekScreenshotUrls = []
         screenshotPeek.hideNow()
+    }
+
+    function loadPeekScreenshots() {
+        if (!root.entryId.length) {
+            root.peekScreenshotUrls = []
+            return
+        }
+        const info = Core.catalog.entryInfo(root.entryId)
+        root.peekScreenshotUrls = (info && info.screenshotUrls) ? info.screenshotUrls : []
+    }
+
+    onPeekArmedChanged: {
+        if (root.peekArmed)
+            root.loadPeekScreenshots()
+    }
+
+    onMetadataPendingChanged: {
+        if (root.peekArmed || root.peekWaiting)
+            root.loadPeekScreenshots()
     }
 
     // After scroll stops, hover won't re-fire if the pointer never moved.
@@ -179,7 +199,6 @@ Item {
         root.dismissPeek()
     }
 
-    // GridView reuse was missing - pooled cards left Overlay popups behind.
     function onDelegateRecycled() {
         invalidateArmed = true
         root.dismissPeek()
@@ -188,11 +207,13 @@ Item {
 
     ListView.onReused: root.onDelegateRecycled()
     ListView.onPooled: {
+        requestTimer.stop()
         root.cancelCover()
         root.dismissPeek()
     }
     GridView.onReused: root.onDelegateRecycled()
     GridView.onPooled: {
+        requestTimer.stop()
         root.cancelCover()
         root.dismissPeek()
     }
@@ -236,6 +257,8 @@ Item {
             enableShimmer: false
             hoverScaleEnabled: false
             cornerRadius: MD.Token.shape.corner.medium
+            decodeWidth: 104
+            decodeHeight: 140
             onClicked: root.openDetails(root.entryId)
             onLoadFailed: root.onPosterFailed()
         }
@@ -284,6 +307,8 @@ Item {
                 enableShimmer: true
                 cornerRadius: MD.Token.shape.corner.large
                 hoverScaleEnabled: false
+                decodeWidth: Math.max(120, Math.round(width * 1.25))
+                decodeHeight: Math.max(160, Math.round(height * 1.25))
                 // Card owns a full-size MouseArea above MD.Image (layer/RoundClip
                 // + hover scrim made poster's own hover only work in a tiny zone).
                 inputEnabled: false
@@ -321,6 +346,7 @@ Item {
                 onTriggered: {
                     if (!posterMouse.containsMouse || !root.visible || !root.enabled)
                         return
+                    root.loadPeekScreenshots()
                     root.peekArmed = true
                     if (root.shotUrls.length > 0) {
                         root.peekWaiting = false

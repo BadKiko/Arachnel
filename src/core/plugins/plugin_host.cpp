@@ -372,13 +372,16 @@ bool PluginHost::loadPluginDir(const QString& dirPath)
     return true;
 }
 
-QVector<CatalogEntry> PluginHost::loadPluginCatalog(const QString& id) const
+QByteArray PluginHost::loadPluginCatalogPayload(const QString& id, QByteArray* payloadSha) const
 {
+    if (payloadSha)
+        payloadSha->clear();
     const auto it = m_plugins.constFind(id);
     if (it == m_plugins.constEnd() || !it.value() || !it.value()->instance)
         return {};
 
     LoadedPlugin* loaded = it.value();
+    QByteArray bytes;
     if (loaded->apiVersion >= 4 && loaded->catalogJsonFn && loaded->catalogJsonFreeFn) {
         char* buf = nullptr;
         size_t len = 0;
@@ -389,13 +392,25 @@ QVector<CatalogEntry> PluginHost::loadPluginCatalog(const QString& id) const
             logDiagnostic(QStringLiteral("Plugin %1 catalog_json failed (rc=%2)").arg(id).arg(rc));
             return {};
         }
-        const QByteArray bytes(buf, static_cast<int>(len));
+        bytes = QByteArray(buf, static_cast<int>(len));
         loaded->catalogJsonFreeFn(buf);
-        CatalogDiskCache::savePayload(id, bytes, {});
-        return parsePluginCatalogJson(bytes, id);
+    } else {
+        bytes = serializePluginCatalogJson(loaded->instance->catalog());
     }
+    if (bytes.isEmpty())
+        return {};
+    CatalogDiskCache::savePayload(id, bytes, {});
+    if (payloadSha)
+        *payloadSha = CatalogDiskCache::payloadSha256(bytes);
+    return bytes;
+}
 
-    return loaded->instance->catalog();
+QVector<CatalogEntry> PluginHost::loadPluginCatalog(const QString& id) const
+{
+    const QByteArray bytes = loadPluginCatalogPayload(id);
+    if (bytes.isEmpty())
+        return {};
+    return parsePluginCatalogJson(bytes, id);
 }
 
 QVector<SourcePluginInfo> PluginHost::pluginInfos() const

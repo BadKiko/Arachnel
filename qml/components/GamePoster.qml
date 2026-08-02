@@ -40,11 +40,29 @@ Item {
     readonly property bool imageLoading: hasSource
                                          && (coverProbe.status === Image.Loading
                                              || coverProbe.status === Image.Null)
-    readonly property bool showShimmer: root.enableShimmer && !coverReady && (awaiting || imageLoading)
+    readonly property bool wantShimmer: root.enableShimmer && !coverReady && (awaiting || imageLoading)
+    readonly property bool showShimmer: root.wantShimmer && !root.shimmerTimedOut
+    property bool shimmerTimedOut: false
     readonly property bool hovered: (root.inputEnabled && mouseArea.containsMouse)
                                     || root.externalHovered
 
     onSourceChanged: loadFailedEmitted = false
+
+    // Don't animate forever on missing covers — static placeholder after 2.5s.
+    Timer {
+        id: shimmerCapTimer
+        interval: 2500
+        onTriggered: root.shimmerTimedOut = true
+    }
+    onWantShimmerChanged: {
+        if (root.wantShimmer) {
+            root.shimmerTimedOut = false
+            shimmerCapTimer.restart()
+        } else {
+            shimmerCapTimer.stop()
+            root.shimmerTimedOut = false
+        }
+    }
 
     readonly property string monogram: {
         const s = (seed || fallbackText || "?").trim()

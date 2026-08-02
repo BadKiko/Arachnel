@@ -57,6 +57,7 @@ public:
 
     // Drop from pending queue. In-flight is demoted so Visible can preempt the slot.
     void release(const QString& remoteUrl);
+    bool isInFlight(const QString& remoteUrl) const;
 
     // Delete disk file, clear negative cache for this URL, drop from pending.
     // In-flight replies are marked ignored so they cannot rewrite the file.
@@ -129,7 +130,7 @@ private:
 
     // Viewport covers first; keep queue short so scroll-churn cannot bury them.
     static constexpr int kMaxConcurrent = 8;
-    static constexpr int kMaxPending = 24;
+    static constexpr int kMaxPending = 48;
     static constexpr int kLatencyWindow = 64;
     // Soft negative TTL - catalog refresh also clears via clearAllFailed().
     static constexpr qint64 kNegativeTtlMs = 60LL * 60 * 1000;

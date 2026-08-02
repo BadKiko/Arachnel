@@ -137,18 +137,25 @@ const CatalogComponent* CoreController::findCatalogAddon(const CatalogEntry& ent
 
 void CoreController::applyCachedMetadata(CatalogEntry& entry) const
 {
-    const GameMetadata metadata = m_metadataService->metadataForTitle(entry.title);
-    // Display covers resolve lazily in CatalogCoverCoordinator (file: only).
-    // Migrate plugin/feed HTTPS covers into remoteCoverUrl before clearing display.
     if (!entry.coverUrl.startsWith(QStringLiteral("file:"))) {
-        if (entry.remoteCoverUrl.isEmpty()
-            && (entry.coverUrl.startsWith(QStringLiteral("http://"), Qt::CaseInsensitive)
-                || entry.coverUrl.startsWith(QStringLiteral("https://"), Qt::CaseInsensitive))) {
+        const bool http = entry.coverUrl.startsWith(QStringLiteral("http://"), Qt::CaseInsensitive)
+                          || entry.coverUrl.startsWith(QStringLiteral("https://"), Qt::CaseInsensitive);
+        if (entry.steamAppId.isEmpty() && entry.remoteCoverUrl.isEmpty() && http)
             entry.remoteCoverUrl = entry.coverUrl;
-        }
         entry.coverUrl.clear();
     }
-    applyMetadataToEntry(entry, metadata);
+    const GameMetadata metadata = m_metadataService->metadataForTitle(entry.title);
+    if (!metadata.steamAppId.isEmpty() && entry.steamAppId.isEmpty())
+        entry.steamAppId = metadata.steamAppId;
+    if (metadata.recommendationsTotal > 0)
+        entry.recommendationsTotal = metadata.recommendationsTotal;
+    if (metadata.metacriticScore > 0)
+        entry.metacriticScore = metadata.metacriticScore;
+    if (metadata.currentPlayers >= 0) {
+        entry.currentPlayers = metadata.currentPlayers;
+        entry.playersFetchedAt = metadata.playersFetchedAt;
+    }
+    prepareCatalogEntry(entry);
 }
 
 QString CoreController::sourceWebsiteFor(const QString& sourceId) const
@@ -163,11 +170,13 @@ QString CoreController::sourceWebsiteFor(const QString& sourceId) const
 void CoreController::applyMetadataToEntry(CatalogEntry& entry,
                                           const GameMetadata& metadata) const
 {
+    // Full enrich for a single opened game / peek — cold fields OK on one row.
     if (!metadata.description.isEmpty())
         entry.description = metadata.description;
     if (!metadata.genres.isEmpty()) {
         // Keep Ryuu DRM token when Steam store genres replace the catalog string.
-        const bool hadDrm = entry.genres.contains(QStringLiteral("DRM"), Qt::CaseInsensitive);
+        const bool hadDrm = entry.genreKeys.contains(QStringLiteral("DRM"))
+                            || entry.genres.contains(QStringLiteral("DRM"), Qt::CaseInsensitive);
         entry.genres = metadata.genres;
         if (hadDrm && !entry.genres.contains(QStringLiteral("DRM"), Qt::CaseInsensitive)) {
             if (!entry.genres.isEmpty())
@@ -205,6 +214,14 @@ void CoreController::applyMetadataToEntry(CatalogEntry& entry,
         entry.playersFetchedAt = metadata.playersFetchedAt;
     }
     prepareCatalogEntry(entry);
+    if (!metadata.description.isEmpty())
+        entry.description = metadata.description;
+    if (!metadata.screenshotUrls.isEmpty())
+        entry.screenshotUrls = metadata.screenshotUrls;
+    if (!metadata.trailerUrl.isEmpty())
+        entry.trailerUrl = metadata.trailerUrl;
+    if (!metadata.trailerThumbnailUrl.isEmpty())
+        entry.trailerThumbnailUrl = metadata.trailerThumbnailUrl;
 }
 
 void CoreController::syncEntryToCatalogModel(const QString& entryId)

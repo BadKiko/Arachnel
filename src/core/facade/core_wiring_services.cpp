@@ -77,6 +77,16 @@ void CoreController::initializeServices()
                                              const QStringList& sourceIds, const QString& query) {
         if (!m_installKindProbe)
             return;
+        // applyCachedKinds is non-const and would detach a shared QVector.
+        bool anyMagnet = false;
+        for (const CatalogEntry& entry : std::as_const(entries)) {
+            if (!entry.magnetUris.isEmpty()) {
+                anyMagnet = true;
+                break;
+            }
+        }
+        if (!anyMagnet)
+            return;
         m_installKindProbe->applyCachedKinds(entries);
         for (const QString& sourceId : sourceIds)
             m_installKindProbe->queueCatalog(sourceId, entries, query);
@@ -91,7 +101,6 @@ void CoreController::initializeServices()
     catalogHooks.applyFilter = [this](const QString& query) { applyCatalogFilter(query); };
     catalogHooks.rebuildGenres = [this]() { rebuildAvailableCatalogGenres(); };
     catalogHooks.warmCovers = [this]() {
-        // Don't block first paint / catalog merge with cover I/O.
         QTimer::singleShot(750, this, [this]() { warmActiveCatalogCovers(); });
     };
     catalogHooks.catalogReady = [this]() { onCatalogReady(); };
