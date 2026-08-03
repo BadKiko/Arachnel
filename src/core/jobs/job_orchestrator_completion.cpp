@@ -125,7 +125,10 @@ void JobOrchestrator::toggleJobPause(const QString& jobId)
         return;
 
     JobEntry job = jobFromModelRow(row);
-    if (isJobTerminal(job.status) || job.httpDownload || job.pluginDownload)
+    if (isJobTerminal(job.status) || job.httpDownload)
+        return;
+    // Plugin-owned pause is driven by CoreController -> PluginHost; this path is torrents only.
+    if (job.pluginDownload)
         return;
 
     if (job.status == QStringLiteral("paused")) {
@@ -140,6 +143,25 @@ void JobOrchestrator::toggleJobPause(const QString& jobId)
         return;
     }
 
+    updateJobInModel(job);
+    persistJob(job);
+}
+
+void JobOrchestrator::setPluginDownloadPaused(const QString& jobId, bool paused)
+{
+    const int row = m_jobs->indexOfJob(jobId);
+    if (row < 0)
+        return;
+    JobEntry job = jobFromModelRow(row);
+    if (!job.pluginDownload || isJobTerminal(job.status))
+        return;
+    if (paused) {
+        job.status = QStringLiteral("paused");
+        job.detail = QStringLiteral("Paused");
+    } else {
+        job.status = QStringLiteral("downloading");
+        job.detail = QStringLiteral("Resuming…");
+    }
     updateJobInModel(job);
     persistJob(job);
 }

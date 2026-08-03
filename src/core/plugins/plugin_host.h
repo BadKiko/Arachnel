@@ -69,6 +69,7 @@ public:
     void runOwnedDownloadAsync(ISourcePlugin* plugin, const InstallContext& ctx,
                                OwnedProgressCallback onProgress, InstallCallback onFinished);
     void cancelOwnedDownload(const QString& pluginId, const QString& jobId);
+    void setOwnedDownloadPaused(const QString& pluginId, const QString& jobId, bool paused);
 
     /** Called immediately before unloadAll during install/uninstall (wait for catalog futures). */
     void setBeforeUnloadHook(std::function<void()> hook);

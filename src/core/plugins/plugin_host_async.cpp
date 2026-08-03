@@ -118,6 +118,14 @@ void PluginHost::cancelOwnedDownload(const QString& pluginId, const QString& job
     instance->cancelOwnedDownload(jobId);
 }
 
+void PluginHost::setOwnedDownloadPaused(const QString& pluginId, const QString& jobId, bool paused)
+{
+    ISourcePlugin* instance = plugin(pluginId);
+    if (!instance)
+        return;
+    instance->setOwnedDownloadPaused(jobId, paused);
+}
+
 bool PluginHost::pluginOwnsDownload(const QString& pluginId) const
 {
     const auto it = m_plugins.constFind(pluginId);
