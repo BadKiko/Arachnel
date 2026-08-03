@@ -108,6 +108,18 @@ MD.ApplicationWindow {
             Qt.callLater(function () { onboardingSheet.openWizard() })
         else if (Core.hasPendingCrashReport())
             Qt.callLater(function () { crashReportDialog.open() })
+        // After first paint, warm Discover/Catalog so the first rail click isn't a cold create.
+        catalogWarmTimer.start()
+    }
+
+    Timer {
+        id: catalogWarmTimer
+        interval: 600
+        repeat: false
+        onTriggered: {
+            if (pageStack.currentItem && pageStack.currentItem.warmCatalogLoaders)
+                pageStack.currentItem.warmCatalogLoaders()
+        }
     }
 
     // Hang watchdog writes a pending report while the app is still alive.
@@ -167,8 +179,8 @@ MD.ApplicationWindow {
         }
     ]
 
-    // Main rail tabs stay mounted; keep the crossfade short so Discover/Catalog feel instant.
-    readonly property int mainTabDuration: MD.Token.duration.short4
+    // Main rail tabs stay mounted after first open; keep the crossfade snappy.
+    readonly property int mainTabDuration: MD.Token.duration.short2
 
     Component {
         id: mainPagesComponent
@@ -192,6 +204,18 @@ MD.ApplicationWindow {
                     // Loader hosts CatalogPage as item.
                     if (child && child.item && child.item.fixViewport)
                         child.item.fixViewport()
+                }
+            }
+
+            function warmCatalogLoaders() {
+                // Create Discover/Catalog off-tab (enabled=false → catalog model stays null).
+                if (!discoverLoader.keepAlive) {
+                    discoverLoader.keepAlive = true
+                    discoverLoader.active = true
+                }
+                if (!catalogBrowseLoader.keepAlive) {
+                    catalogBrowseLoader.keepAlive = true
+                    catalogBrowseLoader.active = true
                 }
             }
 
@@ -226,15 +250,19 @@ MD.ApplicationWindow {
             Loader {
                 id: discoverLoader
                 anchors.fill: parent
-                active: mainPages.pageIndex === 1
+                // Keep alive after first open so tab switches aren't a cold CatalogPage create.
+                property bool keepAlive: false
+                active: mainPages.pageIndex === 1 || keepAlive
+                asynchronous: true
                 visible: status === Loader.Ready
                 opacity: mainPages.pageIndex === 1 ? 1 : 0
-                // Unload Discover tree while on other tabs — saves QML/bindings RAM.
+                onLoaded: keepAlive = true
                 sourceComponent: Component {
                     CatalogPage {
                         anchors.fill: parent
                         browseOnly: false
                         peekLeftEdge: navRail.width
+                        enabled: mainPages.pageIndex === 1
                         onOpenGame: function (id) { root.openGameDetails(id, true) }
                         onOpenSettings: settingsSheet.openSettings()
                         onAddSourceRequested: settingsSheet.openPlugins()
@@ -256,14 +284,18 @@ MD.ApplicationWindow {
             Loader {
                 id: catalogBrowseLoader
                 anchors.fill: parent
-                active: mainPages.pageIndex === 2
+                property bool keepAlive: false
+                active: mainPages.pageIndex === 2 || keepAlive
+                asynchronous: true
                 visible: status === Loader.Ready
                 opacity: mainPages.pageIndex === 2 ? 1 : 0
+                onLoaded: keepAlive = true
                 sourceComponent: Component {
                     CatalogPage {
                         anchors.fill: parent
                         browseOnly: true
                         peekLeftEdge: navRail.width
+                        enabled: mainPages.pageIndex === 2
                         onOpenGame: function (id) { root.openGameDetails(id, true) }
                         onOpenSettings: settingsSheet.openSettings()
                         onAddSourceRequested: settingsSheet.openPlugins()
