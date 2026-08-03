@@ -199,6 +199,10 @@ void CoreController::installOfficialPlugin(const QString& pluginId)
 
 void CoreController::scheduleOfficialPluginAutoUpdate()
 {
+    if (QCoreApplication::applicationVersion().compare(QStringLiteral("dev"),
+                                                       Qt::CaseInsensitive)
+        == 0)
+        return;
     if (!m_pluginCatalog || !m_pluginHost)
         return;
     // Onboarding already refreshes the official catalog; overlapping refresh() used to

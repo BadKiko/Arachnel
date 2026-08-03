@@ -166,6 +166,12 @@ void AppUpdater::setLastError(const QString& error)
 
 void AppUpdater::checkForUpdates(bool notifyIfUpToDate)
 {
+    if (currentVersion().compare(QStringLiteral("dev"), Qt::CaseInsensitive) == 0) {
+        setChecking(false);
+        setStatusText(QCoreApplication::translate("Core", "Dev build - app updates disabled"));
+        emit updateCheckFinished(false, {});
+        return;
+    }
     if (m_checking || m_downloading)
         return;
 

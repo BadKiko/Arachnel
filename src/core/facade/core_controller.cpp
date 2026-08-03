@@ -244,18 +244,27 @@ CoreController::CoreController(QObject* parent)
         }));
     });
 
-    if (m_settings.autoCheckAppUpdates() && m_appUpdater) {
+    if (m_settings.autoCheckAppUpdates() && m_appUpdater
+        && QCoreApplication::applicationVersion().compare(QStringLiteral("dev"),
+                                                          Qt::CaseInsensitive)
+               != 0) {
         QTimer::singleShot(4000, this, [this]() {
             if (m_appUpdater)
                 m_appUpdater->checkForUpdates(false);
         });
     }
 
-    QTimer::singleShot(5000, this, [this]() { scheduleOfficialPluginAutoUpdate(); });
-    connect(&m_settings, &SettingsStore::onboardingCompletedChanged, this, [this]() {
-        if (m_settings.onboardingCompleted())
-            QTimer::singleShot(1500, this, [this]() { scheduleOfficialPluginAutoUpdate(); });
-    });
+    // Dev builds keep local plugin folders (e.g. steamidra from run.ps1) - don't
+    // wipe them with the official store on every launch.
+    if (QCoreApplication::applicationVersion().compare(QStringLiteral("dev"),
+                                                       Qt::CaseInsensitive)
+        != 0) {
+        QTimer::singleShot(5000, this, [this]() { scheduleOfficialPluginAutoUpdate(); });
+        connect(&m_settings, &SettingsStore::onboardingCompletedChanged, this, [this]() {
+            if (m_settings.onboardingCompleted())
+                QTimer::singleShot(1500, this, [this]() { scheduleOfficialPluginAutoUpdate(); });
+        });
+    }
 }
 
 
