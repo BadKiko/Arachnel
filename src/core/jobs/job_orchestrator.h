@@ -43,6 +43,8 @@ public:
     void failPluginDownload(const QString& jobId, const QString& error);
     void cancelJob(const QString& jobId);
     void toggleJobPause(const QString& jobId);
+    /** Update plugin-owned job UI state after the plugin was told to pause/resume. */
+    void setPluginDownloadPaused(const QString& jobId, bool paused);
     void removeJob(const QString& jobId);
     void retryJob(const QString& jobId);
     void clearFinishedJobs();

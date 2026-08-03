@@ -130,6 +130,13 @@ public:
     {
         (void)jobId;
     }
+
+    /** Pause/resume an in-flight owns_download (API v4+). Default: no-op. */
+    virtual void setOwnedDownloadPaused(const QString& jobId, bool paused) const
+    {
+        (void)jobId;
+        (void)paused;
+    }
 };
 
 } // namespace arachnel::core

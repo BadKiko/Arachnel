@@ -403,6 +403,16 @@ void CoreController::toggleJobPause(const QString& jobId)
 {
     if (jobId.isEmpty())
         return;
+    const JobEntry* job = m_jobStore.jobById(jobId);
+    if (job && job->pluginDownload) {
+        if (isJobTerminal(job->status))
+            return;
+        const bool pause = job->status != QStringLiteral("paused");
+        if (m_pluginHost)
+            m_pluginHost->setOwnedDownloadPaused(job->sourceId, jobId, pause);
+        m_jobOrchestrator->setPluginDownloadPaused(jobId, pause);
+        return;
+    }
     m_jobOrchestrator->toggleJobPause(jobId);
 }
 
