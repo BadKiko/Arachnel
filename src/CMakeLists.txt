@@ -40,6 +40,8 @@ set(ARACHNEL_APP_SOURCES
     src/core/catalog/game_metadata_service.cpp
     src/core/catalog/game_metadata_service_network.cpp
     src/core/catalog/cover_image_cache.cpp
+    src/core/workshop/workshop_service.cpp
+    src/core/workshop/workshop_facade.cpp
     src/core/torrent/torrent_session.cpp
     src/core/torrent/torrent_session_poll.cpp
     src/core/torrent/torrent_settings.cpp
@@ -104,6 +106,7 @@ set(ARACHNEL_CORE_INCLUDE_DIRS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/core
     ${CMAKE_CURRENT_SOURCE_DIR}/src/core/facade
     ${CMAKE_CURRENT_SOURCE_DIR}/src/core/catalog
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/core/workshop
     ${CMAKE_CURRENT_SOURCE_DIR}/src/core/library
     ${CMAKE_CURRENT_SOURCE_DIR}/src/core/jobs
     ${CMAKE_CURRENT_SOURCE_DIR}/src/core/install

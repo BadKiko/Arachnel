@@ -189,6 +189,10 @@ When the plugin must fetch content itself (Steam depots, HTTP, custom CDN) inste
 4. Catalog entries should carry **`steamAppId`** (or another id the plugin understands). The host skips the magnet gate and creates a `pluginDownload` job.
 5. Report progress via the callback (`OwnedDownloadProgress`); on success return `InstallResult` with `installPath`.
 
+**Workshop maps (`installMode = "workshop"`):** the host may call `startOwnedDownload` with `installMode` set to `workshop`, `magnetUri`/`steamAppId` = game app id, `entryId` (or `version`) = published file id, `downloadPath` = final content folder, and `targetPath` = the game install folder. The plugin downloads the UGC item (e.g. DepotDownloader `-pubfile`) into `downloadPath` (or `{targetPath}/steamapps/workshop/content/{appId}/{publishedFileId}/` if `downloadPath` is empty) and enables SteamFix `Workshop=true` on `targetPath`.
+
+**Workshop cache (`installMode = "workshop_stage"`):** same download, but `downloadPath` is an Arachnel staging folder (no game install required). SteamFix is not touched; the host attaches into the game tree later.
+
 Default implementations of the owned-download methods are no-ops so older plugins keep working.
 
 ### 5. `CMakeLists.txt`

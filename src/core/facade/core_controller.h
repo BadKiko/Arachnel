@@ -36,6 +36,7 @@ class CatalogCoverCoordinator;
 class CatalogFeedLoader;
 class CoverImageCache;
 class GameMetadataService;
+class WorkshopService;
 class HttpDownloadSession;
 class JobOrchestrator;
 class InstallKindProbeService;
@@ -183,6 +184,11 @@ signals:
     void catalogHeroCoverChanged(const QString& entryId);
     void catalogFiltersChanged();
     void availableCatalogGenresChanged();
+    void workshopPageReady(const QString& steamAppId, int page, const QVariantList& items,
+                           bool hasMore);
+    void workshopPageFailed(const QString& steamAppId, int page, const QString& error);
+    void workshopPreviewReady(const QString& previewUrl, const QString& localUrl);
+    void workshopItemUpdated(const QString& steamAppId, const QVariantMap& item);
 
 private:
 #include "core_controller_p.h"

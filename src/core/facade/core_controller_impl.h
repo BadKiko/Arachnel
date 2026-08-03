@@ -16,6 +16,7 @@
 #include "install_kind_probe_service.h"
 #include "install_session_service.h"
 #include "game_metadata_service.h"
+#include "workshop_service.h"
 #include "http_download_session.h"
 #include "job_orchestrator.h"
 #include "job_status.h"

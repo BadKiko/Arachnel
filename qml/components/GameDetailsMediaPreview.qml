@@ -284,6 +284,25 @@ Item {
                     asynchronous: true
                 }
 
+                MD.LinearIndicator {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.bottom: parent.bottom
+                    anchors.margins: MD.Token.spacing.small
+                    z: 3
+                    implicitHeight: 5
+                    strokeWidth: 3
+                    indeterminate: true
+                    wavy: true
+                    waveAmplitude: 1.8
+                    waveLength: 18
+                    visible: screenshotPreview.currentUrl.length > 0
+                             && previewImage.status === Image.Loading
+                    running: visible
+                    color: MD.Token.color.primary
+                    trackColor: MD.Util.transparent(MD.Token.color.on_surface, 0.18)
+                }
+
                 MD.IconButton {
                     visible: screenshotPreview.urls.length > 1
                              && screenshotPreview.currentIndex > 0

@@ -23,6 +23,13 @@ void CoreController::initializeServices()
         }
     }
     m_coverCache = new CoverImageCache(this);
+    m_workshopService = new WorkshopService(m_coverCache, this);
+    connect(m_workshopService, &WorkshopService::pageReady, this, &CoreController::workshopPageReady);
+    connect(m_workshopService, &WorkshopService::pageFailed, this, &CoreController::workshopPageFailed);
+    connect(m_workshopService, &WorkshopService::previewReady, this,
+            &CoreController::workshopPreviewReady);
+    connect(m_workshopService, &WorkshopService::itemUpdated, this,
+            &CoreController::workshopItemUpdated);
     m_catalogCovers = new CatalogCoverCoordinator(
         m_coverCache, m_metadataService, &m_settings, &m_catalog,
         [this](const QString& entryId) -> CatalogEntry* {
@@ -186,6 +193,7 @@ void CoreController::initializeServices()
         fillProtonInstallFields(entryId, protonId, executable, compatData, compatClient);
     };
     installHooks.gameCommitted = [this](const LibraryGame& game) {
+        attachPendingWorkshopItems(game.id);
 #if defined(Q_OS_LINUX)
         setRuntimeSetupActive(
             game, QCoreApplication::translate("Core", "Preparing runtime environment…"));
@@ -193,8 +201,6 @@ void CoreController::initializeServices()
             ensureRuntimeDependenciesForGame(game);
             clearRuntimeSetup();
         });
-#else
-        Q_UNUSED(game)
 #endif
     };
     m_installSessionService =
@@ -424,6 +430,10 @@ void CoreController::initializeServices()
             [this](const QString& jobId, const QString& entryId, const QString& sourceId,
                    const QString& artifactPath, JobKind kind, const QString& libraryId) {
                 const JobEntry* job = m_jobStore.jobById(jobId);
+                // Workshop map installs are committed in downloadWorkshopItem callback.
+                if (job && job->pluginDownload && entryId.startsWith(QStringLiteral("workshop:")))
+                    return;
+
                 if (job && job->pluginDownload) {
                     auto entry = resolveCatalogEntry(entryId, sourceId, job);
                     if (!entry) {

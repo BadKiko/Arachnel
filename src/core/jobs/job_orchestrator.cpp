@@ -335,5 +335,50 @@ QString JobOrchestrator::startPluginOwnedDownload(const CatalogEntry& entry, Job
     return jobId;
 }
 
+QString JobOrchestrator::startWorkshopOwnedDownload(
+    const QString& gameId, const QString& gameTitle, const QString& gameCoverUrl,
+    const QString& sourceId, const QString& steamAppId, const QString& publishedFileId,
+    const QString& itemTitle, const QString& libraryId, qint64 estimatedBytes)
+{
+    const QString entryId = QStringLiteral("workshop:%1").arg(publishedFileId);
+    const QString existing = findActiveJobId(entryId, gameId);
+    if (!existing.isEmpty())
+        return existing;
+
+    const QString libId = libraryId.isEmpty() ? m_settings->defaultLibraryId() : libraryId;
+    const QString downloadsRoot = m_settings->resolvedDownloadsRoot(libId);
+    const QString savePath =
+        downloadsRoot + QStringLiteral("/workshop/") + steamAppId + QLatin1Char('/')
+        + publishedFileId;
+
+    const QString jobId = QUuid::createUuid().toString(QUuid::WithoutBraces);
+    JobEntry job;
+    job.id = jobId;
+    job.title = QStringLiteral("%1 - %2").arg(gameTitle, itemTitle);
+    job.kind = JobKind::Download;
+    job.status = QStringLiteral("starting");
+    job.progress = 0;
+    job.detail = QStringLiteral("Preparing…");
+    job.entryId = entryId;
+    job.sourceId = sourceId;
+    job.parentEntryId = gameId;
+    job.magnetUri = QStringLiteral("steam://app/%1").arg(steamAppId);
+    job.savePath = savePath;
+    job.coverUrl = gameCoverUrl;
+    job.libraryId = libId;
+    job.pluginDownload = true;
+    job.expectedSteamAppId = steamAppId;
+    job.expectedUploadDate = publishedFileId;
+    job.createdAt = isoNow();
+    if (estimatedBytes > 0) {
+        m_pluginEstimatedTotal.insert(jobId, estimatedBytes);
+        job.totalBytes = estimatedBytes;
+    }
+    m_jobKinds.insert(jobId, JobKind::Download);
+    m_jobs->addJob(job);
+    m_jobStore->upsertJob(job);
+    return jobId;
+}
+
 
 } // namespace arachnel::core

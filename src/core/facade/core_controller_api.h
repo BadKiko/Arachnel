@@ -102,4 +102,14 @@
     Q_INVOKABLE QString coverMetricsText() const;
     Q_INVOKABLE void resetCoverFetchMetrics();
     Q_INVOKABLE void enrichCatalogEntry(const QString&);
+    Q_INVOKABLE void requestWorkshopPage(const QString& steamAppId, int page = 1);
+    Q_INVOKABLE QVariantList workshopItems(const QString& steamAppId) const;
+    Q_INVOKABLE void requestWorkshopPreview(const QString& previewUrl);
+    Q_INVOKABLE void releaseWorkshopPreview(const QString& previewUrl);
+    Q_INVOKABLE QString workshopPreviewUrl(const QString& previewUrl) const;
+    Q_INVOKABLE void downloadWorkshopItem(const QString& gameId, const QString& publishedFileId);
+    Q_INVOKABLE void attachWorkshopItem(const QString& gameId, const QString& publishedFileId);
+    /** "installed", "cached", or empty when unknown / not present. */
+    Q_INVOKABLE QString workshopItemStatus(const QString& gameId,
+                                           const QString& publishedFileId) const;
     void prepareShutdown();

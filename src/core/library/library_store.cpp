@@ -32,6 +32,8 @@ QJsonArray componentsToJson(const QVector<InstalledComponent>& components)
         obj.insert(QStringLiteral("title"), component.title);
         obj.insert(QStringLiteral("uploadDate"), component.uploadDate);
         obj.insert(QStringLiteral("installed"), component.installed);
+        if (!component.path.isEmpty())
+            obj.insert(QStringLiteral("path"), component.path);
         array.append(obj);
     }
     return array;
@@ -48,6 +50,7 @@ QVector<InstalledComponent> componentsFromJson(const QJsonArray& array)
         component.title = obj.value(QStringLiteral("title")).toString();
         component.uploadDate = obj.value(QStringLiteral("uploadDate")).toString();
         component.installed = obj.value(QStringLiteral("installed")).toBool();
+        component.path = obj.value(QStringLiteral("path")).toString();
         components.append(component);
     }
     return components;

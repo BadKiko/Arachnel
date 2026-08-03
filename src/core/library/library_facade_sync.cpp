@@ -118,10 +118,12 @@ void CoreController::ensureLibraryPlaceholder(const CatalogEntry& entry, const Q
             continue;
 
         bool installed = false;
+        QString path;
         if (existing) {
             for (const auto& component : existing->components) {
                 if (component.id == addon.id) {
                     installed = component.installed;
+                    path = component.path;
                     break;
                 }
             }
@@ -132,7 +134,23 @@ void CoreController::ensureLibraryPlaceholder(const CatalogEntry& entry, const Q
         component.title = addon.title;
         component.uploadDate = addon.uploadDate;
         component.installed = installed;
+        component.path = path;
         components.append(component);
+    }
+    if (existing) {
+        for (const InstalledComponent& component : existing->components) {
+            if (!component.id.startsWith(QStringLiteral("workshop:")))
+                continue;
+            bool found = false;
+            for (const InstalledComponent& c : components) {
+                if (c.id == component.id) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+                components.append(component);
+        }
     }
     game.components = components;
 

@@ -14,6 +14,8 @@ struct InstalledComponent {
     QString title;
     QString uploadDate;
     bool installed = false;
+    /** Staging or install path for workshop:* components. */
+    QString path;
 };
 
 struct LibraryGame {

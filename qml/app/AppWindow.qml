@@ -161,6 +161,10 @@ MD.ApplicationWindow {
             icon: MD.Token.icon.storefront
         },
         {
+            name: qsTr("Workshop"),
+            icon: MD.Token.icon.extension
+        },
+        {
             name: qsTr("Downloads"),
             icon: MD.Token.icon.downloading,
             showDownloadBadge: true
@@ -211,7 +215,7 @@ MD.ApplicationWindow {
                 enabled: mainPages.pageIndex === 0 && opacity > 0.99
                 onOpenGame: function (id) { root.openGameDetails(id, false) }
                 onOpenCatalog: root.goToPage(2)
-                onOpenDownloads: root.goToPage(3)
+                onOpenDownloads: root.goToPage(4)
                 onOpenSettings: settingsSheet.openSettings()
                 onAddSourceRequested: settingsSheet.openPlugins()
 
@@ -278,10 +282,30 @@ MD.ApplicationWindow {
                 }
             }
 
+            Loader {
+                id: workshopLoader
+                anchors.fill: parent
+                active: mainPages.pageIndex === 3
+                visible: status === Loader.Ready
+                opacity: mainPages.pageIndex === 3 ? 1 : 0
+                sourceComponent: Component {
+                    WorkshopPage {
+                        anchors.fill: parent
+                    }
+                }
+
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: root.mainTabDuration
+                        easing: MD.Token.easing.emphasized_decelerate
+                    }
+                }
+            }
+
             DownloadsPage {
                 anchors.fill: parent
-                opacity: mainPages.pageIndex === 3 ? 1 : 0
-                enabled: mainPages.pageIndex === 3 && opacity > 0.99
+                opacity: mainPages.pageIndex === 4 ? 1 : 0
+                enabled: mainPages.pageIndex === 4 && opacity > 0.99
                 onOpenGame: function (id) { root.openGameDetails(id, false) }
 
                 Behavior on opacity {

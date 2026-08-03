@@ -80,9 +80,14 @@
         <translation>Каталог</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+8"/>
         <source>Downloads</source>
         <translation>Загрузки</translation>
+    </message>
+    <message>
+        <location line="-4"/>
+        <source>Workshop</source>
+        <translation>Мастерская</translation>
     </message>
 </context>
 <context>
@@ -869,7 +874,8 @@
     <message>
         <location line="+1"/>
         <location filename="../src/core/jobs/job_status.cpp" line="+7"/>
-        <location filename="../src/core/catalog/catalog_facade_2.cpp" line="+316"/>
+        <location filename="../src/core/workshop/workshop_facade.cpp" line="+278"/>
+        <location filename="../src/core/catalog/catalog_facade_install.cpp" line="+221"/>
         <source>Install failed</source>
         <translation>Ошибка установки</translation>
     </message>
@@ -879,7 +885,7 @@
         <translation>Ошибка каталога: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="+494"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="+504"/>
         <source>Game not found for add-on</source>
         <translation>Игра не найдена для дополнения</translation>
     </message>
@@ -956,31 +962,31 @@
     </message>
     <message>
         <location filename="../src/core/runtime/proton_facade.cpp" line="+34"/>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="-355"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="-357"/>
         <source>Preparing runtime environment…</source>
         <translation>Подготовка среды выполнения…</translation>
     </message>
     <message>
-        <location filename="../src/core/jobs/job_facade_1.cpp" line="+101"/>
-        <location filename="../src/core/library/library_facade_2.cpp" line="+174"/>
+        <location filename="../src/core/jobs/job_facade_lifecycle.cpp" line="+101"/>
+        <location filename="../src/core/library/library_facade_ops.cpp" line="+174"/>
         <location line="+39"/>
         <location line="+37"/>
         <source>Game not found</source>
         <translation>Игра не найдена</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_facade_2.cpp" line="+42"/>
-        <location filename="../src/core/jobs/job_facade_1.cpp" line="+6"/>
+        <location filename="../src/core/catalog/catalog_facade_install.cpp" line="+42"/>
+        <location filename="../src/core/jobs/job_facade_lifecycle.cpp" line="+6"/>
         <source>Add-on not found</source>
         <translation>Дополнение не найдено</translation>
     </message>
     <message>
-        <location filename="../src/core/jobs/job_facade_1.cpp" line="+6"/>
+        <location filename="../src/core/jobs/job_facade_lifecycle.cpp" line="+6"/>
         <source>Download the add-on first</source>
         <translation>Сначала скачайте дополнение</translation>
     </message>
     <message>
-        <location filename="../src/core/library/library_facade_1.cpp" line="+267"/>
+        <location filename="../src/core/library/library_facade_sync.cpp" line="+285"/>
         <source>%1 update(s) available</source>
         <translation>Доступно обновлений: %1</translation>
     </message>
@@ -995,18 +1001,18 @@
         <translation>Установите %1 (Proton-GE) в Настройки → Запуск перед скачиванием игр</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_facade_2.cpp" line="-122"/>
+        <location filename="../src/core/catalog/catalog_facade_install.cpp" line="-122"/>
         <source>No download link for %1</source>
         <translation>Нет ссылки для загрузки: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/library/library_facade_2.cpp" line="-172"/>
+        <location filename="../src/core/library/library_facade_ops.cpp" line="-172"/>
         <location line="+24"/>
         <source>Choose library folder</source>
         <translation>Выберите папку библиотеки</translation>
     </message>
     <message>
-        <location filename="../src/core/jobs/job_facade_2.cpp" line="+200"/>
+        <location filename="../src/core/jobs/job_facade_manual.cpp" line="+200"/>
         <source>Choose game install folder</source>
         <translation>Выберите папку с игрой</translation>
     </message>
@@ -1017,22 +1023,22 @@
     </message>
     <message>
         <location filename="../src/core/jobs/job_display.cpp" line="-23"/>
-        <location filename="../src/core/jobs/job_facade_2.cpp" line="+16"/>
+        <location filename="../src/core/jobs/job_facade_manual.cpp" line="+16"/>
         <source>Installed</source>
         <translation>Установлен</translation>
     </message>
     <message>
-        <location filename="../src/core/jobs/job_facade_2.cpp" line="+1"/>
+        <location filename="../src/core/jobs/job_facade_manual.cpp" line="+1"/>
         <source>Manual install complete for %1</source>
         <translation>Ручная установка завершена: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_facade.cpp" line="+330"/>
+        <location filename="../src/core/plugins/plugin_facade.cpp" line="+334"/>
         <source>Install plugin</source>
         <translation>Установить плагин</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="+108"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="+106"/>
         <source>Plugin install failed</source>
         <translation>Ошибка установки плагина</translation>
     </message>
@@ -1052,7 +1058,7 @@
         <translation>Ошибка загрузки Proton-GE: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/library/library_facade_2.cpp" line="-46"/>
+        <location filename="../src/core/library/library_facade_ops.cpp" line="-46"/>
         <source>Choose game executable</source>
         <translation>Выберите исполняемый файл игры</translation>
     </message>
@@ -1144,7 +1150,7 @@
         <translation>Для источника %1 не задан URL каталога</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_facade_2.cpp" line="+116"/>
+        <location filename="../src/core/catalog/catalog_facade_install.cpp" line="+116"/>
         <source>Game not found: %1</source>
         <translation>Игра не найдена: %1</translation>
     </message>
@@ -1171,7 +1177,6 @@
     </message>
     <message>
         <location line="+8"/>
-        <location filename="../src/core/launch/launch_facade.cpp" line="+128"/>
         <source>Proton not found. Install Proton-GE in Settings → Launch.</source>
         <translation>Proton не найден. Установите Proton-GE в Настройки → Запуск.</translation>
     </message>
@@ -1187,14 +1192,12 @@
     </message>
     <message>
         <location line="+33"/>
-        <location filename="../src/core/launch/launch_facade.cpp" line="-16"/>
         <source>Steam is not running - Online Fix needs it for SpaceWar/overlay. Starting Steam…</source>
         <translation>Steam не запущен - Online Fix нужен для SpaceWar/overlay. Запускаем Steam…</translation>
     </message>
     <message>
         <location line="+10"/>
-        <location filename="../src/core/launch/launch_facade.cpp" line="+23"/>
-        <location filename="../src/core/library/library_facade_2.cpp" line="-102"/>
+        <location filename="../src/core/library/library_facade_ops.cpp" line="-102"/>
         <location line="+39"/>
         <location line="+37"/>
         <location line="+16"/>
@@ -1203,7 +1206,6 @@
     </message>
     <message>
         <location line="+9"/>
-        <location filename="../src/core/launch/launch_facade.cpp" line="+15"/>
         <source>Failed to launch game</source>
         <translation>Не удалось запустить игру</translation>
     </message>
@@ -1213,7 +1215,7 @@
         <translation>Не удалось остановить игру</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_facade_2.cpp" line="-321"/>
+        <location filename="../src/core/catalog/catalog_facade_query.cpp" line="+9"/>
         <source>Unknown source: %1</source>
         <translation>Неизвестный источник: %1</translation>
     </message>
@@ -1223,12 +1225,12 @@
         <translation>Источник «%1» выключен в настройках</translation>
     </message>
     <message>
-        <location line="+80"/>
+        <location filename="../src/core/catalog/catalog_facade_install.cpp" line="-210"/>
         <source>Could not resolve application data folder</source>
         <translation>Не удалось определить папку данных приложения</translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location line="+22"/>
         <source>Failed to delete application data</source>
         <translation>Не удалось удалить данные приложения</translation>
     </message>
@@ -1243,7 +1245,7 @@
         <translation>Данные приложения удалены. Arachnel сейчас закроется.</translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location filename="../src/core/catalog/catalog_facade_query.cpp" line="+71"/>
         <source>Enter a catalog URL</source>
         <translation>Укажите URL каталога</translation>
     </message>
@@ -1253,23 +1255,77 @@
         <translation>Некорректный URL - нужен http или https</translation>
     </message>
     <message>
-        <location line="+25"/>
+        <location filename="../src/core/catalog/catalog_facade_install.cpp" line="+24"/>
         <location line="+20"/>
         <source>Catalog entry not found: %1</source>
         <translation>Запись каталога не найдена: %1</translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location filename="../src/core/workshop/workshop_facade.cpp" line="-70"/>
+        <location line="+113"/>
+        <location filename="../src/core/catalog/catalog_facade_install.cpp" line="+15"/>
         <source>No Steam App ID for %1</source>
         <translation>Нет Steam App ID для %1</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="-103"/>
+        <source>Steam plugin is required for Workshop downloads.</source>
+        <translation>Для мастерской нужен Steam-плагин.</translation>
+    </message>
+    <message>
+        <location line="-6"/>
+        <source>Plugins are not ready</source>
+        <translation>Плагины ещё не готовы</translation>
+    </message>
+    <message>
+        <location line="-8"/>
+        <location line="+112"/>
+        <source>Game not found in library</source>
+        <translation>Игра не найдена в библиотеке</translation>
+    </message>
+    <message>
+        <location line="-91"/>
+        <location filename="../src/core/catalog/catalog_facade_install.cpp" line="+10"/>
         <source>Plugin not loaded: %1</source>
         <translation>Плагин не загружен: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_facade.cpp" line="-151"/>
+        <location line="+70"/>
+        <source>Saved to Workshop cache - will attach when the game is installed.</source>
+        <translation>Сохранено в кэш мастерской - подключится, когда игра будет установлена.</translation>
+    </message>
+    <message>
+        <location line="+31"/>
+        <source>Install the game before attaching Workshop files.</source>
+        <translation>Сначала установи игру, потом подключай файлы мастерской.</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Already attached: %1</source>
+        <translation>Уже подключено: %1</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>No cached Workshop files for %1</source>
+        <translation>Нет кэша мастерской для %1</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Could not attach Workshop files</source>
+        <translation>Не удалось подключить файлы мастерской</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Attached: %1</source>
+        <translation>Подключено: %1</translation>
+    </message>
+    <message>
+        <location line="+34"/>
+        <source>Attached %1 Workshop file(s)</source>
+        <translation>Подключено файлов мастерской: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/core/plugins/plugin_facade.cpp" line="-155"/>
         <source>Plugin removed</source>
         <translation>Плагин удалён</translation>
     </message>
@@ -1279,7 +1335,7 @@
         <translation>Не удалось удалить плагин: %1</translation>
     </message>
     <message>
-        <location line="+106"/>
+        <location line="+110"/>
         <source>Plugins updated</source>
         <translation>Плагины обновлены</translation>
     </message>
@@ -1289,13 +1345,14 @@
         <translation>Файлы плагинов (*.arach)</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_facade_2.cpp" line="+12"/>
+        <location filename="../src/core/workshop/workshop_facade.cpp" line="-161"/>
+        <location filename="../src/core/catalog/catalog_facade_install.cpp" line="+12"/>
         <location line="+61"/>
         <source>Could not start download for %1</source>
         <translation>Не удалось начать загрузку %1</translation>
     </message>
     <message>
-        <location line="+40"/>
+        <location filename="../src/core/catalog/catalog_facade_install.cpp" line="+40"/>
         <source>Could not start add-on download</source>
         <translation>Не удалось начать загрузку дополнения</translation>
     </message>
@@ -1311,17 +1368,17 @@
         <translation>Не удалось начать обновление %1</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="+115"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="+119"/>
         <source>Update finished, but version info is incomplete. Refresh the catalog and update again if the chip stays.</source>
         <translation>Обновление завершено, но сведения о версии неполные. Обновите каталог и повторите обновление, если метка останется.</translation>
     </message>
     <message>
-        <location line="-208"/>
+        <location line="-212"/>
         <source>No catalog sources enabled</source>
         <translation>Нет включённых источников каталога</translation>
     </message>
     <message>
-        <location filename="../src/core/library/library_facade_2.cpp" line="-130"/>
+        <location filename="../src/core/library/library_facade_ops.cpp" line="-130"/>
         <source>Found %1 game(s) on disk</source>
         <translation>Найдено игр на диске: %1</translation>
     </message>
@@ -1331,7 +1388,7 @@
         <translation>Новых игр на диске не найдено</translation>
     </message>
     <message>
-        <location filename="../src/core/jobs/job_facade_2.cpp" line="-234"/>
+        <location filename="../src/core/jobs/job_facade_manual.cpp" line="-234"/>
         <source>Download not found</source>
         <translation>Загрузка не найдена</translation>
     </message>
@@ -1363,7 +1420,7 @@
         <translation>Автоустановка недоступна. Запустите setup.exe из папки загрузки, затем кнопкой папки укажите, куда установилась игра.</translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_facade.cpp" line="-172"/>
+        <location filename="../src/core/plugins/plugin_facade.cpp" line="-176"/>
         <source>Plugin installed</source>
         <translation>Плагин установлен</translation>
     </message>
@@ -1475,7 +1532,7 @@
         <translation>Не удалось удалить файлы плагина</translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_facade.cpp" line="+178"/>
+        <location filename="../src/core/plugins/plugin_facade.cpp" line="+182"/>
         <source>Could not open plugins folder</source>
         <translation>Не удалось открыть папку плагинов</translation>
     </message>
@@ -1490,7 +1547,12 @@
         <translation>Еще не проверялось</translation>
     </message>
     <message>
-        <location line="+122"/>
+        <location line="+119"/>
+        <source>Dev build - app updates disabled</source>
+        <translation>Dev-сборка - обновления приложения отключены</translation>
+    </message>
+    <message>
+        <location line="+9"/>
         <source>Checking for Arachnel updates…</source>
         <translation>Проверка обновлений Arachnel…</translation>
     </message>
@@ -1540,12 +1602,12 @@
     <message>
         <location line="+90"/>
         <source>Updating Arachnel…</source>
-        <translation type="unfinished"></translation>
+        <translation>Обновление Arachnel…</translation>
     </message>
     <message>
         <location line="+107"/>
         <source>Could not find an Arachnel install folder to update</source>
-        <translation type="unfinished"></translation>
+        <translation>Не найдена папка установки Arachnel для обновления</translation>
     </message>
     <message>
         <location filename="../src/core/plugins/plugin_catalog_service.cpp" line="+201"/>
@@ -2108,18 +2170,18 @@
     </message>
     <message>
         <location line="+114"/>
-        <location line="+173"/>
+        <location line="+192"/>
         <source>Close</source>
         <translation>Закрыть</translation>
     </message>
     <message>
-        <location line="-155"/>
-        <location line="+164"/>
+        <location line="-174"/>
+        <location line="+183"/>
         <source>Open in browser</source>
         <translation>Открыть в браузере</translation>
     </message>
     <message>
-        <location line="-118"/>
+        <location line="-137"/>
         <source>Screenshot %1 of %2</source>
         <translation>Скриншот %1 из %2</translation>
     </message>
@@ -4034,6 +4096,119 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <location line="+34"/>
         <source>Got it</source>
         <translation>Понятно</translation>
+    </message>
+</context>
+<context>
+    <name>WorkshopItemSheet</name>
+    <message>
+        <location filename="../qml/components/WorkshopItemSheet.qml" line="+82"/>
+        <source>Workshop file</source>
+        <translation>Файл мастерской</translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <source>Installed</source>
+        <translation>Установлено</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cached</source>
+        <translation>В кэше</translation>
+    </message>
+    <message>
+        <location line="+25"/>
+        <source>Attach to game</source>
+        <translation>Подключить к игре</translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>Download</source>
+        <translation>Скачать</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Download again</source>
+        <translation>Скачать снова</translation>
+    </message>
+</context>
+<context>
+    <name>WorkshopPage</name>
+    <message>
+        <location filename="../qml/app/WorkshopPage.qml" line="+202"/>
+        <source>Workshop</source>
+        <translation>Мастерская</translation>
+    </message>
+    <message>
+        <location line="+147"/>
+        <location line="+58"/>
+        <source>Workshop files</source>
+        <translation>Файлы с мастерской</translation>
+    </message>
+    <message>
+        <location line="+87"/>
+        <source>No files yet</source>
+        <translation>Файлов пока нет</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Workshop files will show here.</source>
+        <translation>Здесь появятся файлы мастерской.</translation>
+    </message>
+    <message>
+        <location line="-354"/>
+        <location line="+297"/>
+        <source>Could not load Workshop</source>
+        <translation>Не удалось загрузить мастерскую</translation>
+    </message>
+    <message>
+        <location line="-236"/>
+        <source>Choose a library game to browse Workshop files.</source>
+        <translation>Выбери игру из библиотеки, чтобы смотреть файлы мастерской.</translation>
+    </message>
+    <message>
+        <location line="+31"/>
+        <source>No library games with Steam App ID</source>
+        <translation>В библиотеке нет игр со Steam App ID</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Add a Steam game to your library first.</source>
+        <translation>Сначала добавь Steam-игру в библиотеку.</translation>
+    </message>
+    <message>
+        <location line="+102"/>
+        <source>Not installed - downloads go to cache</source>
+        <translation>Не установлена - загрузки идут в кэш</translation>
+    </message>
+    <message>
+        <location line="+60"/>
+        <source>Game not installed - downloads go to cache</source>
+        <translation>Игра не установлена - загрузки идут в кэш</translation>
+    </message>
+    <message>
+        <location line="+51"/>
+        <source>Retry</source>
+        <translation>Повторить</translation>
+    </message>
+    <message>
+        <location line="+214"/>
+        <source>Installed</source>
+        <translation>Установлено</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Cached</source>
+        <translation>В кэше</translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>Load more</source>
+        <translation>Ещё</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Loading…</source>
+        <translation>Загрузка…</translation>
     </message>
 </context>
 </TS>

@@ -73,7 +73,7 @@ function Get-QtInstallRoots {
     }
 
     foreach ($drive in @([IO.DriveInfo]::GetDrives() | Where-Object { $_.DriveType -eq 'Fixed' } | ForEach-Object { $_.Name.TrimEnd('\') })) {
-        foreach ($name in @("Qt", "Qt6")) {
+        foreach ($name in @("Qt", "Qt6", "Dev\Qt", "Dev\QT", "Dev\Qt6")) {
             $p = Join-Path $drive $name
             if ((Test-Path -LiteralPath $p) -and -not $roots.Contains($p)) {
                 [void]$roots.Add($p)
@@ -350,7 +350,7 @@ Refusing to ship a 'dev' installer.
     Write-Host "Installer version: $version" -ForegroundColor Cyan
 
     if (-not (Test-Path -LiteralPath (Join-Path $DIST_DIR "arachnel_app.exe"))) {
-        Write-Host "dist-win missing — building release package first ..."
+        Write-Host "dist-win missing - building release package first ..."
         New-ReleasePackage
     }
 
@@ -771,7 +771,7 @@ function Test-NeedsCmakeConfigure {
 
 function Enable-CompileCache {
     # Honor launchers already set by CI (sccache-action / env), but resolve to a
-    # full path — on Windows Ninja CreateProcess fails for bare "sccache".
+    # full path - on Windows Ninja CreateProcess fails for bare "sccache".
     foreach ($var in @('CMAKE_C_COMPILER_LAUNCHER', 'CMAKE_CXX_COMPILER_LAUNCHER')) {
         $value = [Environment]::GetEnvironmentVariable($var)
         if (-not $value) { continue }

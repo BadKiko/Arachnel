@@ -262,8 +262,23 @@ void InstallSessionService::commitInstalledCatalogGame(const CatalogEntry& entry
         if (const auto it = previousComponents.constFind(addon.id); it != previousComponents.cend()) {
             component.installed = it->installed;
             component.uploadDate = preferFresherMarker(addon.uploadDate, it->uploadDate);
+            component.path = it->path;
         }
         components.append(component);
+    }
+    // Keep Workshop items across catalog addon rebuilds.
+    for (auto it = previousComponents.cbegin(); it != previousComponents.cend(); ++it) {
+        if (!it.key().startsWith(QStringLiteral("workshop:")))
+            continue;
+        bool found = false;
+        for (const InstalledComponent& c : components) {
+            if (c.id == it.key()) {
+                found = true;
+                break;
+            }
+        }
+        if (!found)
+            components.append(it.value());
     }
     game.components = components;
     if (!catalog.steamAppId.isEmpty())

@@ -38,6 +38,8 @@
     void migratePollutedEntryIds();
     void pruneAddonLibraryEntries();
     void restoreLibraryPlaceholders();
+    void attachPendingWorkshopItems(const QString& gameId);
+    bool attachWorkshopItemImpl(const QString& gameId, const QString& publishedFileId, bool quiet);
     void ensureLibraryPlaceholder(const CatalogEntry&, const QString&, const QStringList& = {});
     void reconcileJobInstallState();
     void removeJobsForEntry(const QString&);
@@ -81,6 +83,7 @@
     CatalogFeedLoader* m_catalogValidateLoader = nullptr;
     GameMetadataService* m_metadataService = nullptr;
     CoverImageCache* m_coverCache = nullptr;
+    WorkshopService* m_workshopService = nullptr;
     CatalogCoverCoordinator* m_catalogCovers = nullptr;
     CatalogController* m_catalogController = nullptr;
     TorrentSession* m_torrentSession = nullptr;

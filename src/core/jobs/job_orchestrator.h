@@ -32,6 +32,12 @@ public:
     /** Create a job slot for plugin-owned downloads (no torrent/HTTP session). */
     QString startPluginOwnedDownload(const CatalogEntry& entry, JobKind kind,
                                      const QString& libraryId = {});
+    /** Workshop item download under an installed game (plugin-owned). */
+    QString startWorkshopOwnedDownload(const QString& gameId, const QString& gameTitle,
+                                       const QString& gameCoverUrl, const QString& sourceId,
+                                       const QString& steamAppId, const QString& publishedFileId,
+                                       const QString& itemTitle, const QString& libraryId,
+                                       qint64 estimatedBytes = 0);
     void reportPluginProgress(const QString& jobId, const OwnedDownloadProgress& progress);
     void completePluginDownload(const QString& jobId, const QString& installPath);
     void failPluginDownload(const QString& jobId, const QString& error);

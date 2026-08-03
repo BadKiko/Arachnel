@@ -2,6 +2,9 @@
 
 #include "catalog_types.h"
 
+#include <QVariantList>
+#include <QVariantMap>
+
 namespace arachnel::core {
 
 namespace {
@@ -184,6 +187,21 @@ QVariantMap LibraryModel::toMap(const LibraryGame& game) const
         {QStringLiteral("steamAppId"), game.steamAppId},
         {QStringLiteral("componentCount"), game.components.size()},
         {QStringLiteral("installedComponentCount"), installedComponentCount(game.components)},
+        {QStringLiteral("components"),
+         [&]() {
+             QVariantList list;
+             list.reserve(game.components.size());
+             for (const InstalledComponent& component : game.components) {
+                 list.append(QVariantMap{
+                     {QStringLiteral("id"), component.id},
+                     {QStringLiteral("title"), component.title},
+                     {QStringLiteral("uploadDate"), component.uploadDate},
+                     {QStringLiteral("installed"), component.installed},
+                     {QStringLiteral("path"), component.path},
+                 });
+             }
+             return list;
+         }()},
         {QStringLiteral("installed"), true},
     };
 }
