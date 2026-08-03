@@ -19,11 +19,17 @@ void JobOrchestrator::reportPluginProgress(const QString& jobId,
     JobEntry job = jobFromModelRow(row);
     if (isJobTerminal(job.status))
         return;
-    if (!progress.status.isEmpty())
-        job.status = progress.status;
-    else if (job.status == QStringLiteral("starting"))
-        job.status = QStringLiteral("downloading");
 
+    const bool wasPaused = isJobPaused(job.status);
+    if (!progress.status.isEmpty()) {
+        // In-flight CDN chunks keep emitting "downloading" after user pause - don't unstick.
+        if (!(wasPaused && progress.status == QStringLiteral("downloading")))
+            job.status = progress.status;
+    } else if (job.status == QStringLiteral("starting")) {
+        job.status = QStringLiteral("downloading");
+    }
+
+    const bool paused = isJobPaused(job.status);
     const int previousProgress = job.progress;
     const qint64 previousDownloaded = job.bytesDownloaded;
     int nextProgress = qBound(0, progress.percent, 100);
@@ -71,9 +77,11 @@ void JobOrchestrator::reportPluginProgress(const QString& jobId,
     if (total > 0)
         m_pluginEstimatedTotal.insert(jobId, total);
 
-    int rate = progress.downloadRateBps;
+    int rate = paused ? 0 : progress.downloadRateBps;
     const qint64 nowMs = QDateTime::currentMSecsSinceEpoch();
-    if (downloaded > 0) {
+    if (paused) {
+        m_pluginSpeed.remove(jobId);
+    } else if (downloaded > 0) {
         const auto it = m_pluginSpeed.constFind(jobId);
         if (it != m_pluginSpeed.cend() && nowMs > it->ms) {
             const qint64 dBytes = downloaded - it->bytes;
@@ -93,10 +101,16 @@ void JobOrchestrator::reportPluginProgress(const QString& jobId,
         m_pluginSpeed.insert(jobId, sample);
     }
 
-    if (downloaded > 0 || total > 0)
+    if (paused) {
+        if (downloaded > 0 || total > 0)
+            job.detail = buildTransferDetail(downloaded, total, 0);
+        else
+            job.detail = QStringLiteral("Paused");
+    } else if (downloaded > 0 || total > 0) {
         job.detail = buildTransferDetail(downloaded, total, rate);
-    else if (!progress.detail.isEmpty())
+    } else if (!progress.detail.isEmpty()) {
         job.detail = progress.detail;
+    }
 
     updateJobInModel(job);
     persistJob(job);

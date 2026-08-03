@@ -169,8 +169,8 @@ Item {
                         if (active > 0)
                             return qsTr("%1 active · resume after restart").arg(active)
                         if (finished > 0)
-                            return qsTr("%1 finished · torrents resume after restart").arg(finished)
-                        return qsTr("Torrents resume after restart")
+                            return qsTr("%1 finished · resume after restart").arg(finished)
+                        return qsTr("Downloads resume after restart")
                     }
                     color: MD.Token.color.on_surface_variant
                     typescale: MD.Token.typescale.body_medium

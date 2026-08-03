@@ -1971,13 +1971,13 @@
     </message>
     <message>
         <location line="+2"/>
-        <source>%1 finished · torrents resume after restart</source>
-        <translation>%1 завершено · торренты продолжатся после перезапуска</translation>
+        <source>%1 finished · resume after restart</source>
+        <translation>%1 завершено · продолжатся после перезапуска</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Torrents resume after restart</source>
-        <translation>Торренты докачиваются после перезапуска</translation>
+        <source>Downloads resume after restart</source>
+        <translation>Продолжатся после перезапуска</translation>
     </message>
     <message>
         <location line="+10"/>

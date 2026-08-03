@@ -66,6 +66,19 @@ Item {
     }
 
     readonly property string transferLine: {
+        const downloaded = root.bytesDownloaded > 0
+            ? root.bytesDownloaded
+            : (root.totalBytes > 0 && root.progress > 0
+                ? root.totalBytes * root.progress / 100
+                : 0)
+        const total = root.totalBytes || 0
+        const sizeOnly = total > 0
+            ? (formatByteCount(downloaded) + " / " + formatByteCount(total))
+            : (downloaded > 0 ? formatByteCount(downloaded) : "")
+
+        if (root.paused)
+            return sizeOnly
+
         const d = (root.detail || "").trim()
         if (d.length > 0 && !isStatusDetail(d))
             return d
@@ -74,15 +87,9 @@ Item {
                 && d !== "Загрузка…")
             return d
 
-        const downloaded = root.bytesDownloaded > 0
-            ? root.bytesDownloaded
-            : (root.totalBytes > 0 && root.progress > 0
-                ? root.totalBytes * root.progress / 100
-                : 0)
-        const total = root.totalBytes || 0
         const speed = formatSpeed(root.estimatedRateBps)
         if (total > 0) {
-            const base = formatByteCount(downloaded) + " / " + formatByteCount(total)
+            const base = sizeOnly
             const eta = formatEta(Math.max(0, total - downloaded), root.estimatedRateBps)
             if (speed && eta)
                 return base + " · " + speed + " · ETA " + eta
@@ -122,6 +129,14 @@ Item {
 
     onDownloadingChanged: {
         if (!root.downloading) {
+            _lastBytesSample = 0
+            _lastBytesAtMs = 0
+            estimatedRateBps = 0
+        }
+    }
+
+    onPausedChanged: {
+        if (root.paused) {
             _lastBytesSample = 0
             _lastBytesAtMs = 0
             estimatedRateBps = 0

@@ -39,6 +39,8 @@
     void pruneAddonLibraryEntries();
     void restoreLibraryPlaceholders();
     void ensureLibraryPlaceholder(const CatalogEntry&, const QString&, const QStringList& = {});
+    void resumePluginOwnedDownloads();
+    bool restartPluginOwnedDownload(const QString& jobId);
     void reconcileJobInstallState();
     void removeJobsForEntry(const QString&);
     void pruneUnselectedAddonJobs(const QString&, const QStringList&);

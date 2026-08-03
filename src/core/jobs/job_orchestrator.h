@@ -10,6 +10,7 @@
 #include <QObject>
 #include <QString>
 #include <QTimer>
+#include <QVector>
 
 namespace arachnel::core {
 
@@ -39,6 +40,8 @@ public:
     void toggleJobPause(const QString& jobId);
     /** Update plugin-owned job UI state after the plugin was told to pause/resume. */
     void setPluginDownloadPaused(const QString& jobId, bool paused);
+    void preparePluginJobResume(const QString& jobId);
+    QVector<QString> pluginJobsNeedingResume() const;
     void removeJob(const QString& jobId);
     void retryJob(const QString& jobId);
     void clearFinishedJobs();
@@ -49,6 +52,8 @@ signals:
     void downloadCompleted(const QString& jobId, const QString& entryId, const QString& sourceId,
                            const QString& artifactPath, JobKind kind, const QString& libraryId);
     void downloadFailed(const QString& jobId, const QString& error);
+    /** Core should re-run owns_download for this job id (retry / launcher restart). */
+    void pluginDownloadResumeRequested(const QString& jobId);
 
 private:
     QString pickMagnet(const QStringList& uris) const;

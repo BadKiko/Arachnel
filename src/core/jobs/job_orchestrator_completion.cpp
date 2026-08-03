@@ -157,7 +157,11 @@ void JobOrchestrator::setPluginDownloadPaused(const QString& jobId, bool paused)
         return;
     if (paused) {
         job.status = QStringLiteral("paused");
-        job.detail = QStringLiteral("Paused");
+        m_pluginSpeed.remove(jobId);
+        if (job.bytesDownloaded > 0 || job.totalBytes > 0)
+            job.detail = buildTransferDetail(job.bytesDownloaded, job.totalBytes, 0);
+        else
+            job.detail = QStringLiteral("Paused");
     } else {
         job.status = QStringLiteral("downloading");
         job.detail = QStringLiteral("Resuming…");
@@ -202,8 +206,11 @@ void JobOrchestrator::retryJob(const QString& jobId)
     JobEntry job = jobFromModelRow(row);
     if (job.status != QStringLiteral("failed") && job.status != QStringLiteral("cancelled"))
         return;
-    if (job.pluginDownload)
-        return; // Plugin-owned retry is started again from UI install
+    if (job.pluginDownload) {
+        preparePluginJobResume(jobId);
+        emit pluginDownloadResumeRequested(jobId);
+        return;
+    }
     if (job.magnetUri.isEmpty())
         return;
 
@@ -224,6 +231,35 @@ void JobOrchestrator::retryJob(const QString& jobId)
         startHttp(job);
     else
         startTorrent(job);
+}
+
+void JobOrchestrator::preparePluginJobResume(const QString& jobId)
+{
+    const int row = m_jobs->indexOfJob(jobId);
+    if (row < 0)
+        return;
+    JobEntry job = jobFromModelRow(row);
+    if (!job.pluginDownload)
+        return;
+    job.status = QStringLiteral("starting");
+    job.detail = QStringLiteral("Resuming…");
+    job.completedAt.clear();
+    // Keep progress/bytes so the bar doesn't jump to 0 on resume.
+    m_jobKinds.insert(jobId, job.kind);
+    updateJobInModel(job);
+    persistJob(job);
+}
+
+QVector<QString> JobOrchestrator::pluginJobsNeedingResume() const
+{
+    QVector<QString> out;
+    for (int i = 0; i < m_jobs->rowCount(); ++i) {
+        const JobEntry job = jobFromModelRow(i);
+        if (!job.pluginDownload || isJobTerminal(job.status))
+            continue;
+        out.append(job.id);
+    }
+    return out;
 }
 
 void JobOrchestrator::clearFinishedJobs()

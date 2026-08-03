@@ -56,6 +56,20 @@ void JobOrchestrator::restoreJobs()
 {
     QVector<JobEntry> jobs = m_jobStore->jobs();
     for (auto& job : jobs) {
+        if (job.pluginDownload) {
+            // Old bug routed plugin jobs through startTorrent ("Failed to start torrent").
+            const bool falseTorrentFail = job.status == QStringLiteral("failed")
+                && job.detail.contains(QStringLiteral("Failed to start torrent"),
+                                       Qt::CaseInsensitive);
+            if (isJobTerminal(job.status) && !falseTorrentFail)
+                continue;
+            // Keep plugin jobs out of torrent/HTTP restore; Core resumes them after plugins load.
+            job.status = QStringLiteral("starting");
+            job.detail = QStringLiteral("Resuming…");
+            job.completedAt.clear();
+            m_jobKinds.insert(job.id, job.kind);
+            continue;
+        }
         if (isJobTerminal(job.status))
             continue;
         if (isJobQueued(job.status) || isJobActive(job.status))
@@ -67,7 +81,7 @@ void JobOrchestrator::restoreJobs()
     m_jobs->setJobs(jobs);
 
     for (const auto& job : jobs) {
-        if (isJobTerminal(job.status))
+        if (isJobTerminal(job.status) || job.pluginDownload)
             continue;
         const bool wasPaused = isJobPaused(job.status);
         if (job.httpDownload)

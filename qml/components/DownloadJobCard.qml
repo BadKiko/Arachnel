@@ -155,7 +155,7 @@ Item {
     }
 
     readonly property string transferMeta: {
-        if (root.isInstalling || root.isCompleted || root.isFailed)
+        if (root.isPaused || root.isInstalling || root.isCompleted || root.isFailed)
             return ""
         const d = (root.detail || "").trim()
         if (d.length > 0 && !isGenericStatusDetail(d))
@@ -191,6 +191,8 @@ Item {
     }
 
     onBytesDownloadedChanged: {
+        if (root.isPaused)
+            return
         const now = Date.now()
         const sample = root.effectiveDownloaded
         if (_lastBytesAtMs > 0 && sample > _lastBytesSample) {
@@ -201,6 +203,14 @@ Item {
         }
         _lastBytesSample = sample
         _lastBytesAtMs = now
+    }
+
+    onStatusChanged: {
+        if (root.isPaused) {
+            _lastBytesSample = root.effectiveDownloaded
+            _lastBytesAtMs = 0
+            estimatedRateBps = 0
+        }
     }
 
     onProgressChanged: {

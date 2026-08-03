@@ -143,6 +143,83 @@ void CoreController::ensureLibraryPlaceholder(const CatalogEntry& entry, const Q
         m_catalogCovers->ensureDiskCover(entry.id, entry.coverUrl);
 }
 
+bool CoreController::restartPluginOwnedDownload(const QString& jobId)
+{
+    const JobEntry* jobPtr = m_jobStore.jobById(jobId);
+    if (!jobPtr || !jobPtr->pluginDownload || !m_pluginHost || !m_jobOrchestrator)
+        return false;
+
+    ISourcePlugin* plugin = m_pluginHost->plugin(jobPtr->sourceId);
+    if (!plugin) {
+        showNotice(QCoreApplication::translate("Core", "Plugin not loaded: %1").arg(jobPtr->sourceId));
+        return false;
+    }
+
+    const auto entryOpt = resolveCatalogEntry(jobPtr->entryId, jobPtr->sourceId, jobPtr);
+    if (!entryOpt) {
+        showNotice(QCoreApplication::translate("Core", "Catalog entry not found: %1")
+                       .arg(jobPtr->entryId));
+        return false;
+    }
+    const CatalogEntry& entry = *entryOpt;
+    const JobEntry job = *jobPtr;
+    const bool isUpdate = job.kind == JobKind::Update;
+    const QString libId = job.libraryId.isEmpty() ? m_settings.defaultLibraryId() : job.libraryId;
+
+    m_jobOrchestrator->preparePluginJobResume(jobId);
+
+    const LibraryGame* existing = m_libraryStore.gameById(entry.id);
+    InstallContext ctx;
+    ctx.jobId = jobId;
+    ctx.entryId = entry.id;
+    ctx.sourceId = entry.sourceId;
+    ctx.title = entry.title;
+    ctx.targetPath =
+        existing && !existing->installPath.isEmpty() && QDir(existing->installPath).exists()
+            ? existing->installPath
+            : m_settings.gameDirFor(libId, entry.id);
+    ctx.downloadsPath = m_settings.resolvedDownloadsRoot(libId);
+    ctx.downloadPath = job.savePath.isEmpty()
+                           ? (ctx.downloadsPath + QLatin1Char('/')
+                              + (isUpdate ? QStringLiteral("update/") : QStringLiteral("install/"))
+                              + entry.id)
+                           : job.savePath;
+    ctx.magnetUri = entry.steamAppId.isEmpty() ? job.magnetUri : entry.steamAppId;
+    if (ctx.magnetUri.startsWith(QStringLiteral("steam://app/")))
+        ctx.magnetUri = ctx.magnetUri.mid(QStringLiteral("steam://app/").size());
+    ctx.uploadDate = entry.uploadDate;
+    ctx.version = entry.version;
+    ctx.steamAppId = entry.steamAppId;
+    ctx.installKind = entry.installKind;
+    // Empty = resume/continue; "update" forces verify. Never treat retry as brand-new skip.
+    ctx.installMode = isUpdate ? QStringLiteral("update") : QString();
+
+    m_pluginHost->runOwnedDownloadAsync(
+        plugin, ctx,
+        [this, jobId](const OwnedDownloadProgress& progress) {
+            m_jobOrchestrator->reportPluginProgress(jobId, progress);
+        },
+        [this, jobId](const InstallResult& result) {
+            if (result.success)
+                m_jobOrchestrator->completePluginDownload(jobId, result.installPath);
+            else
+                m_jobOrchestrator->failPluginDownload(
+                    jobId, result.error.isEmpty()
+                               ? QCoreApplication::translate("Core", "Install failed")
+                               : result.error);
+        });
+    return true;
+}
+
+void CoreController::resumePluginOwnedDownloads()
+{
+    if (!m_jobOrchestrator)
+        return;
+    const QVector<QString> ids = m_jobOrchestrator->pluginJobsNeedingResume();
+    for (const QString& jobId : ids)
+        restartPluginOwnedDownload(jobId);
+}
+
 void CoreController::restoreLibraryPlaceholders()
 {
     for (const JobEntry& job : m_jobStore.jobs()) {

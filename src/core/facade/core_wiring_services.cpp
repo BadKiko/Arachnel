@@ -133,7 +133,10 @@ void CoreController::initializeServices()
     m_httpSession = new HttpDownloadSession(this);
     m_jobOrchestrator = new JobOrchestrator(&m_settings, &m_jobStore, m_torrentSession,
                                             m_httpSession, &m_jobs, this);
+    connect(m_jobOrchestrator, &JobOrchestrator::pluginDownloadResumeRequested, this,
+            [this](const QString& jobId) { restartPluginOwnedDownload(jobId); });
     m_jobOrchestrator->restoreJobs();
+    resumePluginOwnedDownloads();
     connect(&m_jobs, &JobModel::jobsChanged, this, &CoreController::syncInstallKindProbeSuspension);
     syncInstallKindProbeSuspension();
     m_protonManager = new ProtonManager(this);

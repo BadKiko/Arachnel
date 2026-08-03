@@ -1971,12 +1971,12 @@
     </message>
     <message>
         <location line="+2"/>
-        <source>%1 finished · torrents resume after restart</source>
+        <source>%1 finished · resume after restart</source>
         <translation></translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Torrents resume after restart</source>
+        <source>Downloads resume after restart</source>
         <translation></translation>
     </message>
     <message>
