@@ -134,7 +134,8 @@ void GameUpdateService::runAutoInstallUpdates()
     for (const LibraryGame& game : m_store->games()) {
         if (!game.hasUpdate || !game.autoUpdate
             || (m_hooks.entryPlayable && !m_hooks.entryPlayable(game.id))
-            || (m_hooks.entryHasActiveJob && m_hooks.entryHasActiveJob(game.id)))
+            || (m_hooks.entryHasActiveJob && m_hooks.entryHasActiveJob(game.id))
+            || (m_hooks.catalogUpdateHasDlcRisk && m_hooks.catalogUpdateHasDlcRisk(game.id)))
             continue;
         for (const CatalogEntry& entry : *m_catalog) {
             if (entry.id != game.id)

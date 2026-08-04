@@ -42,6 +42,8 @@ struct InstallContext {
     // Append-only: keep above fields ABI-stable for already-shipped plugins (steamidra 0.4.x).
     QString version;
     QString steamAppId;
+    /** Selected catalog addon / DLC ids (e.g. steam-12345). Owns_download plugins consume these. */
+    QStringList selectedAddonIds;
 };
 
 struct InstallResult {
@@ -104,6 +106,17 @@ public:
 
     virtual std::optional<QString> detectUpdate(const LibraryGame& local,
                                                 const CatalogEntry& remote) const = 0;
+
+    /**
+     * True when applying the remote update may drop DLC content (new build on source
+     * without matching DLC manifests). Default: false.
+     */
+    virtual bool updateMayBreakDlc(const LibraryGame& local, const CatalogEntry& remote) const
+    {
+        (void)local;
+        (void)remote;
+        return false;
+    }
 
     virtual LaunchInfo launchInfo(const LibraryGame& local) const = 0;
 

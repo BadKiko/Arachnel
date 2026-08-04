@@ -171,12 +171,26 @@ void InstallSessionService::advanceInstallSession(const QString& entryId)
     for (const QString& addonId : it->selectedAddonIds) {
         if (m_hooks.isAddonInstalled(entryId, addonId))
             continue;
-        const QString artifactPath = m_hooks.addonArtifactPath(entryId, addonId);
-        if (artifactPath.isEmpty())
-            return;
         const CatalogComponent* addon = m_hooks.findCatalogAddon(*parent, addonId);
         if (!addon)
             continue;
+        const bool hasHttp =
+            (!addon->downloadUrl.isEmpty()
+             && addon->downloadUrl.startsWith(QStringLiteral("http"), Qt::CaseInsensitive))
+            || (!addon->magnetUris.isEmpty()
+                && addon->magnetUris.first().startsWith(QStringLiteral("http"), Qt::CaseInsensitive));
+        const bool hasMagnet =
+            !addon->magnetUris.isEmpty()
+            && addon->magnetUris.first().startsWith(QStringLiteral("magnet:"), Qt::CaseInsensitive);
+        if (!hasHttp && !hasMagnet) {
+            // Owns_download / Steam DLC: content already installed with the game.
+            m_hooks.markAddonInstalled(entryId, addonId, addon->uploadDate);
+            ++installedCount;
+            continue;
+        }
+        const QString artifactPath = m_hooks.addonArtifactPath(entryId, addonId);
+        if (artifactPath.isEmpty())
+            return;
         it->installStep = installedCount + 1;
         syncInstallSessionPhase(entryId);
         startPluginAddonInstall(*parent, *addon, it->sourceId, artifactPath, it->gameJobId,

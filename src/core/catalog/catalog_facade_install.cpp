@@ -5,6 +5,8 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QStandardPaths>
+#include <QWriteLocker>
+#include <QtConcurrent>
 
 namespace arachnel::core {
 
@@ -151,6 +153,10 @@ void CoreController::installCatalogEntry(const QString& entryId, const QString& 
     const QString libId = libraryId.isEmpty() ? m_settings.defaultLibraryId() : libraryId;
 
     if (ownsDownload) {
+        ensureCatalogAddons(entryId);
+        const CatalogEntry* live = findCatalogEntry(entryId);
+        const CatalogEntry& entry = live ? *live : *entryOpt;
+
         ISourcePlugin* plugin = m_pluginHost->plugin(entry.sourceId);
         if (!plugin) {
             showNotice(QCoreApplication::translate("Core", "Plugin not loaded: %1").arg(entry.sourceId));
@@ -179,6 +185,18 @@ void CoreController::installCatalogEntry(const QString& entryId, const QString& 
             const CatalogComponent* addon = findCatalogAddon(entry, addonId);
             if (!addon)
                 continue;
+            const bool hasHttp =
+                (!addon->downloadUrl.isEmpty()
+                 && addon->downloadUrl.startsWith(QStringLiteral("http"), Qt::CaseInsensitive))
+                || (!addon->magnetUris.isEmpty()
+                    && addon->magnetUris.first().startsWith(QStringLiteral("http"),
+                                                           Qt::CaseInsensitive));
+            const bool hasMagnet =
+                !addon->magnetUris.isEmpty()
+                && addon->magnetUris.first().startsWith(QStringLiteral("magnet:"),
+                                                       Qt::CaseInsensitive);
+            if (!hasHttp && !hasMagnet)
+                continue; // Steam DLC rides inside owns_download
             m_jobOrchestrator->startAddonDownload(entry, *addon);
         }
 
@@ -202,9 +220,17 @@ void CoreController::installCatalogEntry(const QString& entryId, const QString& 
         ctx.steamAppId = entry.steamAppId;
         ctx.installKind = entry.installKind;
         ctx.installMode = isUpdate ? QStringLiteral("update") : installMode;
+        ctx.selectedAddonIds = addonIds;
+        if (ctx.selectedAddonIds.isEmpty() && existing) {
+            for (const InstalledComponent& c : existing->components) {
+                if (c.installed)
+                    ctx.selectedAddonIds.append(c.id);
+            }
+        }
         qInfo().noquote() << "[owns-download]" << entry.id
                           << "mode" << ctx.installMode
                           << "forceUpdate" << isUpdate
+                          << "addons" << ctx.selectedAddonIds.join(QLatin1Char(','))
                           << "target" << ctx.targetPath;
 
         m_pluginHost->runOwnedDownloadAsync(
@@ -284,7 +310,14 @@ void CoreController::updateCatalogEntry(const QString& entryId)
                                                             : m_settings.defaultLibraryId();
 
     if (m_pluginHost && m_pluginHost->pluginOwnsDownload(entry->sourceId)) {
-        installCatalogEntry(entryId, libId, {}, QStringLiteral("update"));
+        QVariantList addonIds;
+        if (game) {
+            for (const InstalledComponent& c : game->components) {
+                if (c.installed)
+                    addonIds.append(c.id);
+            }
+        }
+        installCatalogEntry(entryId, libId, addonIds, QStringLiteral("update"));
         return;
     }
 
@@ -293,6 +326,160 @@ void CoreController::updateCatalogEntry(const QString& entryId)
         showNotice(QCoreApplication::translate("Core", "Could not start update for %1").arg(entry->title));
         return;
     }
+}
+
+bool CoreController::ensureCatalogAddons(const QString& entryId)
+{
+    if (entryId.isEmpty() || !m_pluginHost) {
+        emit catalogAddonsReady(entryId);
+        return true;
+    }
+
+    const QString resolved = repairCatalogEntryId(entryId);
+    const auto cacheIt = m_catalogIdToCacheIndex.constFind(resolved);
+    if (cacheIt == m_catalogIdToCacheIndex.cend()) {
+        emit catalogAddonsReady(resolved);
+        return true;
+    }
+    const int idx = cacheIt.value();
+
+    QString sourceId;
+    bool hasSteamDlc = false;
+    bool hasAnyAddons = false;
+    bool steamDlcLooksComplete = false;
+    {
+        QWriteLocker locker(&m_catalogCacheLock);
+        if (idx < 0 || idx >= m_catalogCache.size()) {
+            emit catalogAddonsReady(resolved);
+            return true;
+        }
+        CatalogEntry& entry = m_catalogCache[idx];
+        sourceId = entry.sourceId;
+        hasAnyAddons = !entry.addons.isEmpty();
+        for (const CatalogComponent& c : entry.addons) {
+            if (isSteamStoreDlcId(c.id)
+                && (c.kind == CatalogItemKind::Dlc || c.kind == CatalogItemKind::Addon)) {
+                hasSteamDlc = true;
+                break;
+            }
+        }
+        // Drop Online-Fix style zip/magnet junk so it never reaches the picker.
+        if (sourceId == QStringLiteral("steamidra") && hasAnyAddons && !hasSteamDlc) {
+            entry.addons.clear();
+            hasAnyAddons = false;
+        }
+        // steamidra may still carry fake steam-*-fix-*.zip rows - strip those too.
+        if (sourceId == QStringLiteral("steamidra") && hasAnyAddons) {
+            QVector<CatalogComponent> keep;
+            keep.reserve(entry.addons.size());
+            for (const CatalogComponent& c : entry.addons) {
+                if (isSteamStoreDlcId(c.id)
+                    && (c.kind == CatalogItemKind::Dlc || c.kind == CatalogItemKind::Addon))
+                    keep.append(c);
+            }
+            if (keep.size() != entry.addons.size()) {
+                entry.addons = std::move(keep);
+                hasAnyAddons = !entry.addons.isEmpty();
+                hasSteamDlc = hasAnyAddons;
+            }
+        }
+        // Placeholder titles ("DLC 123") mean relay /dlcs hasn't filled media yet.
+        if (sourceId == QStringLiteral("steamidra") && hasSteamDlc) {
+            steamDlcLooksComplete = true;
+            for (const CatalogComponent& c : entry.addons) {
+                if (!isSteamStoreDlcId(c.id))
+                    continue;
+                const QString dlcId = c.id.mid(6);
+                if (c.title.isEmpty() || c.title == QStringLiteral("DLC %1").arg(dlcId)) {
+                    steamDlcLooksComplete = false;
+                    break;
+                }
+            }
+        }
+    }
+
+    const bool steamCdn = sourceId == QStringLiteral("steamidra");
+    // steamidra: skip only when relay already filled real titles. Otherwise hit /dlcs.
+    // Other sources: keep existing feed addons; only enrich when empty.
+    if (steamCdn && steamDlcLooksComplete) {
+        emit catalogAddonsReady(resolved);
+        return true;
+    }
+    if (!steamCdn && hasAnyAddons) {
+        emit catalogAddonsReady(resolved);
+        return true;
+    }
+
+    if (m_catalogAddonEnrichInFlight.contains(resolved))
+        return false;
+
+    ISourcePlugin* plugin = m_pluginHost->plugin(sourceId);
+    if (!plugin) {
+        emit catalogAddonsReady(resolved);
+        return true;
+    }
+
+    m_catalogAddonEnrichInFlight.insert(resolved);
+    (void)QtConcurrent::run([this, plugin, resolved, idx, steamCdn]() {
+        QVector<CatalogComponent> addons;
+        bool hasWorkshop = false;
+        if (const auto enriched = plugin->entryById(resolved)) {
+            addons = enriched->addons;
+            hasWorkshop = enriched->hasWorkshop;
+        }
+
+        QMetaObject::invokeMethod(
+            this,
+            [this, resolved, idx, addons, steamCdn, hasWorkshop]() {
+                m_catalogAddonEnrichInFlight.remove(resolved);
+                {
+                    QWriteLocker locker(&m_catalogCacheLock);
+                    if (idx >= 0 && idx < m_catalogCache.size()
+                        && m_catalogCache[idx].id == resolved) {
+                        // steamidra: replace junk/empty with Store/relay DLC. Others: fill only if empty.
+                        if (steamCdn || m_catalogCache[idx].addons.isEmpty())
+                            m_catalogCache[idx].addons = addons;
+                        if (steamCdn) {
+                            m_catalogCache[idx].hasWorkshop = hasWorkshop;
+                            int n = 0;
+                            for (const CatalogComponent& c : addons) {
+                                if (isSteamStoreDlcId(c.id))
+                                    ++n;
+                            }
+                            if (n > 0)
+                                m_catalogCache[idx].dlcCount = n;
+                        }
+                    }
+                }
+                m_catalog.notifyEntryChanged(resolved);
+                emit catalogAddonsReady(resolved);
+            },
+            Qt::QueuedConnection);
+    });
+    return false;
+}
+
+bool CoreController::catalogUpdateHasDlcRisk(const QString& entryId) const
+{
+    // Local-only: never call plugin HTTP from the UI thread.
+    const LibraryGame* game = m_libraryStore.gameById(entryId);
+    if (!game || !game->hasUpdate)
+        return false;
+
+    for (const InstalledComponent& c : game->components) {
+        if (c.installed)
+            return true;
+    }
+
+    if (!game->installPath.isEmpty()) {
+        QFile marker(game->installPath + QStringLiteral("/.arachnel-steamidra"));
+        if (marker.open(QIODevice::ReadOnly)) {
+            const QJsonObject root = QJsonDocument::fromJson(marker.readAll()).object();
+            if (!root.value(QStringLiteral("selectedDlc")).toArray().isEmpty())
+                return true;
+        }
+    }
+    return false;
 }
 
 void CoreController::prepareShutdown()

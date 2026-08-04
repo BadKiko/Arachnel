@@ -143,8 +143,20 @@ QVariantMap LibraryController::entryDetails(const QString& entryId) const
         info.insert(QStringLiteral("steamStoreUrl"),
                     QStringLiteral("https://store.steampowered.com/app/%1/").arg(steamAppId));
     if (const CatalogEntry* entry = m_hooks.findCatalogEntry ? m_hooks.findCatalogEntry(entryId) : nullptr) {
-        info.insert(QStringLiteral("addonCount"), entry->addons.size());
-        info.insert(QStringLiteral("hasAddons"), !entry->addons.isEmpty());
+        int addonCount = entry->addons.size();
+        if (entry->sourceId == QStringLiteral("steamidra")) {
+            addonCount = 0;
+            for (const CatalogComponent& c : entry->addons) {
+                if (!isSteamStoreDlcId(c.id))
+                    continue;
+                if (c.kind != CatalogItemKind::Dlc && c.kind != CatalogItemKind::Addon)
+                    continue;
+                ++addonCount;
+            }
+        }
+        info.insert(QStringLiteral("addonCount"), addonCount);
+        info.insert(QStringLiteral("hasAddons"), addonCount > 0);
+        info.insert(QStringLiteral("hasWorkshop"), entry->hasWorkshop);
     }
     if (info.value(QStringLiteral("downloadPath")).toString().isEmpty() && m_hooks.findLatestJob) {
         if (const JobEntry* job = m_hooks.findLatestJob(entryId))

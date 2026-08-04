@@ -12,6 +12,28 @@
 
 namespace arachnel::core {
 
+namespace {
+
+int steamCdnSelectableAddonCount(const CatalogEntry& entry)
+{
+    if (entry.sourceId != QStringLiteral("steamidra"))
+        return entry.addons.size();
+    int n = 0;
+    for (const CatalogComponent& c : entry.addons) {
+        if (!isSteamStoreDlcId(c.id))
+            continue;
+        if (c.kind != CatalogItemKind::Dlc && c.kind != CatalogItemKind::Addon)
+            continue;
+        ++n;
+    }
+    // Catalog stays id-light: dlcCount from relay until /dlcs fills addons.
+    if (n == 0 && entry.dlcCount > 0)
+        return entry.dlcCount;
+    return n;
+}
+
+} // namespace
+
 bool catalogEntryLess(const CatalogEntry& a, const CatalogEntry& b, CatalogModel::SortMode mode)
 {
     switch (mode) {
@@ -146,9 +168,9 @@ QVariant CatalogModel::data(const QModelIndex& index, int role) const
     case ItemKindLabelRole:
         return catalogItemKindLabel(entry->itemKind);
     case AddonCountRole:
-        return entry->addons.size();
+        return steamCdnSelectableAddonCount(*entry);
     case HasAddonsRole:
-        return !entry->addons.isEmpty();
+        return steamCdnSelectableAddonCount(*entry) > 0;
     case MetadataPendingRole:
         return entry->metadataPending;
     case CurrentPlayersRole:
@@ -331,9 +353,10 @@ QVariantMap CatalogModel::toMap(const CatalogEntry& entry) const
         {QStringLiteral("uploadDate"), entry.uploadDate},
         {QStringLiteral("itemKind"), static_cast<int>(entry.itemKind)},
         {QStringLiteral("itemKindLabel"), catalogItemKindLabel(entry.itemKind)},
-        {QStringLiteral("addonCount"), entry.addons.size()},
-        {QStringLiteral("hasAddons"), !entry.addons.isEmpty()},
+        {QStringLiteral("addonCount"), steamCdnSelectableAddonCount(entry)},
+        {QStringLiteral("hasAddons"), steamCdnSelectableAddonCount(entry) > 0},
         {QStringLiteral("metadataPending"), entry.metadataPending},
+        {QStringLiteral("hasWorkshop"), entry.hasWorkshop},
         {QStringLiteral("currentPlayers"), entry.currentPlayers},
         {QStringLiteral("hypeScore"), entry.hypeScore},
         {QStringLiteral("hasUpdate"), false},
@@ -355,9 +378,16 @@ QVariantList CatalogModel::addonsFor(const QString& entryId) const
     if (!entry)
         return {};
 
+    const bool steamCdnOnly = entry->sourceId == QStringLiteral("steamidra");
     QVariantList addons;
     addons.reserve(entry->addons.size());
     for (const auto& addon : entry->addons) {
+        // Steam CDN picker is Store DLC only - never surface zip/magnet packaging rows.
+        if (steamCdnOnly && !isSteamStoreDlcId(addon.id))
+            continue;
+        if (steamCdnOnly && addon.kind != CatalogItemKind::Dlc
+            && addon.kind != CatalogItemKind::Addon)
+            continue;
         addons.append(QVariantMap{
             {QStringLiteral("id"), addon.id},
             {QStringLiteral("title"), addon.title},
@@ -368,6 +398,9 @@ QVariantList CatalogModel::addonsFor(const QString& entryId) const
             {QStringLiteral("delivery"), static_cast<int>(addon.delivery)},
             {QStringLiteral("deliveryLabel"), componentDeliveryLabel(addon.delivery)},
             {QStringLiteral("optional"), addon.optional},
+            {QStringLiteral("contentAvailable"), addon.contentAvailable},
+            {QStringLiteral("coverUrl"), addon.coverUrl},
+            {QStringLiteral("screenshotUrls"), QVariant::fromValue(addon.screenshotUrls)},
         });
     }
     return addons;

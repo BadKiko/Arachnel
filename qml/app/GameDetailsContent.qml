@@ -144,6 +144,11 @@ Item {
                             icon.name: MD.Token.icon.extension
                         }
                         MD.AssistChip {
+                            visible: !!(page.info.hasWorkshop)
+                            text: qsTr("Workshop")
+                            icon.name: MD.Token.icon.handyman
+                        }
+                        MD.AssistChip {
                             text: page.info.installKindLabel ?? ""
                             icon.name: MD.Token.icon.install_desktop
                         }
@@ -325,7 +330,12 @@ Item {
                             text: qsTr("Update")
                             icon.name: MD.Token.icon.update
                             mdState.type: MD.Enum.BtFilledTonal
-                            onClicked: Core.updateCatalogEntry(page.gameId)
+                            onClicked: {
+                                if (Core.catalogUpdateHasDlcRisk(page.gameId))
+                                    dlcUpdateRiskDialog.openForGame(page.gameId)
+                                else
+                                    Core.updateCatalogEntry(page.gameId)
+                            }
                         }
                     }
                 }
@@ -433,6 +443,14 @@ Item {
                     }
                 }
             }
+        }
+    }
+
+    DlcUpdateRiskDialog {
+        id: dlcUpdateRiskDialog
+        width: Math.min(420, page.width > 0 ? page.width - 48 : 420)
+        onUpdateAccepted: function(gameId) {
+            Core.updateCatalogEntry(gameId)
         }
     }
 }

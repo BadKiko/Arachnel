@@ -193,6 +193,12 @@ bool CoreController::restartPluginOwnedDownload(const QString& jobId)
     ctx.installKind = entry.installKind;
     // Empty = resume/continue; "update" forces verify. Never treat retry as brand-new skip.
     ctx.installMode = isUpdate ? QStringLiteral("update") : QString();
+    if (existing) {
+        for (const InstalledComponent& c : existing->components) {
+            if (c.installed)
+                ctx.selectedAddonIds.append(c.id);
+        }
+    }
 
     m_pluginHost->runOwnedDownloadAsync(
         plugin, ctx,

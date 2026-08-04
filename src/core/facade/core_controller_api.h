@@ -25,6 +25,10 @@
     Q_INVOKABLE void installDownloadedCatalogAddon(const QString&, const QString&);
     Q_INVOKABLE bool isCatalogAddonInstalled(const QString&, const QString&) const;
     Q_INVOKABLE void updateCatalogEntry(const QString&);
+    /** Refresh Steam/plugin addons into the catalog cache (async). Returns true if already ready. */
+    Q_INVOKABLE bool ensureCatalogAddons(const QString& entryId);
+    /** True when updating may break installed DLC (local check only - never blocks). */
+    Q_INVOKABLE bool catalogUpdateHasDlcRisk(const QString& entryId) const;
     Q_INVOKABLE void setGameAutoUpdate(const QString&, bool);
     Q_INVOKABLE void setGameLaunchArgs(const QString&, const QString&);
     Q_INVOKABLE void setGameExecutableOverride(const QString&, const QString&);

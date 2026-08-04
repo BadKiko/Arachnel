@@ -40,6 +40,8 @@ QJsonObject componentToJson(const CatalogComponent& c)
     o.insert(QStringLiteral("uploadDate"), c.uploadDate);
     o.insert(QStringLiteral("kind"), itemKindToString(c.kind));
     o.insert(QStringLiteral("optional"), c.optional);
+    o.insert(QStringLiteral("contentAvailable"), c.contentAvailable);
+    o.insert(QStringLiteral("coverUrl"), c.coverUrl);
     o.insert(QStringLiteral("referer"), c.referer);
     o.insert(QStringLiteral("getfileUrl"), c.getfileUrl);
     o.insert(QStringLiteral("downloadUrl"), c.downloadUrl);
@@ -52,6 +54,11 @@ QJsonObject componentToJson(const CatalogComponent& c)
     if (!c.downloadUrl.isEmpty())
         uris.append(c.downloadUrl);
     o.insert(QStringLiteral("uris"), uris);
+    QJsonArray shots;
+    for (const QString& u : c.screenshotUrls)
+        shots.append(u);
+    if (!shots.isEmpty())
+        o.insert(QStringLiteral("screenshotUrls"), shots);
     return o;
 }
 
@@ -64,6 +71,10 @@ CatalogComponent componentFromJson(const QJsonObject& o)
     c.uploadDate = o.value(QStringLiteral("uploadDate")).toString();
     c.kind = itemKindFromString(o.value(QStringLiteral("kind")).toString());
     c.optional = o.value(QStringLiteral("optional")).toBool(false);
+    c.contentAvailable = o.value(QStringLiteral("contentAvailable")).toBool(true);
+    if (o.contains(QStringLiteral("hasManifest")))
+        c.contentAvailable = o.value(QStringLiteral("hasManifest")).toBool(true);
+    c.coverUrl = o.value(QStringLiteral("coverUrl")).toString();
     c.referer = o.value(QStringLiteral("referer")).toString();
     c.getfileUrl = o.value(QStringLiteral("getfileUrl")).toString();
     c.downloadUrl = o.value(QStringLiteral("downloadUrl")).toString();
@@ -80,6 +91,11 @@ CatalogComponent componentFromJson(const QJsonObject& o)
             if (c.downloadUrl.isEmpty())
                 c.downloadUrl = value;
         }
+    }
+    for (const QJsonValue& shot : o.value(QStringLiteral("screenshotUrls")).toArray()) {
+        const QString u = shot.toString().trimmed();
+        if (!u.isEmpty())
+            c.screenshotUrls.append(u);
     }
     return c;
 }
@@ -106,6 +122,8 @@ QJsonObject entryToJson(const CatalogEntry& e)
     o.insert(QStringLiteral("kind"), itemKindToString(e.itemKind));
     o.insert(QStringLiteral("installKind"), static_cast<int>(e.installKind));
     o.insert(QStringLiteral("metadataPending"), e.metadataPending);
+    o.insert(QStringLiteral("hasWorkshop"), e.hasWorkshop);
+    o.insert(QStringLiteral("dlcCount"), e.dlcCount);
     o.insert(QStringLiteral("recommendationsTotal"), e.recommendationsTotal);
     o.insert(QStringLiteral("metacriticScore"), e.metacriticScore);
     o.insert(QStringLiteral("currentPlayers"), e.currentPlayers);
@@ -163,6 +181,8 @@ CatalogEntry entryFromJson(const QJsonObject& o, const QString& defaultSourceId)
     e.parentEntryId = o.value(QStringLiteral("parentEntryId")).toString();
     e.itemKind = itemKindFromString(o.value(QStringLiteral("kind")).toString());
     e.metadataPending = o.value(QStringLiteral("metadataPending")).toBool(false);
+    e.hasWorkshop = o.value(QStringLiteral("hasWorkshop")).toBool(false);
+    e.dlcCount = o.value(QStringLiteral("dlcCount")).toInt(0);
     e.recommendationsTotal = o.value(QStringLiteral("recommendationsTotal")).toInt(0);
     e.metacriticScore = o.value(QStringLiteral("metacriticScore")).toInt(0);
     e.currentPlayers = o.value(QStringLiteral("currentPlayers")).toInt(-1);
