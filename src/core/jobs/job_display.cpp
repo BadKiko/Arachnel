@@ -40,6 +40,8 @@ void jobDisplayTranslationSeed()
     QT_TRANSLATE_NOOP("Core", "Installing %1");
     QT_TRANSLATE_NOOP("Core", "Updating %1");
     QT_TRANSLATE_NOOP("Core", "Installing (%1/%2)");
+    QT_TRANSLATE_NOOP("Core", "Installing (%1/%2) - %3");
+    QT_TRANSLATE_NOOP("Core", "Couldn't update DLC unlocks.");
     QT_TRANSLATE_NOOP("Core", "Install failed: %1");
     QT_TRANSLATE_NOOP("Core", "Error: %1");
     QT_TRANSLATE_NOOP("Core", "Add-on %1 - %2");
@@ -187,14 +189,27 @@ QString displayJobDetail(const QString& detail)
     if (detail.startsWith(QStringLiteral("Install failed: ")))
         return QCoreApplication::translate("Core", "Install failed: %1").arg(detail.mid(16));
 
-    if (detail.startsWith(QStringLiteral("Установка (")))
-        return QCoreApplication::translate("Core", "Installing (%1/%2)")
-            .arg(detail.section(QLatin1Char('('), 1, 1).section(QLatin1Char('/'), 0, 0),
-                 detail.section(QLatin1Char('/'), 1, 1).chopped(1));
-    if (detail.startsWith(QStringLiteral("Installing (")))
-        return QCoreApplication::translate("Core", "Installing (%1/%2)")
-            .arg(detail.section(QLatin1Char('('), 1, 1).section(QLatin1Char('/'), 0, 0),
-                 detail.section(QLatin1Char('/'), 1, 1).chopped(1));
+    auto parseInstallingSteps = [](const QString& text) -> QString {
+        // "Installing (1/3)" or "Installing (1/3) - Title" (also legacy "Установка (").
+        const int open = text.indexOf(QLatin1Char('('));
+        const int slash = text.indexOf(QLatin1Char('/'), open + 1);
+        const int close = text.indexOf(QLatin1Char(')'), slash + 1);
+        if (open < 0 || slash < 0 || close < 0)
+            return {};
+        const QString step = text.mid(open + 1, slash - open - 1).trimmed();
+        const QString total = text.mid(slash + 1, close - slash - 1).trimmed();
+        const QString rest = text.mid(close + 1).trimmed();
+        if (rest.startsWith(QStringLiteral("- "))) {
+            return QCoreApplication::translate("Core", "Installing (%1/%2) - %3")
+                .arg(step, total, rest.mid(2).trimmed());
+        }
+        return QCoreApplication::translate("Core", "Installing (%1/%2)").arg(step, total);
+    };
+    if (detail.startsWith(QStringLiteral("Установка ("))
+        || detail.startsWith(QStringLiteral("Installing ("))) {
+        if (QString translated = parseInstallingSteps(detail); !translated.isEmpty())
+            return translated;
+    }
 
     if (detail.startsWith(QStringLiteral("Ошибка:")))
         return QCoreApplication::translate("Core", "Error: %1").arg(detail.mid(7));

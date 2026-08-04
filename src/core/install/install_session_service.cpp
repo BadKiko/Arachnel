@@ -144,14 +144,22 @@ void InstallSessionService::beginInstallSession(const QString& entryId, const QS
     m_installSelectedAddons.insert(entryId, addonIds);
 }
 
-void InstallSessionService::syncInstallSessionPhase(const QString& entryId)
+void InstallSessionService::syncInstallSessionPhase(const QString& entryId, const QString& stepTitle)
 {
     const auto it = m_installSessions.constFind(entryId);
     if (it == m_installSessions.cend() || it->gameJobId.isEmpty())
         return;
-    m_jobOrchestrator->setJobPhase(
-        it->gameJobId, QStringLiteral("installing"),
-        QStringLiteral("Installing (%1/%2)").arg(qMax(1, it->installStep)).arg(qMax(1, it->installTotal)));
+    QString title = stepTitle;
+    if (title.isEmpty()) {
+        if (const CatalogEntry* entry = m_hooks.findCatalogEntry(entryId))
+            title = entry->title;
+    }
+    const int step = qMax(1, it->installStep);
+    const int total = qMax(1, it->installTotal);
+    const QString detail = title.isEmpty()
+                               ? QStringLiteral("Installing (%1/%2)").arg(step).arg(total)
+                               : QStringLiteral("Installing (%1/%2) - %3").arg(step).arg(total).arg(title);
+    m_jobOrchestrator->setJobPhase(it->gameJobId, QStringLiteral("installing"), detail);
 }
 
 void InstallSessionService::advanceInstallSession(const QString& entryId)
@@ -160,8 +168,10 @@ void InstallSessionService::advanceInstallSession(const QString& entryId)
     if (it == m_installSessions.end() || !it->gameInstallDone)
         return;
     const CatalogEntry* parent = m_hooks.findCatalogEntry(entryId);
-    if (!parent || !m_hooks.isEntryPlayable(entryId))
+    if (!parent)
         return;
+    // Don't require isEntryPlayable here: job may still be settling, and Steam DLC
+    // has no separate artifact - mark selected ids as soon as the game is committed.
 
     int installedCount = 1;
     for (const QString& addonId : it->selectedAddonIds) {
@@ -172,27 +182,29 @@ void InstallSessionService::advanceInstallSession(const QString& entryId)
         if (m_hooks.isAddonInstalled(entryId, addonId))
             continue;
         const CatalogComponent* addon = m_hooks.findCatalogAddon(*parent, addonId);
-        if (!addon)
-            continue;
         const bool hasHttp =
-            (!addon->downloadUrl.isEmpty()
-             && addon->downloadUrl.startsWith(QStringLiteral("http"), Qt::CaseInsensitive))
-            || (!addon->magnetUris.isEmpty()
-                && addon->magnetUris.first().startsWith(QStringLiteral("http"), Qt::CaseInsensitive));
+            addon
+            && ((!addon->downloadUrl.isEmpty()
+                 && addon->downloadUrl.startsWith(QStringLiteral("http"), Qt::CaseInsensitive))
+                || (!addon->magnetUris.isEmpty()
+                    && addon->magnetUris.first().startsWith(QStringLiteral("http"),
+                                                           Qt::CaseInsensitive)));
         const bool hasMagnet =
-            !addon->magnetUris.isEmpty()
+            addon && !addon->magnetUris.isEmpty()
             && addon->magnetUris.first().startsWith(QStringLiteral("magnet:"), Qt::CaseInsensitive);
-        if (!hasHttp && !hasMagnet) {
-            // Owns_download / Steam DLC: content already installed with the game.
-            m_hooks.markAddonInstalled(entryId, addonId, addon->uploadDate);
+        it->installStep = installedCount + 1;
+        const QString stepTitle =
+            (addon && !addon->title.isEmpty()) ? addon->title : addonId;
+        syncInstallSessionPhase(entryId, stepTitle);
+        if (!addon || (!hasHttp && !hasMagnet)) {
+            // Owns_download / Steam DLC (or catalog row missing): already on disk with the game.
+            m_hooks.markAddonInstalled(entryId, addonId, addon ? addon->uploadDate : QString());
             ++installedCount;
             continue;
         }
         const QString artifactPath = m_hooks.addonArtifactPath(entryId, addonId);
         if (artifactPath.isEmpty())
             return;
-        it->installStep = installedCount + 1;
-        syncInstallSessionPhase(entryId);
         startPluginAddonInstall(*parent, *addon, it->sourceId, artifactPath, it->gameJobId,
                                 [this, entryId](bool success) {
                                     if (!success)

@@ -32,6 +32,7 @@ QJsonArray componentsToJson(const QVector<InstalledComponent>& components)
         obj.insert(QStringLiteral("title"), component.title);
         obj.insert(QStringLiteral("uploadDate"), component.uploadDate);
         obj.insert(QStringLiteral("installed"), component.installed);
+        obj.insert(QStringLiteral("enabled"), component.enabled);
         array.append(obj);
     }
     return array;
@@ -48,6 +49,10 @@ QVector<InstalledComponent> componentsFromJson(const QJsonArray& array)
         component.title = obj.value(QStringLiteral("title")).toString();
         component.uploadDate = obj.value(QStringLiteral("uploadDate")).toString();
         component.installed = obj.value(QStringLiteral("installed")).toBool();
+        // Missing key → on (legacy library.json).
+        component.enabled = obj.contains(QStringLiteral("enabled"))
+                                ? obj.value(QStringLiteral("enabled")).toBool()
+                                : true;
         components.append(component);
     }
     return components;

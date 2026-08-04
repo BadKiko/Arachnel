@@ -81,7 +81,7 @@ private:
         bool gameInstallDone = false;
     };
 
-    void syncInstallSessionPhase(const QString& entryId);
+    void syncInstallSessionPhase(const QString& entryId, const QString& stepTitle = {});
     void clearSession(const QString& entryId);
     /** Delete torrent/installer payload under downloads after a successful install. */
     void cleanupDownloadArtifact(const QString& artifactPath, const QString& installPath,

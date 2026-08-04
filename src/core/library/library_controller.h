@@ -44,6 +44,9 @@ public:
     void setGameExecutableOverride(const QString& entryId, const QString& path);
     void setGameProtonId(const QString& entryId, const QString& protonId);
     void setGameOnlineFixEnabled(const QString& entryId, bool enabled);
+    void setGameAddonEnabled(const QString& entryId, const QString& addonId, bool enabled);
+    /** Mark selected owns_download DLC as installed when the flag was left false. */
+    void healInstalledAddons(const QString& entryId);
     void removeGame(const QString& gameId, bool deleteFiles);
     void removeEntry(const QString& entryId, bool deleteFiles);
     void moveGame(const QString& gameId, const QString& targetLibraryId);

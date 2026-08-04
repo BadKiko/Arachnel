@@ -34,6 +34,20 @@ MD.BottomSheet {
         return (lib.gameId ?? "").length > 0
     }
     readonly property bool onLinux: Qt.platform.os === "linux"
+    readonly property var installedComponents: {
+        const _rev = root.detailsRevision
+        const raw = root.info.components
+        if (raw === undefined || raw === null)
+            return []
+        const len = raw.length !== undefined ? raw.length : 0
+        const out = []
+        for (let i = 0; i < len; ++i) {
+            const c = raw[i]
+            if (c && c.installed)
+                out.push(c)
+        }
+        return out
+    }
     readonly property bool isInstalling: {
         const job = Core.jobs.jobForEntry(gameId)
         return job.status === "installing"
@@ -54,6 +68,8 @@ MD.BottomSheet {
 
     function openForGame(id) {
         gameId = id
+        if (Core.healInstalledAddons)
+            Core.healInstalledAddons(id)
         detailsRevision++
         open()
     }
@@ -193,6 +209,80 @@ MD.BottomSheet {
                     onToggled: {
                         Core.setGameOnlineFixEnabled(root.gameId, checked)
                         root.detailsRevision++
+                    }
+                }
+            }
+
+            MD.ElevationRectangle {
+                Layout.fillWidth: true
+                visible: root.installedComponents.length > 0
+                implicitHeight: dlcCol.implicitHeight + 2 * MD.Token.spacing.medium
+                radius: MD.Token.shape.corner.large
+                color: MD.Token.color.surface_container_low
+                elevation: MD.Token.elevation.level0
+
+                ColumnLayout {
+                    id: dlcCol
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    anchors.margins: MD.Token.spacing.medium
+                    spacing: MD.Token.spacing.small
+
+                    MD.Label {
+                        Layout.fillWidth: true
+                        text: qsTr("DLC")
+                        typescale: MD.Token.typescale.title_small
+                    }
+
+                    MD.Label {
+                        Layout.fillWidth: true
+                        text: qsTr("Off hides DLC from the game. Quit the game first, then restart Steam after turning DLC off. Files stay installed.")
+                        color: MD.Token.color.on_surface_variant
+                        typescale: MD.Token.typescale.body_small
+                        wrapMode: Text.WordWrap
+                    }
+
+                    ListView {
+                        id: dlcList
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: Math.min(280, Math.max(48, count * 48))
+                        clip: true
+                        spacing: 0
+                        boundsBehavior: Flickable.StopAtBounds
+                        model: root.installedComponents
+                        readonly property string entryId: root.gameId
+
+                        function setAddonEnabled(addonId, enabled) {
+                            Core.setGameAddonEnabled(dlcList.entryId, addonId, enabled)
+                            root.detailsRevision++
+                        }
+
+                        ScrollBar.vertical: MD.ScrollBar {
+                            policy: ScrollBar.AsNeeded
+                            interactive: true
+                        }
+
+                        delegate: RowLayout {
+                            required property var modelData
+                            width: ListView.view ? ListView.view.width : parent.width
+                            height: 48
+                            spacing: MD.Token.spacing.medium
+
+                            MD.Label {
+                                Layout.fillWidth: true
+                                text: (modelData.title && String(modelData.title).length)
+                                      ? modelData.title
+                                      : (modelData.id || "")
+                                typescale: MD.Token.typescale.body_large
+                                elide: Text.ElideRight
+                            }
+
+                            MD.Switch {
+                                checked: modelData.enabled !== false
+                                onToggled: dlcList.setAddonEnabled(modelData.id, checked)
+                            }
+                        }
                     }
                 }
             }

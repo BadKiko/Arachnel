@@ -139,9 +139,20 @@ Item {
                             mdState.outlineColor: MD.Token.color.error_container
                         }
                         MD.AssistChip {
-                            visible: !!(page.info.hasAddons)
-                            text: qsTr("%1 add-ons").arg(page.info.addonCount ?? 0)
+                            visible: !!(page.info.hasAddons) || ((page.info.installedComponentCount ?? 0) > 0)
+                                     || ((page.info.componentCount ?? 0) > 0)
+                            text: {
+                                const installed = page.info.installedComponentCount ?? 0
+                                const total = page.info.componentCount ?? 0
+                                if (page.playable && total > 0)
+                                    return qsTr("%1 add-ons").arg(total)
+                                return qsTr("%1 add-ons").arg(page.info.addonCount ?? total)
+                            }
                             icon.name: MD.Token.icon.extension
+                            onClicked: {
+                                if (page.playable)
+                                    gameSettingsSheet.openForGame(page.gameId)
+                            }
                         }
                         MD.AssistChip {
                             visible: !!(page.info.hasWorkshop)

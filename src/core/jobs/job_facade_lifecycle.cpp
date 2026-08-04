@@ -47,6 +47,7 @@ void CoreController::markCatalogAddonInstalled(const QString& parentEntryId,
         InstalledComponent component;
         component.id = addonId;
         component.installed = true;
+        component.enabled = true;
         component.uploadDate = resolvedUploadDate;
         game.components.append(component);
     }

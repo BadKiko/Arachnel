@@ -118,10 +118,12 @@ void CoreController::ensureLibraryPlaceholder(const CatalogEntry& entry, const Q
             continue;
 
         bool installed = false;
+        bool enabled = true;
         if (existing) {
             for (const auto& component : existing->components) {
                 if (component.id == addon.id) {
                     installed = component.installed;
+                    enabled = component.enabled;
                     break;
                 }
             }
@@ -132,6 +134,7 @@ void CoreController::ensureLibraryPlaceholder(const CatalogEntry& entry, const Q
         component.title = addon.title;
         component.uploadDate = addon.uploadDate;
         component.installed = installed;
+        component.enabled = enabled;
         components.append(component);
     }
     game.components = components;
@@ -418,6 +421,19 @@ void CoreController::setGameOnlineFixEnabled(const QString& entryId, bool enable
 {
     if (m_libraryController)
         m_libraryController->setGameOnlineFixEnabled(entryId, enabled);
+}
+
+void CoreController::setGameAddonEnabled(const QString& entryId, const QString& addonId,
+                                         bool enabled)
+{
+    if (m_libraryController)
+        m_libraryController->setGameAddonEnabled(entryId, addonId, enabled);
+}
+
+void CoreController::healInstalledAddons(const QString& entryId)
+{
+    if (m_libraryController)
+        m_libraryController->healInstalledAddons(entryId);
 }
 
 } // namespace arachnel::core

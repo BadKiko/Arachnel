@@ -15,6 +15,7 @@
 #include <QDebug>
 #include <QDir>
 #include <QFileInfo>
+#include <QSet>
 #include <QtConcurrent>
 
 namespace arachnel::core {
@@ -255,13 +256,41 @@ void InstallSessionService::commitInstalledCatalogGame(const CatalogEntry& entry
     QHash<QString, InstalledComponent> previousComponents;
     for (const auto& component : game.components)
         previousComponents.insert(component.id, component);
+    const QStringList selectedIds = m_installSelectedAddons.value(catalog.id);
+    const QSet<QString> selectedSet(selectedIds.cbegin(), selectedIds.cend());
     QVector<InstalledComponent> components;
     components.reserve(catalog.addons.size());
     for (const auto& addon : catalog.addons) {
         InstalledComponent component{addon.id, addon.title, addon.uploadDate};
         if (const auto it = previousComponents.constFind(addon.id); it != previousComponents.cend()) {
             component.installed = it->installed;
+            component.enabled = it->enabled;
             component.uploadDate = preferFresherMarker(addon.uploadDate, it->uploadDate);
+        }
+        // Selected Steam DLC installs with the game - mark now even if catalog enrich raced.
+        if (!component.installed && selectedSet.contains(addon.id))
+            component.installed = true;
+        components.append(component);
+    }
+    // Keep selected ids that aren't in catalog.addons yet (enrich still in flight).
+    for (const QString& addonId : selectedIds) {
+        bool found = false;
+        for (const InstalledComponent& c : components) {
+            if (c.id == addonId) {
+                found = true;
+                break;
+            }
+        }
+        if (found)
+            continue;
+        InstalledComponent component;
+        component.id = addonId;
+        component.installed = true;
+        component.enabled = true;
+        if (const auto it = previousComponents.constFind(addonId); it != previousComponents.cend()) {
+            component.title = it->title;
+            component.uploadDate = it->uploadDate;
+            component.enabled = it->enabled;
         }
         components.append(component);
     }

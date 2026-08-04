@@ -291,14 +291,8 @@ Item {
             proceedWithAddons()
             return
         }
-
-        const conn = function(id) {
-            if (id !== installId)
-                return
-            Core.catalogAddonsReady.disconnect(conn)
-            proceedWithAddons()
-        }
-        Core.catalogAddonsReady.connect(conn)
+        // Open picker immediately with loading - don't freeze the details page.
+        root.openAddonPicker(installId, title)
     }
 
     function beginInstall() {

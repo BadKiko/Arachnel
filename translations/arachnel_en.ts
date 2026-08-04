@@ -634,7 +634,7 @@
     </message>
     <message>
         <location filename="../src/core/install/install_kind.cpp" line="+11"/>
-        <location filename="../src/core/catalog/catalog_model.cpp" line="+550"/>
+        <location filename="../src/core/catalog/catalog_model.cpp" line="+553"/>
         <source>Portable</source>
         <translation></translation>
     </message>
@@ -661,14 +661,14 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/jobs/job_display.cpp" line="+43"/>
+        <location filename="../src/core/jobs/job_display.cpp" line="+45"/>
         <location line="+143"/>
         <location line="+2"/>
         <source>Install failed: %1</source>
         <translation></translation>
     </message>
     <message>
-        <location line="-175"/>
+        <location line="-177"/>
         <source>Download complete</source>
         <translation></translation>
     </message>
@@ -774,20 +774,31 @@
     </message>
     <message>
         <location line="+1"/>
-        <location line="+149"/>
-        <location line="+4"/>
+        <location line="+164"/>
         <source>Installing (%1/%2)</source>
         <translation></translation>
     </message>
     <message>
-        <location line="-151"/>
-        <location line="+156"/>
+        <location line="-163"/>
+        <location line="+160"/>
+        <source>Installing (%1/%2) - %3</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="-159"/>
+        <location filename="../src/core/library/library_controller.cpp" line="+272"/>
+        <source>Couldn&apos;t update DLC unlocks.</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <location line="+169"/>
         <location line="+2"/>
         <source>Error: %1</source>
         <translation></translation>
     </message>
     <message>
-        <location line="-157"/>
+        <location line="-170"/>
         <location line="+52"/>
         <location line="+11"/>
         <source>Add-on %1 - %2</source>
@@ -844,7 +855,7 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/jobs/job_display.cpp" line="-75"/>
+        <location filename="../src/core/jobs/job_display.cpp" line="-77"/>
         <location filename="../src/core/jobs/job_status.cpp" line="+2"/>
         <source>Paused</source>
         <translation></translation>
@@ -870,7 +881,7 @@
         <location line="+1"/>
         <location filename="../src/core/jobs/job_status.cpp" line="+7"/>
         <location filename="../src/core/catalog/catalog_facade_install.cpp" line="+247"/>
-        <location filename="../src/core/library/library_facade_sync.cpp" line="+214"/>
+        <location filename="../src/core/library/library_facade_sync.cpp" line="+217"/>
         <source>Install failed</source>
         <translation></translation>
     </message>
@@ -962,7 +973,7 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/jobs/job_facade_lifecycle.cpp" line="+101"/>
+        <location filename="../src/core/jobs/job_facade_lifecycle.cpp" line="+102"/>
         <location filename="../src/core/library/library_facade_ops.cpp" line="+174"/>
         <location line="+39"/>
         <location line="+37"/>
@@ -1690,7 +1701,7 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_parser.cpp" line="+413"/>
+        <location filename="../src/core/catalog/catalog_parser.cpp" line="+393"/>
         <source>Empty server response</source>
         <translation></translation>
     </message>
@@ -1774,7 +1785,7 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/library/library_controller.cpp" line="+271"/>
+        <location filename="../src/core/library/library_controller.cpp" line="+45"/>
         <location line="+21"/>
         <location filename="../src/core/facade/core_wiring_services.cpp" line="-110"/>
         <source>Game removed: %1</source>
@@ -2236,7 +2247,7 @@
 <context>
     <name>GameSettingsSheet</name>
     <message>
-        <location filename="../qml/app/GameSettingsSheet.qml" line="+87"/>
+        <location filename="../qml/app/GameSettingsSheet.qml" line="+101"/>
         <source>Game settings</source>
         <translation></translation>
     </message>
@@ -2266,7 +2277,7 @@
         <translation></translation>
     </message>
     <message>
-        <location line="+66"/>
+        <location line="+136"/>
         <source>Proton</source>
         <translation></translation>
     </message>
@@ -2351,7 +2362,7 @@
         <translation></translation>
     </message>
     <message>
-        <location line="-232"/>
+        <location line="-302"/>
         <source>Online Fix for this game</source>
         <translation></translation>
     </message>
@@ -2361,7 +2372,17 @@
         <translation></translation>
     </message>
     <message>
-        <location line="+173"/>
+        <location line="+34"/>
+        <source>DLC</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Off hides DLC from the game. Quit the game first, then restart Steam after turning DLC off. Files stay installed.</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+203"/>
         <source>Online Fix</source>
         <translation></translation>
     </message>
@@ -2379,12 +2400,12 @@
 <context>
     <name>InstallAddonSelectionSheet</name>
     <message>
-        <location filename="../qml/settings/InstallAddonSelectionSheet.qml" line="+49"/>
+        <location filename="../qml/settings/InstallAddonSelectionSheet.qml" line="+52"/>
         <source>Not on source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+88"/>
+        <location line="+106"/>
         <source>All</source>
         <translation></translation>
     </message>
@@ -2424,7 +2445,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+115"/>
+        <location line="+123"/>
         <source>Optional</source>
         <translation></translation>
     </message>

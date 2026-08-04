@@ -34,6 +34,8 @@
     Q_INVOKABLE void setGameExecutableOverride(const QString&, const QString&);
     Q_INVOKABLE void setGameProtonId(const QString&, const QString&);
     Q_INVOKABLE void setGameOnlineFixEnabled(const QString&, bool);
+    Q_INVOKABLE void setGameAddonEnabled(const QString& entryId, const QString& addonId, bool enabled);
+    Q_INVOKABLE void healInstalledAddons(const QString& entryId);
     Q_INVOKABLE void createGameDesktopShortcut(const QString& gameId);
     Q_INVOKABLE void createGameStartMenuShortcut(const QString& gameId);
     Q_INVOKABLE void addGameToSteam(const QString& gameId);

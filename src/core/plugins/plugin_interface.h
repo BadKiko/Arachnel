@@ -150,6 +150,18 @@ public:
         (void)jobId;
         (void)paused;
     }
+
+    /**
+     * Apply which installed DLC unlocks are active (e.g. rewrite Steam lua).
+     * Append-only virtual - keep after owns_download slots for ABI with older plugins.
+     * Default: no-op success. enabledAddonIds are catalog addon ids (steam-123).
+     */
+    virtual bool applySelectedDlc(const LibraryGame& local, const QStringList& enabledAddonIds) const
+    {
+        (void)local;
+        (void)enabledAddonIds;
+        return true;
+    }
 };
 
 } // namespace arachnel::core

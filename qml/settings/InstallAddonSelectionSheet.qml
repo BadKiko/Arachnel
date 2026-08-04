@@ -177,6 +177,9 @@ MD.BottomSheet {
 
         MD.BusyIndicator {
             Layout.alignment: Qt.AlignHCenter
+            Layout.topMargin: MD.Token.spacing.large
+            Layout.bottomMargin: MD.Token.spacing.large
+            Layout.preferredHeight: root.waitingAddons ? 120 : 0
             visible: root.waitingAddons
             running: root.waitingAddons
         }
