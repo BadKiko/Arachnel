@@ -1269,7 +1269,7 @@
     </message>
     <message>
         <location line="-103"/>
-        <source>Steam plugin is required for Workshop downloads.</source>
+        <source>Workshop Mirror plugin is required for Workshop downloads.</source>
         <translation></translation>
     </message>
     <message>

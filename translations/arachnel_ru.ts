@@ -1269,8 +1269,8 @@
     </message>
     <message>
         <location line="-103"/>
-        <source>Steam plugin is required for Workshop downloads.</source>
-        <translation>Для мастерской нужен Steam-плагин.</translation>
+        <source>Workshop Mirror plugin is required for Workshop downloads.</source>
+        <translation>Для мастерской нужен плагин Workshop Mirror.</translation>
     </message>
     <message>
         <location line="-6"/>

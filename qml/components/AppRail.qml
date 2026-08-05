@@ -59,10 +59,14 @@ MD.Pane {
                 required property int index
                 required property var modelData
 
+                // Keep page indices stable; entries with visible:false stay out of the rail.
+                readonly property bool railVisible: modelData.visible !== false
+                visible: railVisible
                 Layout.fillWidth: true
-                Layout.preferredHeight: 72
+                Layout.preferredHeight: railVisible ? 72 : 0
                 Layout.leftMargin: MD.Token.spacing.small
                 Layout.rightMargin: MD.Token.spacing.small
+                enabled: railVisible
 
                 readonly property bool selected: index === root.currentIndex
 

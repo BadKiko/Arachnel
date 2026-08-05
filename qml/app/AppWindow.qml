@@ -108,6 +108,7 @@ MD.ApplicationWindow {
             Qt.callLater(function () { onboardingSheet.openWizard() })
         else if (Core.hasPendingCrashReport())
             Qt.callLater(function () { crashReportDialog.open() })
+        root.refreshWorkshopNav()
     }
 
     // Hang watchdog writes a pending report while the app is still alive.
@@ -137,6 +138,9 @@ MD.ApplicationWindow {
             if (Core.userNotice.length > 0)
                 snackbar.show(Core.userNotice)
         }
+        function onPluginsChanged() {
+            root.refreshWorkshopNav()
+        }
     }
 
     Connections {
@@ -145,6 +149,15 @@ MD.ApplicationWindow {
             if (available && !Core.appUpdater.downloading)
                 appUpdateSheet.openForVersion(latestVersion)
         }
+    }
+
+    property bool workshopPluginInstalled: false
+
+    function refreshWorkshopNav() {
+        workshopPluginInstalled = !!(Core && Core.isPluginInstalledOnDisk
+                                     && Core.isPluginInstalledOnDisk("workshop-mirror"))
+        if (!workshopPluginInstalled && pageIndex === 3)
+            goToPage(0)
     }
 
     readonly property var navModel: [
@@ -162,7 +175,8 @@ MD.ApplicationWindow {
         },
         {
             name: qsTr("Workshop"),
-            icon: MD.Token.icon.extension
+            icon: MD.Token.icon.extension,
+            visible: root.workshopPluginInstalled
         },
         {
             name: qsTr("Downloads"),

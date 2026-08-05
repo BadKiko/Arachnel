@@ -213,10 +213,15 @@ void CoreController::downloadWorkshopItem(const QString& gameId, const QString& 
         return;
     }
 
-    const QString sourceId = resolveOwnsDownloadPlugin(m_pluginHost, game->sourceId);
+    // Prefer a dedicated Workshop mirror plugin when installed; otherwise Steam / any owns_download.
+    QString sourceId;
+    if (m_pluginHost->pluginOwnsDownload(QStringLiteral("workshop-mirror")))
+        sourceId = QStringLiteral("workshop-mirror");
+    else
+        sourceId = resolveOwnsDownloadPlugin(m_pluginHost, game->sourceId);
     if (sourceId.isEmpty()) {
-        showNotice(QCoreApplication::translate("Core",
-                                               "Steam plugin is required for Workshop downloads."));
+        showNotice(QCoreApplication::translate(
+            "Core", "Workshop Mirror plugin is required for Workshop downloads."));
         return;
     }
 
