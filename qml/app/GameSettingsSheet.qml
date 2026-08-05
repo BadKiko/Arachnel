@@ -197,7 +197,7 @@ MD.BottomSheet {
 
                     MD.Label {
                         Layout.fillWidth: true
-                        text: qsTr("When disabled, SteamFix/winmm overlay DLLs are renamed so the game runs without the fix.")
+                        text: qsTr("Runs without a Steam license and respects DLC toggles. Steam may not show you as in-game.")
                         color: MD.Token.color.on_surface_variant
                         typescale: MD.Token.typescale.body_small
                         wrapMode: Text.WordWrap
@@ -237,7 +237,7 @@ MD.BottomSheet {
 
                     MD.Label {
                         Layout.fillWidth: true
-                        text: qsTr("Off hides DLC from the game. Quit the game first, then restart Steam after turning DLC off. Files stay installed.")
+                        text: qsTr("Off hides DLC from the game. Quit the game before toggling. Files stay installed.")
                         color: MD.Token.color.on_surface_variant
                         typescale: MD.Token.typescale.body_small
                         wrapMode: Text.WordWrap

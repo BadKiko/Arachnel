@@ -179,8 +179,8 @@ void CoreController::installCatalogEntry(const QString& entryId, const QString& 
         ensureLibraryPlaceholder(entry, libId, addonIds);
 
         pruneUnselectedAddonJobs(entryId, addonIds);
-        if (!addonIds.isEmpty())
-            beginInstallSession(entryId, jobId, entry.sourceId, addonIds);
+        // Always record selection (including empty) so commit does not invent "all DLC".
+        beginInstallSession(entryId, jobId, entry.sourceId, addonIds);
         for (const QString& addonId : addonIds) {
             const CatalogComponent* addon = findCatalogAddon(entry, addonId);
             if (!addon)
@@ -260,8 +260,7 @@ void CoreController::installCatalogEntry(const QString& entryId, const QString& 
 
     pruneUnselectedAddonJobs(entryId, addonIds);
 
-    if (!addonIds.isEmpty())
-        beginInstallSession(entryId, jobId, entry.sourceId, addonIds);
+    beginInstallSession(entryId, jobId, entry.sourceId, addonIds);
 
     for (const QString& addonId : addonIds) {
         const CatalogComponent* addon = findCatalogAddon(entry, addonId);

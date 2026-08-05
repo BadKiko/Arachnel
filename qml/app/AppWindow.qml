@@ -73,6 +73,10 @@ MD.ApplicationWindow {
     }
 
     function openGameDetails(gameId, fromCatalog) {
+        // Capture before push - StackView hide can zero catalog contentY.
+        if (fromCatalog && pageStack.currentItem
+                && pageStack.currentItem.captureActiveCatalogScroll)
+            pageStack.currentItem.captureActiveCatalogScroll(gameId)
         root.detailsGameId = gameId
         root.detailsFromCatalog = !!fromCatalog
         pageStack.navigatePush(detailsPageComponent, {
@@ -85,10 +89,11 @@ MD.ApplicationWindow {
         if (pageStack.canPop)
             pageStack.navigatePop()
         root.detailsGameId = ""
-        // Stack scale/opacity transitions can leave Discover scrolled under the clip.
         Qt.callLater(function () {
             if (pageStack.currentItem && pageStack.currentItem.fixCatalogViewports)
                 pageStack.currentItem.fixCatalogViewports()
+            if (pageStack.currentItem && pageStack.currentItem.restoreActiveCatalogScroll)
+                pageStack.currentItem.restoreActiveCatalogScroll()
         })
     }
 
@@ -192,8 +197,29 @@ MD.ApplicationWindow {
             readonly property int pageIndex: root.pageIndex
             // Loader.item — null until Catalog tab is opened once.
             readonly property var catalogBrowsePage: catalogBrowseLoader.item
+            readonly property var discoverPage: discoverLoader.item
 
             transformOrigin: Item.Center
+
+            function activeCatalogPage() {
+                if (mainPages.pageIndex === 1)
+                    return discoverLoader.item
+                if (mainPages.pageIndex === 2)
+                    return catalogBrowseLoader.item
+                return null
+            }
+
+            function captureActiveCatalogScroll(entryId) {
+                const page = mainPages.activeCatalogPage()
+                if (page && page.captureBrowseScroll)
+                    page.captureBrowseScroll(entryId || "")
+            }
+
+            function restoreActiveCatalogScroll() {
+                const page = mainPages.activeCatalogPage()
+                if (page && page.restoreBrowseScroll)
+                    page.restoreBrowseScroll()
+            }
 
             function fixCatalogViewports() {
                 // Discover + Catalog tabs both host scrollable headers.
@@ -223,7 +249,10 @@ MD.ApplicationWindow {
                 if (StackView.status === StackView.Active) {
                     opacity = 1
                     scale = 1
-                    Qt.callLater(fixCatalogViewports)
+                    Qt.callLater(function () {
+                        mainPages.fixCatalogViewports()
+                        mainPages.restoreActiveCatalogScroll()
+                    })
                 }
             }
 

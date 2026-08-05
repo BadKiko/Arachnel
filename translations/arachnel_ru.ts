@@ -1999,23 +1999,23 @@
     </message>
     <message>
         <location line="+9"/>
-        <source>%1 active · %2 finished · resume after restart</source>
-        <translation>%1 активных · %2 завершено · продолжатся после перезапуска</translation>
+        <source>%1 active · %2 finished</source>
+        <translation>%1 активных · %2 завершено</translation>
     </message>
     <message>
         <location line="+3"/>
-        <source>%1 active · resume after restart</source>
+        <source>%1 active · will resume after restart</source>
         <translation>%1 активных · продолжатся после перезапуска</translation>
     </message>
     <message>
         <location line="+2"/>
-        <source>%1 finished · resume after restart</source>
-        <translation>%1 завершено · продолжатся после перезапуска</translation>
+        <source>%1 finished</source>
+        <translation>%1 завершено</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Downloads resume after restart</source>
-        <translation>Продолжатся после перезапуска</translation>
+        <source>No downloads yet</source>
+        <translation>Пока нет загрузок</translation>
     </message>
     <message>
         <location line="+10"/>
@@ -2369,8 +2369,8 @@
     </message>
     <message>
         <location line="+6"/>
-        <source>When disabled, SteamFix/winmm overlay DLLs are renamed so the game runs without the fix.</source>
-        <translation>Если выключить, DLL оверлея SteamFix/winmm переименуются - игра запустится без фикса.</translation>
+        <source>Runs without a Steam license and respects DLC toggles. Steam may not show you as in-game.</source>
+        <translation>Работает без лицензии Steam и учитывает переключатели DLC. Steam может не показывать, что вы в игре.</translation>
     </message>
     <message>
         <location line="+34"/>
@@ -2379,8 +2379,8 @@
     </message>
     <message>
         <location line="+6"/>
-        <source>Off hides DLC from the game. Quit the game first, then restart Steam after turning DLC off. Files stay installed.</source>
-        <translation>Выкл. скрывает DLC от игры. Сначала полностью закрой игру, потом после выключения перезапусти Steam. Файлы остаются на диске.</translation>
+        <source>Off hides DLC from the game. Quit the game before toggling. Files stay installed.</source>
+        <translation>Выкл. скрывает DLC от игры. Перед переключением полностью закрой игру. Файлы остаются на диске.</translation>
     </message>
     <message>
         <location line="+203"/>

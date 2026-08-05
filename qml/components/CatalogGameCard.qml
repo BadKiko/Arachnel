@@ -101,6 +101,9 @@ Item {
     function onPosterFailed() {
         if (!invalidateArmed || !coverUrl.startsWith("file:"))
             return
+        // GridView pool / StackView hide can Error a still-good file:.
+        if (!root.visible || !root.enabled || root.width < 2 || root.height < 2)
+            return
         invalidateArmed = false
         Core.invalidateCatalogCover(entryId)
     }
@@ -263,13 +266,16 @@ Item {
     ListView.onReused: root.onDelegateRecycled()
     ListView.onPooled: {
         requestTimer.stop()
-        root.cancelCover()
+        // Keep local file: covers - cancel only abandons in-flight downloads.
+        if (!root.displayCoverUrl.length)
+            root.cancelCover()
         root.dismissPeek()
     }
     GridView.onReused: root.onDelegateRecycled()
     GridView.onPooled: {
         requestTimer.stop()
-        root.cancelCover()
+        if (!root.displayCoverUrl.length)
+            root.cancelCover()
         root.dismissPeek()
     }
 

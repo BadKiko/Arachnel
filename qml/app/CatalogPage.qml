@@ -185,6 +185,41 @@ Item {
         })
     }
 
+    // StackView push can zero contentY. Restore the exact offset so the opened
+    // game stays mid-viewport (jumpToRow is only a fallback).
+    property real savedBrowseScrollY: 0
+    property int savedBrowseRow: -1
+    property string savedBrowseEntryId: ""
+    property bool hasBrowseScroll: false
+
+    function captureBrowseScroll(entryId) {
+        if (entryId && entryId.length)
+            root.savedBrowseEntryId = entryId
+        let y = 0
+        if (root.discoveryMode)
+            y = catalogContent.currentContentY
+        else if (root.listViewMode)
+            y = catalogContent.listContentY
+        else
+            y = catalogContent.gridContentY
+        const row = catalogContent.firstVisibleRow()
+        // Don't replace a real offset with 0 after StackView already wiped contentY.
+        if (root.hasBrowseScroll && y <= 0 && root.savedBrowseScrollY > 0) {
+            root.hasBrowseScroll = true
+            return
+        }
+        root.savedBrowseScrollY = y
+        root.savedBrowseRow = row
+        root.hasBrowseScroll = true
+    }
+
+    function restoreBrowseScroll() {
+        if (!root.hasBrowseScroll)
+            return
+        catalogContent.restoreBrowsePlace(root.savedBrowseEntryId, root.savedBrowseRow,
+                                          root.savedBrowseScrollY, root.listViewMode)
+    }
+
     function applyCatalogSearch(query) {
         if (!Core.activeCatalogSourceIds.length)
             return

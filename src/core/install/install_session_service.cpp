@@ -3,6 +3,7 @@
 #include "install_analyzer.h"
 #include "job_model.h"
 #include "job_orchestrator.h"
+#include "job_status.h"
 #include "job_store.h"
 #include "plugin_host.h"
 #include "proton_manager.h"
@@ -203,8 +204,22 @@ void InstallSessionService::advanceInstallSession(const QString& entryId)
             continue;
         }
         const QString artifactPath = m_hooks.addonArtifactPath(entryId, addonId);
-        if (artifactPath.isEmpty())
-            return;
+        if (artifactPath.isEmpty()) {
+            bool addonJobActive = false;
+            for (const JobEntry& job : m_jobStore->jobs()) {
+                if (job.parentEntryId == entryId && job.entryId == addonId
+                    && !isJobTerminal(job.status)) {
+                    addonJobActive = true;
+                    break;
+                }
+            }
+            if (addonJobActive)
+                return;
+            // Stalled addon (no file, no job) - skip so the parent job can finish.
+            m_hooks.markAddonInstalled(entryId, addonId, addon ? addon->uploadDate : QString());
+            ++installedCount;
+            continue;
+        }
         startPluginAddonInstall(*parent, *addon, it->sourceId, artifactPath, it->gameJobId,
                                 [this, entryId](bool success) {
                                     if (!success)

@@ -164,13 +164,12 @@ Item {
                         const active = Core.jobs.activeCount
                         const finished = root.countFinished()
                         if (active > 0 && finished > 0)
-                            return qsTr("%1 active · %2 finished · resume after restart")
-                                    .arg(active).arg(finished)
+                            return qsTr("%1 active · %2 finished").arg(active).arg(finished)
                         if (active > 0)
-                            return qsTr("%1 active · resume after restart").arg(active)
+                            return qsTr("%1 active · will resume after restart").arg(active)
                         if (finished > 0)
-                            return qsTr("%1 finished · resume after restart").arg(finished)
-                        return qsTr("Downloads resume after restart")
+                            return qsTr("%1 finished").arg(finished)
+                        return qsTr("No downloads yet")
                     }
                     color: MD.Token.color.on_surface_variant
                     typescale: MD.Token.typescale.body_medium

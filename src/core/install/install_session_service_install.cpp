@@ -261,15 +261,25 @@ void InstallSessionService::commitInstalledCatalogGame(const CatalogEntry& entry
     QVector<InstalledComponent> components;
     components.reserve(catalog.addons.size());
     for (const auto& addon : catalog.addons) {
+        const auto prev = previousComponents.constFind(addon.id);
+        const bool selected = selectedSet.contains(addon.id);
+        const bool keepPrev = prev != previousComponents.cend() && prev->installed;
+        if (!selected && !keepPrev)
+            continue;
+
         InstalledComponent component{addon.id, addon.title, addon.uploadDate};
-        if (const auto it = previousComponents.constFind(addon.id); it != previousComponents.cend()) {
-            component.installed = it->installed;
-            component.enabled = it->enabled;
-            component.uploadDate = preferFresherMarker(addon.uploadDate, it->uploadDate);
+        if (prev != previousComponents.cend()) {
+            component.installed = prev->installed;
+            component.enabled = prev->enabled;
+            component.uploadDate = preferFresherMarker(addon.uploadDate, prev->uploadDate);
         }
         // Selected Steam DLC installs with the game - mark now even if catalog enrich raced.
-        if (!component.installed && selectedSet.contains(addon.id))
+        if (selected) {
             component.installed = true;
+            // Fresh selection defaults on; keep prior toggle if re-installing same id.
+            if (prev == previousComponents.cend())
+                component.enabled = true;
+        }
         components.append(component);
     }
     // Keep selected ids that aren't in catalog.addons yet (enrich still in flight).

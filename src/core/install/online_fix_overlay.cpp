@@ -212,6 +212,68 @@ bool dirLooksLikeOverlay(const QDir& dir)
     return dirHasActiveOverlay(dir) || dirHasDisabledOverlay(dir);
 }
 
+bool hasValveBackup(const QString& installPath)
+{
+    QDirIterator it(installPath,
+                    {QStringLiteral("steam_api64.dll.arachnel-valve"),
+                     QStringLiteral("steam_api.dll.arachnel-valve")},
+                    QDir::Files, QDirIterator::Subdirectories);
+    return it.hasNext();
+}
+
+bool hasSteamSettings(const QString& installPath)
+{
+    QDirIterator it(installPath, {QStringLiteral("steam_settings")}, QDir::Dirs,
+                    QDirIterator::Subdirectories);
+    int n = 0;
+    while (it.hasNext() && n < 2000) {
+        it.next();
+        ++n;
+        if (QFileInfo::exists(it.filePath() + QStringLiteral("/DLC.txt"))
+            || QFileInfo::exists(it.filePath() + QStringLiteral("/steam_interfaces.txt")))
+            return true;
+    }
+    return false;
+}
+
+QJsonObject readOnlineFixMarker(const QString& installPath)
+{
+    QFile file(installPath + QStringLiteral("/.arachnel-steamidra"));
+    if (!file.open(QIODevice::ReadOnly))
+        return {};
+    return QJsonDocument::fromJson(file.readAll()).object().value(QStringLiteral("onlineFix")).toObject();
+}
+
+bool isGoldbergOnlineFixInstall(const QString& installPath)
+{
+    const QJsonObject of = readOnlineFixMarker(installPath);
+    if (of.value(QStringLiteral("backend")).toString() == QStringLiteral("goldberg"))
+        return true;
+    if (of.value(QStringLiteral("embedded")).toBool(false) && hasValveBackup(installPath))
+        return true;
+    return hasValveBackup(installPath) && hasSteamSettings(installPath);
+}
+
+bool restoreValveSteamApiFiles(const QString& installPath)
+{
+    bool wrote = false;
+    QDirIterator it(installPath,
+                    {QStringLiteral("steam_api64.dll.arachnel-valve"),
+                     QStringLiteral("steam_api.dll.arachnel-valve")},
+                    QDir::Files, QDirIterator::Subdirectories);
+    while (it.hasNext()) {
+        it.next();
+        const QString bak = it.filePath();
+        QString api = bak;
+        api.chop(QStringLiteral(".arachnel-valve").size());
+        if (QFileInfo::exists(api))
+            QFile::remove(api);
+        if (QFile::copy(bak, api))
+            wrote = true;
+    }
+    return wrote;
+}
+
 bool shouldSkipOverlayScanDir(const QString& name)
 {
     const QString lower = name.toLower();
@@ -343,19 +405,20 @@ bool renameOverlayInDir(const QDir& dir, bool enable, QString* error)
     return true;
 }
 
-void updateMarkerEnabled(const QString& installPath, bool enabled)
+void updateMarkerEnabled(const QString& installPath, bool enabled, bool goldberg = false)
 {
     const QString markerPath = installPath + QStringLiteral("/.arachnel-steamidra");
-    if (!QFileInfo::exists(markerPath))
-        return;
+    QJsonObject root;
     QFile file(markerPath);
-    if (!file.open(QIODevice::ReadOnly))
-        return;
-    QJsonObject root = QJsonDocument::fromJson(file.readAll()).object();
-    file.close();
+    if (file.exists() && file.open(QIODevice::ReadOnly)) {
+        root = QJsonDocument::fromJson(file.readAll()).object();
+        file.close();
+    }
     QJsonObject onlineFix = root.value(QStringLiteral("onlineFix")).toObject();
     onlineFix.insert(QStringLiteral("enabled"), enabled);
     onlineFix.insert(QStringLiteral("embedded"), true);
+    if (goldberg)
+        onlineFix.insert(QStringLiteral("backend"), QStringLiteral("goldberg"));
     root.insert(QStringLiteral("onlineFix"), onlineFix);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate))
         return;
@@ -410,6 +473,20 @@ bool tryStartSteamClient()
 OnlineFixOverlayState detectOnlineFixOverlay(const QString& installPath)
 {
     OnlineFixOverlayState state;
+    if (installPath.isEmpty() || !QFileInfo::exists(installPath))
+        return state;
+
+    if (isGoldbergOnlineFixInstall(installPath)) {
+        state.present = true;
+        state.overlayDir = installPath;
+        const QJsonObject of = readOnlineFixMarker(installPath);
+        if (of.contains(QStringLiteral("enabled")))
+            state.enabled = of.value(QStringLiteral("enabled")).toBool(false);
+        else
+            state.enabled = hasSteamSettings(installPath) && hasValveBackup(installPath);
+        return state;
+    }
+
     const QStringList dirs = findOverlayDirs(installPath);
     if (dirs.isEmpty())
         return state;
@@ -451,17 +528,35 @@ OnlineFixOverlayState detectOnlineFixOverlay(const QString& installPath)
 
 bool setOnlineFixOverlayEnabled(const QString& installPath, bool enabled, QString* error)
 {
-    const QStringList dirs = findOverlayDirs(installPath);
-    if (dirs.isEmpty()) {
+    if (installPath.isEmpty() || !QFileInfo::exists(installPath)) {
         if (error)
             *error = QCoreApplication::translate("Core", "Online Fix overlay not found in this install");
         return false;
+    }
+
+    // Goldberg: marker + Valve restore on disable. Plugin applySelectedDlc re-embeds on enable.
+    if (isGoldbergOnlineFixInstall(installPath)
+        || readOnlineFixMarker(installPath).value(QStringLiteral("backend")).toString()
+               == QStringLiteral("goldberg")) {
+        if (!enabled)
+            restoreValveSteamApiFiles(installPath);
+        updateMarkerEnabled(installPath, enabled, true);
+        return true;
+    }
+
+    const QStringList dirs = findOverlayDirs(installPath);
+    if (dirs.isEmpty()) {
+        // No legacy overlay yet - still allow marker toggle so plugin can embed Goldberg.
+        updateMarkerEnabled(installPath, enabled, true);
+        if (!enabled)
+            restoreValveSteamApiFiles(installPath);
+        return true;
     }
     for (const QString& path : dirs) {
         if (!renameOverlayInDir(QDir(path), enabled, error))
             return false;
     }
-    updateMarkerEnabled(installPath, enabled);
+    updateMarkerEnabled(installPath, enabled, enabled);
     return true;
 }
 

@@ -114,7 +114,8 @@ void CoreController::ensureLibraryPlaceholder(const CatalogEntry& entry, const Q
     QVector<InstalledComponent> components;
     components.reserve(entry.addons.size());
     for (const auto& addon : entry.addons) {
-        if (!selectedAddons.isEmpty() && !selectedAddons.contains(addon.id))
+        // Empty selection = no DLC this install. Do not invent "all addons enabled".
+        if (!selectedAddons.contains(addon.id))
             continue;
 
         bool installed = false;
@@ -136,6 +137,18 @@ void CoreController::ensureLibraryPlaceholder(const CatalogEntry& entry, const Q
         component.installed = installed;
         component.enabled = enabled;
         components.append(component);
+    }
+    // Keep previously installed DLC rows that were not in this selection.
+    if (existing) {
+        QSet<QString> have;
+        for (const InstalledComponent& c : components)
+            have.insert(c.id);
+        for (const InstalledComponent& c : existing->components) {
+            if (!c.installed || have.contains(c.id))
+                continue;
+            components.append(c);
+            have.insert(c.id);
+        }
     }
     game.components = components;
 

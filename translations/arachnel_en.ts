@@ -1999,22 +1999,22 @@
     </message>
     <message>
         <location line="+9"/>
-        <source>%1 active · %2 finished · resume after restart</source>
+        <source>%1 active · %2 finished</source>
         <translation></translation>
     </message>
     <message>
         <location line="+3"/>
-        <source>%1 active · resume after restart</source>
+        <source>%1 active · will resume after restart</source>
         <translation></translation>
     </message>
     <message>
         <location line="+2"/>
-        <source>%1 finished · resume after restart</source>
+        <source>%1 finished</source>
         <translation></translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Downloads resume after restart</source>
+        <source>No downloads yet</source>
         <translation></translation>
     </message>
     <message>
@@ -2368,7 +2368,7 @@
     </message>
     <message>
         <location line="+6"/>
-        <source>When disabled, SteamFix/winmm overlay DLLs are renamed so the game runs without the fix.</source>
+        <source>Runs without a Steam license and respects DLC toggles. Steam may not show you as in-game.</source>
         <translation></translation>
     </message>
     <message>
@@ -2378,7 +2378,7 @@
     </message>
     <message>
         <location line="+6"/>
-        <source>Off hides DLC from the game. Quit the game first, then restart Steam after turning DLC off. Files stay installed.</source>
+        <source>Off hides DLC from the game. Quit the game before toggling. Files stay installed.</source>
         <translation></translation>
     </message>
     <message>

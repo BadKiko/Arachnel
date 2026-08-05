@@ -271,6 +271,21 @@ void CoreController::reconcileJobInstallState()
             }
             continue;
         }
+        // Stuck "installing" after the game is on disk (addon phase never finished).
+        if (job.status == QStringLiteral("installing") && !gameNeedsInstall(job.entryId)) {
+            bool childActive = false;
+            for (const JobEntry& child : m_jobStore.jobs()) {
+                if (child.parentEntryId == job.entryId && !isJobTerminal(child.status)) {
+                    childActive = true;
+                    break;
+                }
+            }
+            if (!childActive) {
+                m_jobOrchestrator->setJobPhase(job.id, QStringLiteral("completed"),
+                                               QStringLiteral("Installed"));
+            }
+            continue;
+        }
         if (job.status != QStringLiteral("completed"))
             continue;
         if (!gameNeedsInstall(job.entryId)) {

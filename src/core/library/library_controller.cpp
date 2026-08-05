@@ -44,11 +44,16 @@ void LibraryController::sync() const
 
 bool LibraryController::isEntryPlayable(const QString& entryId) const
 {
-    for (const JobEntry& job : m_jobs->jobs()) {
-        if (job.entryId == entryId && !isJobTerminal(job.status))
-            return false;
-    }
     const LibraryGame* game = m_store->gameById(entryId);
+    for (const JobEntry& job : m_jobs->jobs()) {
+        if (job.entryId != entryId || isJobTerminal(job.status))
+            continue;
+        // Parent job goes back to "installing" for optional addons after the game is committed.
+        if (job.status == QStringLiteral("installing") && game && !game->installPath.isEmpty()
+            && QFileInfo::exists(game->installPath))
+            continue;
+        return false;
+    }
     if (!game || game->installPath.isEmpty() || !QFileInfo::exists(game->installPath))
         return false;
     LaunchInfo info;
@@ -235,7 +240,7 @@ void LibraryController::setGameOnlineFixEnabled(const QString& entryId, bool ena
             m_hooks.notice(error);
         return;
     }
-    // Refresh DLC unlocks: SmokeAPI must not sit under SteamFix/winmm.
+    // Refresh DLC unlocks: SmokeAPI must not sit under Goldberg / Online Fix.
     if (m_plugins) {
         if (ISourcePlugin* plugin = m_plugins->plugin(existing->sourceId)) {
             QStringList enabledIds;
@@ -321,8 +326,9 @@ void LibraryController::healInstalledAddons(const QString& entryId)
     for (InstalledComponent& component : game.components) {
         if (component.installed)
             continue;
-        // Placeholder rows for selected DLC, or ids listed in the install marker.
-        if (fromMarker.isEmpty() || fromMarker.contains(component.id)) {
+        // Only ids listed in the install marker were actually selected.
+        // Empty selectedDlc means "no DLC" - never mark everything installed.
+        if (!fromMarker.isEmpty() && fromMarker.contains(component.id)) {
             component.installed = true;
             changed = true;
         }

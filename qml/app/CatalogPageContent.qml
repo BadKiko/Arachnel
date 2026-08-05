@@ -45,16 +45,53 @@ Item {
     }
 
     function restoreScroll(listMode, value) {
-        Qt.callLater(function() { Qt.callLater(function() {
+        catalogScrollViews.restoreContentY(value)
+        Qt.callLater(function () {
+            catalogScrollViews.restoreContentY(value)
+            Qt.callLater(function () { catalogScrollViews.restoreContentY(value) })
+        })
+    }
+
+    function firstVisibleRow() {
+        const view = catalogScrollViews.activeView()
+        if (!view)
+            return 0
+        return catalogScrollViews.firstVisibleRow(view)
+    }
+
+    function restoreBrowsePlace(entryId, row, contentY, listMode) {
+        let attempt = 0
+        function apply() {
             if (page.discoveryMode) {
-                discoveryFlick.contentY = value
+                discoveryFlick.contentY = contentY || 0
                 content.clampDiscoveryScroll()
-            } else if (listMode) {
-                catalogScrollViews.listContentY = value
-            } else {
-                catalogScrollViews.gridContentY = value
+                return true
             }
-        }) })
+            // Exact viewport first. Do NOT fall back to jumpToRow while contentY
+            // is still pending layout - that pins the game to the top of the screen.
+            if (contentY > 0) {
+                if (catalogScrollViews.restoreContentY(contentY))
+                    return true
+                if (attempt < 20)
+                    return false
+            }
+            if (entryId && entryId.length) {
+                const idx = Core.catalog.indexOfEntry(entryId)
+                if (idx >= 0 && catalogScrollViews.jumpToRow(idx, false))
+                    return true
+            }
+            if (row >= 0 && catalogScrollViews.jumpToRow(row, false))
+                return true
+            return !(contentY > 0 || (entryId && entryId.length) || row >= 0)
+        }
+        function tick() {
+            if (apply())
+                return
+            if (++attempt > 24)
+                return
+            Qt.callLater(tick)
+        }
+        tick()
     }
 
     function pickRandomFromShelves() {
