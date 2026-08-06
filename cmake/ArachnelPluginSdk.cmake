@@ -24,11 +24,14 @@ function(arachnel_plugin_sdk_init ARACHNEL_ROOT)
         ${ARACHNEL_ROOT}/src/core/util/file_utils.cpp
         ${ARACHNEL_ROOT}/src/core/runtime/windows_runner.cpp
         ${ARACHNEL_ROOT}/src/core/runtime/proton_manager.cpp
+        ${ARACHNEL_ROOT}/src/core/runtime/proton_manager_download.cpp
+        ${ARACHNEL_ROOT}/src/core/runtime/proton_manager.h
         ${ARACHNEL_ROOT}/src/core/plugins/plugin_api.cpp
         ${ARACHNEL_ROOT}/src/core/plugins/plugin_catalog_json.cpp
     )
 
     add_library(arachnel_plugin_sdk STATIC ${_ARACHNEL_PLUGIN_SDK_SOURCES})
+    set_target_properties(arachnel_plugin_sdk PROPERTIES AUTOMOC ON)
     target_compile_definitions(arachnel_plugin_sdk PUBLIC ARACHNEL_PLUGIN_BUILD)
     # Flat header names ("plugin_interface.h") for out-of-tree plugins.
     target_include_directories(arachnel_plugin_sdk

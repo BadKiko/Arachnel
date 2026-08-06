@@ -391,6 +391,26 @@ void CatalogController::rebuildMergedCatalog()
             QHash<QString, QVector<CatalogEntry>> groups;
             QStringList groupOrder;
 
+            // Steam rows key by app id; FreeTP often has no steamAppId yet and keys by title.
+            // Map title → steam:* so "The Forest" from both sources becomes one card.
+            QHash<QString, QString> titleToSteamKey;
+            for (const QString& sourceId : activeSourceIds) {
+                if (!enabledIds.contains(sourceId))
+                    continue;
+                const auto it = bySource.constFind(sourceId);
+                if (it == bySource.cend())
+                    continue;
+                for (const CatalogEntry& entry : it.value()) {
+                    const QString appId = entry.steamAppId.trimmed();
+                    if (appId.isEmpty())
+                        continue;
+                    const QString titleKey = normalizeTitleKey(entry.title);
+                    if (titleKey.isEmpty())
+                        continue;
+                    titleToSteamKey.insert(titleKey, QStringLiteral("steam:%1").arg(appId));
+                }
+            }
+
             for (const QString& sourceId : activeSourceIds) {
                 if (!enabledIds.contains(sourceId))
                     continue;
@@ -400,7 +420,13 @@ void CatalogController::rebuildMergedCatalog()
                 for (const CatalogEntry& entry : it.value()) {
                     CatalogEntry copy = entry;
                     copy.id = repairCatalogEntryId(copy.id);
-                    const QString key = offerGroupKey(copy);
+                    QString key = offerGroupKey(copy);
+                    if (key.startsWith(QLatin1String("title:"))) {
+                        const QString steamKey =
+                            titleToSteamKey.value(normalizeTitleKey(copy.title));
+                        if (!steamKey.isEmpty())
+                            key = steamKey;
+                    }
                     if (!groups.contains(key))
                         groupOrder.append(key);
                     groups[key].append(std::move(copy));
@@ -433,7 +459,7 @@ void CatalogController::rebuildMergedCatalog()
                     }
                 }
                 CatalogEntry showcase = offers.at(bestIdx);
-                // Keep showcase.id from the winning offer. Never swap in another offer's id —
+                // Keep showcase.id from the winning offer. Never swap in another offer's id -
                 // that produced Frankenstein cards (Car Mechanic art + Undying Flower entryId).
                 // Only fill missing fields from peers with the same normalized title.
                 const QString showcaseTitleKey = normalizeTitleKey(showcase.title);

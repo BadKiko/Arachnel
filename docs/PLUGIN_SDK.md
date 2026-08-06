@@ -261,6 +261,67 @@ The SDK static library compiles shared helpers from Arachnel core (catalog parse
 
 ---
 
+## Linux runtime policy (required)
+
+Linux plugins must be self-contained. Do not rely on distro packages for plugin runtime deps.
+
+### Must-haves
+
+1. Build plugin `.so` with `RUNPATH=$ORIGIN` (or `$ORIGIN/lib` when using a subfolder).
+2. Bundle every non-base shared library required by the plugin into the plugin folder.
+3. Keep `libfreetp_plugin.so` / `libsteamidra_plugin.so` loadable on Ubuntu, Arch/Cachy, Fedora without extra host packages.
+4. Fail CI when unresolved or forbidden dynamic dependencies are detected.
+
+### Allowed host/runtime libs
+
+The following are allowed from host runtime and should not be bundled:
+
+- `linux-vdso.so.*`
+- `ld-linux-*.so.*`
+- `libc.so.*`
+- `libm.so.*`
+- `libpthread.so.*`
+- `libdl.so.*`
+- `librt.so.*`
+- `libgcc_s.so.*`
+- `libstdc++.so.*`
+- `libresolv.so.*`
+- `libnsl.so.*`
+- `libutil.so.*`
+- `libz.so.*`
+
+For official Arachnel plugins, Qt 6 runtime libs (`libQt6*.so.*`) are also allowed to come
+from the launcher runtime/AppImage and do not need to be bundled into the plugin package.
+
+Everything else must either be bundled into the plugin package or explicitly justified in CI allowlist.
+
+### Self-check command (run locally and in CI)
+
+```bash
+ldd plugin-bundle/lib<plugin>.so
+readelf -d plugin-bundle/lib<plugin>.so | rg "NEEDED|RUNPATH|RPATH"
+```
+
+Expected:
+
+- no `=> not found` lines in `ldd` output, except runtime-provided Qt libs when your CI
+  intentionally tests against Arachnel's Qt runtime;
+- no forbidden external deps outside allowlist;
+- `RUNPATH` or `RPATH` contains `$ORIGIN`.
+
+### CI gate (required for release)
+
+Before publishing `.arach`, CI must:
+
+1. inspect dynamic deps (`ldd` + `readelf`);
+2. fail on unresolved deps;
+3. fail on non-allowlisted external deps;
+4. smoke-load plugin `.so` in a minimal runner image.
+
+This gate is mandatory for official source plugins.
+
+---
+
 ## Catalog JSON
 
 Plugins may bundle `games-arachnel.json` next to `plugin.json` and/or point to a remote URL in `catalogUrl`. Format: [docs/CATALOG_FORMAT.md](CATALOG_FORMAT.md).

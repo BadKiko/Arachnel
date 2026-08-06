@@ -23,6 +23,7 @@
 #include <QTimer>
 #include <QUrl>
 #include <QtConcurrent>
+#include <QStringList>
 
 #if defined(Q_OS_WIN)
 #ifndef NOMINMAX
@@ -37,6 +38,42 @@ namespace arachnel::core {
 
 
 #include "plugin_host_helpers.h"
+
+#if defined(Q_OS_LINUX)
+static QStringList linuxMissingSharedLibs(const QString& libraryPath)
+{
+    QProcess proc;
+    proc.setProgram(QStringLiteral("ldd"));
+    proc.setArguments({libraryPath});
+    proc.start();
+    if (!proc.waitForStarted(3000))
+        return {};
+    if (!proc.waitForFinished(5000))
+        return {};
+
+    const QString out = QString::fromLocal8Bit(proc.readAllStandardOutput())
+                            + QLatin1Char('\n')
+                            + QString::fromLocal8Bit(proc.readAllStandardError());
+    QStringList missing;
+    const QStringList lines = out.split(QLatin1Char('\n'), Qt::SkipEmptyParts);
+    for (const QString& raw : lines) {
+        const QString line = raw.trimmed();
+        const int marker = line.indexOf(QStringLiteral("=> not found"));
+        if (marker <= 0)
+            continue;
+        QString lib = line.left(marker).trimmed();
+        const int tab = lib.indexOf(QLatin1Char('\t'));
+        if (tab >= 0)
+            lib = lib.left(tab).trimmed();
+        const int space = lib.indexOf(QLatin1Char(' '));
+        if (space >= 0)
+            lib = lib.left(space).trimmed();
+        if (!lib.isEmpty() && !missing.contains(lib))
+            missing.append(lib);
+    }
+    return missing;
+}
+#endif
 
 PluginHost::PluginHost(QObject* parent)
     : QObject(parent)
@@ -73,12 +110,10 @@ void PluginHost::unloadPlugin(const QString& pluginId)
         return;
 
     if (loaded->instance) {
-        // Drop in-plugin CatalogEntry caches before delete. On Linux, host
-        // symbols can interpose into the plugin DSO; destroying thousands of
-        // mismatched CatalogEntry layouts in ~Plugin segfaults (issues #25-27).
-        loaded->instance->resetCatalogCache();
-        if (loaded->destroyFn)
-            loaded->destroyFn(loaded->instance);
+        // Do not call destroyFn / plugin virtuals here. On Linux AppImage the host can
+        // interpose CatalogEntry::~ into the plugin DSO; destroying a loaded catalog
+        // (FreeTP reinstall) then segfaults inside arachnel_plugin_destroy.
+        // Leak the instance and drop the DSO - same idea as plugin resetCatalogCache.
         loaded->instance = nullptr;
     }
     if (loaded->library.isLoaded()) {
@@ -312,6 +347,13 @@ bool PluginHost::loadPluginDir(const QString& dirPath)
         g_lastPluginLoadError = loaded->library.errorString();
         logDiagnostic(QStringLiteral("Plugin library load failed for %1: %2")
                           .arg(libraryPath, g_lastPluginLoadError));
+#if defined(Q_OS_LINUX)
+        const QStringList missing = linuxMissingSharedLibs(libraryPath);
+        if (!missing.isEmpty()) {
+            logDiagnostic(QStringLiteral("Plugin missing runtime libs for %1: %2")
+                              .arg(libraryPath, missing.join(QStringLiteral(", "))));
+        }
+#endif
         delete loaded;
         return false;
     }
