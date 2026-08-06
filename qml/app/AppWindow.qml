@@ -196,6 +196,10 @@ MD.ApplicationWindow {
             icon: MD.Token.icon.storefront
         },
         {
+            name: qsTr("Favorites"),
+            icon: MD.Token.icon.favorite
+        },
+        {
             name: qsTr("Downloads"),
             icon: MD.Token.icon.downloading,
             showDownloadBadge: true
@@ -282,7 +286,7 @@ MD.ApplicationWindow {
                 enabled: mainPages.pageIndex === 0 && opacity > 0.99
                 onOpenGame: function (id) { root.openGameDetails(id, false) }
                 onOpenCatalog: root.goToPage(2)
-                onOpenDownloads: root.goToPage(3)
+                onOpenDownloads: root.goToPage(4)
                 onOpenSettings: settingsSheet.openSettings()
                 onAddSourceRequested: settingsSheet.openPlugins()
 
@@ -357,10 +361,24 @@ MD.ApplicationWindow {
                 }
             }
 
-            DownloadsPage {
+            BookmarksPage {
                 anchors.fill: parent
                 opacity: mainPages.pageIndex === 3 ? 1 : 0
                 enabled: mainPages.pageIndex === 3 && opacity > 0.99
+                onOpenGame: function (id) { root.openGameDetails(id, true) }
+
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: root.mainTabDuration
+                        easing: MD.Token.easing.emphasized_decelerate
+                    }
+                }
+            }
+
+            DownloadsPage {
+                anchors.fill: parent
+                opacity: mainPages.pageIndex === 4 ? 1 : 0
+                enabled: mainPages.pageIndex === 4 && opacity > 0.99
                 onOpenGame: function (id) { root.openGameDetails(id, false) }
 
                 Behavior on opacity {

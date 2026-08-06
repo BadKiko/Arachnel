@@ -81,6 +81,11 @@
     </message>
     <message>
         <location line="+4"/>
+        <source>Favorites</source>
+        <translation>Избранное</translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Downloads</source>
         <translation>Загрузки</translation>
     </message>
@@ -2003,6 +2008,24 @@
     </message>
 </context>
 <context>
+    <name>BookmarksPage</name>
+    <message>
+        <location filename="../qml/app/BookmarksPage.qml" line="+69"/>
+        <source>No favorites</source>
+        <translation>Нет избранного</translation>
+    </message>
+    <message>
+        <location line="+36"/>
+        <source>Favorites</source>
+        <translation>Избранное</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>%1 games</source>
+        <translation>%1 игр</translation>
+    </message>
+</context>
+<context>
     <name>DownloadsPage</name>
     <message>
         <location filename="../qml/app/DownloadsPage.qml" line="+125"/>
@@ -2128,7 +2151,17 @@
         <translation>Играть</translation>
     </message>
     <message>
-        <location line="+42"/>
+        <location line="+33"/>
+        <source>Remove from favorites</source>
+        <translation>Убрать из избранного</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add to favorites</source>
+        <translation>В избранное</translation>
+    </message>
+    <message>
+        <location line="+8"/>
         <location line="+125"/>
         <source>Delete</source>
         <translation>Удалить</translation>
@@ -2884,6 +2917,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <location line="+2"/>
         <source>Start installing from the catalog - progress will appear here.</source>
         <translation>Начните установку из каталога - прогресс появится здесь.</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Save games from the catalog - download them here later.</source>
+        <translation>Добавьте игры из каталога - потом скачаете их отсюда.</translation>
     </message>
     <message>
         <location line="-22"/>

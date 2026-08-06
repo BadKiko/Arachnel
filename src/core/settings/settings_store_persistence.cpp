@@ -61,6 +61,13 @@ void SettingsStore::load()
         if (!id.isEmpty() && !m_protonPriority.contains(id))
             m_protonPriority.append(id);
     }
+    m_bookmarkedEntryIds.clear();
+    const QJsonArray bookmarks = obj.value(QStringLiteral("bookmarkedEntryIds")).toArray();
+    for (const QJsonValue& value : bookmarks) {
+        const QString id = value.toString().trimmed();
+        if (!id.isEmpty() && !m_bookmarkedEntryIds.contains(id))
+            m_bookmarkedEntryIds.append(id);
+    }
 
     if (obj.contains(QStringLiteral("storageLibraries"))) {
         QVector<StorageLibrary> libraries;
@@ -144,6 +151,7 @@ void SettingsStore::load()
     emit globalLaunchArgsChanged();
     emit defaultProtonIdChanged();
     emit protonPriorityChanged();
+    emit bookmarkedEntryIdsChanged();
     emit sourcesChanged();
 }
 
@@ -166,6 +174,10 @@ void SettingsStore::save()
     for (const QString& id : m_protonPriority)
         priority.append(id);
     obj.insert(QStringLiteral("protonPriority"), priority);
+    QJsonArray bookmarks;
+    for (const QString& id : m_bookmarkedEntryIds)
+        bookmarks.append(id);
+    obj.insert(QStringLiteral("bookmarkedEntryIds"), bookmarks);
 
     QJsonArray storageLibraries;
     for (const auto& library : m_storageLibraries.libraries()) {

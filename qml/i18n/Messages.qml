@@ -48,5 +48,7 @@ QtObject {
 
     readonly property string downloadsEmptyHint: qsTr("Start installing from the catalog - progress will appear here.")
 
+    readonly property string favoritesEmptyHint: qsTr("Save games from the catalog - download them here later.")
+
     readonly property string gameDeleteWarning: qsTr("Game files will be deleted from disk. This cannot be undone.")
 }

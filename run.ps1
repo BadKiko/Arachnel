@@ -1,4 +1,4 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
@@ -73,8 +73,8 @@ function Get-QtInstallRoots {
     }
 
     foreach ($drive in @([IO.DriveInfo]::GetDrives() | Where-Object { $_.DriveType -eq 'Fixed' } | ForEach-Object { $_.Name.TrimEnd('\') })) {
-        foreach ($name in @("Qt", "Qt6")) {
-            $p = Join-Path $drive $name
+        foreach ($rel in @("Qt", "Qt6", "Dev\Qt", "Dev\QT")) {
+            $p = Join-Path $drive $rel
             if ((Test-Path -LiteralPath $p) -and -not $roots.Contains($p)) {
                 [void]$roots.Add($p)
             }
@@ -91,6 +91,27 @@ function Get-QtInstallRoots {
             [void]$roots.Add($p)
         }
     }
+
+    # Qt Online Installer often writes InstallLocation (e.g. F:\Dev\QT).
+    foreach ($hive in @(
+            "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall",
+            "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall",
+            "HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
+        )) {
+        if (-not (Test-Path -LiteralPath $hive)) { continue }
+        Get-ChildItem -LiteralPath $hive -ErrorAction SilentlyContinue | ForEach-Object {
+            $props = Get-ItemProperty -LiteralPath $_.PSPath -ErrorAction SilentlyContinue
+            if (-not $props) { return }
+            $nameProp = $props.PSObject.Properties["DisplayName"]
+            $locProp = $props.PSObject.Properties["InstallLocation"]
+            if (-not $nameProp -or -not $locProp) { return }
+            $name = [string]$nameProp.Value
+            $loc = [string]$locProp.Value
+            if (-not $name -or $name -notmatch '(?i)^Qt' -or -not $loc) { return }
+            Add-QtInstallRoot $roots $loc.TrimEnd('\')
+        }
+    }
+
     return @($roots)
 }
 

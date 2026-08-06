@@ -18,8 +18,11 @@ Item {
     property bool installing: false
     property string idleText: qsTr("Download")
     property string detail: ""
+    property bool embedDetail: true
 
     readonly property bool inProgress: root.downloading || root.paused
+    readonly property bool transferDetailVisible: root.inProgress && !root.installing
+        && root.transferLine.length > 0
 
     property real _lastBytesSample: 0
     property real _lastBytesAtMs: 0
@@ -240,9 +243,12 @@ Item {
         }
     }
 
-    implicitWidth: Math.max(shell.width, detailLabel.implicitWidth)
+    implicitWidth: Math.max(shell.width, root.embedDetail ? detailLabel.implicitWidth : 0)
         + (cancelButton.visible ? cancelButton.implicitWidth + MD.Token.spacing.small : 0)
-    implicitHeight: shell.height + (detailLabel.visible ? detailLabel.implicitHeight + MD.Token.spacing.extra_small : 0)
+    implicitHeight: shell.height
+        + (root.embedDetail && detailLabel.visible
+           ? detailLabel.implicitHeight + MD.Token.spacing.extra_small
+           : 0)
 
     Column {
         spacing: MD.Token.spacing.extra_small
@@ -323,7 +329,7 @@ Item {
         MD.Label {
             id: detailLabel
             width: Math.max(shell.width, implicitWidth)
-            visible: root.inProgress && !root.installing && root.transferLine.length > 0
+            visible: root.embedDetail && root.transferDetailVisible
             text: root.transferLine
             color: MD.Token.color.primary
             typescale: MD.Token.typescale.label_large

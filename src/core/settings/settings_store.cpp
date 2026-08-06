@@ -296,6 +296,42 @@ void SettingsStore::promoteProtonInPriority(const QString& id)
     setProtonPriority(next);
 }
 
+void SettingsStore::setBookmarkedEntryIds(const QStringList& ids)
+{
+    QStringList normalized;
+    normalized.reserve(ids.size());
+    for (const QString& id : ids) {
+        const QString trimmed = id.trimmed();
+        if (!trimmed.isEmpty() && !normalized.contains(trimmed))
+            normalized.append(trimmed);
+    }
+    if (m_bookmarkedEntryIds == normalized)
+        return;
+    m_bookmarkedEntryIds = normalized;
+    emit bookmarkedEntryIdsChanged();
+    save();
+}
+
+bool SettingsStore::isBookmarked(const QString& entryId) const
+{
+    const QString normalized = entryId.trimmed();
+    return !normalized.isEmpty() && m_bookmarkedEntryIds.contains(normalized);
+}
+
+void SettingsStore::toggleBookmark(const QString& entryId)
+{
+    const QString normalized = entryId.trimmed();
+    if (normalized.isEmpty())
+        return;
+
+    QStringList next = m_bookmarkedEntryIds;
+    if (next.contains(normalized))
+        next.removeAll(normalized);
+    else
+        next.prepend(normalized);
+    setBookmarkedEntryIds(next);
+}
+
 void SettingsStore::clearLegacyProtonPath()
 {
     if (m_legacyProtonPath.isEmpty())

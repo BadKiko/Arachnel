@@ -266,87 +266,123 @@ Item {
                         typescale: MD.Token.typescale.body_medium
                     }
 
-                    RowLayout {
-                        spacing: MD.Token.spacing.small
+                    ColumnLayout {
+                        spacing: MD.Token.spacing.extra_small
 
-                        MD.Button {
-                            visible: page.playable
-                            enabled: !page.runtimeSetupActive
-                            text: {
-                                if (page.isRunning)
-                                    return qsTr("Stop")
-                                if (page.runtimeSetupActive)
-                                    return Core.runtimeSetupStatus.length > 0
-                                           ? Core.runtimeSetupStatus
-                                           : qsTr("Preparing…")
-                                return qsTr("Play")
+                        RowLayout {
+                            spacing: MD.Token.spacing.small
+
+                            MD.Button {
+                                Layout.alignment: Qt.AlignVCenter
+                                visible: page.playable
+                                enabled: !page.runtimeSetupActive
+                                text: {
+                                    if (page.isRunning)
+                                        return qsTr("Stop")
+                                    if (page.runtimeSetupActive)
+                                        return Core.runtimeSetupStatus.length > 0
+                                               ? Core.runtimeSetupStatus
+                                               : qsTr("Preparing…")
+                                    return qsTr("Play")
+                                }
+                                icon.name: page.isRunning || page.runtimeSetupActive
+                                         ? "" : MD.Token.icon.play_arrow
+                                mdState.type: MD.Enum.BtFilled
+                                mdState.backgroundColor: page.isRunning
+                                                     ? MD.Token.color.error
+                                                     : MD.Token.color.primary
+                                mdState.textColor: page.isRunning
+                                                   ? MD.Token.color.on_error
+                                                   : MD.Token.color.on_primary
+                                onClicked: page.isRunning
+                                             ? Core.stopRunningGame()
+                                             : Core.launchGame(page.gameId)
                             }
-                            icon.name: page.isRunning || page.runtimeSetupActive
-                                     ? "" : MD.Token.icon.play_arrow
-                            mdState.type: MD.Enum.BtFilled
-                            mdState.backgroundColor: page.isRunning
-                                                 ? MD.Token.color.error
-                                                 : MD.Token.color.primary
-                            mdState.textColor: page.isRunning
-                                               ? MD.Token.color.on_error
-                                               : MD.Token.color.on_primary
-                            onClicked: page.isRunning
-                                         ? Core.stopRunningGame()
-                                         : Core.launchGame(page.gameId)
-                        }
 
-                        DownloadProgressButton {
-                            visible: page.canManageDownload
-                            progress: page.downloadJob.progress ?? 0
-                            bytesDownloaded: Number(page.effectiveDownloaded) || 0
-                            totalBytes: Number(page.downloadTotalBytes) || 0
-                            detail: page.downloadJob.detail ?? ""
-                            downloading: page.downloadActive
-                            paused: page.downloadPaused
-                            completed: false
-                            readyToInstall: page.readyToInstall
-                            installFailed: page.installFailed
-                            installing: page.isInstalling
-                            onActivated: {
-                                if (page.installFailed || page.readyToInstall)
-                                    Core.retryInstall(page.downloadJob.jobId)
-                                else
-                                    page.beginInstall()
+                            DownloadProgressButton {
+                                id: downloadAction
+                                Layout.alignment: Qt.AlignVCenter
+                                visible: page.canManageDownload
+                                embedDetail: false
+                                progress: page.downloadJob.progress ?? 0
+                                bytesDownloaded: Number(page.effectiveDownloaded) || 0
+                                totalBytes: Number(page.downloadTotalBytes) || 0
+                                detail: page.downloadJob.detail ?? ""
+                                downloading: page.downloadActive
+                                paused: page.downloadPaused
+                                completed: false
+                                readyToInstall: page.readyToInstall
+                                installFailed: page.installFailed
+                                installing: page.isInstalling
+                                onActivated: {
+                                    if (page.installFailed || page.readyToInstall)
+                                        Core.retryInstall(page.downloadJob.jobId)
+                                    else
+                                        page.beginInstall()
+                                }
+                                onPauseToggleRequested: Core.toggleJobPause(page.downloadJob.jobId)
+                                onCancelRequested: Core.cancelJob(page.downloadJob.jobId)
                             }
-                            onPauseToggleRequested: Core.toggleJobPause(page.downloadJob.jobId)
-                            onCancelRequested: Core.cancelJob(page.downloadJob.jobId)
-                        }
 
-                        MD.Button {
-                            visible: page.playable
-                                     || page.downloadComplete
-                                     || page.inLibrary
-                            text: qsTr("Delete")
-                            icon.name: MD.Token.icon.delete
-                            mdState.type: MD.Enum.BtOutlined
-                            onClicked: removeDialog.open()
-                        }
-
-                        MD.IconButton {
-                            visible: page.playable
-                                     || page.downloadComplete
-                                     || page.inLibrary
-                            mdState.type: MD.Enum.IBtOutlined
-                            icon.name: MD.Token.icon.settings
-                            onClicked: gameSettingsSheet.openForGame(page.gameId)
-                        }
-
-                        MD.Button {
-                            visible: page.installed && !!(page.info.hasUpdate) && !page.downloadJob.inProgress
-                            text: qsTr("Update")
-                            icon.name: MD.Token.icon.update
-                            mdState.type: MD.Enum.BtFilledTonal
-                            onClicked: {
-                                if (Core.catalogUpdateHasDlcRisk(page.gameId))
-                                    dlcUpdateRiskDialog.openForGame(page.gameId)
-                                else
-                                    Core.updateCatalogEntry(page.gameId)
+                            MD.IconButton {
+                                Layout.alignment: Qt.AlignVCenter
+                                readonly property bool favorited: {
+                                    const ids = Core.settings.bookmarkedEntryIds
+                                    return ids.indexOf(page.gameId) >= 0
+                                }
+                                checked: favorited
+                                mdState.type: MD.Enum.IBtOutlined
+                                icon.name: MD.Token.icon.favorite
+                                Accessible.name: favorited
+                                                 ? qsTr("Remove from favorites")
+                                                 : qsTr("Add to favorites")
+                                onClicked: Core.settings.toggleBookmark(page.gameId)
                             }
+
+                            MD.Button {
+                                Layout.alignment: Qt.AlignVCenter
+                                visible: page.playable
+                                         || page.downloadComplete
+                                         || page.inLibrary
+                                text: qsTr("Delete")
+                                icon.name: MD.Token.icon.delete
+                                mdState.type: MD.Enum.BtOutlined
+                                onClicked: removeDialog.open()
+                            }
+
+                            MD.IconButton {
+                                Layout.alignment: Qt.AlignVCenter
+                                visible: page.playable
+                                         || page.downloadComplete
+                                         || page.inLibrary
+                                mdState.type: MD.Enum.IBtOutlined
+                                icon.name: MD.Token.icon.settings
+                                onClicked: gameSettingsSheet.openForGame(page.gameId)
+                            }
+
+                            MD.Button {
+                                Layout.alignment: Qt.AlignVCenter
+                                visible: page.installed && !!(page.info.hasUpdate) && !page.downloadJob.inProgress
+                                text: qsTr("Update")
+                                icon.name: MD.Token.icon.update
+                                mdState.type: MD.Enum.BtFilledTonal
+                                onClicked: {
+                                    if (Core.catalogUpdateHasDlcRisk(page.gameId))
+                                        dlcUpdateRiskDialog.openForGame(page.gameId)
+                                    else
+                                        Core.updateCatalogEntry(page.gameId)
+                                }
+                            }
+                        }
+
+                        MD.Label {
+                            Layout.fillWidth: true
+                            visible: downloadAction.visible && downloadAction.transferDetailVisible
+                            text: downloadAction.transferLine
+                            color: MD.Token.color.primary
+                            typescale: MD.Token.typescale.label_large
+                            elide: Text.ElideRight
+                            maximumLineCount: 1
                         }
                     }
                 }
