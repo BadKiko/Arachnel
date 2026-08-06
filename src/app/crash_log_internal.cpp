@@ -555,6 +555,11 @@ void reportUiHang(int hungSeconds)
     extra.append(QStringLiteral("Main thread id: %1").arg(static_cast<qulonglong>(g_mainThreadId)));
     const QString stack = captureHungMainThreadStack();
     handleCrashReport(buildCrashReport(summary, extra.join(QStringLiteral("\n")), stack));
+
+    // Crash dialog is a detached process. Kill this hung instance so it does
+    // not sit in Task Manager forever waiting for a dead UI thread.
+    g_shuttingDown = true;
+    TerminateProcess(GetCurrentProcess(), 1);
 }
 
 LONG WINAPI unhandledExceptionFilter(EXCEPTION_POINTERS* info)
@@ -725,6 +730,10 @@ void reportUiHang(int hungSeconds)
         "Main thread did not process the event loop. Arachnel was frozen for the user.");
     handleCrashReport(buildCrashReport(
         summary, extra, QStringLiteral("Hung thread stack: (not captured on this platform)")));
+
+    // Same as Windows: dialog is forked; exit the frozen main process.
+    g_shuttingDown = true;
+    _exit(1);
 }
 #endif
 

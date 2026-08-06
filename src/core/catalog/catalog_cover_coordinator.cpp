@@ -9,6 +9,8 @@
 #include <algorithm>
 
 #include <QDateTime>
+#include <QFileInfo>
+#include <QUrl>
 #include <QVariantMap>
 
 namespace arachnel::core {
@@ -657,6 +659,19 @@ void CatalogCoverCoordinator::invalidateCatalogCover(const QString& entryId)
     CatalogEntry* entry = m_findEntry ? m_findEntry(entryId) : nullptr;
     if (!entry)
         return;
+
+    // Transient Image.Error (StackView cover / recycle) often hits a still-valid
+    // local file. Nudge QML to reload instead of deleting the cache entry.
+    if (entry->coverUrl.startsWith(QStringLiteral("file:"))) {
+        const QString path = QUrl(entry->coverUrl).toLocalFile();
+        if (!path.isEmpty() && QFileInfo::exists(path) && QFileInfo(path).size() > 0) {
+            const QString keep = entry->coverUrl;
+            entry->coverUrl.clear();
+            m_catalog->notifyEntryChanged(entryId, {CatalogModel::CoverUrlRole});
+            applyCoverToEntry(entryId, keep, false);
+            return;
+        }
+    }
 
     m_failedEntries.remove(entryId);
     CoverPlan& plan = m_plans[entryId];

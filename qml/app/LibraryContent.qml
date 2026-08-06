@@ -182,7 +182,12 @@ Item {
                                     icon.name: MD.Token.icon.update
                                     mdState.type: MD.Enum.BtFilledTonal
                                     enabled: !!(page.heroGameId)
-                                    onClicked: Core.updateCatalogEntry(page.heroGameId)
+                                    onClicked: {
+                                        if (Core.catalogUpdateHasDlcRisk(page.heroGameId))
+                                            dlcUpdateRiskDialog.openForGame(page.heroGameId)
+                                        else
+                                            Core.updateCatalogEntry(page.heroGameId)
+                                    }
                                 }
                             }
                         }
@@ -355,6 +360,14 @@ Item {
                     }
                 }
             }
+        }
+    }
+
+    DlcUpdateRiskDialog {
+        id: dlcUpdateRiskDialog
+        width: Math.min(420, page.width > 0 ? page.width - 48 : 420)
+        onUpdateAccepted: function(gameId) {
+            Core.updateCatalogEntry(gameId)
         }
     }
 }

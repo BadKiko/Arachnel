@@ -47,6 +47,7 @@ void CoreController::markCatalogAddonInstalled(const QString& parentEntryId,
         InstalledComponent component;
         component.id = addonId;
         component.installed = true;
+        component.enabled = true;
         component.uploadDate = resolvedUploadDate;
         game.components.append(component);
     }
@@ -267,6 +268,21 @@ void CoreController::reconcileJobInstallState()
             if (!resolveAddonArtifactPath(job.parentEntryId, job.entryId).isEmpty()) {
                 m_jobOrchestrator->setJobPhase(job.id, QStringLiteral("completed"),
                                                QStringLiteral("Download complete"));
+            }
+            continue;
+        }
+        // Stuck "installing" after the game is on disk (addon phase never finished).
+        if (job.status == QStringLiteral("installing") && !gameNeedsInstall(job.entryId)) {
+            bool childActive = false;
+            for (const JobEntry& child : m_jobStore.jobs()) {
+                if (child.parentEntryId == job.entryId && !isJobTerminal(child.status)) {
+                    childActive = true;
+                    break;
+                }
+            }
+            if (!childActive) {
+                m_jobOrchestrator->setJobPhase(job.id, QStringLiteral("completed"),
+                                               QStringLiteral("Installed"));
             }
             continue;
         }

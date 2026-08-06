@@ -19,7 +19,11 @@
 
 #include <QCoreApplication>
 #include <QDir>
+#include <QFile>
 #include <QFileInfo>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QSet>
 
 namespace arachnel::core {
@@ -40,11 +44,16 @@ void LibraryController::sync() const
 
 bool LibraryController::isEntryPlayable(const QString& entryId) const
 {
-    for (const JobEntry& job : m_jobs->jobs()) {
-        if (job.entryId == entryId && !isJobTerminal(job.status))
-            return false;
-    }
     const LibraryGame* game = m_store->gameById(entryId);
+    for (const JobEntry& job : m_jobs->jobs()) {
+        if (job.entryId != entryId || isJobTerminal(job.status))
+            continue;
+        // Parent job goes back to "installing" for optional addons after the game is committed.
+        if (job.status == QStringLiteral("installing") && game && !game->installPath.isEmpty()
+            && QFileInfo::exists(game->installPath))
+            continue;
+        return false;
+    }
     if (!game || game->installPath.isEmpty() || !QFileInfo::exists(game->installPath))
         return false;
     LaunchInfo info;
@@ -143,8 +152,23 @@ QVariantMap LibraryController::entryDetails(const QString& entryId) const
         info.insert(QStringLiteral("steamStoreUrl"),
                     QStringLiteral("https://store.steampowered.com/app/%1/").arg(steamAppId));
     if (const CatalogEntry* entry = m_hooks.findCatalogEntry ? m_hooks.findCatalogEntry(entryId) : nullptr) {
-        info.insert(QStringLiteral("addonCount"), entry->addons.size());
-        info.insert(QStringLiteral("hasAddons"), !entry->addons.isEmpty());
+        int addonCount = entry->addons.size();
+        if (entry->sourceId == QStringLiteral("steamidra")) {
+            addonCount = 0;
+            for (const CatalogComponent& c : entry->addons) {
+                if (!isSteamStoreDlcId(c.id))
+                    continue;
+                if (c.kind != CatalogItemKind::Dlc && c.kind != CatalogItemKind::Addon)
+                    continue;
+                ++addonCount;
+            }
+        }
+        // Catalog stays id-light until /dlcs fills addons - fall back to relay count.
+        if (addonCount == 0 && entry->dlcCount > 0)
+            addonCount = entry->dlcCount;
+        info.insert(QStringLiteral("addonCount"), addonCount);
+        info.insert(QStringLiteral("hasAddons"), addonCount > 0);
+        info.insert(QStringLiteral("hasWorkshop"), entry->hasWorkshop);
     }
     if (info.value(QStringLiteral("downloadPath")).toString().isEmpty() && m_hooks.findLatestJob) {
         if (const JobEntry* job = m_hooks.findLatestJob(entryId))
@@ -219,7 +243,121 @@ void LibraryController::setGameOnlineFixEnabled(const QString& entryId, bool ena
             m_hooks.notice(error);
         return;
     }
+    // Refresh DLC unlocks so SmokeAPI stays out from under Online Fix.
+    if (m_plugins) {
+        if (ISourcePlugin* plugin = m_plugins->plugin(existing->sourceId)) {
+            QStringList enabledIds;
+            enabledIds.reserve(existing->components.size());
+            for (const InstalledComponent& component : existing->components) {
+                if (component.installed && component.enabled)
+                    enabledIds.append(component.id);
+            }
+            if (!plugin->applySelectedDlc(*existing, enabledIds) && m_hooks.notice) {
+                m_hooks.notice(
+                    QCoreApplication::translate("Core", "Couldn't update DLC unlocks."));
+            }
+        }
+    }
     sync();
+}
+
+void LibraryController::setGameAddonEnabled(const QString& entryId, const QString& addonId,
+                                            bool enabled)
+{
+    const LibraryGame* existing = m_store->gameById(entryId);
+    if (!existing || addonId.isEmpty())
+        return;
+
+    LibraryGame game = *existing;
+    bool found = false;
+    for (InstalledComponent& component : game.components) {
+        if (component.id != addonId)
+            continue;
+        if (!component.installed)
+            return;
+        if (component.enabled == enabled)
+            return;
+        component.enabled = enabled;
+        found = true;
+        break;
+    }
+    if (!found)
+        return;
+
+    QStringList enabledIds;
+    enabledIds.reserve(game.components.size());
+    for (const InstalledComponent& component : game.components) {
+        if (component.installed && component.enabled)
+            enabledIds.append(component.id);
+    }
+
+    if (m_plugins) {
+        if (ISourcePlugin* plugin = m_plugins->plugin(game.sourceId)) {
+            if (!plugin->applySelectedDlc(game, enabledIds)) {
+                if (m_hooks.notice) {
+                    m_hooks.notice(
+                        QCoreApplication::translate("Core", "Couldn't update DLC unlocks."));
+                }
+                return;
+            }
+        }
+    }
+
+    m_store->upsertGame(game);
+    sync();
+}
+
+void LibraryController::healInstalledAddons(const QString& entryId)
+{
+    const LibraryGame* existing = m_store->gameById(entryId);
+    if (!existing || existing->installPath.isEmpty() || existing->components.isEmpty())
+        return;
+    if (!QFileInfo::exists(existing->installPath))
+        return;
+
+    QSet<QString> fromMarker;
+    const QString markerPath = existing->installPath + QStringLiteral("/.arachnel-steamidra");
+    QFile marker(markerPath);
+    if (marker.open(QIODevice::ReadOnly)) {
+        const QJsonObject root = QJsonDocument::fromJson(marker.readAll()).object();
+        for (const QJsonValue& v : root.value(QStringLiteral("selectedDlc")).toArray()) {
+            const QString id = v.toString();
+            if (!id.isEmpty())
+                fromMarker.insert(id);
+        }
+    }
+
+    LibraryGame game = *existing;
+    bool changed = false;
+    for (InstalledComponent& component : game.components) {
+        if (component.installed)
+            continue;
+        // Only ids listed in the install marker were actually selected.
+        // Empty selectedDlc means "no DLC" - never mark everything installed.
+        if (!fromMarker.isEmpty() && fromMarker.contains(component.id)) {
+            component.installed = true;
+            changed = true;
+        }
+    }
+    if (changed) {
+        m_store->upsertGame(game);
+        sync();
+    }
+
+    // Always push current enabled set into Steam lua (fixes toggles that only flipped UI).
+    QStringList enabledIds;
+    for (const InstalledComponent& component : game.components) {
+        if (component.installed && component.enabled)
+            enabledIds.append(component.id);
+    }
+    if (m_plugins) {
+        if (ISourcePlugin* plugin = m_plugins->plugin(game.sourceId)) {
+            if (!plugin->applySelectedDlc(game, enabledIds) && m_hooks.notice) {
+                m_hooks.notice(
+                    QCoreApplication::translate("Core", "Couldn't update DLC unlocks."));
+            }
+        }
+    }
 }
 
 void LibraryController::removeGame(const QString& gameId, bool deleteFiles)

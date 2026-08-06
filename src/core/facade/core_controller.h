@@ -14,6 +14,7 @@
 #include <QObject>
 #include <QHash>
 #include <QReadWriteLock>
+#include <QSet>
 #include <QUrl>
 #include <QVariant>
 #include <QVector>
@@ -183,6 +184,8 @@ signals:
     void catalogHeroCoverChanged(const QString& entryId);
     void catalogFiltersChanged();
     void availableCatalogGenresChanged();
+    /** Fired when ensureCatalogAddons finished (or was already complete). */
+    void catalogAddonsReady(const QString& entryId);
 
 private:
 #include "core_controller_p.h"

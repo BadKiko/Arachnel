@@ -73,6 +73,10 @@ MD.ApplicationWindow {
     }
 
     function openGameDetails(gameId, fromCatalog) {
+        // Capture before push - StackView hide can zero catalog contentY.
+        if (fromCatalog && pageStack.currentItem
+                && pageStack.currentItem.captureActiveCatalogScroll)
+            pageStack.currentItem.captureActiveCatalogScroll(gameId)
         root.detailsGameId = gameId
         root.detailsFromCatalog = !!fromCatalog
         pageStack.navigatePush(detailsPageComponent, {
@@ -85,11 +89,25 @@ MD.ApplicationWindow {
         if (pageStack.canPop)
             pageStack.navigatePop()
         root.detailsGameId = ""
-        // Stack scale/opacity transitions can leave Discover scrolled under the clip.
         Qt.callLater(function () {
             if (pageStack.currentItem && pageStack.currentItem.fixCatalogViewports)
                 pageStack.currentItem.fixCatalogViewports()
+            if (pageStack.currentItem && pageStack.currentItem.restoreActiveCatalogScroll)
+                pageStack.currentItem.restoreActiveCatalogScroll()
         })
+    }
+
+    function addonIdsForInstall(addonIds) {
+        const out = []
+        if (!addonIds)
+            return out
+        const len = addonIds.length !== undefined ? addonIds.length : 0
+        for (let i = 0; i < len; ++i) {
+            const id = String(addonIds[i] || "").trim()
+            if (id.length)
+                out.push(id)
+        }
+        return out
     }
 
     function beginCatalogInstall(entryId, libraryId, addonIds) {
@@ -97,7 +115,7 @@ MD.ApplicationWindow {
             protonRequiredDialog.open()
             return
         }
-        Core.installCatalogEntry(entryId, libraryId || "", addonIds || [])
+        Core.installCatalogEntry(entryId, libraryId || "", root.addonIdsForInstall(addonIds))
     }
 
     Component.onCompleted: {
@@ -108,6 +126,18 @@ MD.ApplicationWindow {
             Qt.callLater(function () { onboardingSheet.openWizard() })
         else if (Core.hasPendingCrashReport())
             Qt.callLater(function () { crashReportDialog.open() })
+        // After first paint, warm Discover/Catalog so the first rail click isn't a cold create.
+        catalogWarmTimer.start()
+    }
+
+    Timer {
+        id: catalogWarmTimer
+        interval: 600
+        repeat: false
+        onTriggered: {
+            if (pageStack.currentItem && pageStack.currentItem.warmCatalogLoaders)
+                pageStack.currentItem.warmCatalogLoaders()
+        }
     }
 
     // Hang watchdog writes a pending report while the app is still alive.
@@ -167,8 +197,8 @@ MD.ApplicationWindow {
         }
     ]
 
-    // Main rail tabs stay mounted; keep the crossfade short so Discover/Catalog feel instant.
-    readonly property int mainTabDuration: MD.Token.duration.short4
+    // Main rail tabs stay mounted after first open; keep the crossfade snappy.
+    readonly property int mainTabDuration: MD.Token.duration.short2
 
     Component {
         id: mainPagesComponent
@@ -180,8 +210,29 @@ MD.ApplicationWindow {
             readonly property int pageIndex: root.pageIndex
             // Loader.item — null until Catalog tab is opened once.
             readonly property var catalogBrowsePage: catalogBrowseLoader.item
+            readonly property var discoverPage: discoverLoader.item
 
             transformOrigin: Item.Center
+
+            function activeCatalogPage() {
+                if (mainPages.pageIndex === 1)
+                    return discoverLoader.item
+                if (mainPages.pageIndex === 2)
+                    return catalogBrowseLoader.item
+                return null
+            }
+
+            function captureActiveCatalogScroll(entryId) {
+                const page = mainPages.activeCatalogPage()
+                if (page && page.captureBrowseScroll)
+                    page.captureBrowseScroll(entryId || "")
+            }
+
+            function restoreActiveCatalogScroll() {
+                const page = mainPages.activeCatalogPage()
+                if (page && page.restoreBrowseScroll)
+                    page.restoreBrowseScroll()
+            }
 
             function fixCatalogViewports() {
                 // Discover + Catalog tabs both host scrollable headers.
@@ -195,11 +246,26 @@ MD.ApplicationWindow {
                 }
             }
 
+            function warmCatalogLoaders() {
+                // Create Discover/Catalog off-tab (enabled=false → catalog model stays null).
+                if (!discoverLoader.keepAlive) {
+                    discoverLoader.keepAlive = true
+                    discoverLoader.active = true
+                }
+                if (!catalogBrowseLoader.keepAlive) {
+                    catalogBrowseLoader.keepAlive = true
+                    catalogBrowseLoader.active = true
+                }
+            }
+
             StackView.onStatusChanged: {
                 if (StackView.status === StackView.Active) {
                     opacity = 1
                     scale = 1
-                    Qt.callLater(fixCatalogViewports)
+                    Qt.callLater(function () {
+                        mainPages.fixCatalogViewports()
+                        mainPages.restoreActiveCatalogScroll()
+                    })
                 }
             }
 
@@ -226,15 +292,19 @@ MD.ApplicationWindow {
             Loader {
                 id: discoverLoader
                 anchors.fill: parent
-                active: mainPages.pageIndex === 1
+                // Keep alive after first open so tab switches aren't a cold CatalogPage create.
+                property bool keepAlive: false
+                active: mainPages.pageIndex === 1 || keepAlive
+                asynchronous: true
                 visible: status === Loader.Ready
                 opacity: mainPages.pageIndex === 1 ? 1 : 0
-                // Unload Discover tree while on other tabs — saves QML/bindings RAM.
+                onLoaded: keepAlive = true
                 sourceComponent: Component {
                     CatalogPage {
                         anchors.fill: parent
                         browseOnly: false
                         peekLeftEdge: navRail.width
+                        enabled: mainPages.pageIndex === 1
                         onOpenGame: function (id) { root.openGameDetails(id, true) }
                         onOpenSettings: settingsSheet.openSettings()
                         onAddSourceRequested: settingsSheet.openPlugins()
@@ -256,14 +326,18 @@ MD.ApplicationWindow {
             Loader {
                 id: catalogBrowseLoader
                 anchors.fill: parent
-                active: mainPages.pageIndex === 2
+                property bool keepAlive: false
+                active: mainPages.pageIndex === 2 || keepAlive
+                asynchronous: true
                 visible: status === Loader.Ready
                 opacity: mainPages.pageIndex === 2 ? 1 : 0
+                onLoaded: keepAlive = true
                 sourceComponent: Component {
                     CatalogPage {
                         anchors.fill: parent
                         browseOnly: true
                         peekLeftEdge: navRail.width
+                        enabled: mainPages.pageIndex === 2
                         onOpenGame: function (id) { root.openGameDetails(id, true) }
                         onOpenSettings: settingsSheet.openSettings()
                         onAddSourceRequested: settingsSheet.openPlugins()
@@ -306,7 +380,10 @@ MD.ApplicationWindow {
                 installAddonSheet.openForEntry(entryId, title)
             }
             onOpenInstallPicker: function (entryId, title, selectedAddonIds) {
-                installLocationSheet.openForEntry(entryId, title, selectedAddonIds)
+                const catalogAddons = Core.catalog.addonsFor(entryId)
+                const fromPicker = (selectedAddonIds && selectedAddonIds.length > 0)
+                                   || (catalogAddons && catalogAddons.length > 0)
+                installLocationSheet.openForEntry(entryId, title, selectedAddonIds, fromPicker)
             }
             onOpenSteamidraTrust: steamidraTrustSheet.openTrust()
             onProtonRequired: protonRequiredDialog.open()
@@ -435,6 +512,9 @@ MD.ApplicationWindow {
         installEntry: function (entryId, libraryId, addonIds) {
             root.beginCatalogInstall(entryId, libraryId, addonIds)
         }
+        onBackToAddons: function (entryId, title, selectedAddonIds) {
+            installAddonSheet.openForEntry(entryId, title)
+        }
     }
 
     InstallSourceSheet {
@@ -448,7 +528,7 @@ MD.ApplicationWindow {
             }
             // Fallback when details page is not current (should be rare).
             if (Core.needsInstallLocationChoice())
-                installLocationSheet.openForEntry(offerEntryId || entryId, title, [])
+                installLocationSheet.openForEntry(offerEntryId || entryId, title, [], false)
             else
                 Core.installCatalogEntryFromSource(entryId, sourceId, "", [])
         }
@@ -461,9 +541,12 @@ MD.ApplicationWindow {
             const page = pageStack.currentItem
             if (page && typeof page.afterAddonsSelected === "function")
                 page.afterAddonsSelected(selectedAddonIds)
-            else if (Core.needsInstallLocationChoice())
-                installLocationSheet.openForEntry(entryId, title, selectedAddonIds)
-            else
+            else if (Core.needsInstallLocationChoice()) {
+                const catalogAddons = Core.catalog.addonsFor(entryId)
+                const fromPicker = (selectedAddonIds && selectedAddonIds.length > 0)
+                                   || (catalogAddons && catalogAddons.length > 0)
+                installLocationSheet.openForEntry(entryId, title, selectedAddonIds, fromPicker)
+            } else
                 root.beginCatalogInstall(entryId, "", selectedAddonIds)
         }
     }

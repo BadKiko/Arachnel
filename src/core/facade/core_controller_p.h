@@ -119,3 +119,4 @@
     bool m_applicationDataCleared = false;
     bool m_prepareShutdownDone = false;
     bool m_startupLibraryUpdatesHandled = false;
+    QSet<QString> m_catalogAddonEnrichInFlight;

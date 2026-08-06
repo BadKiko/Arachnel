@@ -87,6 +87,8 @@ signals:
 private:
     bool loadPluginDir(const QString& dirPath);
     void unloadAll();
+    /** Drop one loaded plugin (DLL unlock for replace/uninstall). */
+    void unloadPlugin(const QString& pluginId);
     static QString resolveLibraryFile(const QString& pluginDir, const QString& libraryBase);
     static bool extractArachArchive(const QString& archivePath, const QString& destDir,
                                     QString* errorOut);

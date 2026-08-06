@@ -81,8 +81,19 @@ void LaunchController::launchGame(const QString& gameId)
             return;
 
         LaunchInfo info;
-        if (ISourcePlugin* plugin = m_plugins->plugin(gameCopy.sourceId))
+        if (ISourcePlugin* plugin = m_plugins->plugin(gameCopy.sourceId)) {
+            // Keep SteamFix.ini / stplug lua in sync with library toggles (toggle alone can race).
+            QStringList enabledDlc;
+            enabledDlc.reserve(gameCopy.components.size());
+            for (const InstalledComponent& component : gameCopy.components) {
+                if (component.installed && component.enabled)
+                    enabledDlc.append(component.id);
+            }
+            if (!plugin->applySelectedDlc(gameCopy, enabledDlc) && m_hooks.notice) {
+                m_hooks.notice(QCoreApplication::translate("Core", "Couldn't update DLC unlocks."));
+            }
             info = plugin->launchInfo(gameCopy);
+        }
         if (info.executable.isEmpty() && gameCopy.executableOverride.isEmpty())
             info.executable = findGameExecutableInTree(gameCopy.installPath);
         applyOnlineFixLaunchInfo(gameCopy.installPath, &info);

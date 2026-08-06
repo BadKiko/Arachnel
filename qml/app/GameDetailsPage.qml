@@ -269,12 +269,30 @@ Item {
     function continueAfterSourceChosen() {
         const installId = root.resolveInstallEntryId()
         const details = Core.entryDetails(installId)
-        const addonCount = details.addonCount ?? 0
-        if (addonCount > 0) {
-            root.openAddonPicker(installId, details.title || root.info.title || "")
+        const title = details.title || root.info.title || ""
+
+        function proceedWithAddons() {
+            const refreshed = Core.entryDetails(installId)
+            const addons = Core.catalog.addonsFor(installId)
+            const addonCount = refreshed.addonCount ?? (addons ? addons.length : 0)
+            if (addonCount > 0) {
+                root.openAddonPicker(installId, title)
+                return
+            }
+            root.afterAddonsSelected([])
+        }
+
+        if (!Core.ensureCatalogAddons) {
+            proceedWithAddons()
             return
         }
-        root.afterAddonsSelected([])
+        const ready = Core.ensureCatalogAddons(installId)
+        if (ready) {
+            proceedWithAddons()
+            return
+        }
+        // Open picker immediately with loading - don't freeze the details page.
+        root.openAddonPicker(installId, title)
     }
 
     function beginInstall() {

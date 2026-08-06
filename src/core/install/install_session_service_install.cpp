@@ -15,6 +15,7 @@
 #include <QDebug>
 #include <QDir>
 #include <QFileInfo>
+#include <QSet>
 #include <QtConcurrent>
 
 namespace arachnel::core {
@@ -255,13 +256,51 @@ void InstallSessionService::commitInstalledCatalogGame(const CatalogEntry& entry
     QHash<QString, InstalledComponent> previousComponents;
     for (const auto& component : game.components)
         previousComponents.insert(component.id, component);
+    const QStringList selectedIds = m_installSelectedAddons.value(catalog.id);
+    const QSet<QString> selectedSet(selectedIds.cbegin(), selectedIds.cend());
     QVector<InstalledComponent> components;
     components.reserve(catalog.addons.size());
     for (const auto& addon : catalog.addons) {
+        const auto prev = previousComponents.constFind(addon.id);
+        const bool selected = selectedSet.contains(addon.id);
+        const bool keepPrev = prev != previousComponents.cend() && prev->installed;
+        if (!selected && !keepPrev)
+            continue;
+
         InstalledComponent component{addon.id, addon.title, addon.uploadDate};
-        if (const auto it = previousComponents.constFind(addon.id); it != previousComponents.cend()) {
-            component.installed = it->installed;
-            component.uploadDate = preferFresherMarker(addon.uploadDate, it->uploadDate);
+        if (prev != previousComponents.cend()) {
+            component.installed = prev->installed;
+            component.enabled = prev->enabled;
+            component.uploadDate = preferFresherMarker(addon.uploadDate, prev->uploadDate);
+        }
+        // Selected Steam DLC installs with the game - mark now even if catalog enrich raced.
+        if (selected) {
+            component.installed = true;
+            // Fresh selection defaults on; keep prior toggle if re-installing same id.
+            if (prev == previousComponents.cend())
+                component.enabled = true;
+        }
+        components.append(component);
+    }
+    // Keep selected ids that aren't in catalog.addons yet (enrich still in flight).
+    for (const QString& addonId : selectedIds) {
+        bool found = false;
+        for (const InstalledComponent& c : components) {
+            if (c.id == addonId) {
+                found = true;
+                break;
+            }
+        }
+        if (found)
+            continue;
+        InstalledComponent component;
+        component.id = addonId;
+        component.installed = true;
+        component.enabled = true;
+        if (const auto it = previousComponents.constFind(addonId); it != previousComponents.cend()) {
+            component.title = it->title;
+            component.uploadDate = it->uploadDate;
+            component.enabled = it->enabled;
         }
         components.append(component);
     }

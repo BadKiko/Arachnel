@@ -158,6 +158,17 @@ const LibraryGame* LibraryModel::gameById(const QString& id) const
 
 QVariantMap LibraryModel::toMap(const LibraryGame& game) const
 {
+    QVariantList components;
+    components.reserve(game.components.size());
+    for (const InstalledComponent& c : game.components) {
+        components.append(QVariantMap{
+            {QStringLiteral("id"), c.id},
+            {QStringLiteral("title"), c.title},
+            {QStringLiteral("uploadDate"), c.uploadDate},
+            {QStringLiteral("installed"), c.installed},
+            {QStringLiteral("enabled"), c.enabled},
+        });
+    }
     return {
         {QStringLiteral("gameId"), game.id},
         {QStringLiteral("entryId"), game.id},
@@ -184,6 +195,7 @@ QVariantMap LibraryModel::toMap(const LibraryGame& game) const
         {QStringLiteral("steamAppId"), game.steamAppId},
         {QStringLiteral("componentCount"), game.components.size()},
         {QStringLiteral("installedComponentCount"), installedComponentCount(game.components)},
+        {QStringLiteral("components"), components},
         {QStringLiteral("installed"), true},
     };
 }

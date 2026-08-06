@@ -1,4 +1,6 @@
-# Contributing to Arachnel
+# Code layout (Arachnel)
+
+Build setup lives in the root [CONTRIBUTING.md](../CONTRIBUTING.md). This page is about where code goes.
 
 ## Where code belongs
 

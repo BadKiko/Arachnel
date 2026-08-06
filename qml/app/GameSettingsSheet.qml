@@ -34,6 +34,34 @@ MD.BottomSheet {
         return (lib.gameId ?? "").length > 0
     }
     readonly property bool onLinux: Qt.platform.os === "linux"
+    readonly property var installedComponents: {
+        const _rev = root.detailsRevision
+        const raw = root.info.components
+        if (raw === undefined || raw === null)
+            return []
+        const len = raw.length !== undefined ? raw.length : 0
+        const out = []
+        for (let i = 0; i < len; ++i) {
+            const c = raw[i]
+            if (c && c.installed)
+                out.push(c)
+        }
+        return out
+    }
+
+    /** Installed Steam/plugin DLC components for this game. */
+    readonly property int installedDlcCount: {
+        const _rev = root.detailsRevision
+        const raw = root.info.components
+        const len = raw && raw.length !== undefined ? raw.length : 0
+        let n = 0
+        for (let i = 0; i < len; ++i) {
+            const c = raw[i]
+            if (c && c.installed)
+                ++n
+        }
+        return n
+    }
     readonly property bool isInstalling: {
         const job = Core.jobs.jobForEntry(gameId)
         return job.status === "installing"
@@ -54,6 +82,8 @@ MD.BottomSheet {
 
     function openForGame(id) {
         gameId = id
+        if (Core.healInstalledAddons)
+            Core.healInstalledAddons(id)
         detailsRevision++
         open()
     }
@@ -181,7 +211,7 @@ MD.BottomSheet {
 
                     MD.Label {
                         Layout.fillWidth: true
-                        text: qsTr("When disabled, SteamFix/winmm overlay DLLs are renamed so the game runs without the fix.")
+                        text: qsTr("Runs without a Steam license. Steam may not show you as in-game.")
                         color: MD.Token.color.on_surface_variant
                         typescale: MD.Token.typescale.body_small
                         wrapMode: Text.WordWrap
@@ -352,6 +382,12 @@ MD.BottomSheet {
                         { label: qsTr("Source"), value: root.sourceLabel },
                         { label: qsTr("Version"), value: root.info.version ?? "" },
                         { label: qsTr("Size"), value: root.info.sizeLabel || "-" },
+                        {
+                            label: qsTr("DLC"),
+                            value: root.installedDlcCount > 0
+                                   ? String(root.installedDlcCount)
+                                   : qsTr("None")
+                        },
                         { label: qsTr("Install type"), value: root.info.installKindLabel ?? "" },
                         {
                             label: qsTr("Online Fix"),

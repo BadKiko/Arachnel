@@ -65,7 +65,7 @@
         <translation></translation>
     </message>
     <message>
-        <location line="+136"/>
+        <location line="+166"/>
         <source>Library</source>
         <translation></translation>
     </message>
@@ -510,7 +510,7 @@
 <context>
     <name>CatalogPageContent</name>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="+252"/>
+        <location filename="../qml/app/CatalogPageContent.qml" line="+289"/>
         <source>With friends</source>
         <translation></translation>
     </message>
@@ -634,7 +634,7 @@
     </message>
     <message>
         <location filename="../src/core/install/install_kind.cpp" line="+11"/>
-        <location filename="../src/core/catalog/catalog_model.cpp" line="+520"/>
+        <location filename="../src/core/catalog/catalog_model.cpp" line="+553"/>
         <source>Portable</source>
         <translation></translation>
     </message>
@@ -661,14 +661,14 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/jobs/job_display.cpp" line="+43"/>
+        <location filename="../src/core/jobs/job_display.cpp" line="+45"/>
         <location line="+143"/>
         <location line="+2"/>
         <source>Install failed: %1</source>
         <translation></translation>
     </message>
     <message>
-        <location line="-175"/>
+        <location line="-177"/>
         <source>Download complete</source>
         <translation></translation>
     </message>
@@ -774,20 +774,32 @@
     </message>
     <message>
         <location line="+1"/>
-        <location line="+149"/>
-        <location line="+4"/>
+        <location line="+164"/>
         <source>Installing (%1/%2)</source>
         <translation></translation>
     </message>
     <message>
-        <location line="-151"/>
-        <location line="+156"/>
+        <location line="-163"/>
+        <location line="+160"/>
+        <source>Installing (%1/%2) - %3</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="-159"/>
+        <location filename="../src/core/library/library_controller.cpp" line="+293"/>
+        <location line="+58"/>
+        <source>Couldn&apos;t update DLC unlocks.</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <location line="+169"/>
         <location line="+2"/>
         <source>Error: %1</source>
         <translation></translation>
     </message>
     <message>
-        <location line="-157"/>
+        <location line="-170"/>
         <location line="+52"/>
         <location line="+11"/>
         <source>Add-on %1 - %2</source>
@@ -844,7 +856,7 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/jobs/job_display.cpp" line="-75"/>
+        <location filename="../src/core/jobs/job_display.cpp" line="-77"/>
         <location filename="../src/core/jobs/job_status.cpp" line="+2"/>
         <source>Paused</source>
         <translation></translation>
@@ -869,7 +881,8 @@
     <message>
         <location line="+1"/>
         <location filename="../src/core/jobs/job_status.cpp" line="+7"/>
-        <location filename="../src/core/catalog/catalog_facade_2.cpp" line="+316"/>
+        <location filename="../src/core/catalog/catalog_facade_install.cpp" line="+249"/>
+        <location filename="../src/core/library/library_facade_sync.cpp" line="+230"/>
         <source>Install failed</source>
         <translation></translation>
     </message>
@@ -879,7 +892,7 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="+494"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="+500"/>
         <source>Game not found for add-on</source>
         <translation></translation>
     </message>
@@ -905,7 +918,7 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/install/install_session_service.cpp" line="+38"/>
+        <location filename="../src/core/install/install_session_service.cpp" line="+39"/>
         <source>Installation of %1 is already in progress</source>
         <translation></translation>
     </message>
@@ -930,7 +943,7 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/install/install_session_service_install.cpp" line="+97"/>
+        <location filename="../src/core/install/install_session_service_install.cpp" line="+98"/>
         <source>Add-on installation is already in progress</source>
         <translation></translation>
     </message>
@@ -956,31 +969,31 @@
     </message>
     <message>
         <location filename="../src/core/runtime/proton_facade.cpp" line="+34"/>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="-355"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="-358"/>
         <source>Preparing runtime environment…</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/jobs/job_facade_1.cpp" line="+101"/>
-        <location filename="../src/core/library/library_facade_2.cpp" line="+174"/>
+        <location filename="../src/core/jobs/job_facade_lifecycle.cpp" line="+102"/>
+        <location filename="../src/core/library/library_facade_ops.cpp" line="+174"/>
         <location line="+39"/>
         <location line="+37"/>
         <source>Game not found</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_facade_2.cpp" line="+42"/>
-        <location filename="../src/core/jobs/job_facade_1.cpp" line="+6"/>
+        <location filename="../src/core/catalog/catalog_facade_install.cpp" line="+41"/>
+        <location filename="../src/core/jobs/job_facade_lifecycle.cpp" line="+6"/>
         <source>Add-on not found</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/jobs/job_facade_1.cpp" line="+6"/>
+        <location filename="../src/core/jobs/job_facade_lifecycle.cpp" line="+6"/>
         <source>Download the add-on first</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/library/library_facade_1.cpp" line="+267"/>
+        <location filename="../src/core/library/library_facade_sync.cpp" line="+136"/>
         <source>%1 update(s) available</source>
         <translation></translation>
     </message>
@@ -995,18 +1008,18 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_facade_2.cpp" line="-122"/>
+        <location filename="../src/core/catalog/catalog_facade_install.cpp" line="-147"/>
         <source>No download link for %1</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/library/library_facade_2.cpp" line="-172"/>
+        <location filename="../src/core/library/library_facade_ops.cpp" line="-172"/>
         <location line="+24"/>
         <source>Choose library folder</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/jobs/job_facade_2.cpp" line="+200"/>
+        <location filename="../src/core/jobs/job_facade_manual.cpp" line="+200"/>
         <source>Choose game install folder</source>
         <translation></translation>
     </message>
@@ -1017,22 +1030,22 @@
     </message>
     <message>
         <location filename="../src/core/jobs/job_display.cpp" line="-23"/>
-        <location filename="../src/core/jobs/job_facade_2.cpp" line="+16"/>
+        <location filename="../src/core/jobs/job_facade_manual.cpp" line="+16"/>
         <source>Installed</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/jobs/job_facade_2.cpp" line="+1"/>
+        <location filename="../src/core/jobs/job_facade_manual.cpp" line="+1"/>
         <source>Manual install complete for %1</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_facade.cpp" line="+330"/>
+        <location filename="../src/core/plugins/plugin_facade.cpp" line="+334"/>
         <source>Install plugin</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="+108"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="+111"/>
         <source>Plugin install failed</source>
         <translation></translation>
     </message>
@@ -1052,7 +1065,7 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/library/library_facade_2.cpp" line="-46"/>
+        <location filename="../src/core/library/library_facade_ops.cpp" line="-46"/>
         <source>Choose game executable</source>
         <translation></translation>
     </message>
@@ -1144,7 +1157,7 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_facade_2.cpp" line="+116"/>
+        <location filename="../src/core/catalog/catalog_facade_install.cpp" line="+141"/>
         <source>Game not found: %1</source>
         <translation></translation>
     </message>
@@ -1171,7 +1184,6 @@
     </message>
     <message>
         <location line="+8"/>
-        <location filename="../src/core/launch/launch_facade.cpp" line="+128"/>
         <source>Proton not found. Install Proton-GE in Settings → Launch.</source>
         <translation></translation>
     </message>
@@ -1186,15 +1198,13 @@
         <translation></translation>
     </message>
     <message>
-        <location line="+33"/>
-        <location filename="../src/core/launch/launch_facade.cpp" line="-16"/>
+        <location line="+42"/>
         <source>Steam is not running - Online Fix needs it for SpaceWar/overlay. Starting Steam…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+10"/>
-        <location filename="../src/core/launch/launch_facade.cpp" line="+23"/>
-        <location filename="../src/core/library/library_facade_2.cpp" line="-102"/>
+        <location filename="../src/core/library/library_facade_ops.cpp" line="-102"/>
         <location line="+39"/>
         <location line="+37"/>
         <location line="+16"/>
@@ -1203,7 +1213,6 @@
     </message>
     <message>
         <location line="+9"/>
-        <location filename="../src/core/launch/launch_facade.cpp" line="+15"/>
         <source>Failed to launch game</source>
         <translation></translation>
     </message>
@@ -1213,7 +1222,7 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_facade_2.cpp" line="-321"/>
+        <location filename="../src/core/catalog/catalog_facade_query.cpp" line="+9"/>
         <source>Unknown source: %1</source>
         <translation></translation>
     </message>
@@ -1223,12 +1232,12 @@
         <translation></translation>
     </message>
     <message>
-        <location line="+80"/>
+        <location filename="../src/core/catalog/catalog_facade_install.cpp" line="-235"/>
         <source>Could not resolve application data folder</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location line="+22"/>
         <source>Failed to delete application data</source>
         <translation></translation>
     </message>
@@ -1243,7 +1252,7 @@
         <translation></translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location filename="../src/core/catalog/catalog_facade_query.cpp" line="+71"/>
         <source>Enter a catalog URL</source>
         <translation></translation>
     </message>
@@ -1253,8 +1262,9 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+25"/>
+        <location filename="../src/core/catalog/catalog_facade_install.cpp" line="+24"/>
         <location line="+20"/>
+        <location filename="../src/core/library/library_facade_sync.cpp" line="-190"/>
         <source>Catalog entry not found: %1</source>
         <translation></translation>
     </message>
@@ -1264,18 +1274,19 @@
         <translation></translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+14"/>
+        <location filename="../src/core/library/library_facade_sync.cpp" line="-6"/>
         <source>Plugin not loaded: %1</source>
         <translation></translation>
     </message>
     <message>
         <location line="+12"/>
-        <location line="+61"/>
+        <location line="+83"/>
         <source>Could not start download for %1</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+40"/>
+        <location line="+39"/>
         <source>Could not start add-on download</source>
         <translation></translation>
     </message>
@@ -1285,8 +1296,8 @@
         <translation></translation>
     </message>
     <message>
-        <location line="-112"/>
-        <location line="+127"/>
+        <location line="-133"/>
+        <location line="+155"/>
         <source>Could not start update for %1</source>
         <translation></translation>
     </message>
@@ -1296,12 +1307,12 @@
         <translation></translation>
     </message>
     <message>
-        <location line="-208"/>
+        <location line="-211"/>
         <source>No catalog sources enabled</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/library/library_facade_2.cpp" line="-130"/>
+        <location filename="../src/core/library/library_facade_ops.cpp" line="-130"/>
         <source>Found %1 game(s) on disk</source>
         <translation></translation>
     </message>
@@ -1311,7 +1322,7 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/jobs/job_facade_2.cpp" line="-234"/>
+        <location filename="../src/core/jobs/job_facade_manual.cpp" line="-234"/>
         <source>Download not found</source>
         <translation></translation>
     </message>
@@ -1343,7 +1354,7 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_facade.cpp" line="-170"/>
+        <location filename="../src/core/plugins/plugin_facade.cpp" line="-174"/>
         <source>Plugin installed</source>
         <translation></translation>
     </message>
@@ -1364,7 +1375,7 @@
         <translation></translation>
     </message>
     <message>
-        <location line="+106"/>
+        <location line="+110"/>
         <source>Plugins updated</source>
         <translation></translation>
     </message>
@@ -1461,7 +1472,7 @@
     </message>
     <message>
         <location line="+16"/>
-        <source>Plugin files were copied but the library failed to load. Rebuild the plugin for your Arachnel version and platform (MSVC/MinGW), then reinstall.</source>
+        <source>Plugin files were copied but the library failed to load. Rebuild the plugin for your Arachnel version and this OS, then reinstall.</source>
         <translation></translation>
     </message>
     <message>
@@ -1490,7 +1501,12 @@
         <translation></translation>
     </message>
     <message>
-        <location line="+122"/>
+        <location line="+119"/>
+        <source>Dev build - app updates disabled</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
         <source>Checking for Arachnel updates…</source>
         <translation></translation>
     </message>
@@ -1513,7 +1529,7 @@
     </message>
     <message>
         <location line="+3"/>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="+64"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="+67"/>
         <source>Arachnel %1 is available</source>
         <translation></translation>
     </message>
@@ -1610,7 +1626,7 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/install/online_fix_overlay.cpp" line="+473"/>
+        <location filename="../src/core/install/online_fix_overlay.cpp" line="+568"/>
         <source>Not installed</source>
         <translation></translation>
     </message>
@@ -1625,12 +1641,12 @@
         <translation></translation>
     </message>
     <message>
-        <location line="-20"/>
+        <location line="-39"/>
         <source>Online Fix overlay not found in this install</source>
         <translation></translation>
     </message>
     <message>
-        <location line="-150"/>
+        <location line="-164"/>
         <source>Failed to enable Online Fix: %1</source>
         <translation></translation>
     </message>
@@ -1686,7 +1702,7 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_parser.cpp" line="+368"/>
+        <location filename="../src/core/catalog/catalog_parser.cpp" line="+393"/>
         <source>Empty server response</source>
         <translation></translation>
     </message>
@@ -1770,9 +1786,9 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/library/library_controller.cpp" line="+259"/>
+        <location filename="../src/core/library/library_controller.cpp" line="+40"/>
         <location line="+21"/>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="-107"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="-110"/>
         <source>Game removed: %1</source>
         <translation></translation>
     </message>
@@ -1874,6 +1890,29 @@
     </message>
 </context>
 <context>
+    <name>DlcUpdateRiskDialog</name>
+    <message>
+        <location filename="../qml/components/DlcUpdateRiskDialog.qml" line="+13"/>
+        <source>Update may break DLC</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>This update may break the game - DLC for the new build is not on the source yet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Update anyway</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DownloadJobCard</name>
     <message>
         <location filename="../qml/components/DownloadJobCard.qml" line="+81"/>
@@ -1917,7 +1956,7 @@
         <translation></translation>
     </message>
     <message>
-        <location line="+132"/>
+        <location line="+147"/>
         <source>Installing…</source>
         <translation></translation>
     </message>
@@ -1961,22 +2000,22 @@
     </message>
     <message>
         <location line="+9"/>
-        <source>%1 active · %2 finished · resume after restart</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>%1 active · resume after restart</source>
+        <source>%1 active · %2 finished</source>
         <translation></translation>
     </message>
     <message>
         <location line="+2"/>
-        <source>%1 finished · resume after restart</source>
+        <source>%1 active · will resume after restart</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>%1 finished</source>
         <translation></translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Downloads resume after restart</source>
+        <source>No downloads yet</source>
         <translation></translation>
     </message>
     <message>
@@ -2002,9 +2041,18 @@
         <source>DRM</source>
         <translation></translation>
     </message>
+    <message numerus="yes">
+        <location line="+15"/>
+        <location line="+1"/>
+        <source>%n add-ons</source>
+        <translation>
+            <numerusform>%n add-on</numerusform>
+            <numerusform>%n add-ons</numerusform>
+        </translation>
+    </message>
     <message>
         <location line="+10"/>
-        <source>%1 add-ons</source>
+        <source>Workshop</source>
         <translation></translation>
     </message>
     <message>
@@ -2064,17 +2112,17 @@
     </message>
     <message>
         <location line="+42"/>
-        <location line="+120"/>
+        <location line="+125"/>
         <source>Delete</source>
         <translation></translation>
     </message>
     <message>
-        <location line="-103"/>
+        <location line="-108"/>
         <source>Update</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+52"/>
+        <location line="+57"/>
         <source>Description</source>
         <translation></translation>
     </message>
@@ -2094,7 +2142,7 @@
         <translation></translation>
     </message>
     <message>
-        <location line="-184"/>
+        <location line="-189"/>
         <source>Ready to download from Steam CDN. Online Fix can be included when needed.</source>
         <translation></translation>
     </message>
@@ -2204,7 +2252,7 @@
 <context>
     <name>GameSettingsSheet</name>
     <message>
-        <location filename="../qml/app/GameSettingsSheet.qml" line="+87"/>
+        <location filename="../qml/app/GameSettingsSheet.qml" line="+117"/>
         <source>Game settings</source>
         <translation></translation>
     </message>
@@ -2234,7 +2282,12 @@
         <translation></translation>
     </message>
     <message>
-        <location line="+66"/>
+        <location line="+30"/>
+        <source>Runs without a Steam license. Steam may not show you as in-game.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+36"/>
         <source>Proton</source>
         <translation></translation>
     </message>
@@ -2284,7 +2337,12 @@
         <translation></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+5"/>
+        <source>None</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>Install type</source>
         <translation></translation>
     </message>
@@ -2319,17 +2377,17 @@
         <translation></translation>
     </message>
     <message>
-        <location line="-232"/>
+        <location line="-238"/>
         <source>Online Fix for this game</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>When disabled, SteamFix/winmm overlay DLLs are renamed so the game runs without the fix.</source>
+        <location line="+178"/>
+        <source>DLC</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+173"/>
+        <location line="+7"/>
         <source>Online Fix</source>
         <translation></translation>
     </message>
@@ -2347,56 +2405,100 @@
 <context>
     <name>InstallAddonSelectionSheet</name>
     <message>
-        <location filename="../qml/settings/InstallAddonSelectionSheet.qml" line="+63"/>
-        <source>Add-ons</source>
-        <translation></translation>
+        <location filename="../qml/settings/InstallAddonSelectionSheet.qml" line="+224"/>
+        <source>DLC</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+10"/>
-        <source>Choose add-ons to download together with the game.</source>
-        <translation></translation>
+        <location line="-137"/>
+        <source>Loading DLC from Steam…</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+14"/>
-        <source>All</source>
-        <translation></translation>
+        <location line="+175"/>
+        <source>No Steam DLC found for this game.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>Deselect</source>
-        <translation></translation>
+        <location line="-170"/>
+        <source>About %1 on disk - game %2 + %3 DLC.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+81"/>
-        <source>Optional</source>
-        <translation></translation>
+        <location line="+2"/>
+        <source>About %1 on disk with DLC.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message numerus="yes">
+        <location line="+1"/>
+        <source>%n DLC will be downloaded with the game.</source>
+        <translation>
+            <numerusform>%n DLC will be downloaded with the game.</numerusform>
+            <numerusform>%n DLC will be downloaded with the game.</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location line="+148"/>
+        <source>%n DLC included</source>
+        <translation>
+            <numerusform>%n DLC included</numerusform>
+            <numerusform>%n DLC included</numerusform>
+        </translation>
     </message>
     <message>
-        <location line="+37"/>
+        <location line="+178"/>
         <source>Cancel</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+7"/>
-        <source>Next</source>
-        <translation></translation>
+        <location line="+6"/>
+        <source>Continue</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>InstallLocationSheet</name>
     <message>
-        <location filename="../qml/settings/InstallLocationSheet.qml" line="+37"/>
-        <location line="+114"/>
+        <location filename="../qml/settings/InstallLocationSheet.qml" line="+103"/>
+        <source>About %1 on disk - game %2 + %3 DLC.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>About %1 on disk with DLC.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>DLC adds to install size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+43"/>
+        <location line="+157"/>
         <source>Install</source>
         <translation></translation>
     </message>
     <message>
-        <location line="-106"/>
+        <location line="-149"/>
         <source>Choose a drive for installation</source>
         <translation></translation>
     </message>
+    <message numerus="yes">
+        <location line="+15"/>
+        <source>%n DLC will be downloaded and enabled</source>
+        <translation>
+            <numerusform>%n DLC will be downloaded and enabled</numerusform>
+            <numerusform>%n DLC will be downloaded and enabled</numerusform>
+        </translation>
+    </message>
     <message>
-        <location line="+10"/>
+        <location line="+16"/>
+        <source> +%1 more</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+22"/>
         <source>Install to:</source>
         <translation></translation>
     </message>
@@ -2405,11 +2507,16 @@
         <source>Cancel</source>
         <translation></translation>
     </message>
+    <message>
+        <location line="+0"/>
+        <source>Back</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>InstallSourceSheet</name>
     <message>
-        <location filename="../qml/settings/InstallSourceSheet.qml" line="+34"/>
+        <location filename="../qml/settings/InstallSourceSheet.qml" line="+54"/>
         <source>Choose download source</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2419,7 +2526,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+51"/>
+        <location line="+46"/>
         <source>Unknown source</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2457,7 +2564,7 @@
         <translation></translation>
     </message>
     <message>
-        <location line="+38"/>
+        <location line="+43"/>
         <source>In library</source>
         <translation></translation>
     </message>
@@ -2562,11 +2669,14 @@
 </context>
 <context>
     <name>LibraryGameCard</name>
-    <message>
+    <message numerus="yes">
         <location filename="../qml/components/LibraryGameCard.qml" line="+25"/>
         <location line="+3"/>
-        <source>%1 add-ons</source>
-        <translation></translation>
+        <source>%n add-ons</source>
+        <translation>
+            <numerusform>%n add-on</numerusform>
+            <numerusform>%n add-ons</numerusform>
+        </translation>
     </message>
     <message>
         <location line="-1"/>

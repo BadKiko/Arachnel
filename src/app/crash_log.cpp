@@ -84,11 +84,9 @@ void startHangWatchdog()
 
             reportUiHang(kHangSeconds);
 
-            while (!g_shuttingDown
-                   && g_mainPingAck.load(std::memory_order_acquire)
-                          != g_mainPingSerial.load(std::memory_order_acquire)) {
-                std::this_thread::sleep_for(2s);
-            }
+            // reportUiHang should kill this process after spawning the crash
+            // dialog. If it returned early (shutting down / dialog mode), stop.
+            break;
         }
     }).detach();
 }

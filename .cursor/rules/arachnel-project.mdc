@@ -7,6 +7,8 @@ alwaysApply: true
 
 Лаунчер игр (аналог Hydra по UX), фокус: **online-fix** и **плагинная система источников**.
 
+**Кроссплатформа:** Windows + Linux. На Linux Windows-игры идут через **Proton** - см. `linux-proton-path.mdc`. Любое решение (install / online-fix / launch) продумывать сразу для обоих хостов.
+
 ## Отличие от Hydra
 
 - Hydra: по сути одна система загрузки/установки.

@@ -13,6 +13,10 @@ Item {
 
     property alias gridContentY: grid.contentY
     property alias listContentY: list.contentY
+    property alias gridContentHeight: grid.contentHeight
+    property alias listContentHeight: list.contentHeight
+    property alias gridHeight: grid.height
+    property alias listHeight: list.height
 
     readonly property int scrubberWidth: catalogNavigator.visible ? catalogNavigator.width : 0
     readonly property real compactBarHeight: 56
@@ -93,19 +97,26 @@ Item {
 
     function jumpToRow(row, animated) {
         if (row === undefined || row < 0 || row >= Core.catalog.count)
-            return
+            return false
 
         const view = activeView()
+        if (!view || view.height < 8)
+            return false
         const mode = page.listViewMode ? ListView.Beginning : GridView.Beginning
         root.navigatorRow = row
 
         const fromY = view.contentY
         const maxY = Math.max(0, view.contentHeight - view.height)
+        // Grid not laid out yet - caller should retry.
+        if (row > 0 && maxY < 8 && Core.catalog.count > 32)
+            return false
+
         let toY = 0
         // Row 0 must reveal the catalog header (true top), not just the first cell.
         if (row > 0) {
             view.positionViewAtIndex(row, mode)
-            toY = Math.max(0, Math.min(view.contentY, maxY))
+            const newMax = Math.max(0, view.contentHeight - view.height)
+            toY = Math.max(0, Math.min(view.contentY, newMax))
             view.contentY = fromY
         }
 
@@ -114,14 +125,14 @@ Item {
             indexScrollAnim.stop()
             scrubGoalY = toY
             scrubLerp.running = true
-            return
+            return true
         }
 
         scrubLerp.running = false
         if (animated === false) {
             view.contentY = toY
             root.updateScrubberMode()
-            return
+            return true
         }
 
         indexScrollAnim.stop()
@@ -130,6 +141,20 @@ Item {
         indexScrollAnim.to = toY
         indexScrollAnim.duration = Math.min(420, Math.max(160, Math.abs(toY - fromY) * 0.28))
         indexScrollAnim.start()
+        return true
+    }
+
+    function restoreContentY(y) {
+        const view = activeView()
+        if (!view || view.height < 8)
+            return false
+        const maxY = Math.max(0, view.contentHeight - view.height)
+        // Layout still collapsed after StackView - wait, don't clamp to a fake top.
+        if (y > 8 && maxY + 1 < y)
+            return false
+        view.contentY = Math.min(Math.max(0, y), maxY)
+        root.updateScrubberMode()
+        return Math.abs(view.contentY - Math.min(y, maxY)) < 2
     }
 
     function jumpToEdge(edge) {
@@ -202,9 +227,10 @@ Item {
         anchors.bottomMargin: MD.Token.spacing.medium
         visible: !page.listViewMode
         clip: true
-        // Unbind when off-tab / hidden — a second CatalogPage otherwise still eats
-        // beginResetModel for the full Steam catalog (~55k) and freezes the UI.
-        model: (root.visible && page.enabled) ? Core.catalog : null
+        // Unbind off-tab / discovery only. Do NOT key off root.visible - StackView
+        // covering the page must not drop the 132k model (that zeros contentY and
+        // cancels every visible cover).
+        model: (page.enabled && !page.discoveryMode) ? Core.catalog : null
         cellWidth: page.cellWidth
         cellHeight: page.cellHeight
         cacheBuffer: page.cellHeight * 2
@@ -269,7 +295,7 @@ Item {
         anchors.bottomMargin: MD.Token.spacing.medium
         visible: page.listViewMode
         clip: true
-        model: (root.visible && page.enabled) ? Core.catalog : null
+        model: (page.enabled && !page.discoveryMode) ? Core.catalog : null
         spacing: MD.Token.spacing.extra_small
         cacheBuffer: page.listRowHeight * 3
         reuseItems: true

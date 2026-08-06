@@ -32,10 +32,24 @@ bool pathHasArchive(const QString& rootDir)
 bool isExcludedGameExecutable(const QString& fileName)
 {
     const QString lower = fileName.toLower();
-    return lower == QStringLiteral("unins000.exe") || lower == QStringLiteral("uninstall.exe")
-           || lower.contains(QStringLiteral("setup")) || lower.contains(QStringLiteral("redist"))
-           || lower.contains(QStringLiteral("vcredist")) || lower.contains(QStringLiteral("dxsetup"))
-           || lower.contains(QStringLiteral("unitycrashhandler"));
+    if (lower == QStringLiteral("unins000.exe") || lower == QStringLiteral("uninstall.exe")
+        || lower.contains(QStringLiteral("setup")) || lower.contains(QStringLiteral("redist"))
+        || lower.contains(QStringLiteral("vcredist")) || lower.contains(QStringLiteral("dxsetup"))
+        || lower.contains(QStringLiteral("unitycrashhandler"))
+        || lower.contains(QStringLiteral("crashpad")) || lower.contains(QStringLiteral("crashreport")))
+        return true;
+
+    // Tools Steam ships next to the game (Craft The World Editor.exe, dedicated servers, …).
+    QString stem = lower;
+    if (stem.endsWith(QStringLiteral(".exe")))
+        stem.chop(4);
+    if (stem == QStringLiteral("editor") || stem.endsWith(QStringLiteral("editor"))
+        || stem == QStringLiteral("dedicated") || stem.contains(QStringLiteral("dedicatedserver"))
+        || stem == QStringLiteral("server") || stem.endsWith(QStringLiteral("server"))
+        || stem == QStringLiteral("unrealversionselector"))
+        return true;
+
+    return false;
 }
 
 QString findGameExecutableInTree(const QString& rootDir)

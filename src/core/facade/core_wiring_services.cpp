@@ -275,6 +275,9 @@ void CoreController::initializeServices()
     updateHooks.updateCatalogEntry = [this](const QString& entryId) {
         updateCatalogEntry(entryId);
     };
+    updateHooks.catalogUpdateHasDlcRisk = [this](const QString& entryId) {
+        return catalogUpdateHasDlcRisk(entryId);
+    };
     m_gameUpdates = new GameUpdateService(&m_libraryStore, &m_settings, m_pluginHost,
                                           m_jobOrchestrator, &m_catalogCache, std::move(updateHooks));
 

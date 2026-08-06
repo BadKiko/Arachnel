@@ -10,6 +10,8 @@
 #include <QProcess>
 #include <QProcessEnvironment>
 #include <QRegularExpression>
+#include <QStandardPaths>
+#include <QSet>
 
 namespace arachnel::core {
 namespace {
@@ -42,6 +44,55 @@ QString appendDllOverride(QString overrides, const QString& dllStem, const QStri
     if (!overrides.isEmpty() && !overrides.endsWith(QLatin1Char(';')))
         overrides += QLatin1Char(';');
     return overrides + key + mode;
+}
+
+QString findSteamidraCmdStub()
+{
+    const QStringList roots = {
+        QStandardPaths::writableLocation(QStandardPaths::AppDataLocation),
+        QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation),
+    };
+    QSet<QString> seen;
+    for (const QString& root : roots) {
+        if (root.isEmpty() || seen.contains(root))
+            continue;
+        seen.insert(root);
+        const QStringList candidates = {
+            root + QStringLiteral("/plugins/steamidra/online_fix_kit/cmd_stub.exe"),
+            root + QStringLiteral("/Arachnel/plugins/steamidra/online_fix_kit/cmd_stub.exe"),
+        };
+        for (const QString& path : candidates) {
+            if (QFileInfo::exists(path))
+                return path;
+        }
+    }
+    return {};
+}
+
+void plantFreetpPromoBlock(const QString& dir)
+{
+    if (dir.isEmpty() || !QDir(dir).exists())
+        return;
+
+    QDir().mkpath(dir + QStringLiteral("/FreeTP/UserData"));
+    const QString anon = dir + QStringLiteral("/FreeTP/UserData/AnonFolderSave.txt");
+    if (!QFileInfo::exists(anon)) {
+        QFile f(anon);
+        if (f.open(QIODevice::WriteOnly))
+            f.close();
+    }
+
+    const QString stubSrc = findSteamidraCmdStub();
+    if (stubSrc.isEmpty())
+        return;
+    const QString stubDst = dir + QStringLiteral("/cmd.exe");
+    const QFileInfo srcInfo(stubSrc);
+    const QFileInfo dstInfo(stubDst);
+    if (dstInfo.exists() && dstInfo.size() == srcInfo.size()
+        && dstInfo.lastModified() >= srcInfo.lastModified())
+        return;
+    QFile::remove(stubDst);
+    QFile::copy(stubSrc, stubDst);
 }
 
 QString readDllListOverrides(const QString& listPath)
@@ -212,6 +263,58 @@ bool dirLooksLikeOverlay(const QDir& dir)
     return dirHasActiveOverlay(dir) || dirHasDisabledOverlay(dir);
 }
 
+bool hasValveBackup(const QString& installPath)
+{
+    QDirIterator it(installPath,
+                    {QStringLiteral("steam_api64.dll.arachnel-valve"),
+                     QStringLiteral("steam_api.dll.arachnel-valve")},
+                    QDir::Files, QDirIterator::Subdirectories);
+    return it.hasNext();
+}
+
+bool hasSteamSettings(const QString& installPath)
+{
+    QDirIterator it(installPath, {QStringLiteral("steam_settings")}, QDir::Dirs,
+                    QDirIterator::Subdirectories);
+    int n = 0;
+    while (it.hasNext() && n < 2000) {
+        it.next();
+        ++n;
+        if (QFileInfo::exists(it.filePath() + QStringLiteral("/DLC.txt"))
+            || QFileInfo::exists(it.filePath() + QStringLiteral("/steam_interfaces.txt")))
+            return true;
+    }
+    return false;
+}
+
+QJsonObject readOnlineFixMarker(const QString& installPath)
+{
+    QFile file(installPath + QStringLiteral("/.arachnel-steamidra"));
+    if (!file.open(QIODevice::ReadOnly))
+        return {};
+    return QJsonDocument::fromJson(file.readAll()).object().value(QStringLiteral("onlineFix")).toObject();
+}
+
+bool restoreValveSteamApiFiles(const QString& installPath)
+{
+    bool wrote = false;
+    QDirIterator it(installPath,
+                    {QStringLiteral("steam_api64.dll.arachnel-valve"),
+                     QStringLiteral("steam_api.dll.arachnel-valve")},
+                    QDir::Files, QDirIterator::Subdirectories);
+    while (it.hasNext()) {
+        it.next();
+        const QString bak = it.filePath();
+        QString api = bak;
+        api.chop(QStringLiteral(".arachnel-valve").size());
+        if (QFileInfo::exists(api))
+            QFile::remove(api);
+        if (QFile::copy(bak, api))
+            wrote = true;
+    }
+    return wrote;
+}
+
 bool shouldSkipOverlayScanDir(const QString& name)
 {
     const QString lower = name.toLower();
@@ -346,16 +449,17 @@ bool renameOverlayInDir(const QDir& dir, bool enable, QString* error)
 void updateMarkerEnabled(const QString& installPath, bool enabled)
 {
     const QString markerPath = installPath + QStringLiteral("/.arachnel-steamidra");
-    if (!QFileInfo::exists(markerPath))
-        return;
+    QJsonObject root;
     QFile file(markerPath);
-    if (!file.open(QIODevice::ReadOnly))
-        return;
-    QJsonObject root = QJsonDocument::fromJson(file.readAll()).object();
-    file.close();
+    if (file.exists() && file.open(QIODevice::ReadOnly)) {
+        root = QJsonDocument::fromJson(file.readAll()).object();
+        file.close();
+    }
     QJsonObject onlineFix = root.value(QStringLiteral("onlineFix")).toObject();
     onlineFix.insert(QStringLiteral("enabled"), enabled);
     onlineFix.insert(QStringLiteral("embedded"), true);
+    // Drop stale "goldberg" from older builds - SteamFix/winmm is the only overlay now.
+    onlineFix.remove(QStringLiteral("backend"));
     root.insert(QStringLiteral("onlineFix"), onlineFix);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate))
         return;
@@ -410,57 +514,82 @@ bool tryStartSteamClient()
 OnlineFixOverlayState detectOnlineFixOverlay(const QString& installPath)
 {
     OnlineFixOverlayState state;
-    const QStringList dirs = findOverlayDirs(installPath);
-    if (dirs.isEmpty())
+    if (installPath.isEmpty() || !QFileInfo::exists(installPath))
         return state;
 
-    state.present = true;
-    state.overlayDir = dirs.first();
-    for (const QString& path : dirs) {
-        const QDir dir(path);
-        bool hasActiveDll = false;
-        for (const QString& name : overlayDllNames()) {
-            if (dir.exists(name)) {
-                hasActiveDll = true;
-                break;
-            }
-        }
-        const bool hasDisabled = dirHasDisabledOverlay(dir);
-        // Default on: live DLLs, or FakeAppId mode (ini/txt + steam_appid) when nothing was
-        // renamed off. Disable renames both DLLs and steam_appid.txt.
-        const bool fakeAppIdMode = dir.exists(QStringLiteral("steam_appid.txt"))
-            && (dir.exists(QStringLiteral("SteamFix.ini"))
-                || dir.exists(QStringLiteral("OnlineFix.ini"))
-                || dir.exists(QStringLiteral("winmm.txt")));
-        if (hasActiveDll || (fakeAppIdMode && !hasDisabled)) {
-            state.enabled = true;
-            state.overlayDir = path;
-            break;
-        }
-    }
-    if (!state.enabled) {
+    // Prefer SteamFix / winmm overlay dirs over older valve-backup heuristics.
+    const QStringList dirs = findOverlayDirs(installPath);
+    if (!dirs.isEmpty()) {
+        state.present = true;
+        state.overlayDir = dirs.first();
         for (const QString& path : dirs) {
-            if (dirHasDisabledOverlay(QDir(path))) {
+            const QDir dir(path);
+            bool hasActiveDll = false;
+            for (const QString& name : overlayDllNames()) {
+                if (dir.exists(name)) {
+                    hasActiveDll = true;
+                    break;
+                }
+            }
+            const bool hasDisabled = dirHasDisabledOverlay(dir);
+            // Default on: live DLLs, or FakeAppId mode (ini/txt + steam_appid) when nothing was
+            // renamed off. Disable renames both DLLs and steam_appid.txt.
+            const bool fakeAppIdMode = dir.exists(QStringLiteral("steam_appid.txt"))
+                && (dir.exists(QStringLiteral("SteamFix.ini"))
+                    || dir.exists(QStringLiteral("OnlineFix.ini"))
+                    || dir.exists(QStringLiteral("winmm.txt")));
+            if (hasActiveDll || (fakeAppIdMode && !hasDisabled)) {
+                state.enabled = true;
                 state.overlayDir = path;
                 break;
             }
         }
+        if (!state.enabled) {
+            for (const QString& path : dirs) {
+                if (dirHasDisabledOverlay(QDir(path))) {
+                    state.overlayDir = path;
+                    break;
+                }
+            }
+        }
+        return state;
+    }
+
+    // Old embeds: valve steam_api backups and/or marker only.
+    const QJsonObject of = readOnlineFixMarker(installPath);
+    if (hasValveBackup(installPath) || of.value(QStringLiteral("embedded")).toBool(false)
+        || of.contains(QStringLiteral("enabled"))) {
+        state.present = true;
+        state.overlayDir = installPath;
+        if (of.contains(QStringLiteral("enabled")))
+            state.enabled = of.value(QStringLiteral("enabled")).toBool(false);
+        else
+            state.enabled = hasSteamSettings(installPath) && hasValveBackup(installPath);
     }
     return state;
 }
 
 bool setOnlineFixOverlayEnabled(const QString& installPath, bool enabled, QString* error)
 {
-    const QStringList dirs = findOverlayDirs(installPath);
-    if (dirs.isEmpty()) {
+    if (installPath.isEmpty() || !QFileInfo::exists(installPath)) {
         if (error)
             *error = QCoreApplication::translate("Core", "Online Fix overlay not found in this install");
         return false;
     }
-    for (const QString& path : dirs) {
-        if (!renameOverlayInDir(QDir(path), enabled, error))
-            return false;
+
+    const QStringList dirs = findOverlayDirs(installPath);
+    if (!dirs.isEmpty()) {
+        for (const QString& path : dirs) {
+            if (!renameOverlayInDir(QDir(path), enabled, error))
+                return false;
+        }
+        updateMarkerEnabled(installPath, enabled);
+        return true;
     }
+
+    // No SteamFix overlay yet - marker toggle; restore Valve DLLs when disabling old embeds.
+    if (!enabled)
+        restoreValveSteamApiFiles(installPath);
     updateMarkerEnabled(installPath, enabled);
     return true;
 }
@@ -564,6 +693,13 @@ void applyOnlineFixLaunchInfo(const QString& installPath, LaunchInfo* info)
         if (QFileInfo(exeDir).absoluteFilePath() != QFileInfo(overlayDir).absoluteFilePath())
             ensureSteamAppIdFile(exeDir);
     }
+
+    // Windows + Proton: block FreeTP promo browser (path-local .hash / noop cmd.exe).
+    plantFreetpPromoBlock(overlayDir);
+    if (!info->workingDirectory.isEmpty())
+        plantFreetpPromoBlock(info->workingDirectory);
+    if (!info->executable.isEmpty())
+        plantFreetpPromoBlock(QFileInfo(info->executable).absolutePath());
 
 #if defined(Q_OS_LINUX)
     // Always attach overlay preload when OF is on (SOFL default use-steam-overlay).

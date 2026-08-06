@@ -46,9 +46,12 @@ Item {
     readonly property bool hovered: (root.inputEnabled && mouseArea.containsMouse)
                                     || root.externalHovered
 
-    onSourceChanged: loadFailedEmitted = false
+    onSourceChanged: {
+        loadFailedEmitted = false
+        failConfirm.stop()
+    }
 
-    // Don't animate forever on missing covers — static placeholder after 2.5s.
+    // Don't animate forever on missing covers - static placeholder after 2.5s.
     Timer {
         id: shimmerCapTimer
         interval: 2500
@@ -61,6 +64,23 @@ Item {
         } else {
             shimmerCapTimer.stop()
             root.shimmerTimedOut = false
+        }
+    }
+
+    // Confirm Error after a beat - StackView hide / 0-size recycle spuriously Errors
+    // and CatalogGameCard would invalidate (delete) a good local cover file.
+    Timer {
+        id: failConfirm
+        interval: 120
+        onTriggered: {
+            if (coverProbe.status !== Image.Error || !root.resolvedSource.length)
+                return
+            if (!root.visible || root.width < 2 || root.height < 2)
+                return
+            if (root.loadFailedEmitted)
+                return
+            root.loadFailedEmitted = true
+            root.loadFailed()
         }
     }
 
@@ -100,10 +120,10 @@ Item {
         sourceSize.width: root.decodeWidth
         sourceSize.height: root.decodeHeight
         onStatusChanged: {
-            if (status === Image.Error && root.resolvedSource.length > 0 && !root.loadFailedEmitted) {
-                root.loadFailedEmitted = true
-                root.loadFailed()
-            }
+            if (status === Image.Error && root.resolvedSource.length > 0 && !root.loadFailedEmitted)
+                failConfirm.restart()
+            else if (status === Image.Ready || status === Image.Null)
+                failConfirm.stop()
         }
     }
 

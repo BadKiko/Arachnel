@@ -46,6 +46,15 @@ CatalogComponent parseComponent(const QJsonObject& obj, const QString& sourceId,
     component.referer = obj.value(QStringLiteral("referer")).toString();
     component.getfileUrl = obj.value(QStringLiteral("getfileUrl")).toString();
     component.optional = obj.value(QStringLiteral("optional")).toBool(false);
+    component.contentAvailable = obj.value(QStringLiteral("contentAvailable")).toBool(true);
+    if (obj.contains(QStringLiteral("hasManifest")))
+        component.contentAvailable = obj.value(QStringLiteral("hasManifest")).toBool(true);
+    component.coverUrl = obj.value(QStringLiteral("coverUrl")).toString();
+    for (const QJsonValue& shot : obj.value(QStringLiteral("screenshotUrls")).toArray()) {
+        const QString u = shot.toString().trimmed();
+        if (!u.isEmpty())
+            component.screenshotUrls.append(u);
+    }
 
     const QJsonArray uris = obj.value(QStringLiteral("uris")).toArray();
     for (const QJsonValue& uri : uris) {
@@ -136,6 +145,20 @@ CatalogEntry parseRyuuEntryObject(const QJsonObject& obj, const QString& sourceI
         entry.version = entry.uploadDate.left(10);
     entry.itemKind = CatalogItemKind::Game;
     entry.metadataPending = false;
+    entry.hasWorkshop = obj.value(QStringLiteral("hasWorkshop")).toBool(false);
+    entry.dlcCount = obj.value(QStringLiteral("dlcCount")).toInt(0);
+    if (entry.dlcCount <= 0) {
+        if (obj.value(QStringLiteral("dlc")).isArray())
+            entry.dlcCount = obj.value(QStringLiteral("dlc")).toArray().size();
+        else if (obj.value(QStringLiteral("dlc")).isString()) {
+            int n = 0;
+            for (const QString& part : obj.value(QStringLiteral("dlc")).toString().split(QLatin1Char(','))) {
+                if (!part.trimmed().isEmpty())
+                    ++n;
+            }
+            entry.dlcCount = n;
+        }
+    }
 
     const int rawInstallKind = obj.value(QStringLiteral("installKind")).toInt(-1);
     if (rawInstallKind >= static_cast<int>(InstallKind::PortableArchive)
@@ -157,6 +180,8 @@ CatalogEntry parseRyuuEntryObject(const QJsonObject& obj, const QString& sourceI
             continue;
         entry.addons.append(parseComponent(addonValue.toObject(), sourceId, entry.id));
     }
+    // Keep catalog id-light: do not expand relay `dlc[]` into addons here (tens of MB × N).
+    // Picker loads titles/covers via GET /v1/app/{id}/dlcs when install starts.
     return entry;
 }
 
@@ -348,11 +373,39 @@ QVector<CatalogEntry> parseCatalogFeed(const QByteArray& payload, const QString&
     if (ryuu.isEmpty())
         ryuu = root.value(QStringLiteral("games")).toArray();
     if (!ryuu.isEmpty()) {
+        QSet<QString> referencedDlc;
+        const auto addDlcId = [&referencedDlc](QString id) {
+            id = id.trimmed();
+            if (id.startsWith(QStringLiteral("steam-")))
+                id = id.mid(6);
+            if (!id.isEmpty())
+                referencedDlc.insert(id);
+        };
+        for (const QJsonValue& value : ryuu) {
+            if (!value.isObject())
+                continue;
+            const QJsonValue dlcVal = value.toObject().value(QStringLiteral("dlc"));
+            if (dlcVal.isArray()) {
+                for (const QJsonValue& d : dlcVal.toArray()) {
+                    if (d.isString())
+                        addDlcId(d.toString());
+                    else if (d.isDouble())
+                        addDlcId(QString::number(d.toInteger()));
+                }
+            } else if (dlcVal.isString()) {
+                for (const QString& part : dlcVal.toString().split(QLatin1Char(',')))
+                    addDlcId(part);
+            }
+        }
+
         entries.reserve(ryuu.size());
         for (const QJsonValue& value : ryuu) {
             if (!value.isObject())
                 continue;
-            entries.append(parseRyuuEntryObject(value.toObject(), sourceId));
+            CatalogEntry entry = parseRyuuEntryObject(value.toObject(), sourceId);
+            if (!entry.steamAppId.isEmpty() && referencedDlc.contains(entry.steamAppId))
+                continue;
+            entries.append(std::move(entry));
         }
         deduplicateCatalogEntriesImpl(entries);
         return entries;

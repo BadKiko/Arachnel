@@ -12,14 +12,34 @@ MD.BottomSheet {
     property string entryId: ""
     property string entryTitle: ""
     property var offers: []
+    property var _pendingChoice: null
 
     signal sourceChosen(string entryId, string offerEntryId, string sourceId, string title)
 
     function openForEntry(id, title) {
         entryId = id || ""
         entryTitle = title || ""
+        _pendingChoice = null
         offers = entryId.length ? Core.installOffersForEntry(entryId) : []
         open()
+    }
+
+    function chooseSource(offerEntryId, sourceId) {
+        _pendingChoice = {
+            entryId: root.entryId,
+            offerEntryId: offerEntryId || "",
+            sourceId: sourceId || "",
+            title: root.entryTitle
+        }
+        close()
+    }
+
+    onClosed: {
+        const pending = _pendingChoice
+        _pendingChoice = null
+        if (!pending)
+            return
+        root.sourceChosen(pending.entryId, pending.offerEntryId, pending.sourceId, pending.title)
     }
 
     ColumnLayout {
@@ -67,13 +87,8 @@ MD.BottomSheet {
                     MouseArea {
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            root.sourceChosen(root.entryId,
-                                              modelData.entryId || "",
-                                              modelData.sourceId || "",
-                                              root.entryTitle)
-                            root.close()
-                        }
+                        onClicked: root.chooseSource(modelData.entryId || "",
+                                                     modelData.sourceId || "")
                     }
 
                     RowLayout {

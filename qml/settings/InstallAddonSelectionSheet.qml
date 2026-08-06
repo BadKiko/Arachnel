@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
+import QtQuick.Window
 
 import Arachnel.Core 1.0
 import Qcm.Material as MD
@@ -9,42 +10,202 @@ MD.BottomSheet {
     id: root
 
     sheetType: MD.Enum.BottomSheetModal
+    // Same as SettingsSheet: wheel/list flick must not drag-dismiss the modal.
+    dismissOnDragDown: false
     property string entryId: ""
     property string entryTitle: ""
+    property bool waitingAddons: false
+    property var _pendingConfirm: null
 
     signal confirmed(string entryId, string entryTitle, var selectedAddonIds)
+
+    function shotList(raw) {
+        if (raw === undefined || raw === null)
+            return []
+        if (Array.isArray(raw))
+            return raw.filter(function (u) { return !!u && String(u).length > 0 }).map(String)
+        const len = raw.length !== undefined ? raw.length : 0
+        const out = []
+        for (let i = 0; i < len; ++i) {
+            const u = String(raw[i] || "")
+            if (u.length)
+                out.push(u)
+        }
+        return out
+    }
+
+    function parseSizeLabelBytes(label) {
+        if (!label || !label.length)
+            return 0
+        const m = /^(\d+(?:\.\d+)?)\s*(B|KB|MB|GB|TB)/i.exec(String(label).trim())
+        if (!m)
+            return 0
+        let v = parseFloat(m[1])
+        const unit = m[2].toUpperCase()
+        if (unit === "KB")
+            v *= 1024
+        else if (unit === "MB")
+            v *= 1024 * 1024
+        else if (unit === "GB")
+            v *= 1024 * 1024 * 1024
+        else if (unit === "TB")
+            v *= 1024 * 1024 * 1024 * 1024
+        return v
+    }
+
+    function formatSizeLabelBytes(bytes) {
+        if (!(bytes > 0))
+            return ""
+        const units = ["B", "KB", "MB", "GB", "TB"]
+        let value = bytes
+        let unit = 0
+        while (value >= 1024 && unit < units.length - 1) {
+            value /= 1024
+            unit++
+        }
+        const text = unit === 0 ? String(Math.round(value)) : value.toFixed(1)
+        return text + " " + units[unit]
+    }
+
+    readonly property real baseBytes: {
+        if (!root.entryId.length)
+            return 0
+        const details = Core.entryDetails(root.entryId)
+        return root.parseSizeLabelBytes(details.sizeLabel || "")
+    }
+
+    readonly property real dlcBytes: {
+        const n = addonModel.count
+        let sum = 0
+        for (let i = 0; i < n; ++i)
+            sum += root.parseSizeLabelBytes(addonModel.get(i).subtitle || "")
+        return sum
+    }
+
+    readonly property string sizeNotice: {
+        if (root.waitingAddons)
+            return qsTr("Loading DLC from Steam…")
+        const baseLabel = root.formatSizeLabelBytes(root.baseBytes)
+        const dlcLabel = root.formatSizeLabelBytes(root.dlcBytes)
+        const totalLabel = root.formatSizeLabelBytes(root.baseBytes + root.dlcBytes)
+        if (baseLabel.length && dlcLabel.length && totalLabel.length)
+            return qsTr("About %1 on disk - game %2 + %3 DLC.").arg(totalLabel).arg(baseLabel).arg(dlcLabel)
+        if (totalLabel.length)
+            return qsTr("About %1 on disk with DLC.").arg(totalLabel)
+        return qsTr("%n DLC will be downloaded with the game.", "", addonModel.count)
+    }
+
+    function populateFromCatalog() {
+        addonModel.clear()
+        const addons = Core.catalog.addonsFor(entryId)
+        for (let i = 0; i < addons.length; ++i) {
+            const addon = addons[i]
+            const available = addon.contentAvailable !== false
+            if (!available)
+                continue
+            const shots = root.shotList(addon.screenshotUrls)
+            let cover = String(addon.coverUrl || "")
+            if (!cover.length && String(addon.id || "").indexOf("steam-") === 0) {
+                const appId = String(addon.id).slice(6)
+                if (/^\d+$/.test(appId))
+                    cover = "https://cdn.akamai.steamstatic.com/steam/apps/" + appId + "/header.jpg"
+            }
+            addonModel.append({
+                addonId: addon.id,
+                title: addon.title,
+                subtitle: addon.fileSize || "",
+                coverUrl: cover,
+                screenshotUrls: shots,
+            })
+        }
+    }
 
     function openForEntry(id, title) {
         entryId = id
         entryTitle = title || ""
+        _pendingConfirm = null
         addonModel.clear()
-        const addons = Core.catalog.addonsFor(id)
-        for (let i = 0; i < addons.length; ++i) {
-            const addon = addons[i]
-            addonModel.append({
-                addonId: addon.id,
-                title: addon.title,
-                subtitle: (addon.kindLabel || "") + " · " + (addon.deliveryLabel || "")
-                            + (addon.fileSize ? " · " + addon.fileSize : ""),
-                optional: !!addon.optional,
-                checked: !addon.optional,
-            })
+        waitingAddons = true
+        const ready = Core.ensureCatalogAddons ? Core.ensureCatalogAddons(id) : true
+        if (ready) {
+            populateFromCatalog()
+            if (addonModel.count > 0) {
+                waitingAddons = false
+                open()
+                return
+            }
+            const details = Core.entryDetails(id)
+            if ((details.addonCount || 0) > 0 && Core.ensureCatalogAddons) {
+                const again = Core.ensureCatalogAddons(id)
+                if (again) {
+                    populateFromCatalog()
+                    waitingAddons = false
+                    if (addonModel.count === 0) {
+                        root.confirmed(root.entryId, root.entryTitle, [])
+                        return
+                    }
+                    open()
+                    return
+                }
+                open()
+                return
+            }
+            waitingAddons = false
+            root.confirmed(root.entryId, root.entryTitle, [])
+            return
         }
         open()
     }
 
-    function selectedAddonIds() {
+    function allAddonIds() {
         const ids = []
-        for (let i = 0; i < addonModel.count; ++i) {
-            if (addonModel.get(i).checked)
-                ids.push(addonModel.get(i).addonId)
-        }
+        for (let i = 0; i < addonModel.count; ++i)
+            ids.push(addonModel.get(i).addonId)
         return ids
     }
 
-    function setAllChecked(value) {
-        for (let i = 0; i < addonModel.count; ++i)
-            addonModel.setProperty(i, "checked", value)
+    function confirmSelection() {
+        _pendingConfirm = {
+            entryId: root.entryId,
+            entryTitle: root.entryTitle,
+            ids: root.allAddonIds()
+        }
+        close()
+    }
+
+    onClosed: {
+        const pending = _pendingConfirm
+        _pendingConfirm = null
+        if (!pending)
+            return
+        root.confirmed(pending.entryId, pending.entryTitle, pending.ids)
+    }
+
+    Connections {
+        target: Core
+        function onCatalogAddonsReady(id) {
+            if (!root.waitingAddons || id !== root.entryId)
+                return
+            root.waitingAddons = false
+            root.populateFromCatalog()
+            if (addonModel.count === 0) {
+                const details = Core.entryDetails(id)
+                if ((details.addonCount || 0) > 0)
+                    return
+                _pendingConfirm = {
+                    entryId: root.entryId,
+                    entryTitle: root.entryTitle,
+                    ids: []
+                }
+                if (root.opened) {
+                    root.close()
+                } else {
+                    const pending = _pendingConfirm
+                    _pendingConfirm = null
+                    root.confirmed(pending.entryId, pending.entryTitle, pending.ids)
+                }
+            }
+        }
     }
 
     ListModel {
@@ -52,15 +213,24 @@ MD.BottomSheet {
     }
 
     ColumnLayout {
+        id: sheetBody
         width: root.sheetWidth
         spacing: MD.Token.spacing.medium
+        // Cap to the overlay so BottomSheet Flickable2 has no scroll range to steal.
+        readonly property real availableHeight: {
+            const w = Window.window
+            if (!w)
+                return 640
+            return Math.max(280, w.height - root.topMargin - 48)
+        }
+        height: Math.min(implicitHeight, availableHeight)
 
         MD.Label {
             Layout.fillWidth: true
             Layout.leftMargin: MD.Token.spacing.large
             Layout.rightMargin: MD.Token.spacing.large
             Layout.topMargin: MD.Token.spacing.medium
-            text: qsTr("Add-ons")
+            text: qsTr("DLC")
             typescale: MD.Token.typescale.headline_medium
         }
 
@@ -68,128 +238,177 @@ MD.BottomSheet {
             Layout.fillWidth: true
             Layout.leftMargin: MD.Token.spacing.large
             Layout.rightMargin: MD.Token.spacing.large
-            text: entryTitle.length
-                  ? Messages.addonsSelectionHint.arg(entryTitle)
-                  : qsTr("Choose add-ons to download together with the game.")
+            text: root.sizeNotice
+            color: MD.Token.color.on_surface
+            typescale: MD.Token.typescale.title_small
+            wrapMode: Text.WordWrap
+        }
+
+        MD.Label {
+            Layout.fillWidth: true
+            Layout.leftMargin: MD.Token.spacing.large
+            Layout.rightMargin: MD.Token.spacing.large
+            visible: !root.waitingAddons && addonModel.count > 0
+            text: qsTr("%n DLC included", "", addonModel.count)
+            color: MD.Token.color.on_surface_variant
+            typescale: MD.Token.typescale.body_small
+        }
+
+        MD.BusyIndicator {
+            Layout.alignment: Qt.AlignHCenter
+            Layout.topMargin: MD.Token.spacing.large
+            Layout.bottomMargin: MD.Token.spacing.large
+            Layout.preferredHeight: root.waitingAddons ? 120 : 0
+            visible: root.waitingAddons
+            running: root.waitingAddons
+        }
+
+        MD.Label {
+            Layout.fillWidth: true
+            Layout.leftMargin: MD.Token.spacing.large
+            Layout.rightMargin: MD.Token.spacing.large
+            visible: !root.waitingAddons && addonModel.count === 0
+            text: qsTr("No Steam DLC found for this game.")
             color: MD.Token.color.on_surface_variant
             typescale: MD.Token.typescale.body_medium
             wrapMode: Text.WordWrap
         }
 
-        RowLayout {
+        ListView {
+            id: addonList
             Layout.fillWidth: true
+            Layout.fillHeight: true
             Layout.leftMargin: MD.Token.spacing.large
             Layout.rightMargin: MD.Token.spacing.large
+            Layout.minimumHeight: root.waitingAddons ? 0 : 160
+            Layout.preferredHeight: root.waitingAddons
+                                    ? 0
+                                    : Math.min(400, Math.max(160, addonModel.count * 118))
+            visible: !root.waitingAddons && addonModel.count > 0
+            clip: true
             spacing: MD.Token.spacing.small
+            boundsBehavior: Flickable.StopAtBounds
+            interactive: !vScroll.pressed
+            reuseItems: true
+            cacheBuffer: height * 2
+            model: addonModel
+            readonly property real scrollGutter: contentHeight > height
+                                                ? MD.Token.spacing.medium + 4
+                                                : 0
 
-            MD.Button {
-                mdState.type: MD.Enum.BtText
-                text: qsTr("All")
-                onClicked: root.setAllChecked(true)
+            ScrollBar.vertical: MD.ScrollBar {
+                id: vScroll
+                policy: ScrollBar.AsNeeded
+                interactive: true
             }
 
-            MD.Button {
-                mdState.type: MD.Enum.BtText
-                text: qsTr("Deselect")
-                onClicked: root.setAllChecked(false)
-            }
+            delegate: Rectangle {
+                id: addonRow
+                required property int index
+                required property string addonId
+                required property string title
+                required property string subtitle
+                required property string coverUrl
+                required property var screenshotUrls
 
-            Item { Layout.fillWidth: true }
-        }
-
-        ColumnLayout {
-            Layout.fillWidth: true
-            Layout.leftMargin: MD.Token.spacing.large
-            Layout.rightMargin: MD.Token.spacing.large
-            spacing: MD.Token.spacing.small
-
-            Repeater {
-                model: addonModel
-
-                Rectangle {
-                    id: addonRow
-                    required property string addonId
-                    required property string title
-                    required property string subtitle
-                    required property bool optional
-                    required property bool checked
-
-                    Layout.fillWidth: true
-                    radius: MD.Token.shape.corner.large
-                    color: addonRow.checked
-                           ? MD.Util.transparent(MD.Token.color.primary, 0.08)
-                           : MD.Token.color.surface_container
-                    border.width: 1
-                    border.color: addonRow.checked
-                                ? MD.Token.color.primary
-                                : MD.Token.color.outline_variant
-                    implicitHeight: row.implicitHeight + MD.Token.spacing.medium * 2
-
-                    property int rowIndex: {
-                        for (let i = 0; i < addonModel.count; ++i) {
-                            if (addonModel.get(i).addonId === addonRow.addonId)
-                                return i
-                        }
-                        return -1
+                readonly property var shots: {
+                    const raw = addonRow.screenshotUrls
+                    if (raw === undefined || raw === null)
+                        return []
+                    if (Array.isArray(raw))
+                        return raw
+                    const len = raw.length !== undefined ? raw.length : 0
+                    const out = []
+                    for (let i = 0; i < len; ++i) {
+                        const u = String(raw[i] || "")
+                        if (u.length)
+                            out.push(u)
                     }
+                    return out
+                }
+
+                width: Math.max(0, addonList.width - addonList.scrollGutter)
+                radius: MD.Token.shape.corner.large
+                color: MD.Token.color.surface_container
+                border.width: 1
+                border.color: MD.Token.color.outline_variant
+                implicitHeight: col.implicitHeight + MD.Token.spacing.medium * 2
+                height: implicitHeight
+
+                ColumnLayout {
+                    id: col
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    anchors.margins: MD.Token.spacing.medium
+                    spacing: MD.Token.spacing.small
 
                     RowLayout {
-                        id: row
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.top: parent.top
-                        anchors.margins: MD.Token.spacing.medium
+                        Layout.fillWidth: true
                         spacing: MD.Token.spacing.small
 
-                        MD.CheckBox {
-                            checked: addonRow.checked
-                            onToggled: {
-                                if (addonRow.rowIndex >= 0)
-                                    addonModel.setProperty(addonRow.rowIndex, "checked", checked)
+                        Rectangle {
+                            Layout.preferredWidth: 96
+                            Layout.preferredHeight: 54
+                            radius: MD.Token.shape.corner.small
+                            color: MD.Token.color.surface_container_highest
+                            clip: true
+
+                            Image {
+                                anchors.fill: parent
+                                source: addonRow.coverUrl
+                                fillMode: Image.PreserveAspectCrop
+                                asynchronous: true
+                                cache: true
                             }
                         }
 
-                        Item {
+                        ColumnLayout {
                             Layout.fillWidth: true
-                            implicitHeight: textCol.implicitHeight
+                            spacing: 2
 
-                            ColumnLayout {
-                                id: textCol
-                                anchors.fill: parent
-                                spacing: 2
-
-                                RowLayout {
-                                    Layout.fillWidth: true
-                                    spacing: MD.Token.spacing.small
-
-                                    MD.Label {
-                                        Layout.fillWidth: true
-                                        text: title
-                                        typescale: MD.Token.typescale.title_small
-                                        wrapMode: Text.WordWrap
-                                    }
-
-                                    MD.AssistChip {
-                                        visible: optional
-                                        text: qsTr("Optional")
-                                    }
-                                }
-
-                                MD.Label {
-                                    Layout.fillWidth: true
-                                    text: subtitle
-                                    color: MD.Token.color.on_surface_variant
-                                    typescale: MD.Token.typescale.body_small
-                                    wrapMode: Text.WordWrap
-                                }
+                            MD.Label {
+                                Layout.fillWidth: true
+                                text: title
+                                typescale: MD.Token.typescale.title_small
+                                wrapMode: Text.WordWrap
                             }
 
-                            MouseArea {
-                                anchors.fill: parent
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: {
-                                    if (addonRow.rowIndex >= 0)
-                                        addonModel.setProperty(addonRow.rowIndex, "checked", !addonRow.checked)
+                            MD.Label {
+                                Layout.fillWidth: true
+                                visible: subtitle.length > 0
+                                text: subtitle
+                                color: MD.Token.color.on_surface_variant
+                                typescale: MD.Token.typescale.body_small
+                                wrapMode: Text.WordWrap
+                            }
+                        }
+                    }
+
+                    Row {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: addonRow.shots.length > 0 ? 72 : 0
+                        visible: addonRow.shots.length > 0
+                        spacing: MD.Token.spacing.extra_small
+                        clip: true
+
+                        Repeater {
+                            model: addonRow.shots
+
+                            Rectangle {
+                                required property string modelData
+                                width: 128
+                                height: 72
+                                radius: MD.Token.shape.corner.small
+                                color: MD.Token.color.surface_container_highest
+                                clip: true
+
+                                Image {
+                                    anchors.fill: parent
+                                    source: modelData
+                                    fillMode: Image.PreserveAspectCrop
+                                    asynchronous: true
+                                    cache: true
                                 }
                             }
                         }
@@ -202,26 +421,22 @@ MD.BottomSheet {
             Layout.fillWidth: true
             Layout.leftMargin: MD.Token.spacing.large
             Layout.rightMargin: MD.Token.spacing.large
-            Layout.bottomMargin: MD.Token.spacing.medium
+            Layout.bottomMargin: MD.Token.spacing.large
             spacing: MD.Token.spacing.small
 
+            Item { Layout.fillWidth: true }
+
             MD.Button {
-                Layout.fillWidth: true
-                mdState.type: MD.Enum.BtText
                 text: qsTr("Cancel")
+                mdState.type: MD.Enum.BtText
                 onClicked: root.close()
             }
 
             MD.Button {
-                Layout.fillWidth: true
+                text: qsTr("Continue")
                 mdState.type: MD.Enum.BtFilled
-                text: qsTr("Next")
-                enabled: root.entryId.length > 0
-                onClicked: {
-                    const ids = root.selectedAddonIds()
-                    root.confirmed(root.entryId, root.entryTitle, ids)
-                    root.close()
-                }
+                enabled: !root.waitingAddons
+                onClicked: root.confirmSelection()
             }
         }
     }

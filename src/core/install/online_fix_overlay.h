@@ -7,15 +7,15 @@
 
 namespace arachnel::core {
 
-/** On-disk SteamFix / winmm overlay next to a game install. */
+/** On-disk Online Fix (SteamFix / winmm, or older valve steam_api backups). */
 struct OnlineFixOverlayState {
-    bool present = false;  // active or disabled overlay files found
-    bool enabled = false;  // winmm/SteamFix DLLs are active (not renamed off)
+    bool present = false;  // active or disabled overlay / marker found
+    bool enabled = false;  // overlay DLLs active (not renamed *.arachnel-off)
     QString overlayDir;
 };
 
 OnlineFixOverlayState detectOnlineFixOverlay(const QString& installPath);
-/** Enable/disable by renaming overlay DLLs (*.arachnel-off). Returns false on I/O error. */
+/** Enable/disable Online Fix (SteamFix rename, or marker + Valve restore for old embeds). */
 bool setOnlineFixOverlayEnabled(const QString& installPath, bool enabled, QString* error = nullptr);
 /** Labels + flags for Game Settings / entryDetails. */
 QVariantMap onlineFixOverlayInfo(const QString& installPath);

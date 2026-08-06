@@ -78,7 +78,7 @@ public:
      *  Empty roles → cover/metadata/players only (not all roles — avoids QML rebinding
      *  screenshotUrls/description on every cover apply). */
     bool notifyEntryChanged(const QString& id, const QList<int>& roles = {});
-    int indexOfEntry(const QString& id) const;
+    Q_INVOKABLE int indexOfEntry(const QString& id) const;
     const CatalogEntry* entryById(const QString& id) const;
     Q_INVOKABLE QVariantMap entryInfo(const QString& id) const;
     Q_INVOKABLE QVariantList addonsFor(const QString& entryId) const;

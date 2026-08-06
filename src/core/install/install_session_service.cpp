@@ -3,6 +3,7 @@
 #include "install_analyzer.h"
 #include "job_model.h"
 #include "job_orchestrator.h"
+#include "job_status.h"
 #include "job_store.h"
 #include "plugin_host.h"
 #include "proton_manager.h"
@@ -144,14 +145,22 @@ void InstallSessionService::beginInstallSession(const QString& entryId, const QS
     m_installSelectedAddons.insert(entryId, addonIds);
 }
 
-void InstallSessionService::syncInstallSessionPhase(const QString& entryId)
+void InstallSessionService::syncInstallSessionPhase(const QString& entryId, const QString& stepTitle)
 {
     const auto it = m_installSessions.constFind(entryId);
     if (it == m_installSessions.cend() || it->gameJobId.isEmpty())
         return;
-    m_jobOrchestrator->setJobPhase(
-        it->gameJobId, QStringLiteral("installing"),
-        QStringLiteral("Installing (%1/%2)").arg(qMax(1, it->installStep)).arg(qMax(1, it->installTotal)));
+    QString title = stepTitle;
+    if (title.isEmpty()) {
+        if (const CatalogEntry* entry = m_hooks.findCatalogEntry(entryId))
+            title = entry->title;
+    }
+    const int step = qMax(1, it->installStep);
+    const int total = qMax(1, it->installTotal);
+    const QString detail = title.isEmpty()
+                               ? QStringLiteral("Installing (%1/%2)").arg(step).arg(total)
+                               : QStringLiteral("Installing (%1/%2) - %3").arg(step).arg(total).arg(title);
+    m_jobOrchestrator->setJobPhase(it->gameJobId, QStringLiteral("installing"), detail);
 }
 
 void InstallSessionService::advanceInstallSession(const QString& entryId)
@@ -160,8 +169,10 @@ void InstallSessionService::advanceInstallSession(const QString& entryId)
     if (it == m_installSessions.end() || !it->gameInstallDone)
         return;
     const CatalogEntry* parent = m_hooks.findCatalogEntry(entryId);
-    if (!parent || !m_hooks.isEntryPlayable(entryId))
+    if (!parent)
         return;
+    // Don't require isEntryPlayable here: job may still be settling, and Steam DLC
+    // has no separate artifact - mark selected ids as soon as the game is committed.
 
     int installedCount = 1;
     for (const QString& addonId : it->selectedAddonIds) {
@@ -171,14 +182,44 @@ void InstallSessionService::advanceInstallSession(const QString& entryId)
     for (const QString& addonId : it->selectedAddonIds) {
         if (m_hooks.isAddonInstalled(entryId, addonId))
             continue;
-        const QString artifactPath = m_hooks.addonArtifactPath(entryId, addonId);
-        if (artifactPath.isEmpty())
-            return;
         const CatalogComponent* addon = m_hooks.findCatalogAddon(*parent, addonId);
-        if (!addon)
-            continue;
+        const bool hasHttp =
+            addon
+            && ((!addon->downloadUrl.isEmpty()
+                 && addon->downloadUrl.startsWith(QStringLiteral("http"), Qt::CaseInsensitive))
+                || (!addon->magnetUris.isEmpty()
+                    && addon->magnetUris.first().startsWith(QStringLiteral("http"),
+                                                           Qt::CaseInsensitive)));
+        const bool hasMagnet =
+            addon && !addon->magnetUris.isEmpty()
+            && addon->magnetUris.first().startsWith(QStringLiteral("magnet:"), Qt::CaseInsensitive);
         it->installStep = installedCount + 1;
-        syncInstallSessionPhase(entryId);
+        const QString stepTitle =
+            (addon && !addon->title.isEmpty()) ? addon->title : addonId;
+        syncInstallSessionPhase(entryId, stepTitle);
+        if (!addon || (!hasHttp && !hasMagnet)) {
+            // Owns_download / Steam DLC (or catalog row missing): already on disk with the game.
+            m_hooks.markAddonInstalled(entryId, addonId, addon ? addon->uploadDate : QString());
+            ++installedCount;
+            continue;
+        }
+        const QString artifactPath = m_hooks.addonArtifactPath(entryId, addonId);
+        if (artifactPath.isEmpty()) {
+            bool addonJobActive = false;
+            for (const JobEntry& job : m_jobStore->jobs()) {
+                if (job.parentEntryId == entryId && job.entryId == addonId
+                    && !isJobTerminal(job.status)) {
+                    addonJobActive = true;
+                    break;
+                }
+            }
+            if (addonJobActive)
+                return;
+            // Stalled addon (no file, no job) - skip so the parent job can finish.
+            m_hooks.markAddonInstalled(entryId, addonId, addon ? addon->uploadDate : QString());
+            ++installedCount;
+            continue;
+        }
         startPluginAddonInstall(*parent, *addon, it->sourceId, artifactPath, it->gameJobId,
                                 [this, entryId](bool success) {
                                     if (!success)

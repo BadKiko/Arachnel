@@ -114,14 +114,17 @@ void CoreController::ensureLibraryPlaceholder(const CatalogEntry& entry, const Q
     QVector<InstalledComponent> components;
     components.reserve(entry.addons.size());
     for (const auto& addon : entry.addons) {
-        if (!selectedAddons.isEmpty() && !selectedAddons.contains(addon.id))
+        // Empty selection = no DLC this install. Do not invent "all addons enabled".
+        if (!selectedAddons.contains(addon.id))
             continue;
 
         bool installed = false;
+        bool enabled = true;
         if (existing) {
             for (const auto& component : existing->components) {
                 if (component.id == addon.id) {
                     installed = component.installed;
+                    enabled = component.enabled;
                     break;
                 }
             }
@@ -132,7 +135,20 @@ void CoreController::ensureLibraryPlaceholder(const CatalogEntry& entry, const Q
         component.title = addon.title;
         component.uploadDate = addon.uploadDate;
         component.installed = installed;
+        component.enabled = enabled;
         components.append(component);
+    }
+    // Keep previously installed DLC rows that were not in this selection.
+    if (existing) {
+        QSet<QString> have;
+        for (const InstalledComponent& c : components)
+            have.insert(c.id);
+        for (const InstalledComponent& c : existing->components) {
+            if (!c.installed || have.contains(c.id))
+                continue;
+            components.append(c);
+            have.insert(c.id);
+        }
     }
     game.components = components;
 
@@ -193,6 +209,10 @@ bool CoreController::restartPluginOwnedDownload(const QString& jobId)
     ctx.installKind = entry.installKind;
     // Empty = resume/continue; "update" forces verify. Never treat retry as brand-new skip.
     ctx.installMode = isUpdate ? QStringLiteral("update") : QString();
+    if (existing) {
+        for (const InstalledComponent& c : existing->components)
+            ctx.selectedAddonIds.append(c.id);
+    }
 
     m_pluginHost->runOwnedDownloadAsync(
         plugin, ctx,
@@ -232,7 +252,12 @@ void CoreController::restoreLibraryPlaceholders()
         if (!entry)
             continue;
 
-        ensureLibraryPlaceholder(*entry, job.libraryId);
+        QStringList selected;
+        if (const LibraryGame* g = m_libraryStore.gameById(entry->id)) {
+            for (const InstalledComponent& c : g->components)
+                selected.append(c.id);
+        }
+        ensureLibraryPlaceholder(*entry, job.libraryId, selected);
     }
 }
 
@@ -412,6 +437,19 @@ void CoreController::setGameOnlineFixEnabled(const QString& entryId, bool enable
 {
     if (m_libraryController)
         m_libraryController->setGameOnlineFixEnabled(entryId, enabled);
+}
+
+void CoreController::setGameAddonEnabled(const QString& entryId, const QString& addonId,
+                                         bool enabled)
+{
+    if (m_libraryController)
+        m_libraryController->setGameAddonEnabled(entryId, addonId, enabled);
+}
+
+void CoreController::healInstalledAddons(const QString& entryId)
+{
+    if (m_libraryController)
+        m_libraryController->healInstalledAddons(entryId);
 }
 
 } // namespace arachnel::core

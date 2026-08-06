@@ -14,6 +14,8 @@ struct InstalledComponent {
     QString title;
     QString uploadDate;
     bool installed = false;
+    /** Unlock for the game (steamidra lua). Off keeps files on disk. */
+    bool enabled = true;
 };
 
 struct LibraryGame {

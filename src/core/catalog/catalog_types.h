@@ -31,10 +31,29 @@ struct CatalogComponent {
     QString getfileUrl;
     QString fileSize;
     QString uploadDate;
+    /** Store header / capsule art for the DLC picker. */
+    QString coverUrl;
+    /** Store screenshots (full-size URLs) for the DLC picker. */
+    QStringList screenshotUrls;
     CatalogItemKind kind = CatalogItemKind::Dlc;
     ComponentDelivery delivery = ComponentDelivery::Magnet;
     bool optional = false;
+    /** False when the source has no content/manifest for this DLC yet. */
+    bool contentAvailable = true;
 };
+
+/** True for Store DLC ids only: `steam-{digits}`. Rejects `steam-227300-fix-….zip` junk. */
+inline bool isSteamStoreDlcId(const QString& id)
+{
+    if (!id.startsWith(QLatin1String("steam-")))
+        return false;
+    const QString appId = id.mid(6);
+    if (appId.isEmpty())
+        return false;
+    bool ok = false;
+    appId.toLongLong(&ok);
+    return ok;
+}
 
 struct CatalogEntry {
     QString id;
@@ -60,6 +79,10 @@ struct CatalogEntry {
     CatalogItemKind itemKind = CatalogItemKind::Game;
     QVector<CatalogComponent> addons;
     bool metadataPending = false;
+    /** Steam Workshop support (store category 30); from relay catalog when known. */
+    bool hasWorkshop = false;
+    /** Relay `dlcCount` / `dlc[]` length. Full DLC rows load on demand via /dlcs. */
+    int dlcCount = 0;
 
     // Precomputed for filter/sort hot paths (filled by prepareCatalogEntry).
     QString titleLower;
