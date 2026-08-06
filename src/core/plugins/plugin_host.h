@@ -71,7 +71,7 @@ public:
     void cancelOwnedDownload(const QString& pluginId, const QString& jobId);
     void setOwnedDownloadPaused(const QString& pluginId, const QString& jobId, bool paused);
 
-    /** Called immediately before unloadAll during install/uninstall (wait for catalog futures). */
+    /** Called immediately before unloading plugin DLLs (wait for catalog futures). */
     void setBeforeUnloadHook(std::function<void()> hook);
 
     static QStringList pluginSearchRoots();
@@ -86,6 +86,8 @@ signals:
 
 private:
     bool loadPluginDir(const QString& dirPath);
+    /** Load one plugin id from disk search roots (no unloadAll). */
+    bool loadPluginById(const QString& pluginId);
     void unloadAll();
     /** Drop one loaded plugin (DLL unlock for replace/uninstall). */
     void unloadPlugin(const QString& pluginId);
@@ -97,6 +99,7 @@ private:
     QHash<QString, LoadedPlugin*> m_plugins;
     QString m_lastError;
     std::function<void()> m_beforeUnload;
+    int m_scanDepth = 0;
 };
 
 } // namespace arachnel::core

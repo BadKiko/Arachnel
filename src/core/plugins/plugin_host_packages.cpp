@@ -266,7 +266,10 @@ bool PluginHost::installFromArach(const QString& archivePath)
                 if (!copyError.isEmpty())
                     m_lastError += QStringLiteral(": ") + copyError;
                 removePathRecursive(stagingRoot);
-                scan();
+                if (!loadPluginById(id))
+                    logDiagnostic(QStringLiteral("Plugin restore after failed replace: %1 not loaded")
+                                      .arg(id));
+                emit pluginsChanged();
                 return false;
             }
         }
@@ -280,7 +283,10 @@ bool PluginHost::installFromArach(const QString& archivePath)
             removePathRecursive(stagingRoot);
             if (QDir(backupRoot).exists())
                 QDir().rename(backupRoot, targetRoot);
-            scan();
+            if (!loadPluginById(id))
+                logDiagnostic(QStringLiteral("Plugin restore after failed install: %1 not loaded")
+                                  .arg(id));
+            emit pluginsChanged();
             return false;
         }
         removePathRecursive(stagingRoot);
@@ -288,17 +294,20 @@ bool PluginHost::installFromArach(const QString& archivePath)
 
     removePathRecursive(backupRoot);
 
-    scan();
-    if (!hasPlugin(id)) {
+    // Only reload this plugin - full scan() would unloadAll() and tear down every other
+    // source (FreeTP CatalogEntry dtor / UAF; issues #25-27, #29).
+    if (!loadPluginDir(targetRoot)) {
         m_lastError = QCoreApplication::translate(
             "Core",
             "Plugin files were copied but the library failed to load. Rebuild the plugin for "
             "your Arachnel version and this OS, then reinstall.");
         if (!g_lastPluginLoadError.isEmpty())
             m_lastError += QStringLiteral(" (") + g_lastPluginLoadError + QLatin1Char(')');
+        emit pluginsChanged();
         return false;
     }
 
+    emit pluginsChanged();
     return true;
 }
 
@@ -363,7 +372,9 @@ bool PluginHost::uninstallPlugin(const QString& pluginId)
             m_lastError = QCoreApplication::translate("Core", "Could not delete plugin files");
             if (!err.isEmpty())
                 m_lastError += QStringLiteral(": ") + err;
-            scan();
+            // Best-effort: files may still be there; try loading again.
+            loadPluginById(id);
+            emit pluginsChanged();
             return false;
         }
         removedAny = true;
@@ -371,11 +382,11 @@ bool PluginHost::uninstallPlugin(const QString& pluginId)
 
     if (!removedAny) {
         m_lastError = QCoreApplication::translate("Core", "Plugin is not installed");
-        scan();
+        emit pluginsChanged();
         return false;
     }
 
-    scan();
+    emit pluginsChanged();
     return true;
 }
 

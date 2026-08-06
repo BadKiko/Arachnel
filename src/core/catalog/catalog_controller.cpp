@@ -1033,16 +1033,23 @@ void CatalogController::waitForInFlightPluginCatalogLoads()
 {
     m_catalogPrefetchQueue.clear();
 
+    // List holds QFutureWatcher<PluginCatalogLoad|DiskCatalogLoad|QVector<...>>.
+    // Waiting only on QVector skipped real plugin loads (unload race, #29).
     const QList<QObject*> watchers = m_inFlightPluginCatalogWatchers;
+    m_inFlightPluginCatalogWatchers.clear();
     for (QObject* obj : watchers) {
-        auto* watcher = dynamic_cast<QFutureWatcher<QVector<CatalogEntry>>*>(obj);
-        if (!watcher)
+        auto* base = dynamic_cast<QFutureWatcherBase*>(obj);
+        if (!base)
             continue;
-        QObject::disconnect(watcher, &QFutureWatcher<QVector<CatalogEntry>>::finished, this,
-                            nullptr);
-        watcher->waitForFinished();
-        m_inFlightPluginCatalogWatchers.removeAll(watcher);
-        watcher->deleteLater();
+        QObject::disconnect(obj, nullptr, this, nullptr);
+        base->waitForFinished();
+        obj->deleteLater();
+    }
+
+    if (!m_loadingSourceIds.isEmpty()) {
+        m_loadingSourceIds.clear();
+        m_catalogHttpLoadActive = false;
+        updateCatalogLoadingState();
     }
 }
 

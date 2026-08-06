@@ -401,12 +401,14 @@ bool CoreController::ensureCatalogAddons(const QString& entryId)
 
     const bool steamCdn = sourceId == QStringLiteral("steamidra");
     // steamidra: skip only when relay already filled real titles. Otherwise hit /dlcs.
-    // Other sources: keep existing feed addons; only enrich when empty.
-    if (steamCdn && steamDlcLooksComplete) {
+    // Other sources: host cache already has the JSON-parsed row. Do not call
+    // plugin->entryById - it still returns CatalogEntry across the DLL (API 4 only
+    // JSON'd catalog()), which crashes on layout mismatch (FreeTP, issue #29).
+    if (!steamCdn) {
         emit catalogAddonsReady(resolved);
         return true;
     }
-    if (!steamCdn && hasAnyAddons) {
+    if (steamDlcLooksComplete) {
         emit catalogAddonsReady(resolved);
         return true;
     }
@@ -421,7 +423,7 @@ bool CoreController::ensureCatalogAddons(const QString& entryId)
     }
 
     m_catalogAddonEnrichInFlight.insert(resolved);
-    (void)QtConcurrent::run([this, plugin, resolved, idx, steamCdn]() {
+    (void)QtConcurrent::run([this, plugin, resolved, idx]() {
         QVector<CatalogComponent> addons;
         bool hasWorkshop = false;
         if (const auto enriched = plugin->entryById(resolved)) {
@@ -431,25 +433,21 @@ bool CoreController::ensureCatalogAddons(const QString& entryId)
 
         QMetaObject::invokeMethod(
             this,
-            [this, resolved, idx, addons, steamCdn, hasWorkshop]() {
+            [this, resolved, idx, addons, hasWorkshop]() {
                 m_catalogAddonEnrichInFlight.remove(resolved);
                 {
                     QWriteLocker locker(&m_catalogCacheLock);
                     if (idx >= 0 && idx < m_catalogCache.size()
                         && m_catalogCache[idx].id == resolved) {
-                        // steamidra: replace junk/empty with Store/relay DLC. Others: fill only if empty.
-                        if (steamCdn || m_catalogCache[idx].addons.isEmpty())
-                            m_catalogCache[idx].addons = addons;
-                        if (steamCdn) {
-                            m_catalogCache[idx].hasWorkshop = hasWorkshop;
-                            int n = 0;
-                            for (const CatalogComponent& c : addons) {
-                                if (isSteamStoreDlcId(c.id))
-                                    ++n;
-                            }
-                            if (n > 0)
-                                m_catalogCache[idx].dlcCount = n;
+                        m_catalogCache[idx].addons = addons;
+                        m_catalogCache[idx].hasWorkshop = hasWorkshop;
+                        int n = 0;
+                        for (const CatalogComponent& c : addons) {
+                            if (isSteamStoreDlcId(c.id))
+                                ++n;
                         }
+                        if (n > 0)
+                            m_catalogCache[idx].dlcCount = n;
                     }
                 }
                 m_catalog.notifyEntryChanged(resolved);

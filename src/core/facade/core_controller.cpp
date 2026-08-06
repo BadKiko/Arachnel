@@ -193,6 +193,10 @@ CoreController::CoreController(QObject* parent)
     connect(m_pluginHost, &PluginHost::pluginsChanged, this, [this]() {
         syncSourcesFromPlugins();
         pruneDisabledCatalogSources();
+        // Install/uninstall aborts in-flight catalog workers; kick loads for any
+        // active source that never made it into m_catalogBySource.
+        if (m_catalogController)
+            m_catalogController->rebuildMergedCatalog();
         reconcileJobInstallState();
         emit pluginsChanged();
     });

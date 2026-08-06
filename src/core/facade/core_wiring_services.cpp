@@ -441,22 +441,8 @@ void CoreController::initializeServices()
 
                     CatalogEntry resolved = *entry;
                     if (kind == JobKind::Update) {
-                        // Prefer plugin live entry over a possibly stale merged cache.
-                        if (ISourcePlugin* plugin =
-                                m_pluginHost ? m_pluginHost->plugin(sourceId) : nullptr) {
-                            if (const auto live = plugin->entryById(entryId)) {
-                                if (!live->version.isEmpty()
-                                    && (resolved.version.isEmpty()
-                                        || live->version > resolved.version))
-                                    resolved.version = live->version;
-                                if (!live->uploadDate.isEmpty()
-                                    && (resolved.uploadDate.isEmpty()
-                                        || live->uploadDate > resolved.uploadDate))
-                                    resolved.uploadDate = live->uploadDate;
-                                if (resolved.steamAppId.isEmpty() && !live->steamAppId.isEmpty())
-                                    resolved.steamAppId = live->steamAppId;
-                            }
-                        }
+                        // Prefer job expected markers / merged cache over plugin->entryById
+                        // (CatalogEntry still crosses the DLL on API 4).
                         if (!job->expectedVersion.isEmpty()
                             && (resolved.version.isEmpty()
                                 || job->expectedVersion > resolved.version))

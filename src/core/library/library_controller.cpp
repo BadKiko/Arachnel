@@ -8,7 +8,6 @@
 #include "install_marker.h"
 #include "job_status.h"
 #include "job_store.h"
-#include "launch_resolver.h"
 #include "library_store.h"
 #include "online_fix_overlay.h"
 #include "plugin_host.h"
@@ -56,15 +55,22 @@ bool LibraryController::isEntryPlayable(const QString& entryId) const
     }
     if (!game || game->installPath.isEmpty() || !QFileInfo::exists(game->installPath))
         return false;
-    LaunchInfo info;
-    if (m_plugins) {
-        if (ISourcePlugin* plugin = m_plugins->plugin(game->sourceId))
-            info = plugin->launchInfo(*game);
+
+    // Never call plugin->launchInfo here. QML binds isEntryPlayable / entryDetails on every
+    // frame; steamidra launchInfo walks the install tree and repairs Online Fix - UI hangs.
+    const QString overridePath = game->executableOverride.trimmed();
+    if (!overridePath.isEmpty())
+        return QFileInfo::exists(overridePath);
+
+    // Steamidra can launch via steam://rungameid - skip expensive tree walks on bind.
+    if (game->sourceId == QStringLiteral("steamidra")) {
+        if (!game->steamAppId.trimmed().isEmpty())
+            return true;
+        if (game->id.startsWith(QStringLiteral("steam-")) && game->id.size() > 6)
+            return true;
     }
-    if (info.executable.isEmpty() && game->executableOverride.trimmed().isEmpty())
-        info.executable = findGameExecutableInTree(game->installPath);
-    const ResolvedLaunch resolved = resolveLaunch(info, *game, *m_settings);
-    return !resolved.program.isEmpty() && QFileInfo::exists(resolved.program);
+
+    return !findGameExecutableInTree(game->installPath).isEmpty();
 }
 
 bool LibraryController::isEntryDownloadComplete(const QString& entryId) const

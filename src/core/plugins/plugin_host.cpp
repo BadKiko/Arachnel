@@ -162,6 +162,12 @@ void PluginHost::migratePluginTrees()
 
 void PluginHost::scan()
 {
+    if (m_scanDepth > 0) {
+        logDiagnostic(QStringLiteral("Plugin scan skipped (re-entrant)"));
+        return;
+    }
+    ++m_scanDepth;
+
     migratePluginTrees();
     unloadAll();
 
@@ -189,7 +195,23 @@ void PluginHost::scan()
         }
     }
 
+    --m_scanDepth;
     emit pluginsChanged();
+}
+
+bool PluginHost::loadPluginById(const QString& pluginId)
+{
+    if (pluginId.isEmpty() || m_plugins.contains(pluginId))
+        return m_plugins.contains(pluginId);
+
+    for (const QString& root : pluginSearchRoots()) {
+        const QString pluginDir = root + QLatin1Char('/') + pluginId;
+        if (!QFileInfo::exists(pluginDir + QStringLiteral("/plugin.json")))
+            continue;
+        if (loadPluginDir(pluginDir))
+            return true;
+    }
+    return false;
 }
 
 QString PluginHost::resolveLibraryFile(const QString& pluginDir, const QString& libraryBase)

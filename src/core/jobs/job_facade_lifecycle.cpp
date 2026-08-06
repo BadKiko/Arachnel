@@ -175,24 +175,8 @@ std::optional<CatalogEntry> CoreController::resolveCatalogEntry(const QString& e
         return entry;
     }
 
-    if (ISourcePlugin* plugin = m_pluginHost->plugin(sourceId)) {
-        if (const auto remote = plugin->entryById(entryId)) {
-            CatalogEntry entry = *remote;
-            if (jobHint) {
-                if (!jobHint->expectedVersion.isEmpty()
-                    && (entry.version.isEmpty() || jobHint->expectedVersion > entry.version))
-                    entry.version = jobHint->expectedVersion;
-                if (!jobHint->expectedUploadDate.isEmpty()
-                    && (entry.uploadDate.isEmpty()
-                        || jobHint->expectedUploadDate > entry.uploadDate))
-                    entry.uploadDate = jobHint->expectedUploadDate;
-                if (entry.steamAppId.isEmpty() && !jobHint->expectedSteamAppId.isEmpty())
-                    entry.steamAppId = jobHint->expectedSteamAppId;
-            }
-            enrichFromLibraryAndJob(entry);
-            return entry;
-        }
-    }
+    // Avoid plugin->entryById: CatalogEntry still crosses the DLL on API 4.
+    // Prefer job/library synthetic entry below when the merged cache missed the id.
 
     if (!jobHint)
         return std::nullopt;

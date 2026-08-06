@@ -177,7 +177,7 @@ bool CoreController::uninstallPlugin(const QString& pluginId)
     emit lastPluginErrorChanged();
     if (ok) {
         showNotice(QCoreApplication::translate("Core", "Plugin removed"));
-        // PluginHost::scan() already emits pluginsChanged → syncSourcesFromPlugins.
+        // pluginsChanged already emitted from PluginHost::uninstallPlugin.
     } else {
         showNotice(QCoreApplication::translate("Core", "Could not remove plugin: %1")
                        .arg(m_lastPluginError));
