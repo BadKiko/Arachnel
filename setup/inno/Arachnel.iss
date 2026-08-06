@@ -75,6 +75,12 @@ Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Check: WantStar
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"; Check: WantStartMenuIcon
 Name: "{userdesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Check: WantDesktopIcon
 
+[Registry]
+; Deep link: arachnel://game/<entryId>
+Root: HKCU; Subkey: "Software\Classes\arachnel"; ValueType: string; ValueName: ""; ValueData: "URL:Arachnel Protocol"; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Classes\arachnel"; ValueType: string; ValueName: "URL Protocol"; ValueData: ""
+Root: HKCU; Subkey: "Software\Classes\arachnel\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""
+
 [Run]
 ; In-app update uses /SILENT - relaunch Arachnel when unpack finishes.
 ; Interactive wizard has its own Launch button (skipifnotsilent).

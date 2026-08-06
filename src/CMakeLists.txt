@@ -7,6 +7,7 @@ set(ARACHNEL_APP_SOURCES
     src/app/crash_log_internal.cpp
     src/app/settings_identity.cpp
     src/app/crash_log_report.cpp
+    src/app/deep_link.cpp
 
     src/core/install/install_kind.cpp
     src/core/jobs/job_display.cpp
@@ -86,6 +87,7 @@ set(ARACHNEL_APP_SOURCES
     src/core/catalog/catalog_facade_query.cpp
     src/core/catalog/catalog_facade_install.cpp
     src/core/facade/crash_facade.cpp
+    src/core/facade/share_facade.cpp
     src/core/jobs/job_facade_lifecycle.cpp
     src/core/jobs/job_facade_manual.cpp
     src/core/launch/launch_facade.cpp

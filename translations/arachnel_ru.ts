@@ -622,6 +622,11 @@
         <translation>Компонент</translation>
     </message>
     <message>
+        <location filename="../src/core/facade/share_facade.cpp" line="+30"/>
+        <source>Link copied</source>
+        <translation>Ссылка скопирована</translation>
+    </message>
+    <message>
         <location line="+7"/>
         <source>Direct</source>
         <translation>Прямая</translation>
@@ -2076,6 +2081,11 @@
         <translation>Игра не найдена</translation>
     </message>
     <message>
+        <location line="+15"/>
+        <source>Open sources</source>
+        <translation>К источникам</translation>
+    </message>
+    <message>
         <location line="+67"/>
         <source>DRM</source>
         <translation>DRM</translation>
@@ -2107,6 +2117,11 @@
     </message>
     <message>
         <location line="+23"/>
+        <source>Share</source>
+        <translation>Поделиться</translation>
+    </message>
+    <message>
+        <location line="+7"/>
         <source>Source page</source>
         <translation>Страница на источнике</translation>
     </message>
@@ -2922,6 +2937,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <location line="+2"/>
         <source>Save games from the catalog - download them here later.</source>
         <translation>Добавьте игры из каталога - потом скачаете их отсюда.</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>It may be missing from your sources, or a plugin is outdated. Check Sources in Settings.</source>
+        <translation>Возможно, нет нужного источника или плагин устарел. Проверьте источники в настройках.</translation>
     </message>
     <message>
         <location line="-22"/>

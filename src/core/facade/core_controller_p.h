@@ -113,6 +113,7 @@
     CatalogDiscoveryService* m_catalogDiscovery = nullptr;
     QString m_userNotice;
     int m_userNoticeSerial = 0;
+    QString m_pendingDeepLinkGameId;
     QString m_lastPluginError;
     bool m_runtimeSetupInProgress = false;
     QString m_runtimeSetupGameId;

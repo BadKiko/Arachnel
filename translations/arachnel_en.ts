@@ -622,6 +622,11 @@
         <translation></translation>
     </message>
     <message>
+        <location filename="../src/core/facade/share_facade.cpp" line="+30"/>
+        <source>Link copied</source>
+        <translation></translation>
+    </message>
+    <message>
         <location line="+7"/>
         <source>Direct</source>
         <translation></translation>
@@ -2076,6 +2081,11 @@
         <translation></translation>
     </message>
     <message>
+        <location line="+15"/>
+        <source>Open sources</source>
+        <translation></translation>
+    </message>
+    <message>
         <location line="+67"/>
         <source>DRM</source>
         <translation></translation>
@@ -2106,6 +2116,11 @@
     </message>
     <message>
         <location line="+23"/>
+        <source>Share</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+7"/>
         <source>Source page</source>
         <translation></translation>
     </message>
@@ -2903,6 +2918,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location line="+2"/>
         <source>Save games from the catalog - download them here later.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>It may be missing from your sources, or a plugin is outdated. Check Sources in Settings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

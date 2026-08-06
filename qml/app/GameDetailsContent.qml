@@ -8,65 +8,118 @@ import Qcm.Material as MD
 Item {
     required property var page
 
-    Flickable {
-        id: flick
+    ColumnLayout {
         anchors.fill: parent
-        contentWidth: width
-        contentHeight: contentCol.implicitHeight + MD.Token.spacing.large
-        clip: true
-        boundsBehavior: Flickable.StopAtBounds
+        spacing: 0
 
-        ColumnLayout {
-            id: contentCol
-            width: flick.width
-            spacing: MD.Token.spacing.large
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.leftMargin: MD.Token.spacing.large
+            Layout.rightMargin: MD.Token.spacing.large
+            Layout.topMargin: MD.Token.spacing.medium
+            spacing: MD.Token.spacing.small
 
-            RowLayout {
+            MD.IconButton {
+                mdState.type: MD.Enum.IBtStandard
+                icon.name: MD.Token.icon.arrow_back
+                onClicked: page.backRequested()
+            }
+
+            MD.Label {
                 Layout.fillWidth: true
-                Layout.leftMargin: MD.Token.spacing.large
-                Layout.rightMargin: MD.Token.spacing.large
-                Layout.topMargin: MD.Token.spacing.medium
-                spacing: MD.Token.spacing.small
+                text: qsTr("Game details")
+                typescale: MD.Token.typescale.title_large
+            }
+        }
 
-                MD.IconButton {
-                    mdState.type: MD.Enum.IBtStandard
-                    icon.name: MD.Token.icon.arrow_back
-                    onClicked: page.backRequested()
+        Item {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            visible: !page.gameFound
+
+            ColumnLayout {
+                anchors.centerIn: parent
+                spacing: MD.Token.spacing.medium
+                width: Math.min(parent.width - MD.Token.spacing.large * 2, 420)
+
+                SpiderWebMark {
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.preferredWidth: 160
+                    Layout.preferredHeight: 160
+                    width: 160
+                    height: 160
+                    strokeColor: MD.Token.color.primary
+                    strokeWidth: 2.5
+                    opacity: 0.35
                 }
 
                 MD.Label {
                     Layout.fillWidth: true
-                    text: qsTr("Game details")
+                    horizontalAlignment: Text.AlignHCenter
+                    text: qsTr("Game not found")
                     typescale: MD.Token.typescale.title_large
                 }
-            }
 
-            RowLayout {
-                Layout.fillWidth: true
-                Layout.leftMargin: MD.Token.spacing.large
-                Layout.rightMargin: MD.Token.spacing.large
-                spacing: MD.Token.spacing.large
-
-                GamePoster {
-                    Layout.preferredWidth: 220
-                    Layout.preferredHeight: 293
-                    Layout.alignment: Qt.AlignTop
-                    source: page.info.coverUrl ?? ""
-                    fallbackText: (page.info.title ?? "?").charAt(0)
-                    cornerRadius: MD.Token.shape.corner.extra_large
+                MD.Label {
+                    Layout.fillWidth: true
+                    horizontalAlignment: Text.AlignHCenter
+                    text: Messages.gameNotFoundHint
+                    color: MD.Token.color.on_surface_variant
+                    typescale: MD.Token.typescale.body_medium
+                    wrapMode: Text.WordWrap
                 }
 
-                ColumnLayout {
-                    Layout.fillWidth: true
-                    Layout.alignment: Qt.AlignTop
-                    spacing: MD.Token.spacing.medium
+                MD.Button {
+                    Layout.alignment: Qt.AlignHCenter
+                    text: qsTr("Open sources")
+                    icon.name: MD.Token.icon.storefront
+                    mdState.type: MD.Enum.BtFilled
+                    onClicked: page.openSourcesRequested()
+                }
+            }
+        }
 
-                    MD.Label {
-                        Layout.fillWidth: true
-                        text: page.info.title ?? qsTr("Game not found")
-                        typescale: MD.Token.typescale.headline_medium
-                        wrapMode: Text.WordWrap
+        Flickable {
+            id: flick
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            visible: page.gameFound
+            contentWidth: width
+            contentHeight: contentCol.implicitHeight + MD.Token.spacing.large
+            clip: true
+            boundsBehavior: Flickable.StopAtBounds
+
+            ColumnLayout {
+                id: contentCol
+                width: flick.width
+                spacing: MD.Token.spacing.large
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    Layout.leftMargin: MD.Token.spacing.large
+                    Layout.rightMargin: MD.Token.spacing.large
+                    spacing: MD.Token.spacing.large
+
+                    GamePoster {
+                        Layout.preferredWidth: 220
+                        Layout.preferredHeight: 293
+                        Layout.alignment: Qt.AlignTop
+                        source: page.info.coverUrl ?? ""
+                        fallbackText: (page.info.title ?? "?").charAt(0)
+                        cornerRadius: MD.Token.shape.corner.extra_large
                     }
+
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        Layout.alignment: Qt.AlignTop
+                        spacing: MD.Token.spacing.medium
+
+                        MD.Label {
+                            Layout.fillWidth: true
+                            text: page.info.title ?? ""
+                            typescale: MD.Token.typescale.headline_medium
+                            wrapMode: Text.WordWrap
+                        }
 
                     // Genres/categories as a single-row chip strip (Steam dumps dozens of tags).
                     Flickable {
@@ -195,6 +248,15 @@ Item {
                                  || (page.info.steamStoreUrl ?? "").length > 0
                                  || (Core.sources.repositoryUrlFor(page.info.sourceId ?? "") || "").length > 0
                                  || (Core.sources.catalogUrlFor(page.info.sourceId ?? "") || "").length > 0
+                                 || (page.gameId || "").length > 0
+
+                        MD.Button {
+                            visible: (page.gameId || "").length > 0
+                            text: qsTr("Share")
+                            icon.name: MD.Token.icon.share
+                            mdState.type: MD.Enum.BtText
+                            onClicked: Core.shareGameLink(page.gameId)
+                        }
 
                         MD.Button {
                             visible: (page.info.sourcePageUrl ?? "").length > 0
@@ -445,6 +507,7 @@ Item {
                 }
             }
         }
+    }
     }
 
     GameSettingsSheet {

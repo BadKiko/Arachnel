@@ -85,6 +85,21 @@ MD.ApplicationWindow {
                                })
     }
 
+    function raiseMainWindow() {
+        root.show()
+        root.raise()
+        root.requestActivate()
+    }
+
+    function handleDeepLink(gameId) {
+        const id = (gameId || "").trim()
+        if (!id.length)
+            return
+        root.raiseMainWindow()
+        root.openGameDetails(id, true)
+        Core.consumePendingDeepLink()
+    }
+
     function closeGameDetails() {
         if (pageStack.canPop)
             pageStack.navigatePop()
@@ -133,6 +148,10 @@ MD.ApplicationWindow {
             Qt.callLater(function () { crashReportDialog.open() })
         // After first paint, warm Discover/Catalog so the first rail click isn't a cold create.
         catalogWarmTimer.start()
+        if ((Core.pendingDeepLinkGameId || "").length > 0) {
+            const id = Core.pendingDeepLinkGameId
+            Qt.callLater(function () { root.handleDeepLink(id) })
+        }
     }
 
     Timer {
@@ -171,6 +190,12 @@ MD.ApplicationWindow {
         function onUserNoticeChanged() {
             if (Core.userNotice.length > 0)
                 snackbar.show(Core.userNotice)
+        }
+        function onDeepLinkRequested(gameId) {
+            root.handleDeepLink(gameId)
+        }
+        function onActivationRequested() {
+            root.raiseMainWindow()
         }
     }
 
@@ -410,6 +435,7 @@ MD.ApplicationWindow {
                                                   sourceId || "")
             }
             onOpenSteamidraTrust: steamidraTrustSheet.openTrust()
+            onOpenSourcesRequested: settingsSheet.openSources()
             onProtonRequired: protonRequiredDialog.open()
         }
     }

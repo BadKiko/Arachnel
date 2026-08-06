@@ -35,6 +35,13 @@ Item {
         return gameId.length ? Core.entryDetails(gameId) : ({})
     }
 
+    readonly property bool gameFound: {
+        const _rev = root.detailsRevision
+        if (!root.gameId.length)
+            return false
+        return ((root.info.title ?? "")).toString().trim().length > 0
+    }
+
     Connections {
         target: Core
         function onEntryMetadataChanged(entryId) {
@@ -264,6 +271,7 @@ Item {
     signal openAddonPicker(string entryId, string title)
     signal openInstallPicker(string entryId, string title, var selectedAddonIds, string sourceId)
     signal openSteamidraTrust()
+    signal openSourcesRequested()
     signal protonRequired()
 
     /** Catalog entry id for the chosen install source (may differ from showcase gameId). */

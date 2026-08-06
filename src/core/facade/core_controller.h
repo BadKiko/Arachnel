@@ -100,6 +100,7 @@ class CoreController : public QObject
     Q_PROPERTY(int catalogActiveFilterCount READ catalogActiveFilterCount NOTIFY catalogFiltersChanged)
     Q_PROPERTY(QStringList availableCatalogGenres READ availableCatalogGenres NOTIFY availableCatalogGenresChanged)
     Q_PROPERTY(CatalogDiscoveryService* catalogDiscovery READ catalogDiscovery CONSTANT)
+    Q_PROPERTY(QString pendingDeepLinkGameId READ pendingDeepLinkGameId NOTIFY pendingDeepLinkChanged)
 
 public:
     static CoreController* create(QQmlEngine*, QJSEngine*);
@@ -159,11 +160,15 @@ public:
     void setCatalogPlayModeFilter(int);
     int catalogActiveFilterCount() const;
     QStringList availableCatalogGenres() const;
+    QString pendingDeepLinkGameId() const;
 
 #include "core_controller_api.h"
 
 signals:
     void userNoticeChanged();
+    void pendingDeepLinkChanged();
+    void deepLinkRequested(const QString& gameId);
+    void activationRequested();
     void catalogLoadingChanged();
     void catalogStatusChanged();
     void activeCatalogSourceIdChanged();

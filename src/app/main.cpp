@@ -18,6 +18,7 @@
 #include "core/settings/settings_store.h"
 #include "core/i18n/translation_service.h"
 #include "crash_log.h"
+#include "deep_link.h"
 #include "settings_identity.h"
 
 #ifndef QT_QML_MATERIAL_IMPORT_PATH
@@ -111,6 +112,26 @@ int main(int argc, char* argv[])
 
     arachnel::core::registerCoreTypes();
     QPixmapCache::setCacheLimit(24 * 1024);
+
+    arachnel::SingleInstanceGuard* singleInstance = nullptr;
+    if (!crashDialogMode) {
+        arachnel::registerGameDeepLinkProtocol();
+
+        singleInstance = new arachnel::SingleInstanceGuard(&app);
+        const QString launchLink = arachnel::findDeepLinkArgument(app.arguments());
+        if (!singleInstance->tryBecomePrimary()) {
+            singleInstance->forwardToPrimary(launchLink);
+            return 0;
+        }
+
+        QObject::connect(singleInstance, &arachnel::SingleInstanceGuard::messageReceived, &app,
+                         [](const QString& url) {
+                             arachnel::core::CoreController::instance().requestDeepLink(url);
+                         });
+
+        if (!launchLink.isEmpty())
+            arachnel::core::CoreController::instance().requestDeepLink(launchLink);
+    }
 
     int exitCode = 1;
     {
