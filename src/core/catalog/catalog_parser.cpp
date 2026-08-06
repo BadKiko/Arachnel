@@ -373,11 +373,39 @@ QVector<CatalogEntry> parseCatalogFeed(const QByteArray& payload, const QString&
     if (ryuu.isEmpty())
         ryuu = root.value(QStringLiteral("games")).toArray();
     if (!ryuu.isEmpty()) {
+        QSet<QString> referencedDlc;
+        const auto addDlcId = [&referencedDlc](QString id) {
+            id = id.trimmed();
+            if (id.startsWith(QStringLiteral("steam-")))
+                id = id.mid(6);
+            if (!id.isEmpty())
+                referencedDlc.insert(id);
+        };
+        for (const QJsonValue& value : ryuu) {
+            if (!value.isObject())
+                continue;
+            const QJsonValue dlcVal = value.toObject().value(QStringLiteral("dlc"));
+            if (dlcVal.isArray()) {
+                for (const QJsonValue& d : dlcVal.toArray()) {
+                    if (d.isString())
+                        addDlcId(d.toString());
+                    else if (d.isDouble())
+                        addDlcId(QString::number(d.toInteger()));
+                }
+            } else if (dlcVal.isString()) {
+                for (const QString& part : dlcVal.toString().split(QLatin1Char(',')))
+                    addDlcId(part);
+            }
+        }
+
         entries.reserve(ryuu.size());
         for (const QJsonValue& value : ryuu) {
             if (!value.isObject())
                 continue;
-            entries.append(parseRyuuEntryObject(value.toObject(), sourceId));
+            CatalogEntry entry = parseRyuuEntryObject(value.toObject(), sourceId);
+            if (!entry.steamAppId.isEmpty() && referencedDlc.contains(entry.steamAppId))
+                continue;
+            entries.append(std::move(entry));
         }
         deduplicateCatalogEntriesImpl(entries);
         return entries;

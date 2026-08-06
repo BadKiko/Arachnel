@@ -65,7 +65,7 @@
         <translation>Arachnel</translation>
     </message>
     <message>
-        <location line="+148"/>
+        <location line="+166"/>
         <source>Library</source>
         <translation>Библиотека</translation>
     </message>
@@ -510,7 +510,7 @@
 <context>
     <name>CatalogPageContent</name>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="+252"/>
+        <location filename="../qml/app/CatalogPageContent.qml" line="+289"/>
         <source>With friends</source>
         <translation>С друзьями</translation>
     </message>
@@ -786,7 +786,8 @@
     </message>
     <message>
         <location line="-159"/>
-        <location filename="../src/core/library/library_controller.cpp" line="+272"/>
+        <location filename="../src/core/library/library_controller.cpp" line="+293"/>
+        <location line="+58"/>
         <source>Couldn&apos;t update DLC unlocks.</source>
         <translation>Не удалось обновить разблокировку DLC.</translation>
     </message>
@@ -880,8 +881,8 @@
     <message>
         <location line="+1"/>
         <location filename="../src/core/jobs/job_status.cpp" line="+7"/>
-        <location filename="../src/core/catalog/catalog_facade_install.cpp" line="+247"/>
-        <location filename="../src/core/library/library_facade_sync.cpp" line="+217"/>
+        <location filename="../src/core/catalog/catalog_facade_install.cpp" line="+249"/>
+        <location filename="../src/core/library/library_facade_sync.cpp" line="+230"/>
         <source>Install failed</source>
         <translation>Ошибка установки</translation>
     </message>
@@ -917,7 +918,7 @@
         <translation>Ошибка загрузки: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/install/install_session_service.cpp" line="+38"/>
+        <location filename="../src/core/install/install_session_service.cpp" line="+39"/>
         <source>Installation of %1 is already in progress</source>
         <translation>Установка %1 уже выполняется</translation>
     </message>
@@ -942,7 +943,7 @@
         <translation>Установлено: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/install/install_session_service_install.cpp" line="+97"/>
+        <location filename="../src/core/install/install_session_service_install.cpp" line="+98"/>
         <source>Add-on installation is already in progress</source>
         <translation>Установка дополнения уже выполняется</translation>
     </message>
@@ -981,7 +982,7 @@
         <translation>Игра не найдена</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_facade_install.cpp" line="+42"/>
+        <location filename="../src/core/catalog/catalog_facade_install.cpp" line="+41"/>
         <location filename="../src/core/jobs/job_facade_lifecycle.cpp" line="+6"/>
         <source>Add-on not found</source>
         <translation>Дополнение не найдено</translation>
@@ -1007,7 +1008,7 @@
         <translation>Установите %1 (Proton-GE) в Настройки → Запуск перед скачиванием игр</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_facade_install.cpp" line="-146"/>
+        <location filename="../src/core/catalog/catalog_facade_install.cpp" line="-147"/>
         <source>No download link for %1</source>
         <translation>Нет ссылки для загрузки: %1</translation>
     </message>
@@ -1156,7 +1157,7 @@
         <translation>Для источника %1 не задан URL каталога</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_facade_install.cpp" line="+140"/>
+        <location filename="../src/core/catalog/catalog_facade_install.cpp" line="+141"/>
         <source>Game not found: %1</source>
         <translation>Игра не найдена: %1</translation>
     </message>
@@ -1197,7 +1198,7 @@
         <translation>Игра ещё не установлена</translation>
     </message>
     <message>
-        <location line="+33"/>
+        <location line="+42"/>
         <source>Steam is not running - Online Fix needs it for SpaceWar/overlay. Starting Steam…</source>
         <translation>Steam не запущен - Online Fix нужен для SpaceWar/overlay. Запускаем Steam…</translation>
     </message>
@@ -1231,7 +1232,7 @@
         <translation>Источник «%1» выключен в настройках</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_facade_install.cpp" line="-234"/>
+        <location filename="../src/core/catalog/catalog_facade_install.cpp" line="-235"/>
         <source>Could not resolve application data folder</source>
         <translation>Не удалось определить папку данных приложения</translation>
     </message>
@@ -1300,12 +1301,12 @@
     </message>
     <message>
         <location filename="../src/core/catalog/catalog_facade_install.cpp" line="+12"/>
-        <location line="+81"/>
+        <location line="+83"/>
         <source>Could not start download for %1</source>
         <translation>Не удалось начать загрузку %1</translation>
     </message>
     <message>
-        <location line="+40"/>
+        <location line="+39"/>
         <source>Could not start add-on download</source>
         <translation>Не удалось начать загрузку дополнения</translation>
     </message>
@@ -1315,8 +1316,8 @@
         <translation>Запись не найдена: %1</translation>
     </message>
     <message>
-        <location line="-132"/>
-        <location line="+154"/>
+        <location line="-133"/>
+        <location line="+155"/>
         <source>Could not start update for %1</source>
         <translation>Не удалось начать обновление %1</translation>
     </message>
@@ -1625,7 +1626,7 @@
         <translation>Автозапуск установщика доступен только на Windows</translation>
     </message>
     <message>
-        <location filename="../src/core/install/online_fix_overlay.cpp" line="+473"/>
+        <location filename="../src/core/install/online_fix_overlay.cpp" line="+568"/>
         <source>Not installed</source>
         <translation>Не установлен</translation>
     </message>
@@ -1640,12 +1641,12 @@
         <translation>Отключён</translation>
     </message>
     <message>
-        <location line="-20"/>
+        <location line="-39"/>
         <source>Online Fix overlay not found in this install</source>
         <translation>Online Fix оверлей не найден в этой установке</translation>
     </message>
     <message>
-        <location line="-150"/>
+        <location line="-164"/>
         <source>Failed to enable Online Fix: %1</source>
         <translation>Не удалось включить Online Fix: %1</translation>
     </message>
@@ -1785,7 +1786,7 @@
         <translation>Не удалось отследить процесс установки</translation>
     </message>
     <message>
-        <location filename="../src/core/library/library_controller.cpp" line="+45"/>
+        <location filename="../src/core/library/library_controller.cpp" line="+40"/>
         <location line="+21"/>
         <location filename="../src/core/facade/core_wiring_services.cpp" line="-110"/>
         <source>Game removed: %1</source>
@@ -2003,7 +2004,7 @@
         <translation>%1 активных · %2 завершено</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+2"/>
         <source>%1 active · will resume after restart</source>
         <translation>%1 активных · продолжатся после перезапуска</translation>
     </message>
@@ -2041,12 +2042,13 @@
         <translation>DRM</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+15"/>
+        <location line="+1"/>
         <source>%1 add-ons</source>
         <translation>%1 доп.</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+10"/>
         <source>Workshop</source>
         <translation>Мастерская</translation>
     </message>
@@ -2248,7 +2250,7 @@
 <context>
     <name>GameSettingsSheet</name>
     <message>
-        <location filename="../qml/app/GameSettingsSheet.qml" line="+101"/>
+        <location filename="../qml/app/GameSettingsSheet.qml" line="+117"/>
         <source>Game settings</source>
         <translation>Настройки игры</translation>
     </message>
@@ -2278,7 +2280,12 @@
         <translation>Если включено, обновление запускается автоматически после загрузки каталога.</translation>
     </message>
     <message>
-        <location line="+136"/>
+        <location line="+30"/>
+        <source>Runs without a Steam license. Steam may not show you as in-game.</source>
+        <translation>Работает без лицензии Steam. Steam может не показывать, что вы в игре.</translation>
+    </message>
+    <message>
+        <location line="+36"/>
         <source>Proton</source>
         <translation>Proton</translation>
     </message>
@@ -2328,7 +2335,12 @@
         <translation>Размер</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+5"/>
+        <source>None</source>
+        <translation>Нет</translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>Install type</source>
         <translation>Тип установки</translation>
     </message>
@@ -2363,27 +2375,17 @@
         <translation>Готово</translation>
     </message>
     <message>
-        <location line="-302"/>
+        <location line="-238"/>
         <source>Online Fix for this game</source>
         <translation>Online Fix для этой игры</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>Runs without a Steam license and respects DLC toggles. Steam may not show you as in-game.</source>
-        <translation>Работает без лицензии Steam и учитывает переключатели DLC. Steam может не показывать, что вы в игре.</translation>
-    </message>
-    <message>
-        <location line="+34"/>
+        <location line="+178"/>
         <source>DLC</source>
         <translation>DLC</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>Off hides DLC from the game. Quit the game before toggling. Files stay installed.</source>
-        <translation>Выкл. скрывает DLC от игры. Перед переключением полностью закрой игру. Файлы остаются на диске.</translation>
-    </message>
-    <message>
-        <location line="+203"/>
+        <location line="+7"/>
         <source>Online Fix</source>
         <translation>Online Fix</translation>
     </message>
@@ -2401,57 +2403,42 @@
 <context>
     <name>InstallAddonSelectionSheet</name>
     <message>
-        <location filename="../qml/settings/InstallAddonSelectionSheet.qml" line="+52"/>
-        <source>Not on source</source>
-        <translation>Нет на источнике</translation>
-    </message>
-    <message>
-        <location line="+106"/>
-        <source>All</source>
-        <translation>Все</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Deselect</source>
-        <translation>Снять</translation>
-    </message>
-    <message>
-        <location line="-31"/>
+        <location filename="../qml/settings/InstallAddonSelectionSheet.qml" line="+224"/>
         <source>DLC</source>
         <translation>DLC</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="-137"/>
         <source>Loading DLC from Steam…</source>
         <translation>Загрузка DLC из Steam…</translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>Pick DLC to install with &quot;%1&quot;.</source>
-        <translation>Выбери DLC для установки вместе с «%1».</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Pick DLC to install with the game.</source>
-        <translation>Выбери DLC для установки вместе с игрой.</translation>
-    </message>
-    <message>
-        <location line="+28"/>
-        <source>%1 DLC</source>
-        <translation>%1 DLC</translation>
-    </message>
-    <message>
-        <location line="+17"/>
+        <location line="+175"/>
         <source>No Steam DLC found for this game.</source>
         <translation>Для этой игры Steam DLC не найдено.</translation>
     </message>
     <message>
-        <location line="+123"/>
-        <source>Optional</source>
-        <translation>Необяз.</translation>
+        <location line="-170"/>
+        <source>About %1 on disk - game %2 + %3 DLC.</source>
+        <translation>Около %1 на диске - игра %2 + %3 DLC.</translation>
     </message>
     <message>
-        <location line="+63"/>
+        <location line="+2"/>
+        <source>About %1 on disk with DLC.</source>
+        <translation>Около %1 на диске с DLC.</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>%1 DLC will be downloaded with the game.</source>
+        <translation>%1 DLC будет скачано вместе с игрой.</translation>
+    </message>
+    <message>
+        <location line="+148"/>
+        <source>%1 DLC included</source>
+        <translation>%1 DLC в комплекте</translation>
+    </message>
+    <message>
+        <location line="+178"/>
         <source>Cancel</source>
         <translation>Отмена</translation>
     </message>
@@ -2464,18 +2451,43 @@
 <context>
     <name>InstallLocationSheet</name>
     <message>
-        <location filename="../qml/settings/InstallLocationSheet.qml" line="+37"/>
-        <location line="+114"/>
+        <location filename="../qml/settings/InstallLocationSheet.qml" line="+103"/>
+        <source>About %1 on disk - game %2 + %3 DLC.</source>
+        <translation>Около %1 на диске - игра %2 + %3 DLC.</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>About %1 on disk with DLC.</source>
+        <translation>Около %1 на диске с DLC.</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>DLC adds to install size</source>
+        <translation>DLC увеличит размер установки</translation>
+    </message>
+    <message>
+        <location line="+43"/>
+        <location line="+157"/>
         <source>Install</source>
         <translation>Установить</translation>
     </message>
     <message>
-        <location line="-106"/>
+        <location line="-149"/>
         <source>Choose a drive for installation</source>
         <translation>Выберите диск для установки</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+15"/>
+        <source>%1 DLC will be downloaded and enabled</source>
+        <translation>%1 DLC будет скачано и включено</translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source> +%1 more</source>
+        <translation> и ещё %1</translation>
+    </message>
+    <message>
+        <location line="+22"/>
         <source>Install to:</source>
         <translation>Установить на:</translation>
     </message>
@@ -2484,11 +2496,16 @@
         <source>Cancel</source>
         <translation>Отмена</translation>
     </message>
+    <message>
+        <location line="+0"/>
+        <source>Back</source>
+        <translation>Назад</translation>
+    </message>
 </context>
 <context>
     <name>InstallSourceSheet</name>
     <message>
-        <location filename="../qml/settings/InstallSourceSheet.qml" line="+34"/>
+        <location filename="../qml/settings/InstallSourceSheet.qml" line="+54"/>
         <source>Choose download source</source>
         <translation>Выберите источник загрузки</translation>
     </message>
@@ -2498,7 +2515,7 @@
         <translation>Выберите каталог, из которого скачать игру</translation>
     </message>
     <message>
-        <location line="+51"/>
+        <location line="+46"/>
         <source>Unknown source</source>
         <translation>Неизвестный источник</translation>
     </message>

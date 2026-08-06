@@ -230,7 +230,9 @@ void CoreController::installCatalogEntry(const QString& entryId, const QString& 
         qInfo().noquote() << "[owns-download]" << entry.id
                           << "mode" << ctx.installMode
                           << "forceUpdate" << isUpdate
-                          << "addons" << ctx.selectedAddonIds.join(QLatin1Char(','))
+                          << "addons" << (ctx.selectedAddonIds.isEmpty()
+                                              ? QStringLiteral("(none)")
+                                              : ctx.selectedAddonIds.join(QLatin1Char(',')))
                           << "target" << ctx.targetPath;
 
         m_pluginHost->runOwnedDownloadAsync(

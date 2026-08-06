@@ -97,12 +97,25 @@ MD.ApplicationWindow {
         })
     }
 
+    function addonIdsForInstall(addonIds) {
+        const out = []
+        if (!addonIds)
+            return out
+        const len = addonIds.length !== undefined ? addonIds.length : 0
+        for (let i = 0; i < len; ++i) {
+            const id = String(addonIds[i] || "").trim()
+            if (id.length)
+                out.push(id)
+        }
+        return out
+    }
+
     function beginCatalogInstall(entryId, libraryId, addonIds) {
         if (Core.needsProtonOnPlatform() && !Core.protonReady) {
             protonRequiredDialog.open()
             return
         }
-        Core.installCatalogEntry(entryId, libraryId || "", addonIds || [])
+        Core.installCatalogEntry(entryId, libraryId || "", root.addonIdsForInstall(addonIds))
     }
 
     Component.onCompleted: {
@@ -367,7 +380,10 @@ MD.ApplicationWindow {
                 installAddonSheet.openForEntry(entryId, title)
             }
             onOpenInstallPicker: function (entryId, title, selectedAddonIds) {
-                installLocationSheet.openForEntry(entryId, title, selectedAddonIds)
+                const catalogAddons = Core.catalog.addonsFor(entryId)
+                const fromPicker = (selectedAddonIds && selectedAddonIds.length > 0)
+                                   || (catalogAddons && catalogAddons.length > 0)
+                installLocationSheet.openForEntry(entryId, title, selectedAddonIds, fromPicker)
             }
             onOpenSteamidraTrust: steamidraTrustSheet.openTrust()
             onProtonRequired: protonRequiredDialog.open()
@@ -496,6 +512,9 @@ MD.ApplicationWindow {
         installEntry: function (entryId, libraryId, addonIds) {
             root.beginCatalogInstall(entryId, libraryId, addonIds)
         }
+        onBackToAddons: function (entryId, title, selectedAddonIds) {
+            installAddonSheet.openForEntry(entryId, title)
+        }
     }
 
     InstallSourceSheet {
@@ -509,7 +528,7 @@ MD.ApplicationWindow {
             }
             // Fallback when details page is not current (should be rare).
             if (Core.needsInstallLocationChoice())
-                installLocationSheet.openForEntry(offerEntryId || entryId, title, [])
+                installLocationSheet.openForEntry(offerEntryId || entryId, title, [], false)
             else
                 Core.installCatalogEntryFromSource(entryId, sourceId, "", [])
         }
@@ -522,9 +541,12 @@ MD.ApplicationWindow {
             const page = pageStack.currentItem
             if (page && typeof page.afterAddonsSelected === "function")
                 page.afterAddonsSelected(selectedAddonIds)
-            else if (Core.needsInstallLocationChoice())
-                installLocationSheet.openForEntry(entryId, title, selectedAddonIds)
-            else
+            else if (Core.needsInstallLocationChoice()) {
+                const catalogAddons = Core.catalog.addonsFor(entryId)
+                const fromPicker = (selectedAddonIds && selectedAddonIds.length > 0)
+                                   || (catalogAddons && catalogAddons.length > 0)
+                installLocationSheet.openForEntry(entryId, title, selectedAddonIds, fromPicker)
+            } else
                 root.beginCatalogInstall(entryId, "", selectedAddonIds)
         }
     }

@@ -29,6 +29,12 @@ CatalogFilterService::CatalogFilterService(CatalogModel* model, QObject* parent)
 
 bool CatalogFilterService::entryMatches(const CatalogEntry& entry, const FilterSnapshot& snap)
 {
+    // Catalog grid is games only - DLC/addons live on the base entry / install picker.
+    if (entry.itemKind != CatalogItemKind::Game)
+        return false;
+    if (!entry.parentEntryId.isEmpty())
+        return false;
+
     if (snap.typeFilter >= 0) {
         const int kind = static_cast<int>(entry.installKind);
         if (snap.typeFilter == 2) {

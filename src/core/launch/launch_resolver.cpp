@@ -1,5 +1,6 @@
 #include "launch_resolver.h"
 
+#include "install_heuristics.h"
 #include "proton_manager.h"
 
 #include <QDir>
@@ -101,12 +102,25 @@ ResolvedLaunch resolveLaunch(const LaunchInfo& pluginInfo, const LibraryGame& ga
                              const SettingsStore& settings)
 {
     ResolvedLaunch resolved;
-    if (pluginInfo.executable.isEmpty() && game.executableOverride.trimmed().isEmpty())
+
+    QString overrideExe = game.executableOverride.trimmed();
+    if (!overrideExe.isEmpty()
+        && isExcludedGameExecutable(QFileInfo(overrideExe).fileName())) {
+        overrideExe.clear();
+    }
+
+    QString pluginExe = pluginInfo.executable;
+    if (!pluginExe.isEmpty()
+        && isExcludedGameExecutable(QFileInfo(pluginExe).fileName())) {
+        pluginExe.clear();
+    }
+
+    if (pluginExe.isEmpty() && overrideExe.isEmpty())
         return resolved;
 
-    QString executable = game.executableOverride.trimmed();
+    QString executable = overrideExe;
     if (executable.isEmpty())
-        executable = pluginInfo.executable;
+        executable = pluginExe;
 
     QString workDir = pluginInfo.workingDirectory;
     if (workDir.isEmpty())

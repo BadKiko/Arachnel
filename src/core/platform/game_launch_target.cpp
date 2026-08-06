@@ -46,13 +46,25 @@ GameLaunchTarget resolveGameLaunchTarget(const LibraryGame& game, const LaunchIn
     target.title = game.title.isEmpty() ? game.id : game.title;
 
     LaunchInfo info = pluginInfo;
-    if (info.executable.isEmpty() && game.executableOverride.trimmed().isEmpty()) {
+    QString overrideExe = game.executableOverride.trimmed();
+    if (!overrideExe.isEmpty()
+        && isExcludedGameExecutable(QFileInfo(overrideExe).fileName())) {
+        overrideExe.clear();
+    }
+
+    if (info.executable.isEmpty() && overrideExe.isEmpty()) {
+        const QString found = findGameExecutableInTree(game.installPath);
+        if (!found.isEmpty())
+            info.executable = found;
+    } else if (!info.executable.isEmpty()
+               && isExcludedGameExecutable(QFileInfo(info.executable).fileName())) {
+        info.executable.clear();
         const QString found = findGameExecutableInTree(game.installPath);
         if (!found.isEmpty())
             info.executable = found;
     }
 
-    QString executable = game.executableOverride.trimmed();
+    QString executable = overrideExe;
     if (executable.isEmpty())
         executable = info.executable;
     if (executable.isEmpty())

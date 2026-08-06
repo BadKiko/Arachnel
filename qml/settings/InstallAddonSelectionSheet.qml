@@ -15,6 +15,7 @@ MD.BottomSheet {
     property string entryId: ""
     property string entryTitle: ""
     property bool waitingAddons: false
+    property var _pendingConfirm: null
 
     signal confirmed(string entryId, string entryTitle, var selectedAddonIds)
 
@@ -33,12 +34,75 @@ MD.BottomSheet {
         return out
     }
 
+    function parseSizeLabelBytes(label) {
+        if (!label || !label.length)
+            return 0
+        const m = /^(\d+(?:\.\d+)?)\s*(B|KB|MB|GB|TB)/i.exec(String(label).trim())
+        if (!m)
+            return 0
+        let v = parseFloat(m[1])
+        const unit = m[2].toUpperCase()
+        if (unit === "KB")
+            v *= 1024
+        else if (unit === "MB")
+            v *= 1024 * 1024
+        else if (unit === "GB")
+            v *= 1024 * 1024 * 1024
+        else if (unit === "TB")
+            v *= 1024 * 1024 * 1024 * 1024
+        return v
+    }
+
+    function formatSizeLabelBytes(bytes) {
+        if (!(bytes > 0))
+            return ""
+        const units = ["B", "KB", "MB", "GB", "TB"]
+        let value = bytes
+        let unit = 0
+        while (value >= 1024 && unit < units.length - 1) {
+            value /= 1024
+            unit++
+        }
+        const text = unit === 0 ? String(Math.round(value)) : value.toFixed(1)
+        return text + " " + units[unit]
+    }
+
+    readonly property real baseBytes: {
+        if (!root.entryId.length)
+            return 0
+        const details = Core.entryDetails(root.entryId)
+        return root.parseSizeLabelBytes(details.sizeLabel || "")
+    }
+
+    readonly property real dlcBytes: {
+        const n = addonModel.count
+        let sum = 0
+        for (let i = 0; i < n; ++i)
+            sum += root.parseSizeLabelBytes(addonModel.get(i).subtitle || "")
+        return sum
+    }
+
+    readonly property string sizeNotice: {
+        if (root.waitingAddons)
+            return qsTr("Loading DLC from Steam…")
+        const baseLabel = root.formatSizeLabelBytes(root.baseBytes)
+        const dlcLabel = root.formatSizeLabelBytes(root.dlcBytes)
+        const totalLabel = root.formatSizeLabelBytes(root.baseBytes + root.dlcBytes)
+        if (baseLabel.length && dlcLabel.length && totalLabel.length)
+            return qsTr("About %1 on disk - game %2 + %3 DLC.").arg(totalLabel).arg(baseLabel).arg(dlcLabel)
+        if (totalLabel.length)
+            return qsTr("About %1 on disk with DLC.").arg(totalLabel)
+        return qsTr("%1 DLC will be downloaded with the game.").arg(addonModel.count)
+    }
+
     function populateFromCatalog() {
         addonModel.clear()
         const addons = Core.catalog.addonsFor(entryId)
         for (let i = 0; i < addons.length; ++i) {
             const addon = addons[i]
             const available = addon.contentAvailable !== false
+            if (!available)
+                continue
             const shots = root.shotList(addon.screenshotUrls)
             let cover = String(addon.coverUrl || "")
             if (!cover.length && String(addon.id || "").indexOf("steam-") === 0) {
@@ -49,10 +113,7 @@ MD.BottomSheet {
             addonModel.append({
                 addonId: addon.id,
                 title: addon.title,
-                subtitle: available ? (addon.fileSize || "") : qsTr("Not on source"),
-                optional: !!addon.optional,
-                checked: false,
-                contentAvailable: available,
+                subtitle: addon.fileSize || "",
                 coverUrl: cover,
                 screenshotUrls: shots,
             })
@@ -62,34 +123,62 @@ MD.BottomSheet {
     function openForEntry(id, title) {
         entryId = id
         entryTitle = title || ""
+        _pendingConfirm = null
         addonModel.clear()
         waitingAddons = true
         const ready = Core.ensureCatalogAddons ? Core.ensureCatalogAddons(id) : true
         if (ready) {
-            waitingAddons = false
             populateFromCatalog()
-            if (addonModel.count === 0) {
-                root.confirmed(root.entryId, root.entryTitle, [])
+            if (addonModel.count > 0) {
+                waitingAddons = false
+                open()
                 return
             }
-            open()
+            const details = Core.entryDetails(id)
+            if ((details.addonCount || 0) > 0 && Core.ensureCatalogAddons) {
+                const again = Core.ensureCatalogAddons(id)
+                if (again) {
+                    populateFromCatalog()
+                    waitingAddons = false
+                    if (addonModel.count === 0) {
+                        root.confirmed(root.entryId, root.entryTitle, [])
+                        return
+                    }
+                    open()
+                    return
+                }
+                open()
+                return
+            }
+            waitingAddons = false
+            root.confirmed(root.entryId, root.entryTitle, [])
             return
         }
         open()
     }
 
-    function selectedAddonIds() {
+    function allAddonIds() {
         const ids = []
-        for (let i = 0; i < addonModel.count; ++i) {
-            if (addonModel.get(i).checked)
-                ids.push(addonModel.get(i).addonId)
-        }
+        for (let i = 0; i < addonModel.count; ++i)
+            ids.push(addonModel.get(i).addonId)
         return ids
     }
 
-    function setAllChecked(value) {
-        for (let i = 0; i < addonModel.count; ++i)
-            addonModel.setProperty(i, "checked", value)
+    function confirmSelection() {
+        _pendingConfirm = {
+            entryId: root.entryId,
+            entryTitle: root.entryTitle,
+            ids: root.allAddonIds()
+        }
+        close()
+    }
+
+    onClosed: {
+        const pending = _pendingConfirm
+        _pendingConfirm = null
+        if (!pending)
+            return
+        root.confirmed(pending.entryId, pending.entryTitle, pending.ids)
     }
 
     Connections {
@@ -100,6 +189,9 @@ MD.BottomSheet {
             root.waitingAddons = false
             root.populateFromCatalog()
             if (addonModel.count === 0) {
+                const details = Core.entryDetails(id)
+                if ((details.addonCount || 0) > 0)
+                    return
                 if (root.opened)
                     root.close()
                 root.confirmed(root.entryId, root.entryTitle, [])
@@ -137,42 +229,20 @@ MD.BottomSheet {
             Layout.fillWidth: true
             Layout.leftMargin: MD.Token.spacing.large
             Layout.rightMargin: MD.Token.spacing.large
-            text: root.waitingAddons
-                  ? qsTr("Loading DLC from Steam…")
-                  : (entryTitle.length
-                     ? qsTr("Pick DLC to install with \"%1\".").arg(entryTitle)
-                     : qsTr("Pick DLC to install with the game."))
-            color: MD.Token.color.on_surface_variant
-            typescale: MD.Token.typescale.body_medium
+            text: root.sizeNotice
+            color: MD.Token.color.on_surface
+            typescale: MD.Token.typescale.title_small
             wrapMode: Text.WordWrap
         }
 
-        RowLayout {
+        MD.Label {
             Layout.fillWidth: true
             Layout.leftMargin: MD.Token.spacing.large
             Layout.rightMargin: MD.Token.spacing.large
             visible: !root.waitingAddons && addonModel.count > 0
-            spacing: MD.Token.spacing.small
-
-            MD.Button {
-                text: qsTr("All")
-                mdState.type: MD.Enum.BtText
-                onClicked: root.setAllChecked(true)
-            }
-            MD.Button {
-                text: qsTr("Deselect")
-                mdState.type: MD.Enum.BtText
-                onClicked: root.setAllChecked(false)
-            }
-
-            Item { Layout.fillWidth: true }
-
-            MD.Label {
-                visible: addonModel.count > 0
-                text: qsTr("%1 DLC").arg(addonModel.count)
-                color: MD.Token.color.on_surface_variant
-                typescale: MD.Token.typescale.body_small
-            }
+            text: qsTr("%1 DLC included").arg(addonModel.count)
+            color: MD.Token.color.on_surface_variant
+            typescale: MD.Token.typescale.body_small
         }
 
         MD.BusyIndicator {
@@ -229,8 +299,6 @@ MD.BottomSheet {
                 required property string addonId
                 required property string title
                 required property string subtitle
-                required property bool optional
-                required property bool checked
                 required property string coverUrl
                 required property var screenshotUrls
 
@@ -252,13 +320,9 @@ MD.BottomSheet {
 
                 width: Math.max(0, addonList.width - addonList.scrollGutter)
                 radius: MD.Token.shape.corner.large
-                color: addonRow.checked
-                       ? MD.Util.transparent(MD.Token.color.primary, 0.08)
-                       : MD.Token.color.surface_container
+                color: MD.Token.color.surface_container
                 border.width: 1
-                border.color: addonRow.checked
-                            ? MD.Token.color.primary
-                            : MD.Token.color.outline_variant
+                border.color: MD.Token.color.outline_variant
                 implicitHeight: col.implicitHeight + MD.Token.spacing.medium * 2
                 height: implicitHeight
 
@@ -273,11 +337,6 @@ MD.BottomSheet {
                     RowLayout {
                         Layout.fillWidth: true
                         spacing: MD.Token.spacing.small
-
-                        MD.CheckBox {
-                            checked: addonRow.checked
-                            onToggled: addonModel.setProperty(addonRow.index, "checked", checked)
-                        }
 
                         Rectangle {
                             Layout.preferredWidth: 96
@@ -299,21 +358,11 @@ MD.BottomSheet {
                             Layout.fillWidth: true
                             spacing: 2
 
-                            RowLayout {
+                            MD.Label {
                                 Layout.fillWidth: true
-                                spacing: MD.Token.spacing.small
-
-                                MD.Label {
-                                    Layout.fillWidth: true
-                                    text: title
-                                    typescale: MD.Token.typescale.title_small
-                                    wrapMode: Text.WordWrap
-                                }
-
-                                MD.AssistChip {
-                                    visible: optional
-                                    text: qsTr("Optional")
-                                }
+                                text: title
+                                typescale: MD.Token.typescale.title_small
+                                wrapMode: Text.WordWrap
                             }
 
                             MD.Label {
@@ -356,12 +405,6 @@ MD.BottomSheet {
                         }
                     }
                 }
-
-                // TapHandler doesn't steal the ListView flick (MouseArea did).
-                TapHandler {
-                    gesturePolicy: TapHandler.ReleaseWithinBounds
-                    onTapped: addonModel.setProperty(addonRow.index, "checked", !addonRow.checked)
-                }
             }
         }
 
@@ -384,10 +427,7 @@ MD.BottomSheet {
                 text: qsTr("Continue")
                 mdState.type: MD.Enum.BtFilled
                 enabled: !root.waitingAddons
-                onClicked: {
-                    root.confirmed(root.entryId, root.entryTitle, root.selectedAddonIds())
-                    root.close()
-                }
+                onClicked: root.confirmSelection()
             }
         }
     }
