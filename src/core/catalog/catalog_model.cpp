@@ -245,6 +245,11 @@ void CatalogModel::bindSource(const QVector<CatalogEntry>* source)
     m_source = source;
 }
 
+void CatalogModel::setExtraEntryLookup(std::function<const CatalogEntry*(const QString&)> lookup)
+{
+    m_extraEntryLookup = std::move(lookup);
+}
+
 void CatalogModel::sortIndices()
 {
     if (!m_source)
@@ -320,11 +325,17 @@ const CatalogEntry* CatalogModel::entryById(const QString& id) const
     if (row >= 0)
         return entryAtRow(row);
     if (!m_source)
-        return nullptr;
+        return m_extraEntryLookup ? m_extraEntryLookup(id) : nullptr;
     const QString resolved = repairCatalogEntryId(id);
     for (const auto& entry : *m_source) {
         if (entry.id == resolved || entry.id == id)
             return &entry;
+    }
+    if (m_extraEntryLookup) {
+        if (const CatalogEntry* extra = m_extraEntryLookup(resolved))
+            return extra;
+        if (resolved != id)
+            return m_extraEntryLookup(id);
     }
     return nullptr;
 }

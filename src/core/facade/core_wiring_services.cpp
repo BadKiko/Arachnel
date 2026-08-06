@@ -108,6 +108,9 @@ void CoreController::initializeServices()
         new CatalogController(&m_catalog, &m_sources, m_pluginHost, &m_catalogCache,
                               std::move(catalogHooks), this);
     m_catalogController->setMergedCacheLock(&m_catalogCacheLock);
+    m_catalog.setExtraEntryLookup([this](const QString& id) -> const CatalogEntry* {
+        return m_catalogController ? m_catalogController->entryByIdDeep(id) : nullptr;
+    });
     if (m_catalogFilters)
         m_catalogFilters->setCacheLock(&m_catalogCacheLock);
     if (m_pluginHost) {

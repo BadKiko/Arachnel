@@ -173,6 +173,18 @@ CatalogEntry parseRyuuEntryObject(const QJsonObject& obj, const QString& sourceI
     if (entry.id.isEmpty())
         entry.id = slugifyCatalogId(entry.title, sourceId);
 
+    // Plugin catalog JSON (arachnel.plugin.catalog.v1) also uses "entries" and carries
+    // torrent magnets in uris[]. Ryuu/steamidra rows simply omit them.
+    entry.sourcePageUrl = obj.value(QStringLiteral("articleUrl")).toString();
+    if (entry.sourcePageUrl.isEmpty())
+        entry.sourcePageUrl = obj.value(QStringLiteral("sourcePageUrl")).toString();
+    const QJsonArray uris = obj.value(QStringLiteral("uris")).toArray();
+    for (const QJsonValue& uri : uris) {
+        const QString value = uri.toString().trimmed();
+        if (!value.isEmpty())
+            entry.magnetUris.append(value);
+    }
+
     const QJsonArray addons = obj.value(QStringLiteral("addons")).toArray();
     entry.addons.reserve(addons.size());
     for (const QJsonValue& addonValue : addons) {

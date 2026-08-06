@@ -113,7 +113,7 @@ void CoreController::installCatalogEntryFromSource(const QString& entryId, const
         showNotice(QCoreApplication::translate("Core", "Catalog entry not found: %1").arg(entryId));
         return;
     }
-    installCatalogEntry(offer->id, libraryId, addonIdsVariant, installMode);
+    installResolvedCatalogEntry(*offer, libraryId, addonIdsVariant, installMode);
 }
 
 void CoreController::installCatalogEntry(const QString& entryId, const QString& libraryId,
@@ -134,7 +134,19 @@ void CoreController::installCatalogEntry(const QString& entryId, const QString& 
         return;
     }
 
-    const CatalogEntry& entry = *entryOpt;
+    installResolvedCatalogEntry(*entryOpt, libraryId, addonIdsVariant, installMode);
+}
+
+void CoreController::installResolvedCatalogEntry(const CatalogEntry& entryIn,
+                                                 const QString& libraryId,
+                                                 const QVariantList& addonIdsVariant,
+                                                 const QString& installMode)
+{
+    if (!ensureProtonReady())
+        return;
+
+    const CatalogEntry& entry = entryIn;
+    const QString entryId = entry.id;
 
     const bool ownsDownload =
         m_pluginHost && m_pluginHost->pluginOwnsDownload(entry.sourceId);
@@ -155,7 +167,7 @@ void CoreController::installCatalogEntry(const QString& entryId, const QString& 
     if (ownsDownload) {
         ensureCatalogAddons(entryId);
         const CatalogEntry* live = findCatalogEntry(entryId);
-        const CatalogEntry& entry = live ? *live : *entryOpt;
+        const CatalogEntry& entry = live ? *live : entryIn;
 
         ISourcePlugin* plugin = m_pluginHost->plugin(entry.sourceId);
         if (!plugin) {
@@ -339,6 +351,8 @@ bool CoreController::ensureCatalogAddons(const QString& entryId)
     const QString resolved = repairCatalogEntryId(entryId);
     const auto cacheIt = m_catalogIdToCacheIndex.constFind(resolved);
     if (cacheIt == m_catalogIdToCacheIndex.cend()) {
+        // FreeTP (and other non-showcase) rows are not in the merged index. Their addons
+        // already live on the offer / bySource snapshot - nothing async to fetch.
         emit catalogAddonsReady(resolved);
         return true;
     }

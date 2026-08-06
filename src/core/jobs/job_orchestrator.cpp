@@ -178,7 +178,8 @@ QString JobOrchestrator::createJob(const QString& title, JobKind kind, const QSt
     job.kind = kind;
     job.status = QStringLiteral("starting");
     job.progress = 0;
-    job.detail = httpDownload ? QStringLiteral("Downloading…") : QStringLiteral("Connecting…");
+    job.detail = httpDownload ? QStringLiteral("Downloading…")
+                              : QStringLiteral("0% · Fetching metadata…");
     job.entryId = entryId;
     job.sourceId = sourceId;
     job.magnetUri = downloadUri;

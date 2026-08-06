@@ -63,6 +63,9 @@
     void syncCatalogInstallKind(const QString&, InstallKind);
     void syncInstallKindProbeSuspension();
     void applyCachedMetadata(CatalogEntry&) const;
+    void installResolvedCatalogEntry(const CatalogEntry& entry, const QString& libraryId,
+                                     const QVariantList& addonIdsVariant,
+                                     const QString& installMode);
     void enrichLibraryGameCover(LibraryGame&) const;
     bool ensureRuntimeDependenciesForGame(const LibraryGame&);
     void setRuntimeSetupActive(const LibraryGame&, const QString&);

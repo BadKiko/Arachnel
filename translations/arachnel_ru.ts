@@ -688,6 +688,22 @@
         <translation>Подключение…</translation>
     </message>
     <message>
+        <source>0% · Fetching metadata…</source>
+        <translation>0% · Получение метаданных…</translation>
+    </message>
+    <message>
+        <source>Fetching metadata…</source>
+        <translation>Получение метаданных…</translation>
+    </message>
+    <message>
+        <source>Fetching metadata · 0%</source>
+        <translation>Получение метаданных · 0%</translation>
+    </message>
+    <message>
+        <source>Checking…</source>
+        <translation>Проверка…</translation>
+    </message>
+    <message>
         <location line="+1"/>
         <source>Installing…</source>
         <translation>Установка…</translation>
@@ -837,8 +853,8 @@
     </message>
     <message>
         <location line="+2"/>
-        <source>Metadata</source>
-        <translation>Метаданные</translation>
+        <source>Fetching metadata</source>
+        <translation>Получение метаданных</translation>
     </message>
     <message>
         <location line="+2"/>

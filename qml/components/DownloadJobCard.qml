@@ -33,7 +33,7 @@ Item {
                                             ? root.parentEntryId
                                             : root.entryId
 
-    readonly property bool inProgress: ["starting", "checking", "metadata", "downloading", "seeding", "paused", "installing"].includes(status)
+    readonly property bool inProgress: ["starting", "checking", "metadata", "queued", "downloading", "seeding", "paused", "installing"].includes(status)
     readonly property bool isInstalling: status === "installing"
     readonly property bool isPaused: status === "paused"
     readonly property bool isFailed: status === "failed" || status === "cancelled"
@@ -142,22 +142,40 @@ Item {
                 || d.indexOf("Preparing") >= 0
                 || d.indexOf("Подготовка") >= 0
                 || d.indexOf("Getting game info") >= 0
+                || d.indexOf("Fetching metadata") >= 0
+                || d.indexOf("Получение метаданных") >= 0
+                || d.indexOf("Connecting") >= 0
+                || d.indexOf("Подключение") >= 0
+                || d.indexOf("Checking") >= 0
+                || d.indexOf("Проверка") >= 0
     }
 
     readonly property string sizeLine: {
+        if (root.status === "metadata" || root.status === "starting" || root.status === "queued")
+            return "0%"
         const downloaded = root.effectiveDownloaded
         const total = root.effectiveTotalBytes
         if (total > 0)
             return formatByteCount(downloaded) + " / " + formatByteCount(total)
         if (downloaded > 0)
             return formatByteCount(downloaded)
+        if (root.inProgress && !root.isPaused && !root.isInstalling)
+            return "0%"
         return ""
     }
 
     readonly property string transferMeta: {
         if (root.isPaused || root.isInstalling || root.isCompleted || root.isFailed)
             return ""
+        if (root.status === "metadata" || root.status === "starting" || root.status === "queued")
+            return qsTr("Fetching metadata…")
+
         const d = (root.detail || "").trim()
+        // Detail from core already includes size / speed / peers / ETA - use as-is.
+        if (d.length > 0 && !isGenericStatusDetail(d)
+                && (d.indexOf(" / ") >= 0 || d.indexOf("peers") >= 0 || d.indexOf("ETA") >= 0))
+            return d
+
         if (d.length > 0 && !isGenericStatusDetail(d))
             return d
 
@@ -179,8 +197,12 @@ Item {
         if (root.isInstalling && d.length && !isGenericStatusDetail(d))
             return d
 
-        const size = root.sizeLine
+        // Full transfer detail already has size - don't prepend sizeLine again.
         const meta = root.transferMeta
+        if (meta.length > 0 && (meta.indexOf(" / ") >= 0 || meta.indexOf("peers") >= 0))
+            return meta
+
+        const size = root.sizeLine
         if (size.length && meta.length)
             return size + " · " + meta
         if (size.length)

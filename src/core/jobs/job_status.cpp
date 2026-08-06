@@ -13,7 +13,7 @@ QString jobStatusLabel(const QString& status)
     if (status == QStringLiteral("checking"))
         return QCoreApplication::translate("Core", "Checking");
     if (status == QStringLiteral("metadata"))
-        return QCoreApplication::translate("Core", "Metadata");
+        return QCoreApplication::translate("Core", "Fetching metadata");
     if (status == QStringLiteral("downloading"))
         return QCoreApplication::translate("Core", "Downloading");
     if (status == QStringLiteral("installing"))

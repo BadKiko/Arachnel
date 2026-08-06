@@ -63,9 +63,29 @@ Item {
                 || d.indexOf("Preparing") >= 0
                 || d.indexOf("Подготовка") >= 0
                 || d.indexOf("Getting game info") >= 0
+                || d.indexOf("Fetching metadata") >= 0
+                || d.indexOf("Получение метаданных") >= 0
+                || d.indexOf("Connecting") >= 0
+                || d.indexOf("Подключение") >= 0
+    }
+
+    readonly property bool waitingMetadata: {
+        if (!root.inProgress || root.paused)
+            return false
+        if (root.progress > 0 || root.bytesDownloaded > 0)
+            return false
+        const d = root.detail || ""
+        return d.indexOf("Fetching metadata") >= 0
+                || d.indexOf("Получение метаданных") >= 0
+                || d.indexOf("Connecting") >= 0
+                || d.indexOf("Подключение") >= 0
+                || d.indexOf("0%") >= 0
     }
 
     readonly property string transferLine: {
+        if (root.waitingMetadata)
+            return qsTr("0% · Fetching metadata…")
+
         const downloaded = root.bytesDownloaded > 0
             ? root.bytesDownloaded
             : (root.totalBytes > 0 && root.progress > 0
@@ -172,6 +192,8 @@ Item {
             ? qsTr("Downloaded")
             : root.paused
               ? qsTr("Paused · %1%").arg(root.progress)
+              : root.waitingMetadata
+                ? qsTr("Fetching metadata · 0%")
               : root.inProgress
                 ? qsTr("Downloading · %1%").arg(root.progress)
                 : root.idleText

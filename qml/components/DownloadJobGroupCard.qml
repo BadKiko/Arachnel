@@ -21,7 +21,7 @@ MD.ElevationRectangle {
     function jobIsActive(job) {
         if (!job || !job.status)
             return false
-        return ["starting", "checking", "metadata", "downloading", "seeding", "paused", "installing"].includes(job.status)
+        return ["starting", "checking", "metadata", "queued", "downloading", "seeding", "paused", "installing"].includes(job.status)
     }
 
     function addonTitle(job) {

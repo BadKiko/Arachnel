@@ -14,6 +14,9 @@ void jobDisplayTranslationSeed()
     QT_TRANSLATE_NOOP("Core", "Installation required");
     QT_TRANSLATE_NOOP("Core", "Downloading…");
     QT_TRANSLATE_NOOP("Core", "Connecting…");
+    QT_TRANSLATE_NOOP("Core", "0% · Fetching metadata…");
+    QT_TRANSLATE_NOOP("Core", "Fetching metadata…");
+    QT_TRANSLATE_NOOP("Core", "Checking…");
     QT_TRANSLATE_NOOP("Core", "Installing…");
     QT_TRANSLATE_NOOP("Core", "Installing add-on…");
     QT_TRANSLATE_NOOP("Core", "Preparing…");
@@ -133,6 +136,12 @@ QString displayJobDetail(const QString& detail)
         {"Downloading…", "Downloading…"},
         {"Подключение…", "Connecting…"},
         {"Connecting…", "Connecting…"},
+        {"0% · Получение метаданных…", "0% · Fetching metadata…"},
+        {"0% · Fetching metadata…", "0% · Fetching metadata…"},
+        {"Получение метаданных…", "Fetching metadata…"},
+        {"Fetching metadata…", "Fetching metadata…"},
+        {"Проверка…", "Checking…"},
+        {"Checking…", "Checking…"},
         {"Установка…", "Installing…"},
         {"Installing…", "Installing…"},
         {"Установка дополнения…", "Installing add-on…"},

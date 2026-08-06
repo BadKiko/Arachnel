@@ -110,7 +110,32 @@ Item {
     readonly property bool showDownloadProgress: !!(downloadJob.inProgress) || downloadCompleted
 
     function refreshDownloadJob() {
-        downloadJob = Core.jobs.jobForEntry(root.gameId)
+        let job = Core.jobs.jobForEntry(root.gameId)
+        if (job && job.jobId) {
+            downloadJob = job
+            return
+        }
+        if (root.pendingInstallEntryId.length) {
+            job = Core.jobs.jobForEntry(root.pendingInstallEntryId)
+            if (job && job.jobId) {
+                downloadJob = job
+                return
+            }
+        }
+        const offers = Core.installOffersForEntry(root.gameId)
+        if (offers && offers.length) {
+            for (let i = 0; i < offers.length; ++i) {
+                const oid = offers[i].entryId || ""
+                if (!oid.length || oid === root.gameId)
+                    continue
+                job = Core.jobs.jobForEntry(oid)
+                if (job && job.jobId) {
+                    downloadJob = job
+                    return
+                }
+            }
+        }
+        downloadJob = job || ({})
     }
 
     function parseSizeLabelBytes(label) {
@@ -165,6 +190,7 @@ Item {
 
     onGameIdChanged: {
         root.pendingInstallEntryId = ""
+        root.pendingInstallSourceId = ""
         refreshDownloadJob()
         syncMediaLoading()
         maybeEnrich()
@@ -236,12 +262,13 @@ Item {
     signal backRequested()
     signal openSourcePicker(string entryId, string title)
     signal openAddonPicker(string entryId, string title)
-    signal openInstallPicker(string entryId, string title, var selectedAddonIds)
+    signal openInstallPicker(string entryId, string title, var selectedAddonIds, string sourceId)
     signal openSteamidraTrust()
     signal protonRequired()
 
     /** Catalog entry id for the chosen install source (may differ from showcase gameId). */
     property string pendingInstallEntryId: ""
+    property string pendingInstallSourceId: ""
 
     function resolveInstallEntryId() {
         return root.pendingInstallEntryId.length ? root.pendingInstallEntryId : root.gameId
@@ -260,8 +287,11 @@ Item {
         const installId = root.resolveInstallEntryId()
         const details = Core.entryDetails(installId)
         const title = (details.title || root.info.title || "")
+        const sourceId = root.pendingInstallSourceId || ""
         if (Core.needsInstallLocationChoice())
-            root.openInstallPicker(installId, title, ids)
+            root.openInstallPicker(installId, title, ids, sourceId)
+        else if (sourceId.length)
+            Core.installCatalogEntryFromSource(root.gameId, sourceId, "", ids)
         else
             Core.installCatalogEntry(installId, "", ids)
     }
@@ -301,20 +331,25 @@ Item {
             return
         }
         root.pendingInstallEntryId = ""
+        root.pendingInstallSourceId = ""
         const offers = Core.installOffersForEntry(root.gameId)
         if (offers.length > 1) {
             root.openSourcePicker(root.gameId, root.info.title || "")
             return
         }
-        if (offers.length === 1 && (offers[0].entryId || "").length)
+        if (offers.length === 1 && (offers[0].entryId || "").length) {
             root.pendingInstallEntryId = offers[0].entryId
-        else
+            root.pendingInstallSourceId = offers[0].sourceId || ""
+        } else {
             root.pendingInstallEntryId = root.gameId
+            root.pendingInstallSourceId = root.info.sourceId || ""
+        }
         root.continueAfterSourceChosen()
     }
 
-    function afterSourceSelected(offerEntryId, _sourceId) {
+    function afterSourceSelected(offerEntryId, sourceId) {
         root.pendingInstallEntryId = (offerEntryId && offerEntryId.length) ? offerEntryId : root.gameId
+        root.pendingInstallSourceId = sourceId || ""
         root.continueAfterSourceChosen()
     }
 

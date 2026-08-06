@@ -685,7 +685,23 @@
     <message>
         <location line="+1"/>
         <source>Connecting…</source>
-        <translation></translation>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>0% · Fetching metadata…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fetching metadata…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fetching metadata · 0%</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Checking…</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
@@ -837,8 +853,8 @@
     </message>
     <message>
         <location line="+2"/>
-        <source>Metadata</source>
-        <translation></translation>
+        <source>Fetching metadata</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+2"/>

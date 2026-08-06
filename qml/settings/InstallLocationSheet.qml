@@ -11,12 +11,16 @@ MD.BottomSheet {
     sheetType: MD.Enum.BottomSheetModal
     property string entryId: ""
     property string entryTitle: ""
+    property string sourceId: ""
     property var selectedAddonIds: []
     property bool fromAddonPicker: false
     property string selectedLibraryId: Core.settings.storageLibraries.defaultLibraryId
     property var _pendingBack: null
-    property var installEntry: function (entryId, libraryId, addonIds) {
-        Core.installCatalogEntry(entryId, libraryId, addonIds)
+    property var installEntry: function (entryId, libraryId, addonIds, sourceId) {
+        if (sourceId && sourceId.length)
+            Core.installCatalogEntryFromSource(entryId, sourceId, libraryId, addonIds)
+        else
+            Core.installCatalogEntry(entryId, libraryId, addonIds)
     }
 
     signal backToAddons(string entryId, string entryTitle, var selectedAddonIds)
@@ -106,9 +110,10 @@ MD.BottomSheet {
         return qsTr("DLC adds to install size")
     }
 
-    function openForEntry(id, title, addonIds, cameFromAddonPicker) {
+    function openForEntry(id, title, addonIds, cameFromAddonPicker, srcId) {
         entryId = id
         entryTitle = title || ""
+        sourceId = srcId || ""
         selectedAddonIds = addonIds || []
         fromAddonPicker = !!cameFromAddonPicker
         _pendingBack = null
@@ -307,7 +312,7 @@ MD.BottomSheet {
                 enabled: root.entryId.length > 0 && root.selectedLibraryId.length > 0
                 onClicked: {
                     root.installEntry(root.entryId, root.selectedLibraryId,
-                                      root.selectedAddonIds)
+                                      root.selectedAddonIds, root.sourceId)
                     root.close()
                 }
             }

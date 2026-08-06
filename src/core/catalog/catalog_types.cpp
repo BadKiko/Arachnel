@@ -68,9 +68,18 @@ void prepareCatalogEntry(CatalogEntry& entry)
         if (entry.coverUrl.startsWith(QLatin1String("http"), Qt::CaseInsensitive))
             entry.coverUrl.clear();
         entry.remoteCoverUrl.clear();
-        entry.magnetUris.clear();
-        entry.magnetUris.squeeze();
-        entry.sourcePageUrl.clear();
+        bool hasTorrentMagnet = false;
+        for (const QString& uri : entry.magnetUris) {
+            if (uri.startsWith(QLatin1String("magnet:"), Qt::CaseInsensitive)) {
+                hasTorrentMagnet = true;
+                break;
+            }
+        }
+        if (!hasTorrentMagnet) {
+            entry.magnetUris.clear();
+            entry.magnetUris.squeeze();
+            entry.sourcePageUrl.clear();
+        }
     }
     entry.genreKeys.squeeze();
 }

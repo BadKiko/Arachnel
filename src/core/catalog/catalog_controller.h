@@ -82,6 +82,11 @@ public:
     /** Resolve a specific source offer (may differ from the merged showcase entry). */
     std::optional<CatalogEntry> resolveInstallOffer(const QString& entryId,
                                                     const QString& sourceId) const;
+    /**
+     * Find a row by id in install offers or per-source catalogs (not only the merged showcase).
+     * Needed for FreeTP add-ons when steamidra won the showcase card.
+     */
+    const CatalogEntry* entryByIdDeep(const QString& entryId) const;
 
 signals:
     void catalogLoadingChanged(bool loading);

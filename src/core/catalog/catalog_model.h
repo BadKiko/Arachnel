@@ -10,6 +10,8 @@
 #include <QVariantMap>
 #include <QVector>
 
+#include <functional>
+
 namespace arachnel::core {
 
 class CatalogModel : public QAbstractListModel
@@ -70,6 +72,8 @@ public:
 
     /** Bind to cache storage; must outlive visible indices. */
     void bindSource(const QVector<CatalogEntry>* source);
+    /** Fallback for non-showcase ids (e.g. FreeTP offer under a steamidra card). */
+    void setExtraEntryLookup(std::function<const CatalogEntry*(const QString&)> lookup);
     /** Show cache rows by index (sorted in-place by current sortMode). No deep copy. */
     void setVisibleIndices(QVector<int> indices);
     /** Same as setVisibleIndices but indices are already ordered for current sortMode. */
@@ -101,6 +105,7 @@ private:
     QVariantMap toMap(const CatalogEntry& entry) const;
 
     const QVector<CatalogEntry>* m_source = nullptr;
+    std::function<const CatalogEntry*(const QString&)> m_extraEntryLookup;
     QVector<int> m_indices;
     QHash<QString, int> m_idToRow;
     SortMode m_sortMode = SortNewest;

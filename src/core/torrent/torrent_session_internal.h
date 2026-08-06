@@ -35,6 +35,9 @@ QString statusStateLabel(const lt::torrent_status& status)
     case lt::torrent_status::seeding:
         return QStringLiteral("seeding");
     default:
+        // Magnets often sit in checking_resume_data / unknown before metadata arrives.
+        if (!status.has_metadata)
+            return QStringLiteral("metadata");
         return QStringLiteral("queued");
     }
 }

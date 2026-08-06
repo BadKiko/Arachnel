@@ -12,6 +12,8 @@
 #include <QCoreApplication>
 #include <QDateTime>
 #include <QFutureWatcher>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QReadLocker>
 #include <QTimer>
 #include <QUrl>
@@ -287,26 +289,45 @@ void CatalogController::rebuildMergedCatalog()
         return;
     }
 
-    // Kick loads for missing sources on the UI thread; heavy merge runs off-thread.
+    QStringList enabledActiveIds;
+    enabledActiveIds.reserve(m_activeSourceIds.size());
     for (const QString& sourceId : m_activeSourceIds) {
         const SourcePluginInfo* source = m_sources->pluginById(sourceId);
-        if (!source || !source->enabled)
-            continue;
-        if (!m_catalogBySource.contains(sourceId) && !m_loadingSourceIds.contains(sourceId))
+        if (source && source->enabled)
+            enabledActiveIds.append(sourceId);
+    }
+    const bool multiSource = enabledActiveIds.size() > 1;
+
+    // Kick loads for missing sources on the UI thread; heavy merge runs off-thread.
+    // Empty bySource rows after a single-source evacuate must reload when multi-source.
+    for (const QString& sourceId : enabledActiveIds) {
+        const bool missing = !m_catalogBySource.contains(sourceId);
+        const bool evacuated =
+            multiSource && m_catalogBySource.contains(sourceId)
+            && m_catalogBySource.value(sourceId).isEmpty();
+        if (evacuated) {
+            m_catalogBySource.remove(sourceId);
+            m_sourceLoadedAtMs.remove(sourceId);
+        }
+        if ((missing || evacuated) && !m_loadingSourceIds.contains(sourceId))
             requestCatalogLoad(sourceId);
     }
 
-    QStringList enabledSourceIds;
-    enabledSourceIds.reserve(m_activeSourceIds.size());
-    for (const QString& sourceId : m_activeSourceIds) {
-        const SourcePluginInfo* source = m_sources->pluginById(sourceId);
-        if (source && source->enabled && m_catalogBySource.contains(sourceId))
-            enabledSourceIds.append(sourceId);
+    QStringList loadedSourceIds;
+    loadedSourceIds.reserve(enabledActiveIds.size());
+    for (const QString& sourceId : enabledActiveIds) {
+        if (!m_catalogBySource.contains(sourceId))
+            continue;
+        if (m_catalogBySource.value(sourceId).isEmpty())
+            continue;
+        loadedSourceIds.append(sourceId);
     }
 
-    // Single-source: move into merged; bySource key stays empty.
-    if (enabledSourceIds.size() == 1) {
-        const QString sourceId = enabledSourceIds.first();
+    // Evacuate only when a single enabled source is configured. If another plugin is
+    // still loading, moving the first catalog out of bySource drops it from later merges
+    // and install offers stay single-source (Steam only, FreeTP gone).
+    if (!multiSource && loadedSourceIds.size() == 1) {
+        const QString sourceId = loadedSourceIds.first();
         QVector<CatalogEntry> local;
         {
             const auto it = m_catalogBySource.find(sourceId);
@@ -337,6 +358,9 @@ void CatalogController::rebuildMergedCatalog()
         return;
     }
 
+    if (loadedSourceIds.isEmpty())
+        return;
+
     struct MergeResult {
         QVector<CatalogEntry> merged;
         QHash<QString, QVector<CatalogEntry>> installOffers;
@@ -346,11 +370,11 @@ void CatalogController::rebuildMergedCatalog()
     const quint64 generation = ++m_mergeGeneration;
     const QStringList activeSourceIds = m_activeSourceIds;
     QHash<QString, QVector<CatalogEntry>> bySource;
-    bySource.reserve(enabledSourceIds.size());
-    for (const QString& sourceId : enabledSourceIds)
+    bySource.reserve(loadedSourceIds.size());
+    for (const QString& sourceId : loadedSourceIds)
         bySource.insert(sourceId, m_catalogBySource.value(sourceId));
 
-    QSet<QString> enabledIds(enabledSourceIds.begin(), enabledSourceIds.end());
+    QSet<QString> enabledIds(loadedSourceIds.begin(), loadedSourceIds.end());
 
     auto* watcher = new QFutureWatcher<MergeResult>(this);
     connect(watcher, &QFutureWatcher<MergeResult>::finished, this,
@@ -460,9 +484,18 @@ void CatalogController::applyMergedCatalogResult(
     if (m_hooks.mergedEntriesReady)
         m_hooks.mergedEntriesReady(*m_mergedCache, m_activeSourceIds, m_activeQuery);
 
-    if (m_activeSourceIds.size() == 1) {
-        const QString sid = m_activeSourceIds.first();
-        const auto it = m_catalogBySource.find(sid);
+    int enabledActiveCount = 0;
+    QString singleEnabledId;
+    for (const QString& sourceId : m_activeSourceIds) {
+        const SourcePluginInfo* source = m_sources->pluginById(sourceId);
+        if (source && source->enabled) {
+            ++enabledActiveCount;
+            if (singleEnabledId.isEmpty())
+                singleEnabledId = sourceId;
+        }
+    }
+    if (enabledActiveCount == 1 && !singleEnabledId.isEmpty()) {
+        const auto it = m_catalogBySource.find(singleEnabledId);
         if (it != m_catalogBySource.end() && !it.value().isEmpty())
             it.value() = QVector<CatalogEntry>();
     }
@@ -476,15 +509,14 @@ void CatalogController::applyMergedCatalogResult(
     if (m_hooks.warmCovers)
         m_hooks.warmCovers();
 
-    const int sourceCount = m_activeSourceIds.size();
-    if (sourceCount == 1) {
-        const SourcePluginInfo* source = m_sources->pluginById(m_activeSourceIds.first());
+    if (enabledActiveCount == 1) {
+        const SourcePluginInfo* source = m_sources->pluginById(singleEnabledId);
         setCatalogStatus(QCoreApplication::translate("Core", "%1 · %2 games")
-                             .arg(source ? source->name : m_activeSourceIds.first())
+                             .arg(source ? source->name : singleEnabledId)
                              .arg(m_catalog->count()));
     } else {
         setCatalogStatus(QCoreApplication::translate("Core", "%1 sources · %2 games")
-                             .arg(sourceCount)
+                             .arg(enabledActiveCount)
                              .arg(m_catalog->count()));
     }
     updateCatalogLoadingState();
@@ -568,6 +600,42 @@ std::optional<CatalogEntry> CatalogController::resolveInstallOffer(const QString
         return findMerged();
     }
     return findMerged();
+}
+
+const CatalogEntry* CatalogController::entryByIdDeep(const QString& entryId) const
+{
+    if (entryId.isEmpty())
+        return nullptr;
+    const QString resolved = repairCatalogEntryId(entryId);
+
+    auto matchId = [&](const CatalogEntry& entry) {
+        return entry.id == resolved || entry.id == entryId;
+    };
+
+    // Prefer install-offer snapshots: they keep FreeTP magnets/addons when steamidra is showcase.
+    const QString groupKey = m_entryIdToOfferGroup.value(resolved);
+    const QString groupKeyAlt =
+        groupKey.isEmpty() && entryId != resolved ? m_entryIdToOfferGroup.value(entryId)
+                                                  : QString();
+    for (const QString& key : {groupKey, groupKeyAlt}) {
+        if (key.isEmpty())
+            continue;
+        const auto offersIt = m_installOffers.constFind(key);
+        if (offersIt == m_installOffers.cend())
+            continue;
+        for (const CatalogEntry& offer : offersIt.value()) {
+            if (matchId(offer))
+                return &offer;
+        }
+    }
+
+    for (auto it = m_catalogBySource.cbegin(); it != m_catalogBySource.cend(); ++it) {
+        for (const CatalogEntry& entry : it.value()) {
+            if (matchId(entry))
+                return &entry;
+        }
+    }
+    return nullptr;
 }
 
 void CatalogController::requestCatalogLoad(const QString& sourceId)
@@ -659,7 +727,19 @@ void CatalogController::loadCatalogSourceNow(const QString& sourceId)
             out.hadDiskPayload = true;
             out.etag = etag;
             out.payloadSha = CatalogDiskCache::payloadSha256(payload);
-            QVector<CatalogEntry> entries = parseCatalogFeed(payload, sourceId);
+            // Plugin JSON uses schema + entries[]; parseCatalogFeed treats "entries" as Ryuu
+            // and used to drop FreeTP magnets. Prefer the plugin parser when schema matches.
+            QVector<CatalogEntry> entries;
+            const QJsonDocument doc = QJsonDocument::fromJson(payload);
+            if (doc.isObject()
+                && doc.object()
+                       .value(QStringLiteral("schema"))
+                       .toString()
+                       .startsWith(QStringLiteral("arachnel.plugin.catalog"))) {
+                entries = parsePluginCatalogJson(payload, sourceId);
+            }
+            if (entries.isEmpty())
+                entries = parseCatalogFeed(payload, sourceId);
             if (entries.isEmpty())
                 entries = parsePluginCatalogJson(payload, sourceId);
             for (CatalogEntry& entry : entries) {

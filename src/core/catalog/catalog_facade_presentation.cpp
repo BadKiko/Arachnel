@@ -84,13 +84,13 @@ const CatalogEntry* CoreController::findCatalogEntry(const QString& entryId) con
         if (idx >= 0 && idx < m_catalogCache.size())
             return &m_catalogCache.at(idx);
     }
+    // Non-showcase source rows (FreeTP under a steamidra card) live in offers / bySource.
     if (m_catalogController) {
-        const auto& catalogs = m_catalogController->catalogsBySource();
-        for (auto it = catalogs.cbegin(); it != catalogs.cend(); ++it) {
-            for (const auto& entry : it.value()) {
-                if (entry.id == resolved)
-                    return &entry;
-            }
+        if (const CatalogEntry* deep = m_catalogController->entryByIdDeep(resolved))
+            return deep;
+        if (resolved != entryId) {
+            if (const CatalogEntry* deep = m_catalogController->entryByIdDeep(entryId))
+                return deep;
         }
     }
     if (const CatalogEntry* found = m_catalog.entryById(resolved))
