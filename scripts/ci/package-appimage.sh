@@ -218,6 +218,18 @@ cd "${ROOT}"
 deploy_qml_modules
 ensure_apprun_not_sed_patched
 
+# Do not ship OpenSSL inside the AppImage. linuxdeploy pulls an OPENSSL_3.0.x
+# copy onto LD_LIBRARY_PATH; rolling hosts (Arch/CachyOS) then fail to dlopen
+# plugins that link host libcurl (needs OPENSSL_3.2+). Qt Network uses the
+# system libssl.so.3 instead (present on Ubuntu 22.04+ / Fedora / Arch).
+echo "==> Prefer system OpenSSL over AppImage copy"
+mkdir -p "${APPDIR}/usr/lib/.bundled-ssl-unused"
+for f in libssl.so.3 libcrypto.so.3 libssl.so libcrypto.so; do
+  if [[ -e "${APPDIR}/usr/lib/${f}" ]]; then
+    mv -f "${APPDIR}/usr/lib/${f}" "${APPDIR}/usr/lib/.bundled-ssl-unused/${f}"
+  fi
+done
+
 echo "==> AppImage"
 # Package only — Qt libs/QML already deployed above.
 env -u LINUXDEPLOY_PLUGIN_QT \

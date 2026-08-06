@@ -33,3 +33,5 @@
 Сборки: [Releases](https://github.com/BadKiko/Arachnel/releases)
 
 Баги/идеи: [Issues](https://github.com/BadKiko/Arachnel/issues)
+
+Сборка из исходников: [CONTRIBUTING.md](CONTRIBUTING.md)

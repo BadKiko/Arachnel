@@ -251,8 +251,11 @@ bool PluginHost::installFromArach(const QString& archivePath)
         return false;
     }
 
-    // Unlock loaded plugin DLLs before renaming folders on Windows.
-    unloadAll();
+    // Unlock only this plugin's library before replacing files (do not tear down
+    // every other source - that destroyed FreeTP's catalog and crashed on Linux).
+    if (m_beforeUnload)
+        m_beforeUnload();
+    unloadPlugin(id);
 
     if (QDir(targetRoot).exists()) {
         if (!QDir().rename(targetRoot, backupRoot)) {
@@ -290,7 +293,7 @@ bool PluginHost::installFromArach(const QString& archivePath)
         m_lastError = QCoreApplication::translate(
             "Core",
             "Plugin files were copied but the library failed to load. Rebuild the plugin for "
-            "your Arachnel version and platform (MSVC/MinGW), then reinstall.");
+            "your Arachnel version and this OS, then reinstall.");
         if (!g_lastPluginLoadError.isEmpty())
             m_lastError += QStringLiteral(" (") + g_lastPluginLoadError + QLatin1Char(')');
         return false;
@@ -310,8 +313,10 @@ bool PluginHost::uninstallPlugin(const QString& pluginId)
         return false;
     }
 
-    // Drop loaded libraries before deleting files (DLL/.so stay locked otherwise).
-    unloadAll();
+    // Drop this plugin's library before deleting files (DLL/.so stay locked otherwise).
+    if (m_beforeUnload)
+        m_beforeUnload();
+    unloadPlugin(id);
 
     bool removedAny = false;
     QStringList roots = pluginSearchRoots();

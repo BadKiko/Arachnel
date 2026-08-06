@@ -34,3 +34,5 @@ The whole point is plug and play. Pick a game, download it, hit Play. On Windows
 Builds: [Releases](https://github.com/BadKiko/Arachnel/releases)
 
 Bugs/ideas: [Issues](https://github.com/BadKiko/Arachnel/issues)
+
+Build from source: [CONTRIBUTING.md](CONTRIBUTING.md)

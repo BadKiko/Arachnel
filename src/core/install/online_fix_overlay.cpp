@@ -10,6 +10,8 @@
 #include <QProcess>
 #include <QProcessEnvironment>
 #include <QRegularExpression>
+#include <QStandardPaths>
+#include <QSet>
 
 namespace arachnel::core {
 namespace {
@@ -42,6 +44,55 @@ QString appendDllOverride(QString overrides, const QString& dllStem, const QStri
     if (!overrides.isEmpty() && !overrides.endsWith(QLatin1Char(';')))
         overrides += QLatin1Char(';');
     return overrides + key + mode;
+}
+
+QString findSteamidraCmdStub()
+{
+    const QStringList roots = {
+        QStandardPaths::writableLocation(QStandardPaths::AppDataLocation),
+        QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation),
+    };
+    QSet<QString> seen;
+    for (const QString& root : roots) {
+        if (root.isEmpty() || seen.contains(root))
+            continue;
+        seen.insert(root);
+        const QStringList candidates = {
+            root + QStringLiteral("/plugins/steamidra/online_fix_kit/cmd_stub.exe"),
+            root + QStringLiteral("/Arachnel/plugins/steamidra/online_fix_kit/cmd_stub.exe"),
+        };
+        for (const QString& path : candidates) {
+            if (QFileInfo::exists(path))
+                return path;
+        }
+    }
+    return {};
+}
+
+void plantFreetpPromoBlock(const QString& dir)
+{
+    if (dir.isEmpty() || !QDir(dir).exists())
+        return;
+
+    QDir().mkpath(dir + QStringLiteral("/FreeTP/UserData"));
+    const QString anon = dir + QStringLiteral("/FreeTP/UserData/AnonFolderSave.txt");
+    if (!QFileInfo::exists(anon)) {
+        QFile f(anon);
+        if (f.open(QIODevice::WriteOnly))
+            f.close();
+    }
+
+    const QString stubSrc = findSteamidraCmdStub();
+    if (stubSrc.isEmpty())
+        return;
+    const QString stubDst = dir + QStringLiteral("/cmd.exe");
+    const QFileInfo srcInfo(stubSrc);
+    const QFileInfo dstInfo(stubDst);
+    if (dstInfo.exists() && dstInfo.size() == srcInfo.size()
+        && dstInfo.lastModified() >= srcInfo.lastModified())
+        return;
+    QFile::remove(stubDst);
+    QFile::copy(stubSrc, stubDst);
 }
 
 QString readDllListOverrides(const QString& listPath)
@@ -659,6 +710,13 @@ void applyOnlineFixLaunchInfo(const QString& installPath, LaunchInfo* info)
         if (QFileInfo(exeDir).absoluteFilePath() != QFileInfo(overlayDir).absoluteFilePath())
             ensureSteamAppIdFile(exeDir);
     }
+
+    // Windows + Proton: block FreeTP promo browser (path-local .hash / noop cmd.exe).
+    plantFreetpPromoBlock(overlayDir);
+    if (!info->workingDirectory.isEmpty())
+        plantFreetpPromoBlock(info->workingDirectory);
+    if (!info->executable.isEmpty())
+        plantFreetpPromoBlock(QFileInfo(info->executable).absolutePath());
 
 #if defined(Q_OS_LINUX)
     // Always attach overlay preload when OF is on (SOFL default use-steam-overlay).

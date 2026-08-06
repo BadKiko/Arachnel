@@ -29,6 +29,8 @@
 #define NOMINMAX
 #endif
 #include <windows.h>
+#elif defined(Q_OS_LINUX)
+#include <dlfcn.h>
 #endif
 
 namespace arachnel::core {
@@ -54,23 +56,39 @@ void PluginHost::unloadAll()
     if (m_beforeUnload)
         m_beforeUnload();
 
-    for (auto it = m_plugins.begin(); it != m_plugins.end(); ++it) {
-        LoadedPlugin* loaded = it.value();
-        if (!loaded)
-            continue;
-        if (loaded->instance && loaded->destroyFn)
+    const QStringList ids = m_plugins.keys();
+    for (const QString& id : ids)
+        unloadPlugin(id);
+}
+
+void PluginHost::unloadPlugin(const QString& pluginId)
+{
+    auto it = m_plugins.find(pluginId);
+    if (it == m_plugins.end())
+        return;
+
+    LoadedPlugin* loaded = it.value();
+    m_plugins.erase(it);
+    if (!loaded)
+        return;
+
+    if (loaded->instance) {
+        // Drop in-plugin CatalogEntry caches before delete. On Linux, host
+        // symbols can interpose into the plugin DSO; destroying thousands of
+        // mismatched CatalogEntry layouts in ~Plugin segfaults (issues #25-27).
+        loaded->instance->resetCatalogCache();
+        if (loaded->destroyFn)
             loaded->destroyFn(loaded->instance);
         loaded->instance = nullptr;
-        if (loaded->library.isLoaded()) {
-            const QString path = loaded->library.fileName();
-            if (!loaded->library.unload()) {
-                logDiagnostic(QStringLiteral("Plugin unload failed for %1: %2")
-                                  .arg(path, loaded->library.errorString()));
-            }
-        }
-        delete loaded;
     }
-    m_plugins.clear();
+    if (loaded->library.isLoaded()) {
+        const QString path = loaded->library.fileName();
+        if (!loaded->library.unload()) {
+            logDiagnostic(QStringLiteral("Plugin unload failed for %1: %2")
+                              .arg(path, loaded->library.errorString()));
+        }
+    }
+    delete loaded;
 }
 
 void PluginHost::setBeforeUnloadHook(std::function<void()> hook)
@@ -225,18 +243,47 @@ bool PluginHost::loadPluginDir(const QString& dirPath)
 #if defined(Q_OS_WIN)
     ScopedAddDllDirectory dllDirectories(
         {QCoreApplication::applicationDirPath(), QFileInfo(libraryPath).absolutePath()});
-#else
-    const QString appDir = QCoreApplication::applicationDirPath();
-    const QByteArray ldKey("LD_LIBRARY_PATH");
-    const QByteArray previousLd = qgetenv(ldKey);
-    const QByteArray appDirUtf8 = appDir.toUtf8();
-    if (!previousLd.contains(appDirUtf8)) {
-        QByteArray merged = appDirUtf8;
-        if (!previousLd.isEmpty()) {
-            merged += ':';
-            merged += previousLd;
+#elif defined(Q_OS_LINUX)
+    // Plugins are dlopened outside the main binary RPATH. glibc also ignores
+    // LD_LIBRARY_PATH changes after process start, so preload absolute paths with
+    // RTLD_GLOBAL before QLibrary::load.
+    //
+    // AppImage puts its (often older) OpenSSL on LD_LIBRARY_PATH. Host libcurl on
+    // rolling distros needs newer OPENSSL_* and then fails to load. Prefer any
+    // libcurl/ssl shipped beside the plugin (built against AppImage-era OpenSSL),
+    // then Qt from the AppImage/install lib dir.
+    {
+        const QString pluginDir = QFileInfo(libraryPath).absolutePath();
+        const QString appDir = QCoreApplication::applicationDirPath();
+        QStringList qtDirs;
+        const QString appLib = QDir::cleanPath(QDir(appDir).absoluteFilePath(QStringLiteral("../lib")));
+        if (QDir(appLib).exists())
+            qtDirs << appLib;
+        const QByteArray appImageDir = qgetenv("APPDIR");
+        if (!appImageDir.isEmpty()) {
+            const QString appImageLib =
+                QDir(QString::fromUtf8(appImageDir)).filePath(QStringLiteral("usr/lib"));
+            if (QDir(appImageLib).exists() && !qtDirs.contains(appImageLib))
+                qtDirs << appImageLib;
         }
-        qputenv(ldKey, merged);
+
+        auto preload = [](const QString& path) {
+            if (!QFileInfo::exists(path))
+                return;
+            // Keep handles for process lifetime; intentional leak.
+            dlopen(QFile::encodeName(path).constData(), RTLD_NOW | RTLD_GLOBAL);
+        };
+
+        static const char* kPluginRuntime[] = {
+            "libcrypto.so.3", "libssl.so.3", "libcurl.so.4", nullptr};
+        for (int i = 0; kPluginRuntime[i]; ++i)
+            preload(QDir(pluginDir).filePath(QString::fromUtf8(kPluginRuntime[i])));
+
+        static const char* kQt[] = {"libQt6Core.so.6", "libQt6Network.so.6", nullptr};
+        for (const QString& dir : qtDirs) {
+            for (int i = 0; kQt[i]; ++i)
+                preload(QDir(dir).filePath(QString::fromUtf8(kQt[i])));
+        }
     }
 #endif
     if (!loaded->library.load()) {

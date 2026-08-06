@@ -1467,8 +1467,8 @@
     </message>
     <message>
         <location line="+16"/>
-        <source>Plugin files were copied but the library failed to load. Rebuild the plugin for your Arachnel version and platform (MSVC/MinGW), then reinstall.</source>
-        <translation>Плагин скопирован, но библиотека не загрузилась. Пересоберите плагин под вашу версию Arachnel и платформу (MSVC/MinGW) и установите снова.</translation>
+        <source>Plugin files were copied but the library failed to load. Rebuild the plugin for your Arachnel version and this OS, then reinstall.</source>
+        <translation>Плагин скопирован, но библиотека не загрузилась. Пересоберите плагин под вашу версию Arachnel и эту ОС и установите снова.</translation>
     </message>
     <message>
         <location line="+19"/>
