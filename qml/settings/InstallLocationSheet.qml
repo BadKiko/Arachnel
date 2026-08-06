@@ -169,7 +169,7 @@ MD.BottomSheet {
 
             MD.Label {
                 Layout.fillWidth: true
-                text: qsTr("%1 DLC will be downloaded and enabled").arg(root.selectedAddonRows.length)
+                text: qsTr("%n DLC will be downloaded and enabled", "", root.selectedAddonRows.length)
                 typescale: MD.Token.typescale.label_large
                 color: MD.Token.color.primary
                 wrapMode: Text.WordWrap

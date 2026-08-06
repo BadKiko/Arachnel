@@ -145,8 +145,8 @@ Item {
                                 const installed = page.info.installedComponentCount ?? 0
                                 const total = page.info.componentCount ?? 0
                                 if (page.playable && total > 0)
-                                    return qsTr("%1 add-ons").arg(total)
-                                return qsTr("%1 add-ons").arg(page.info.addonCount ?? total)
+                                    return qsTr("%n add-ons", "", total)
+                                return qsTr("%n add-ons", "", page.info.addonCount ?? total)
                             }
                             icon.name: MD.Token.icon.extension
                             onClicked: {

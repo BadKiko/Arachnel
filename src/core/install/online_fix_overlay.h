@@ -7,15 +7,15 @@
 
 namespace arachnel::core {
 
-/** On-disk Online Fix (Goldberg steam_api or legacy SteamFix/winmm). */
+/** On-disk Online Fix (SteamFix / winmm, or older valve steam_api backups). */
 struct OnlineFixOverlayState {
-    bool present = false;  // active or disabled overlay / Goldberg files found
-    bool enabled = false;  // emu live or legacy DLLs active (not renamed off)
+    bool present = false;  // active or disabled overlay / marker found
+    bool enabled = false;  // overlay DLLs active (not renamed *.arachnel-off)
     QString overlayDir;
 };
 
 OnlineFixOverlayState detectOnlineFixOverlay(const QString& installPath);
-/** Enable/disable Online Fix (Goldberg marker/Valve restore, or legacy *.arachnel-off). */
+/** Enable/disable Online Fix (SteamFix rename, or marker + Valve restore for old embeds). */
 bool setOnlineFixOverlayEnabled(const QString& installPath, bool enabled, QString* error = nullptr);
 /** Labels + flags for Game Settings / entryDetails. */
 QVariantMap onlineFixOverlayInfo(const QString& installPath);

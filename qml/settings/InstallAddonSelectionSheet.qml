@@ -92,7 +92,7 @@ MD.BottomSheet {
             return qsTr("About %1 on disk - game %2 + %3 DLC.").arg(totalLabel).arg(baseLabel).arg(dlcLabel)
         if (totalLabel.length)
             return qsTr("About %1 on disk with DLC.").arg(totalLabel)
-        return qsTr("%1 DLC will be downloaded with the game.").arg(addonModel.count)
+        return qsTr("%n DLC will be downloaded with the game.", "", addonModel.count)
     }
 
     function populateFromCatalog() {
@@ -192,9 +192,18 @@ MD.BottomSheet {
                 const details = Core.entryDetails(id)
                 if ((details.addonCount || 0) > 0)
                     return
-                if (root.opened)
+                _pendingConfirm = {
+                    entryId: root.entryId,
+                    entryTitle: root.entryTitle,
+                    ids: []
+                }
+                if (root.opened) {
                     root.close()
-                root.confirmed(root.entryId, root.entryTitle, [])
+                } else {
+                    const pending = _pendingConfirm
+                    _pendingConfirm = null
+                    root.confirmed(pending.entryId, pending.entryTitle, pending.ids)
+                }
             }
         }
     }
@@ -240,7 +249,7 @@ MD.BottomSheet {
             Layout.leftMargin: MD.Token.spacing.large
             Layout.rightMargin: MD.Token.spacing.large
             visible: !root.waitingAddons && addonModel.count > 0
-            text: qsTr("%1 DLC included").arg(addonModel.count)
+            text: qsTr("%n DLC included", "", addonModel.count)
             color: MD.Token.color.on_surface_variant
             typescale: MD.Token.typescale.body_small
         }

@@ -295,16 +295,6 @@ QJsonObject readOnlineFixMarker(const QString& installPath)
     return QJsonDocument::fromJson(file.readAll()).object().value(QStringLiteral("onlineFix")).toObject();
 }
 
-bool isGoldbergOnlineFixInstall(const QString& installPath)
-{
-    const QJsonObject of = readOnlineFixMarker(installPath);
-    if (of.value(QStringLiteral("backend")).toString() == QStringLiteral("goldberg"))
-        return true;
-    if (of.value(QStringLiteral("embedded")).toBool(false) && hasValveBackup(installPath))
-        return true;
-    return hasValveBackup(installPath) && hasSteamSettings(installPath);
-}
-
 bool restoreValveSteamApiFiles(const QString& installPath)
 {
     bool wrote = false;
@@ -456,7 +446,7 @@ bool renameOverlayInDir(const QDir& dir, bool enable, QString* error)
     return true;
 }
 
-void updateMarkerEnabled(const QString& installPath, bool enabled, bool goldberg = false)
+void updateMarkerEnabled(const QString& installPath, bool enabled)
 {
     const QString markerPath = installPath + QStringLiteral("/.arachnel-steamidra");
     QJsonObject root;
@@ -468,8 +458,8 @@ void updateMarkerEnabled(const QString& installPath, bool enabled, bool goldberg
     QJsonObject onlineFix = root.value(QStringLiteral("onlineFix")).toObject();
     onlineFix.insert(QStringLiteral("enabled"), enabled);
     onlineFix.insert(QStringLiteral("embedded"), true);
-    if (goldberg)
-        onlineFix.insert(QStringLiteral("backend"), QStringLiteral("goldberg"));
+    // Drop stale "goldberg" from older builds - SteamFix/winmm is the only overlay now.
+    onlineFix.remove(QStringLiteral("backend"));
     root.insert(QStringLiteral("onlineFix"), onlineFix);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate))
         return;
@@ -527,52 +517,54 @@ OnlineFixOverlayState detectOnlineFixOverlay(const QString& installPath)
     if (installPath.isEmpty() || !QFileInfo::exists(installPath))
         return state;
 
-    if (isGoldbergOnlineFixInstall(installPath)) {
-        state.present = true;
-        state.overlayDir = installPath;
-        const QJsonObject of = readOnlineFixMarker(installPath);
-        if (of.contains(QStringLiteral("enabled")))
-            state.enabled = of.value(QStringLiteral("enabled")).toBool(false);
-        else
-            state.enabled = hasSteamSettings(installPath) && hasValveBackup(installPath);
-        return state;
-    }
-
+    // Prefer SteamFix / winmm overlay dirs over older valve-backup heuristics.
     const QStringList dirs = findOverlayDirs(installPath);
-    if (dirs.isEmpty())
-        return state;
-
-    state.present = true;
-    state.overlayDir = dirs.first();
-    for (const QString& path : dirs) {
-        const QDir dir(path);
-        bool hasActiveDll = false;
-        for (const QString& name : overlayDllNames()) {
-            if (dir.exists(name)) {
-                hasActiveDll = true;
-                break;
-            }
-        }
-        const bool hasDisabled = dirHasDisabledOverlay(dir);
-        // Default on: live DLLs, or FakeAppId mode (ini/txt + steam_appid) when nothing was
-        // renamed off. Disable renames both DLLs and steam_appid.txt.
-        const bool fakeAppIdMode = dir.exists(QStringLiteral("steam_appid.txt"))
-            && (dir.exists(QStringLiteral("SteamFix.ini"))
-                || dir.exists(QStringLiteral("OnlineFix.ini"))
-                || dir.exists(QStringLiteral("winmm.txt")));
-        if (hasActiveDll || (fakeAppIdMode && !hasDisabled)) {
-            state.enabled = true;
-            state.overlayDir = path;
-            break;
-        }
-    }
-    if (!state.enabled) {
+    if (!dirs.isEmpty()) {
+        state.present = true;
+        state.overlayDir = dirs.first();
         for (const QString& path : dirs) {
-            if (dirHasDisabledOverlay(QDir(path))) {
+            const QDir dir(path);
+            bool hasActiveDll = false;
+            for (const QString& name : overlayDllNames()) {
+                if (dir.exists(name)) {
+                    hasActiveDll = true;
+                    break;
+                }
+            }
+            const bool hasDisabled = dirHasDisabledOverlay(dir);
+            // Default on: live DLLs, or FakeAppId mode (ini/txt + steam_appid) when nothing was
+            // renamed off. Disable renames both DLLs and steam_appid.txt.
+            const bool fakeAppIdMode = dir.exists(QStringLiteral("steam_appid.txt"))
+                && (dir.exists(QStringLiteral("SteamFix.ini"))
+                    || dir.exists(QStringLiteral("OnlineFix.ini"))
+                    || dir.exists(QStringLiteral("winmm.txt")));
+            if (hasActiveDll || (fakeAppIdMode && !hasDisabled)) {
+                state.enabled = true;
                 state.overlayDir = path;
                 break;
             }
         }
+        if (!state.enabled) {
+            for (const QString& path : dirs) {
+                if (dirHasDisabledOverlay(QDir(path))) {
+                    state.overlayDir = path;
+                    break;
+                }
+            }
+        }
+        return state;
+    }
+
+    // Old embeds: valve steam_api backups and/or marker only.
+    const QJsonObject of = readOnlineFixMarker(installPath);
+    if (hasValveBackup(installPath) || of.value(QStringLiteral("embedded")).toBool(false)
+        || of.contains(QStringLiteral("enabled"))) {
+        state.present = true;
+        state.overlayDir = installPath;
+        if (of.contains(QStringLiteral("enabled")))
+            state.enabled = of.value(QStringLiteral("enabled")).toBool(false);
+        else
+            state.enabled = hasSteamSettings(installPath) && hasValveBackup(installPath);
     }
     return state;
 }
@@ -585,29 +577,20 @@ bool setOnlineFixOverlayEnabled(const QString& installPath, bool enabled, QStrin
         return false;
     }
 
-    // Goldberg: marker + Valve restore on disable. Plugin applySelectedDlc re-embeds on enable.
-    if (isGoldbergOnlineFixInstall(installPath)
-        || readOnlineFixMarker(installPath).value(QStringLiteral("backend")).toString()
-               == QStringLiteral("goldberg")) {
-        if (!enabled)
-            restoreValveSteamApiFiles(installPath);
-        updateMarkerEnabled(installPath, enabled, true);
+    const QStringList dirs = findOverlayDirs(installPath);
+    if (!dirs.isEmpty()) {
+        for (const QString& path : dirs) {
+            if (!renameOverlayInDir(QDir(path), enabled, error))
+                return false;
+        }
+        updateMarkerEnabled(installPath, enabled);
         return true;
     }
 
-    const QStringList dirs = findOverlayDirs(installPath);
-    if (dirs.isEmpty()) {
-        // No legacy overlay yet - still allow marker toggle so plugin can embed Goldberg.
-        updateMarkerEnabled(installPath, enabled, true);
-        if (!enabled)
-            restoreValveSteamApiFiles(installPath);
-        return true;
-    }
-    for (const QString& path : dirs) {
-        if (!renameOverlayInDir(QDir(path), enabled, error))
-            return false;
-    }
-    updateMarkerEnabled(installPath, enabled, enabled);
+    // No SteamFix overlay yet - marker toggle; restore Valve DLLs when disabling old embeds.
+    if (!enabled)
+        restoreValveSteamApiFiles(installPath);
+    updateMarkerEnabled(installPath, enabled);
     return true;
 }
 

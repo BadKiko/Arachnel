@@ -163,6 +163,9 @@ QVariantMap LibraryController::entryDetails(const QString& entryId) const
                 ++addonCount;
             }
         }
+        // Catalog stays id-light until /dlcs fills addons - fall back to relay count.
+        if (addonCount == 0 && entry->dlcCount > 0)
+            addonCount = entry->dlcCount;
         info.insert(QStringLiteral("addonCount"), addonCount);
         info.insert(QStringLiteral("hasAddons"), addonCount > 0);
         info.insert(QStringLiteral("hasWorkshop"), entry->hasWorkshop);
@@ -240,7 +243,7 @@ void LibraryController::setGameOnlineFixEnabled(const QString& entryId, bool ena
             m_hooks.notice(error);
         return;
     }
-    // Refresh DLC unlocks: SmokeAPI must not sit under Goldberg / Online Fix.
+    // Refresh DLC unlocks so SmokeAPI stays out from under Online Fix.
     if (m_plugins) {
         if (ISourcePlugin* plugin = m_plugins->plugin(existing->sourceId)) {
             QStringList enabledIds;
@@ -249,7 +252,10 @@ void LibraryController::setGameOnlineFixEnabled(const QString& entryId, bool ena
                 if (component.installed && component.enabled)
                     enabledIds.append(component.id);
             }
-            plugin->applySelectedDlc(*existing, enabledIds);
+            if (!plugin->applySelectedDlc(*existing, enabledIds) && m_hooks.notice) {
+                m_hooks.notice(
+                    QCoreApplication::translate("Core", "Couldn't update DLC unlocks."));
+            }
         }
     }
     sync();

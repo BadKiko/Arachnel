@@ -210,10 +210,8 @@ bool CoreController::restartPluginOwnedDownload(const QString& jobId)
     // Empty = resume/continue; "update" forces verify. Never treat retry as brand-new skip.
     ctx.installMode = isUpdate ? QStringLiteral("update") : QString();
     if (existing) {
-        for (const InstalledComponent& c : existing->components) {
-            if (c.installed)
-                ctx.selectedAddonIds.append(c.id);
-        }
+        for (const InstalledComponent& c : existing->components)
+            ctx.selectedAddonIds.append(c.id);
     }
 
     m_pluginHost->runOwnedDownloadAsync(
@@ -254,7 +252,12 @@ void CoreController::restoreLibraryPlaceholders()
         if (!entry)
             continue;
 
-        ensureLibraryPlaceholder(*entry, job.libraryId);
+        QStringList selected;
+        if (const LibraryGame* g = m_libraryStore.gameById(entry->id)) {
+            for (const InstalledComponent& c : g->components)
+                selected.append(c.id);
+        }
+        ensureLibraryPlaceholder(*entry, job.libraryId, selected);
     }
 }
 

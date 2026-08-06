@@ -2041,11 +2041,15 @@
         <source>DRM</source>
         <translation>DRM</translation>
     </message>
-    <message>
+    <message numerus="yes">
         <location line="+15"/>
         <location line="+1"/>
-        <source>%1 add-ons</source>
-        <translation>%1 доп.</translation>
+        <source>%n add-ons</source>
+        <translation>
+            <numerusform>%n доп.</numerusform>
+            <numerusform>%n доп.</numerusform>
+            <numerusform>%n доп.</numerusform>
+        </translation>
     </message>
     <message>
         <location line="+10"/>
@@ -2427,15 +2431,23 @@
         <source>About %1 on disk with DLC.</source>
         <translation>Около %1 на диске с DLC.</translation>
     </message>
-    <message>
+    <message numerus="yes">
         <location line="+1"/>
-        <source>%1 DLC will be downloaded with the game.</source>
-        <translation>%1 DLC будет скачано вместе с игрой.</translation>
+        <source>%n DLC will be downloaded with the game.</source>
+        <translation>
+            <numerusform>%n DLC будет скачано вместе с игрой.</numerusform>
+            <numerusform>%n DLC будут скачаны вместе с игрой.</numerusform>
+            <numerusform>%n DLC будут скачаны вместе с игрой.</numerusform>
+        </translation>
     </message>
-    <message>
+    <message numerus="yes">
         <location line="+148"/>
-        <source>%1 DLC included</source>
-        <translation>%1 DLC в комплекте</translation>
+        <source>%n DLC included</source>
+        <translation>
+            <numerusform>%n DLC в комплекте</numerusform>
+            <numerusform>%n DLC в комплекте</numerusform>
+            <numerusform>%n DLC в комплекте</numerusform>
+        </translation>
     </message>
     <message>
         <location line="+178"/>
@@ -2476,10 +2488,14 @@
         <source>Choose a drive for installation</source>
         <translation>Выберите диск для установки</translation>
     </message>
-    <message>
+    <message numerus="yes">
         <location line="+15"/>
-        <source>%1 DLC will be downloaded and enabled</source>
-        <translation>%1 DLC будет скачано и включено</translation>
+        <source>%n DLC will be downloaded and enabled</source>
+        <translation>
+            <numerusform>%n DLC будет скачано и включено</numerusform>
+            <numerusform>%n DLC будут скачаны и включены</numerusform>
+            <numerusform>%n DLC будут скачаны и включены</numerusform>
+        </translation>
     </message>
     <message>
         <location line="+16"/>
@@ -2658,11 +2674,15 @@
 </context>
 <context>
     <name>LibraryGameCard</name>
-    <message>
+    <message numerus="yes">
         <location filename="../qml/components/LibraryGameCard.qml" line="+25"/>
         <location line="+3"/>
-        <source>%1 add-ons</source>
-        <translation>%1 доп.</translation>
+        <source>%n add-ons</source>
+        <translation>
+            <numerusform>%n доп.</numerusform>
+            <numerusform>%n доп.</numerusform>
+            <numerusform>%n доп.</numerusform>
+        </translation>
     </message>
     <message>
         <location line="-1"/>

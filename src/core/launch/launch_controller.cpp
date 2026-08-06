@@ -89,7 +89,9 @@ void LaunchController::launchGame(const QString& gameId)
                 if (component.installed && component.enabled)
                     enabledDlc.append(component.id);
             }
-            plugin->applySelectedDlc(gameCopy, enabledDlc);
+            if (!plugin->applySelectedDlc(gameCopy, enabledDlc) && m_hooks.notice) {
+                m_hooks.notice(QCoreApplication::translate("Core", "Couldn't update DLC unlocks."));
+            }
             info = plugin->launchInfo(gameCopy);
         }
         if (info.executable.isEmpty() && gameCopy.executableOverride.isEmpty())

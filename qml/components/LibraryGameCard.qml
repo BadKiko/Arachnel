@@ -22,10 +22,10 @@ Item {
         if (!hasAddons)
             return ""
         if (installedComponentCount >= componentCount)
-            return qsTr("%1 add-ons").arg(componentCount)
+            return qsTr("%n add-ons", "", componentCount)
         if (installedComponentCount > 0)
             return qsTr("%1/%2 add-ons").arg(installedComponentCount).arg(componentCount)
-        return qsTr("%1 add-ons").arg(componentCount)
+        return qsTr("%n add-ons", "", componentCount)
     }
 
     property int jobRevision: 0

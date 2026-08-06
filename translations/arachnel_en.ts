@@ -2041,11 +2041,14 @@
         <source>DRM</source>
         <translation></translation>
     </message>
-    <message>
+    <message numerus="yes">
         <location line="+15"/>
         <location line="+1"/>
-        <source>%1 add-ons</source>
-        <translation></translation>
+        <source>%n add-ons</source>
+        <translation>
+            <numerusform>%n add-on</numerusform>
+            <numerusform>%n add-ons</numerusform>
+        </translation>
     </message>
     <message>
         <location line="+10"/>
@@ -2426,15 +2429,21 @@
         <source>About %1 on disk with DLC.</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
+    <message numerus="yes">
         <location line="+1"/>
-        <source>%1 DLC will be downloaded with the game.</source>
-        <translation type="unfinished"></translation>
+        <source>%n DLC will be downloaded with the game.</source>
+        <translation>
+            <numerusform>%n DLC will be downloaded with the game.</numerusform>
+            <numerusform>%n DLC will be downloaded with the game.</numerusform>
+        </translation>
     </message>
-    <message>
+    <message numerus="yes">
         <location line="+148"/>
-        <source>%1 DLC included</source>
-        <translation type="unfinished"></translation>
+        <source>%n DLC included</source>
+        <translation>
+            <numerusform>%n DLC included</numerusform>
+            <numerusform>%n DLC included</numerusform>
+        </translation>
     </message>
     <message>
         <location line="+178"/>
@@ -2475,10 +2484,13 @@
         <source>Choose a drive for installation</source>
         <translation></translation>
     </message>
-    <message>
+    <message numerus="yes">
         <location line="+15"/>
-        <source>%1 DLC will be downloaded and enabled</source>
-        <translation type="unfinished"></translation>
+        <source>%n DLC will be downloaded and enabled</source>
+        <translation>
+            <numerusform>%n DLC will be downloaded and enabled</numerusform>
+            <numerusform>%n DLC will be downloaded and enabled</numerusform>
+        </translation>
     </message>
     <message>
         <location line="+16"/>
@@ -2657,11 +2669,14 @@
 </context>
 <context>
     <name>LibraryGameCard</name>
-    <message>
+    <message numerus="yes">
         <location filename="../qml/components/LibraryGameCard.qml" line="+25"/>
         <location line="+3"/>
-        <source>%1 add-ons</source>
-        <translation></translation>
+        <source>%n add-ons</source>
+        <translation>
+            <numerusform>%n add-on</numerusform>
+            <numerusform>%n add-ons</numerusform>
+        </translation>
     </message>
     <message>
         <location line="-1"/>
