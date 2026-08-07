@@ -18,6 +18,8 @@ QString jobStatusLabel(const QString& status)
         return QCoreApplication::translate("Core", "Downloading");
     if (status == QStringLiteral("installing"))
         return QCoreApplication::translate("Core", "Installing");
+    if (status == QStringLiteral("moving"))
+        return QCoreApplication::translate("Core", "Moving");
     if (status == QStringLiteral("seeding"))
         return QCoreApplication::translate("Core", "Seeding");
     if (status == QStringLiteral("paused"))

@@ -79,10 +79,29 @@ QString parseDeepLinkGameId(const QString& rawOrUrl)
     }
 
     QUrl url(trimmed);
-    if (!url.isValid()
-        || url.scheme().compare(QStringLiteral("arachnel"), Qt::CaseInsensitive) != 0) {
+    if (!url.isValid())
+        return {};
+
+    // HTTPS share links: https://discover.badkiko.ru/open/game/<id>
+    if (url.scheme().compare(QStringLiteral("https"), Qt::CaseInsensitive) == 0
+        || url.scheme().compare(QStringLiteral("http"), Qt::CaseInsensitive) == 0) {
+        const QString host = url.host().toLower();
+        if (host == QStringLiteral("discover.badkiko.ru")
+            || host == QStringLiteral("open.badkiko.ru")) {
+            QStringList parts = url.path().split(QLatin1Char('/'), Qt::SkipEmptyParts);
+            if (!parts.isEmpty() && parts.first().compare(QStringLiteral("open"), Qt::CaseInsensitive) == 0)
+                parts.removeFirst();
+            if (!parts.isEmpty() && parts.first().compare(QStringLiteral("game"), Qt::CaseInsensitive) == 0)
+                parts.removeFirst();
+            if (parts.isEmpty())
+                return {};
+            return QUrl::fromPercentEncoding(parts.first().toUtf8()).trimmed();
+        }
         return {};
     }
+
+    if (url.scheme().compare(QStringLiteral("arachnel"), Qt::CaseInsensitive) != 0)
+        return {};
 
     QStringList parts;
     if (!url.host().isEmpty())

@@ -8,6 +8,7 @@ enum class JobKind {
     Download = 0,
     Install,
     Update,
+    Move,
 };
 
 QString jobKindLabel(JobKind kind);

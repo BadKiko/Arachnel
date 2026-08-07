@@ -15,7 +15,7 @@ void registerGameDeepLinkProtocol();
 /** First argv entry that looks like arachnel://… (empty if none). */
 QString findDeepLinkArgument(const QStringList& arguments);
 
-/** Parse game entry id from arachnel://game/<id> (or bare id). Empty if invalid. */
+/** Parse game entry id from arachnel://game/<id>, https://…/open/game/<id>, or bare id. */
 QString parseDeepLinkGameId(const QString& rawOrUrl);
 
 /**

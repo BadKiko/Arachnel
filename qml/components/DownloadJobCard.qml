@@ -33,8 +33,9 @@ Item {
                                             ? root.parentEntryId
                                             : root.entryId
 
-    readonly property bool inProgress: ["starting", "checking", "metadata", "queued", "downloading", "seeding", "paused", "installing"].includes(status)
+    readonly property bool inProgress: ["starting", "checking", "metadata", "queued", "downloading", "seeding", "paused", "installing", "moving"].includes(status)
     readonly property bool isInstalling: status === "installing"
+    readonly property bool isMoving: status === "moving"
     readonly property bool isPaused: status === "paused"
     readonly property bool isFailed: status === "failed" || status === "cancelled"
     readonly property bool isCompleted: status === "completed" && !root.installFailed
@@ -334,14 +335,14 @@ Item {
                     }
 
                     MD.IconButton {
-                        visible: root.inProgress && !root.isInstalling
+                        visible: root.inProgress && !root.isInstalling && !root.isMoving
                         mdState.type: MD.Enum.IBtStandard
                         icon.name: root.isPaused ? MD.Token.icon.play_arrow : MD.Token.icon.pause
                         onClicked: Core.toggleJobPause(root.jobId)
                     }
 
                     MD.IconButton {
-                        visible: root.inProgress && !root.isInstalling
+                        visible: root.inProgress && !root.isInstalling && !root.isMoving
                         mdState.type: MD.Enum.IBtStandard
                         icon.name: MD.Token.icon.close
                         onClicked: Core.cancelJob(root.jobId)

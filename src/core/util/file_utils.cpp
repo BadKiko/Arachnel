@@ -5,6 +5,7 @@
 #include <QDirIterator>
 #include <QFile>
 #include <QFileInfo>
+#include <QIODevice>
 #include <QThread>
 
 #if defined(Q_OS_WIN)
@@ -46,7 +47,39 @@ bool tryRemoveDirectoryOnce(const QString& path)
     return dir.removeRecursively();
 }
 
+void reportProgress(const FileProgressCallback& onProgress, qint64* copiedInOut, qint64 totalHint,
+                    qint64 delta)
+{
+    if (copiedInOut)
+        *copiedInOut += delta;
+    if (!onProgress)
+        return;
+    const qint64 done = copiedInOut ? *copiedInOut : delta;
+    const qint64 total = totalHint > 0 ? totalHint : done;
+    onProgress(done, total);
+}
+
 } // namespace
+
+qint64 pathByteSize(const QString& path)
+{
+    if (path.isEmpty())
+        return 0;
+    QFileInfo info(path);
+    if (!info.exists())
+        return 0;
+    if (info.isFile())
+        return info.size();
+
+    qint64 total = 0;
+    QDirIterator it(path, QDir::Files | QDir::Hidden | QDir::System | QDir::NoDotAndDotDot,
+                    QDirIterator::Subdirectories);
+    while (it.hasNext()) {
+        it.next();
+        total += it.fileInfo().size();
+    }
+    return total;
+}
 
 bool removePathRecursive(const QString& path, QString* errorOut)
 {
@@ -79,7 +112,8 @@ bool removePathRecursive(const QString& path, QString* errorOut)
     return false;
 }
 
-bool copyPathRecursive(const QString& src, const QString& dst, QString* errorOut)
+bool copyPathRecursive(const QString& src, const QString& dst, QString* errorOut,
+                       const FileProgressCallback& onProgress, qint64* copiedInOut, qint64 totalHint)
 {
     QFileInfo srcInfo(src);
     if (!srcInfo.exists()) {
@@ -95,8 +129,10 @@ bool copyPathRecursive(const QString& src, const QString& dst, QString* errorOut
                 *errorOut = QCoreApplication::translate("Core", "Failed to replace: %1").arg(dst);
             return false;
         }
-        if (QFile::copy(src, dst))
+        if (QFile::copy(src, dst)) {
+            reportProgress(onProgress, copiedInOut, totalHint, srcInfo.size());
             return true;
+        }
         if (errorOut)
             *errorOut = QCoreApplication::translate("Core", "Failed to copy: %1").arg(src);
         return false;
@@ -124,22 +160,30 @@ bool copyPathRecursive(const QString& src, const QString& dst, QString* errorOut
             && QDir::cleanPath(srcPath)
                    .startsWith(cleanDst + QLatin1Char('/'), Qt::CaseInsensitive))
             continue;
-        if (!copyPathRecursive(srcPath, dstPath, errorOut))
+        if (!copyPathRecursive(srcPath, dstPath, errorOut, onProgress, copiedInOut, totalHint))
             return false;
     }
     return true;
 }
 
-bool movePathRecursive(const QString& src, const QString& dst, QString* errorOut)
+bool movePathRecursive(const QString& src, const QString& dst, QString* errorOut,
+                       const FileProgressCallback& onProgress)
 {
     if (!QFileInfo(src).exists())
         return true;
 
-    if (QDir().rename(src, dst))
+    const qint64 total = pathByteSize(src);
+    if (QDir().rename(src, dst)) {
+        if (onProgress)
+            onProgress(total > 0 ? total : 1, total > 0 ? total : 1);
         return true;
+    }
 
-    if (!copyPathRecursive(src, dst, errorOut))
+    qint64 copied = 0;
+    if (!copyPathRecursive(src, dst, errorOut, onProgress, &copied, total))
         return false;
+    if (onProgress && total > 0)
+        onProgress(total, total);
     return removePathRecursive(src, errorOut);
 }
 
@@ -152,6 +196,35 @@ QString relocatePathPrefix(const QString& path, const QString& oldRoot, const QS
     if (normalizedPath.startsWith(normalizedOld, Qt::CaseInsensitive))
         return normalizedNew + normalizedPath.mid(normalizedOld.size());
     return path;
+}
+
+bool rewritePathPrefixInFile(const QString& filePath, const QString& oldRoot, const QString& newRoot)
+{
+    if (filePath.isEmpty() || oldRoot.isEmpty() || !QFileInfo::exists(filePath))
+        return true;
+
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly))
+        return false;
+    QByteArray data = file.readAll();
+    file.close();
+
+    const QByteArray oldFwd = QDir::fromNativeSeparators(oldRoot).toUtf8();
+    const QByteArray newFwd = QDir::fromNativeSeparators(newRoot).toUtf8();
+    const QByteArray oldNat = QDir::toNativeSeparators(oldRoot).toUtf8();
+    const QByteArray newNat = QDir::toNativeSeparators(newRoot).toUtf8();
+
+    const QByteArray before = data;
+    data.replace(oldFwd, newFwd);
+    if (oldNat != oldFwd)
+        data.replace(oldNat, newNat);
+    if (data == before)
+        return true;
+
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate))
+        return false;
+    file.write(data);
+    return true;
 }
 
 } // namespace arachnel::core

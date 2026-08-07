@@ -97,6 +97,9 @@ void JobOrchestrator::cancelJob(const QString& jobId)
     JobEntry job = jobFromModelRow(row);
     if (isJobTerminal(job.status))
         return;
+    // Copy/move between drives can't be aborted cleanly mid-flight.
+    if (job.kind == JobKind::Move)
+        return;
 
     if (job.pluginDownload) {
         // CoreController/PluginHost cancel the plugin work; mark job here.

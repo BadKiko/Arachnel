@@ -5,6 +5,7 @@
 #include "job_status.h"
 #include "torrent_session.h"
 
+#include <QCoreApplication>
 #include <QDateTime>
 #include <QFileInfo>
 #include <QUuid>
@@ -56,6 +57,15 @@ void JobOrchestrator::restoreJobs()
 {
     QVector<JobEntry> jobs = m_jobStore->jobs();
     for (auto& job : jobs) {
+        // Library moves are not resumable - mark interrupted work failed.
+        if (job.kind == JobKind::Move) {
+            if (!isJobTerminal(job.status)) {
+                job.status = QStringLiteral("failed");
+                job.detail = QCoreApplication::translate("Core", "Move interrupted");
+                job.completedAt = isoNow();
+            }
+            continue;
+        }
         if (job.pluginDownload) {
             // Old bug routed plugin jobs through startTorrent ("Failed to start torrent").
             const bool falseTorrentFail = job.status == QStringLiteral("failed")

@@ -18,7 +18,10 @@ QString CoreController::gameShareUrl(const QString& entryId) const
     const QString id = entryId.trimmed();
     if (id.isEmpty())
         return {};
-    return QStringLiteral("arachnel://game/%1").arg(QString::fromUtf8(QUrl::toPercentEncoding(id)));
+    // HTTPS wrapper so messengers (Telegram, etc.) keep a clickable link.
+    // Landing page on discover.badkiko.ru redirects to arachnel://game/<id>.
+    return QStringLiteral("https://discover.badkiko.ru/open/game/%1")
+        .arg(QString::fromUtf8(QUrl::toPercentEncoding(id)));
 }
 
 void CoreController::shareGameLink(const QString& entryId)

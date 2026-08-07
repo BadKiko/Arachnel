@@ -13,7 +13,8 @@ inline bool isJobActive(const QString& status)
 {
     return status == QStringLiteral("checking") || status == QStringLiteral("metadata")
            || status == QStringLiteral("downloading") || status == QStringLiteral("seeding")
-           || status == QStringLiteral("starting") || status == QStringLiteral("installing");
+           || status == QStringLiteral("starting") || status == QStringLiteral("installing")
+           || status == QStringLiteral("moving");
 }
 
 inline bool isJobPaused(const QString& status)

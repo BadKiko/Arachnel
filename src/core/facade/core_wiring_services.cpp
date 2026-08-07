@@ -1,8 +1,14 @@
 #include "core_controller_impl.h"
 
+#include <QDateTime>
 #include <QDebug>
+#include <QElapsedTimer>
 #include <QFutureWatcher>
+#include <QMetaObject>
+#include <QPointer>
+#include <QThreadPool>
 #include <QTimer>
+#include <QUuid>
 #include <QtConcurrent>
 
 namespace arachnel::core {
@@ -236,6 +242,128 @@ void CoreController::initializeServices()
                 return {};
             }));
         });
+    };
+    libraryHooks.moveGameAsync = [this](const LibraryController::MoveGameWork& work) {
+        JobEntry job;
+        job.id = QUuid::createUuid().toString(QUuid::WithoutBraces);
+        job.title = QCoreApplication::translate("Core", "Moving %1").arg(work.title);
+        job.kind = JobKind::Move;
+        job.status = QStringLiteral("moving");
+        job.progress = 0;
+        job.detail = QCoreApplication::translate("Core", "Preparing…");
+        job.entryId = work.gameId;
+        job.sourceId = work.sourceId;
+        job.coverUrl = work.coverUrl;
+        job.libraryId = work.targetLibraryId;
+        job.savePath = work.toPath;
+        job.createdAt = QDateTime::currentDateTimeUtc().toString(Qt::ISODate);
+        m_jobs.addJob(job);
+        m_jobStore.upsertJob(job);
+
+        struct MoveResult {
+            QString error;
+            qint64 totalBytes = 0;
+        };
+
+        auto* watcher = new QFutureWatcher<MoveResult>(this);
+        const QString jobId = job.id;
+        QObject::connect(watcher, &QFutureWatcher<MoveResult>::finished, this,
+                         [this, watcher, work, jobId]() {
+                             const MoveResult result = watcher->result();
+                             watcher->deleteLater();
+
+                             JobEntry done = m_jobStore.jobById(jobId) ? *m_jobStore.jobById(jobId)
+                                                                       : JobEntry{};
+                             if (done.id.isEmpty()) {
+                                 done.id = jobId;
+                                 done.kind = JobKind::Move;
+                                 done.entryId = work.gameId;
+                                 done.title =
+                                     QCoreApplication::translate("Core", "Moving %1").arg(work.title);
+                             }
+                             done.completedAt =
+                                 QDateTime::currentDateTimeUtc().toString(Qt::ISODate);
+
+                             if (!result.error.isEmpty()) {
+                                 done.status = QStringLiteral("failed");
+                                 done.detail = result.error;
+                                 done.progress = 0;
+                                 m_jobs.updateJob(done);
+                                 m_jobStore.upsertJob(done);
+                                 showNotice(QCoreApplication::translate("Core", "Could not move: %1")
+                                                .arg(result.error));
+                                 return;
+                             }
+
+                             if (m_libraryController)
+                                 m_libraryController->finalizeMovedGame(
+                                     work.gameId, work.targetLibraryId, work.fromPath, work.toPath);
+
+                             done.status = QStringLiteral("completed");
+                             done.progress = 100;
+                             done.detail.clear();
+                             done.bytesDownloaded = result.totalBytes;
+                             done.totalBytes = result.totalBytes;
+                             m_jobs.updateJob(done);
+                             m_jobStore.upsertJob(done);
+                             showNotice(QCoreApplication::translate("Core", "Game moved: %1")
+                                            .arg(work.title));
+                         });
+
+        static QThreadPool movePool;
+        static bool movePoolReady = false;
+        if (!movePoolReady) {
+            movePool.setMaxThreadCount(1);
+            movePoolReady = true;
+        }
+
+        QPointer<CoreController> self(this);
+        watcher->setFuture(QtConcurrent::run(&movePool, [self, work, jobId]() -> MoveResult {
+            MoveResult out;
+            out.totalBytes = pathByteSize(work.fromPath);
+            QDir().mkpath(QFileInfo(work.toPath).absolutePath());
+
+            QElapsedTimer throttle;
+            throttle.start();
+            auto publish = [&](qint64 done, qint64 total) {
+                if (!self)
+                    return;
+                if (throttle.elapsed() < 200 && done < total)
+                    return;
+                throttle.restart();
+                const int pct =
+                    total > 0 ? static_cast<int>(qMin<qint64>(100, (done * 100) / total)) : 0;
+                QMetaObject::invokeMethod(
+                    self.data(),
+                    [self, jobId, done, total, pct]() {
+                        if (!self)
+                            return;
+                        const JobEntry* cur = self->m_jobStore.jobById(jobId);
+                        JobEntry job = cur ? *cur : JobEntry{};
+                        if (job.id.isEmpty())
+                            return;
+                        job.status = QStringLiteral("moving");
+                        job.progress = pct;
+                        job.bytesDownloaded = done;
+                        job.totalBytes = total;
+                        job.detail = QCoreApplication::translate("Core", "Copying files…");
+                        self->m_jobs.updateJob(job);
+                        self->m_jobStore.upsertJob(job);
+                    },
+                    Qt::QueuedConnection);
+            };
+
+            QString error;
+            if (!movePathRecursive(work.fromPath, work.toPath, &error, publish)) {
+                out.error = error.isEmpty()
+                                ? QCoreApplication::translate("Core", "Move failed")
+                                : error;
+                // Best-effort cleanup of a partial destination.
+                removePathRecursive(work.toPath);
+                return out;
+            }
+            return out;
+        }));
     };
     libraryHooks.findCatalogEntry = [this](const QString& entryId) {
         return findCatalogEntry(entryId);

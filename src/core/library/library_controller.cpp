@@ -6,6 +6,7 @@
 #include "install_heuristics.h"
 #include "install_kind.h"
 #include "install_marker.h"
+#include "job_kind.h"
 #include "job_status.h"
 #include "job_store.h"
 #include "library_store.h"
@@ -58,7 +59,11 @@ bool LibraryController::isEntryPlayable(const QString& entryId) const
 
     // Never call plugin->launchInfo here. QML binds isEntryPlayable / entryDetails on every
     // frame; steamidra launchInfo walks the install tree and repairs Online Fix - UI hangs.
-    const QString overridePath = game->executableOverride.trimmed();
+    QString overridePath = game->executableOverride.trimmed();
+    if (!overridePath.isEmpty()
+        && isExcludedGameExecutable(QFileInfo(overridePath).fileName())) {
+        overridePath.clear();
+    }
     if (!overridePath.isEmpty())
         return QFileInfo::exists(overridePath);
 
@@ -219,10 +224,17 @@ void LibraryController::setGameLaunchArgs(const QString& entryId, const QString&
 void LibraryController::setGameExecutableOverride(const QString& entryId, const QString& path)
 {
     const LibraryGame* existing = m_store->gameById(entryId);
-    if (!existing || existing->executableOverride == path)
+    if (!existing)
+        return;
+    QString cleaned = path.trimmed();
+    if (!cleaned.isEmpty()
+        && isExcludedGameExecutable(QFileInfo(cleaned).fileName())) {
+        cleaned.clear();
+    }
+    if (existing->executableOverride == cleaned)
         return;
     LibraryGame game = *existing;
-    game.executableOverride = path;
+    game.executableOverride = cleaned;
     m_store->upsertGame(game);
     sync();
 }
@@ -438,43 +450,92 @@ void LibraryController::removeEntry(const QString& entryId, bool deleteFiles)
 void LibraryController::moveGame(const QString& gameId, const QString& targetLibraryId)
 {
     if (targetLibraryId.isEmpty()) {
-        m_hooks.notice(QStringLiteral("No destination library selected"));
+        m_hooks.notice(QCoreApplication::translate("Core", "No destination library selected"));
         return;
     }
     const LibraryGame* existing = m_store->gameById(gameId);
     if (!existing) {
-        m_hooks.notice(QStringLiteral("Game not found"));
+        m_hooks.notice(QCoreApplication::translate("Core", "Game not found"));
         return;
     }
     LibraryGame game = *existing;
     const QString sourceId = game.libraryId.isEmpty() ? m_settings->defaultLibraryId() : game.libraryId;
     if (sourceId == targetLibraryId) {
-        m_hooks.notice(QStringLiteral("Game is already on this library"));
+        m_hooks.notice(QCoreApplication::translate("Core", "Game is already on this library"));
         return;
     }
+
+    for (const JobEntry& job : m_jobs->jobs()) {
+        if (job.entryId != gameId || job.kind != JobKind::Move || isJobTerminal(job.status))
+            continue;
+        m_hooks.notice(QCoreApplication::translate("Core", "Already moving: %1").arg(game.title));
+        return;
+    }
+
     const QString sourceDir = m_settings->gameDirFor(sourceId, gameId);
     const QString targetDir = m_settings->gameDirFor(targetLibraryId, gameId);
-    QString error;
-    if (QDir(sourceDir).exists()) {
-        if (!movePathRecursive(sourceDir, targetDir, &error)) {
-            m_hooks.notice(QStringLiteral("Could not move: %1").arg(error));
-            return;
-        }
-    } else if (!game.installPath.isEmpty() && QDir(game.installPath).exists()) {
-        QDir().mkpath(QFileInfo(targetDir).absolutePath());
-        if (!movePathRecursive(game.installPath, targetDir, &error)) {
-            m_hooks.notice(QStringLiteral("Could not move: %1").arg(error));
-            return;
-        }
+
+    QString fromPath;
+    if (QDir(sourceDir).exists())
+        fromPath = sourceDir;
+    else if (!game.installPath.isEmpty() && QDir(game.installPath).exists())
+        fromPath = game.installPath;
+
+    if (fromPath.isEmpty()) {
+        // Metadata-only reassign (files already gone / never on disk).
+        finalizeMovedGame(gameId, targetLibraryId, sourceDir, targetDir);
+        m_hooks.notice(QCoreApplication::translate("Core", "Game moved: %1").arg(game.title));
+        return;
     }
+
+    if (!m_hooks.moveGameAsync) {
+        QString error;
+        QDir().mkpath(QFileInfo(targetDir).absolutePath());
+        if (!movePathRecursive(fromPath, targetDir, &error)) {
+            m_hooks.notice(QCoreApplication::translate("Core", "Could not move: %1").arg(error));
+            return;
+        }
+        finalizeMovedGame(gameId, targetLibraryId, fromPath, targetDir);
+        m_hooks.notice(QCoreApplication::translate("Core", "Game moved: %1").arg(game.title));
+        return;
+    }
+
+    MoveGameWork work;
+    work.gameId = gameId;
+    work.title = game.title;
+    work.coverUrl = game.coverUrl;
+    work.sourceId = game.sourceId;
+    work.fromPath = fromPath;
+    work.toPath = targetDir;
+    work.sourceLibraryId = sourceId;
+    work.targetLibraryId = targetLibraryId;
+    m_hooks.notice(QCoreApplication::translate("Core", "Moving %1…").arg(game.title));
+    m_hooks.moveGameAsync(work);
+}
+
+void LibraryController::finalizeMovedGame(const QString& gameId, const QString& targetLibraryId,
+                                          const QString& fromPath, const QString& toPath)
+{
+    const LibraryGame* existing = m_store->gameById(gameId);
+    if (!existing)
+        return;
+
+    LibraryGame game = *existing;
+    const QString sourceId = game.libraryId.isEmpty() ? m_settings->defaultLibraryId() : game.libraryId;
     game.libraryId = targetLibraryId;
-    game.installPath = relocatePathPrefix(game.installPath, sourceDir, targetDir);
-    game.executableOverride = relocatePathPrefix(game.executableOverride, sourceDir, targetDir);
-    game.downloadPath = relocatePathPrefix(game.downloadPath, m_settings->resolvedDownloadsRoot(sourceId),
-                                           m_settings->resolvedDownloadsRoot(targetLibraryId));
+    game.installPath = relocatePathPrefix(game.installPath, fromPath, toPath);
+    if (game.installPath.isEmpty() || !QDir(game.installPath).exists())
+        game.installPath = toPath;
+    game.executableOverride = relocatePathPrefix(game.executableOverride, fromPath, toPath);
+    game.downloadPath =
+        relocatePathPrefix(game.downloadPath, m_settings->resolvedDownloadsRoot(sourceId),
+                           m_settings->resolvedDownloadsRoot(targetLibraryId));
+
+    // Absolute launch paths inside steamidra marker must follow the folder.
+    rewritePathPrefixInFile(toPath + QStringLiteral("/.arachnel-steamidra"), fromPath, toPath);
+
     m_store->upsertGame(game);
     sync();
-    m_hooks.notice(QStringLiteral("Game moved: %1").arg(game.title));
 }
 
 QVariantList LibraryController::gamesOnLibrary(const QString& libraryId) const

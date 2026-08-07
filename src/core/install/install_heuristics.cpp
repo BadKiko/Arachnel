@@ -32,6 +32,9 @@ bool pathHasArchive(const QString& rootDir)
 bool isExcludedGameExecutable(const QString& fileName)
 {
     const QString lower = fileName.toLower();
+    // FreeTP/SteamFix promo stub planted next to the game - never a launch target.
+    if (lower == QStringLiteral("cmd.exe"))
+        return true;
     if (lower == QStringLiteral("unins000.exe") || lower == QStringLiteral("uninstall.exe")
         || lower.contains(QStringLiteral("setup")) || lower.contains(QStringLiteral("redist"))
         || lower.contains(QStringLiteral("vcredist")) || lower.contains(QStringLiteral("dxsetup"))

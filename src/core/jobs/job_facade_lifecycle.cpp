@@ -371,6 +371,10 @@ bool CoreController::entryHasActiveJob(const QString& entryId) const
 void CoreController::cancelJob(const QString& jobId)
 {
     const JobEntry* job = m_jobStore.jobById(jobId);
+    if (job && job->kind == JobKind::Move) {
+        showNotice(QCoreApplication::translate("Core", "Can't cancel a move in progress"));
+        return;
+    }
     if (job && !job->parentEntryId.isEmpty()) {
         m_jobOrchestrator->removeJob(jobId);
         return;

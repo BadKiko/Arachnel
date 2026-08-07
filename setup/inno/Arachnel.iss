@@ -76,7 +76,7 @@ Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"; 
 Name: "{userdesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Check: WantDesktopIcon
 
 [Registry]
-; Deep link: arachnel://game/<entryId>
+; Deep link: arachnel://game/<entryId> (share links use https://discover.badkiko.ru/open/game/<id>)
 Root: HKCU; Subkey: "Software\Classes\arachnel"; ValueType: string; ValueName: ""; ValueData: "URL:Arachnel Protocol"; Flags: uninsdeletekey
 Root: HKCU; Subkey: "Software\Classes\arachnel"; ValueType: string; ValueName: "URL Protocol"; ValueData: ""
 Root: HKCU; Subkey: "Software\Classes\arachnel\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""

@@ -376,7 +376,7 @@ Flickable {
                         for (let i = 0; i < root.selectedGameIds.length; ++i)
                             Core.moveGame(root.selectedGameIds[i], libraryId)
                         moveSheet.close()
-                        root.reloadGames()
+                        root.selectedGameIds = []
                     }
                 }
             }

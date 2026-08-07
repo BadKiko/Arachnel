@@ -65,7 +65,7 @@
         <translation>Arachnel</translation>
     </message>
     <message>
-        <location line="+166"/>
+        <location line="+196"/>
         <source>Library</source>
         <translation>Библиотека</translation>
     </message>
@@ -88,6 +88,24 @@
         <location line="+4"/>
         <source>Downloads</source>
         <translation>Загрузки</translation>
+    </message>
+</context>
+<context>
+    <name>BookmarksPage</name>
+    <message>
+        <location filename="../qml/app/BookmarksPage.qml" line="+69"/>
+        <source>No favorites</source>
+        <translation>Нет избранного</translation>
+    </message>
+    <message>
+        <location line="+36"/>
+        <source>Favorites</source>
+        <translation>Избранное</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>%1 games</source>
+        <translation>%1 игр</translation>
     </message>
 </context>
 <context>
@@ -607,7 +625,7 @@
 <context>
     <name>Core</name>
     <message>
-        <location filename="../src/core/catalog/catalog_types.cpp" line="+163"/>
+        <location filename="../src/core/catalog/catalog_types.cpp" line="+172"/>
         <source>Game</source>
         <translation>Игра</translation>
     </message>
@@ -622,12 +640,12 @@
         <translation>Компонент</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/share_facade.cpp" line="+30"/>
+        <location filename="../src/core/facade/share_facade.cpp" line="+34"/>
         <source>Link copied</source>
         <translation>Ссылка скопирована</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location filename="../src/core/catalog/catalog_types.cpp" line="+7"/>
         <source>Direct</source>
         <translation>Прямая</translation>
     </message>
@@ -644,7 +662,7 @@
     </message>
     <message>
         <location filename="../src/core/install/install_kind.cpp" line="+11"/>
-        <location filename="../src/core/catalog/catalog_model.cpp" line="+553"/>
+        <location filename="../src/core/catalog/catalog_model.cpp" line="+564"/>
         <source>Portable</source>
         <translation>Портабл</translation>
     </message>
@@ -671,14 +689,14 @@
         <translation>Неизвестно</translation>
     </message>
     <message>
-        <location filename="../src/core/jobs/job_display.cpp" line="+45"/>
-        <location line="+143"/>
+        <location filename="../src/core/jobs/job_display.cpp" line="+48"/>
+        <location line="+149"/>
         <location line="+2"/>
         <source>Install failed: %1</source>
         <translation>Ошибка установки: %1</translation>
     </message>
     <message>
-        <location line="-177"/>
+        <location line="-186"/>
         <source>Download complete</source>
         <translation>Загрузка завершена</translation>
     </message>
@@ -698,18 +716,17 @@
         <translation>Подключение…</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>0% · Fetching metadata…</source>
         <translation>0% · Получение метаданных…</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Fetching metadata…</source>
         <translation>Получение метаданных…</translation>
     </message>
     <message>
-        <source>Fetching metadata · 0%</source>
-        <translation>Получение метаданных · 0%</translation>
-    </message>
-    <message>
+        <location line="+1"/>
         <source>Checking…</source>
         <translation>Проверка…</translation>
     </message>
@@ -725,6 +742,7 @@
     </message>
     <message>
         <location line="+1"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="+253"/>
         <source>Preparing…</source>
         <translation>Подготовка…</translation>
     </message>
@@ -800,32 +818,34 @@
     </message>
     <message>
         <location line="+1"/>
-        <location line="+164"/>
+        <location line="+170"/>
         <source>Installing (%1/%2)</source>
         <translation>Установка (%1/%2)</translation>
     </message>
     <message>
-        <location line="-163"/>
-        <location line="+160"/>
+        <location line="-169"/>
+        <location line="+166"/>
         <source>Installing (%1/%2) - %3</source>
         <translation>Установка (%1/%2) - %3</translation>
     </message>
     <message>
-        <location line="-159"/>
-        <location filename="../src/core/library/library_controller.cpp" line="+293"/>
+        <location line="-165"/>
+        <location filename="../src/core/library/library_controller.cpp" line="+275"/>
+        <location line="+42"/>
         <location line="+58"/>
+        <location filename="../src/core/launch/launch_controller.cpp" line="+93"/>
         <source>Couldn&apos;t update DLC unlocks.</source>
         <translation>Не удалось обновить разблокировку DLC.</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+169"/>
+        <location line="+175"/>
         <location line="+2"/>
         <source>Error: %1</source>
         <translation>Ошибка: %1</translation>
     </message>
     <message>
-        <location line="-170"/>
+        <location line="-176"/>
         <location line="+52"/>
         <location line="+11"/>
         <source>Add-on %1 - %2</source>
@@ -840,6 +860,11 @@
         <location line="+2"/>
         <source>Update</source>
         <translation>Обновление</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Move</source>
+        <translation>Перемещение</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -878,6 +903,11 @@
     </message>
     <message>
         <location line="+2"/>
+        <source>Moving</source>
+        <translation>Перемещение</translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>Seeding</source>
         <translation>Раздача</translation>
     </message>
@@ -907,18 +937,18 @@
     <message>
         <location line="+1"/>
         <location filename="../src/core/jobs/job_status.cpp" line="+7"/>
-        <location filename="../src/core/catalog/catalog_facade_install.cpp" line="+249"/>
-        <location filename="../src/core/library/library_facade_sync.cpp" line="+230"/>
+        <location filename="../src/core/catalog/catalog_facade_install.cpp" line="+261"/>
+        <location filename="../src/core/library/library_facade_sync.cpp" line="+232"/>
         <source>Install failed</source>
         <translation>Ошибка установки</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_controller.cpp" line="+108"/>
+        <location filename="../src/core/catalog/catalog_controller.cpp" line="+110"/>
         <source>Catalog error: %1</source>
         <translation>Ошибка каталога: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="+500"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="+364"/>
         <source>Game not found for add-on</source>
         <translation>Игра не найдена для дополнения</translation>
     </message>
@@ -928,13 +958,29 @@
         <translation>Дополнение не найдено в каталоге</translation>
     </message>
     <message>
-        <location line="-69"/>
-        <location line="+80"/>
+        <location line="-55"/>
+        <location line="+66"/>
         <source>Could not find game to install: %1</source>
         <translation>Не удалось найти игру для установки: %1</translation>
     </message>
     <message>
-        <location line="+30"/>
+        <location line="-384"/>
+        <location line="+33"/>
+        <source>Moving %1</source>
+        <translation>Перемещение %1</translation>
+    </message>
+    <message>
+        <location line="+67"/>
+        <source>Copying files…</source>
+        <translation>Копирование файлов…</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Move failed</source>
+        <translation>Не удалось переместить</translation>
+    </message>
+    <message>
+        <location line="+304"/>
         <source>Download complete - install manually</source>
         <translation>Загрузка завершена - установите вручную</translation>
     </message>
@@ -995,11 +1041,12 @@
     </message>
     <message>
         <location filename="../src/core/runtime/proton_facade.cpp" line="+34"/>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="-358"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="-466"/>
         <source>Preparing runtime environment…</source>
         <translation>Подготовка среды выполнения…</translation>
     </message>
     <message>
+        <location filename="../src/core/library/library_controller.cpp" line="+83"/>
         <location filename="../src/core/jobs/job_facade_lifecycle.cpp" line="+102"/>
         <location filename="../src/core/library/library_facade_ops.cpp" line="+174"/>
         <location line="+39"/>
@@ -1019,7 +1066,12 @@
         <translation>Сначала скачайте дополнение</translation>
     </message>
     <message>
-        <location filename="../src/core/library/library_facade_sync.cpp" line="+136"/>
+        <location line="+261"/>
+        <source>Can&apos;t cancel a move in progress</source>
+        <translation>Нельзя отменить перемещение</translation>
+    </message>
+    <message>
+        <location filename="../src/core/library/library_facade_sync.cpp" line="+152"/>
         <source>%1 update(s) available</source>
         <translation>Доступно обновлений: %1</translation>
     </message>
@@ -1055,7 +1107,7 @@
         <translation>В %1 не найден исполняемый файл игры</translation>
     </message>
     <message>
-        <location filename="../src/core/jobs/job_display.cpp" line="-23"/>
+        <location filename="../src/core/jobs/job_display.cpp" line="-26"/>
         <location filename="../src/core/jobs/job_facade_manual.cpp" line="+16"/>
         <source>Installed</source>
         <translation>Установлен</translation>
@@ -1071,7 +1123,7 @@
         <translation>Установить плагин</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="+111"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="+233"/>
         <source>Plugin install failed</source>
         <translation>Ошибка установки плагина</translation>
     </message>
@@ -1162,8 +1214,8 @@
         <translation>Добавлено в Steam. Перезапусти Steam, чтобы увидеть игру и обложки.</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_controller.cpp" line="+220"/>
-        <location line="+154"/>
+        <location filename="../src/core/catalog/catalog_controller.cpp" line="+239"/>
+        <location line="+191"/>
         <source>%1 · %2 games</source>
         <translation>%1 · %2 игр</translation>
     </message>
@@ -1173,7 +1225,7 @@
         <translation>%1 источников · %2 игр</translation>
     </message>
     <message>
-        <location line="+251"/>
+        <location line="+299"/>
         <source>Catalog empty or unavailable: %1</source>
         <translation>Каталог пуст или недоступен: %1</translation>
     </message>
@@ -1219,12 +1271,12 @@
         <translation>Установка runtime не зарегистрировалась в префиксе Proton: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/launch/launch_controller.cpp" line="+65"/>
+        <location filename="../src/core/launch/launch_controller.cpp" line="-28"/>
         <source>Game is not installed yet</source>
         <translation>Игра ещё не установлена</translation>
     </message>
     <message>
-        <location line="+42"/>
+        <location line="+44"/>
         <source>Steam is not running - Online Fix needs it for SpaceWar/overlay. Starting Steam…</source>
         <translation>Steam не запущен - Online Fix нужен для SpaceWar/overlay. Запускаем Steam…</translation>
     </message>
@@ -1258,7 +1310,7 @@
         <translation>Источник «%1» выключен в настройках</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_facade_install.cpp" line="-235"/>
+        <location filename="../src/core/catalog/catalog_facade_install.cpp" line="-247"/>
         <source>Could not resolve application data folder</source>
         <translation>Не удалось определить папку данных приложения</translation>
     </message>
@@ -1290,12 +1342,12 @@
     <message>
         <location filename="../src/core/catalog/catalog_facade_install.cpp" line="+24"/>
         <location line="+20"/>
-        <location filename="../src/core/library/library_facade_sync.cpp" line="-190"/>
+        <location filename="../src/core/library/library_facade_sync.cpp" line="-204"/>
         <source>Catalog entry not found: %1</source>
         <translation>Запись каталога не найдена: %1</translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location line="+27"/>
         <source>No Steam App ID for %1</source>
         <translation>Нет Steam App ID для %1</translation>
     </message>
@@ -1348,12 +1400,12 @@
         <translation>Не удалось начать обновление %1</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="+115"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="+101"/>
         <source>Update finished, but version info is incomplete. Refresh the catalog and update again if the chip stays.</source>
         <translation>Обновление завершено, но сведения о версии неполные. Обновите каталог и повторите обновление, если метка останется.</translation>
     </message>
     <message>
-        <location line="-211"/>
+        <location line="-197"/>
         <source>No catalog sources enabled</source>
         <translation>Нет включённых источников каталога</translation>
     </message>
@@ -1482,32 +1534,32 @@
         <translation>Не удалось скопировать %1</translation>
     </message>
     <message>
-        <location line="+25"/>
+        <location line="+28"/>
         <source>Failed to replace existing plugin</source>
         <translation>Не удалось заменить установленный плагин</translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location line="+15"/>
         <source>Failed to install plugin files</source>
         <translation>Не удалось установить файлы плагина</translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+20"/>
         <source>Plugin files were copied but the library failed to load. Rebuild the plugin for your Arachnel version and this OS, then reinstall.</source>
         <translation>Плагин скопирован, но библиотека не загрузилась. Пересоберите плагин под вашу версию Arachnel и эту ОС и установите снова.</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="+21"/>
         <source>Invalid plugin id</source>
         <translation>Некорректный id плагина</translation>
     </message>
     <message>
-        <location line="+59"/>
+        <location line="+63"/>
         <source>Plugin is not installed</source>
         <translation>Плагин не установлен</translation>
     </message>
     <message>
-        <location line="-10"/>
+        <location line="-12"/>
         <source>Could not delete plugin files</source>
         <translation>Не удалось удалить файлы плагина</translation>
     </message>
@@ -1652,7 +1704,7 @@
         <translation>Автозапуск установщика доступен только на Windows</translation>
     </message>
     <message>
-        <location filename="../src/core/install/online_fix_overlay.cpp" line="+568"/>
+        <location filename="../src/core/install/online_fix_overlay.cpp" line="+602"/>
         <source>Not installed</source>
         <translation>Не установлен</translation>
     </message>
@@ -1667,12 +1719,12 @@
         <translation>Отключён</translation>
     </message>
     <message>
-        <location line="-39"/>
+        <location line="-30"/>
         <source>Online Fix overlay not found in this install</source>
         <translation>Online Fix оверлей не найден в этой установке</translation>
     </message>
     <message>
-        <location line="-164"/>
+        <location line="-166"/>
         <source>Failed to enable Online Fix: %1</source>
         <translation>Не удалось включить Online Fix: %1</translation>
     </message>
@@ -1692,7 +1744,7 @@
         <translation>Диск</translation>
     </message>
     <message>
-        <location filename="../src/core/util/file_utils.cpp" line="+76"/>
+        <location filename="../src/core/util/file_utils.cpp" line="+109"/>
         <source>Failed to delete file: %1</source>
         <translation>Не удалось удалить файл: %1</translation>
     </message>
@@ -1702,7 +1754,7 @@
         <translation>Не удалось удалить папку: %1</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+11"/>
         <source>Source not found: %1</source>
         <translation>Источник не найден: %1</translation>
     </message>
@@ -1712,7 +1764,7 @@
         <translation>Не удалось заменить: %1</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+8"/>
         <source>Failed to copy: %1</source>
         <translation>Не удалось скопировать: %1</translation>
     </message>
@@ -1728,7 +1780,7 @@
         <translation>Каталог пуст или формат не распознан</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_parser.cpp" line="+393"/>
+        <location filename="../src/core/catalog/catalog_parser.cpp" line="+433"/>
         <source>Empty server response</source>
         <translation>Пустой ответ сервера</translation>
     </message>
@@ -1812,9 +1864,9 @@
         <translation>Не удалось отследить процесс установки</translation>
     </message>
     <message>
-        <location filename="../src/core/library/library_controller.cpp" line="+40"/>
+        <location filename="../src/core/library/library_controller.cpp" line="-43"/>
         <location line="+21"/>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="-110"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="-232"/>
         <source>Game removed: %1</source>
         <translation>Игра удалена: %1</translation>
     </message>
@@ -1824,7 +1876,40 @@
         <translation>Удаление %1...</translation>
     </message>
     <message>
-        <location line="+138"/>
+        <location line="+30"/>
+        <source>No destination library selected</source>
+        <translation>Не выбран диск назначения</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Game is already on this library</source>
+        <translation>Игра уже на этом диске</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Already moving: %1</source>
+        <translation>Уже перемещается: %1</translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <location line="+12"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="+76"/>
+        <source>Game moved: %1</source>
+        <translation>Игра перемещена: %1</translation>
+    </message>
+    <message>
+        <location line="-4"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="-16"/>
+        <source>Could not move: %1</source>
+        <translation>Не удалось переместить: %1</translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>Moving %1…</source>
+        <translation>Перемещение %1…</translation>
+    </message>
+    <message>
+        <location line="+98"/>
         <source>Drive removed. %1 game(s) kept on disk and listed under another drive.</source>
         <translation>Диск убран. Игр оставлено на диске и в библиотеке (на другом диске): %1</translation>
     </message>
@@ -1834,9 +1919,14 @@
         <translation>Диск убран</translation>
     </message>
     <message>
-        <location filename="../src/core/settings/settings_store_persistence.cpp" line="+110"/>
+        <location filename="../src/core/settings/settings_store_persistence.cpp" line="+117"/>
         <source>FreeTP torrent catalog - magnet links and add-ons</source>
         <translation>Торрент-каталог FreeTP - magnet-ссылки и дополнения</translation>
+    </message>
+    <message>
+        <location filename="../src/core/jobs/job_orchestrator.cpp" line="+64"/>
+        <source>Move interrupted</source>
+        <translation>Перемещение прервано</translation>
     </message>
 </context>
 <context>
@@ -1941,7 +2031,7 @@
 <context>
     <name>DownloadJobCard</name>
     <message>
-        <location filename="../qml/components/DownloadJobCard.qml" line="+81"/>
+        <location filename="../qml/components/DownloadJobCard.qml" line="+82"/>
         <source>Unknown download</source>
         <translation>Неизвестная загрузка</translation>
     </message>
@@ -1949,6 +2039,11 @@
         <location line="+17"/>
         <source>Install failed</source>
         <translation>Ошибка установки</translation>
+    </message>
+    <message>
+        <location line="+73"/>
+        <source>Fetching metadata…</source>
+        <translation>Получение метаданных…</translation>
     </message>
 </context>
 <context>
@@ -1982,7 +2077,12 @@
         <translation>Загрузка</translation>
     </message>
     <message>
-        <location line="+147"/>
+        <location line="+71"/>
+        <source>0% · Fetching metadata…</source>
+        <translation>0% · Получение метаданных…</translation>
+    </message>
+    <message>
+        <location line="+99"/>
         <source>Installing…</source>
         <translation>Установка…</translation>
     </message>
@@ -2008,26 +2108,13 @@
     </message>
     <message>
         <location line="+2"/>
+        <source>Fetching metadata · 0%</source>
+        <translation>Получение метаданных · 0%</translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>Downloading · %1%</source>
         <translation>Загрузка · %1%</translation>
-    </message>
-</context>
-<context>
-    <name>BookmarksPage</name>
-    <message>
-        <location filename="../qml/app/BookmarksPage.qml" line="+69"/>
-        <source>No favorites</source>
-        <translation>Нет избранного</translation>
-    </message>
-    <message>
-        <location line="+36"/>
-        <source>Favorites</source>
-        <translation>Избранное</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>%1 games</source>
-        <translation>%1 игр</translation>
     </message>
 </context>
 <context>
@@ -2071,12 +2158,12 @@
 <context>
     <name>GameDetailsContent</name>
     <message>
-        <location filename="../qml/app/GameDetailsContent.qml" line="+39"/>
+        <location filename="../qml/app/GameDetailsContent.qml" line="+30"/>
         <source>Game details</source>
         <translation>Детали игры</translation>
     </message>
     <message>
-        <location line="+27"/>
+        <location line="+29"/>
         <source>Game not found</source>
         <translation>Игра не найдена</translation>
     </message>
@@ -2086,7 +2173,7 @@
         <translation>К источникам</translation>
     </message>
     <message>
-        <location line="+67"/>
+        <location line="+112"/>
         <source>DRM</source>
         <translation>DRM</translation>
     </message>
@@ -2116,12 +2203,12 @@
         <translation>Доступно обновление</translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location line="+22"/>
         <source>Share</source>
         <translation>Поделиться</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+10"/>
         <source>Source page</source>
         <translation>Страница на источнике</translation>
     </message>
@@ -2151,7 +2238,7 @@
         <translation>Ошибка установки</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="+18"/>
         <source>Stop</source>
         <translation>Остановить</translation>
     </message>
@@ -2166,7 +2253,7 @@
         <translation>Играть</translation>
     </message>
     <message>
-        <location line="+33"/>
+        <location line="+51"/>
         <source>Remove from favorites</source>
         <translation>Убрать из избранного</translation>
     </message>
@@ -2176,18 +2263,18 @@
         <translation>В избранное</translation>
     </message>
     <message>
-        <location line="+8"/>
-        <location line="+125"/>
+        <location line="+9"/>
+        <location line="+139"/>
         <source>Delete</source>
         <translation>Удалить</translation>
     </message>
     <message>
-        <location line="-108"/>
+        <location line="-120"/>
         <source>Update</source>
         <translation>Обновление</translation>
     </message>
     <message>
-        <location line="+57"/>
+        <location line="+68"/>
         <source>Description</source>
         <translation>Описание</translation>
     </message>
@@ -2197,7 +2284,7 @@
         <translation>Описание пока недоступно.</translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location line="+18"/>
         <source>Remove game?</source>
         <translation>Удалить игру?</translation>
     </message>
@@ -2207,7 +2294,7 @@
         <translation>Отмена</translation>
     </message>
     <message>
-        <location line="-189"/>
+        <location line="-226"/>
         <source>Ready to download from Steam CDN. Online Fix can be included when needed.</source>
         <translation>Готово к загрузке с Steam CDN. При необходимости можно включить Online Fix.</translation>
     </message>
@@ -2253,7 +2340,7 @@
 <context>
     <name>GameDetailsPage</name>
     <message numerus="yes">
-        <location filename="../qml/app/GameDetailsPage.qml" line="+227"/>
+        <location filename="../qml/app/GameDetailsPage.qml" line="+260"/>
         <source>%n source(s)</source>
         <translation>
             <numerusform>%n источник</numerusform>
@@ -2471,22 +2558,22 @@
 <context>
     <name>InstallAddonSelectionSheet</name>
     <message>
-        <location filename="../qml/settings/InstallAddonSelectionSheet.qml" line="+224"/>
+        <location filename="../qml/settings/InstallAddonSelectionSheet.qml" line="+233"/>
         <source>DLC</source>
         <translation>DLC</translation>
     </message>
     <message>
-        <location line="-137"/>
+        <location line="-146"/>
         <source>Loading DLC from Steam…</source>
         <translation>Загрузка DLC из Steam…</translation>
     </message>
     <message>
-        <location line="+175"/>
+        <location line="+184"/>
         <source>No Steam DLC found for this game.</source>
         <translation>Для этой игры Steam DLC не найдено.</translation>
     </message>
     <message>
-        <location line="-170"/>
+        <location line="-179"/>
         <source>About %1 on disk - game %2 + %3 DLC.</source>
         <translation>Около %1 на диске - игра %2 + %3 DLC.</translation>
     </message>
@@ -2505,7 +2592,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location line="+148"/>
+        <location line="+157"/>
         <source>%n DLC included</source>
         <translation>
             <numerusform>%n DLC в комплекте</numerusform>
@@ -2527,7 +2614,7 @@
 <context>
     <name>InstallLocationSheet</name>
     <message>
-        <location filename="../qml/settings/InstallLocationSheet.qml" line="+103"/>
+        <location filename="../qml/settings/InstallLocationSheet.qml" line="+107"/>
         <source>About %1 on disk - game %2 + %3 DLC.</source>
         <translation>Около %1 на диске - игра %2 + %3 DLC.</translation>
     </message>
@@ -2542,7 +2629,7 @@
         <translation>DLC увеличит размер установки</translation>
     </message>
     <message>
-        <location line="+43"/>
+        <location line="+44"/>
         <location line="+157"/>
         <source>Install</source>
         <translation>Установить</translation>
@@ -2944,7 +3031,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>Возможно, нет нужного источника или плагин устарел. Проверьте источники в настройках.</translation>
     </message>
     <message>
-        <location line="-22"/>
+        <location line="-26"/>
         <source>Your library is empty. Install a plugin, pick a game in Catalog, and it will appear here.</source>
         <translation>Библиотека пуста. Установите плагин, выберите игру в Каталоге - и она появится здесь.</translation>
     </message>
@@ -2979,7 +3066,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>Добавьте каталог или установите плагин в Настройках.</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+14"/>
         <source>Game files will be deleted from disk. This cannot be undone.</source>
         <translation>Файлы игры будут удалены с диска. Это действие нельзя отменить.</translation>
     </message>

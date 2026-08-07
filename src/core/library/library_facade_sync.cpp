@@ -1,5 +1,9 @@
 #include "core_controller_impl.h"
 
+#include "install_heuristics.h"
+
+#include <QFileInfo>
+
 namespace arachnel::core {
 
 bool CoreController::isEntryPlayable(const QString& entryId) const
@@ -290,8 +294,19 @@ void CoreController::pruneAddonLibraryEntries()
 void CoreController::syncLibraryFromStore()
 {
     QVector<LibraryGame> games = m_libraryStore.games();
-    for (auto& game : games)
+    bool storeDirty = false;
+    for (auto& game : games) {
+        // FreeTP promo stub was sometimes saved as the launch exe - drop it.
+        if (!game.executableOverride.isEmpty()
+            && isExcludedGameExecutable(QFileInfo(game.executableOverride).fileName())) {
+            game.executableOverride.clear();
+            m_libraryStore.upsertGame(game);
+            storeDirty = true;
+        }
         enrichLibraryGameCover(game);
+    }
+    if (storeDirty)
+        m_libraryStore.save();
     m_library.setGamesIncremental(std::move(games));
 }
 

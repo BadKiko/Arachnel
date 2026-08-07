@@ -19,12 +19,25 @@ struct JobEntry;
 class LibraryController
 {
 public:
+    struct MoveGameWork {
+        QString gameId;
+        QString title;
+        QString coverUrl;
+        QString sourceId;
+        QString fromPath;
+        QString toPath;
+        QString sourceLibraryId;
+        QString targetLibraryId;
+    };
+
     struct Hooks {
         std::function<void()> syncLibrary;
         std::function<void(const QString&)> removeJobs;
         std::function<void(const QString&)> notice;
         /** Delete game folders off the UI thread. Paths are unique; title for notices. */
         std::function<void(const QStringList& paths, const QString& title)> deleteGameFilesAsync;
+        /** Cross-drive copy/move off the UI thread with Downloads progress. */
+        std::function<void(const MoveGameWork&)> moveGameAsync;
         std::function<const CatalogEntry*(const QString&)> findCatalogEntry;
         std::function<const JobEntry*(const QString&)> findLatestJob;
         std::function<QString(const QString&)> sourceWebsiteFor;
@@ -50,6 +63,9 @@ public:
     void removeGame(const QString& gameId, bool deleteFiles);
     void removeEntry(const QString& entryId, bool deleteFiles);
     void moveGame(const QString& gameId, const QString& targetLibraryId);
+    /** Apply library paths after a successful async filesystem move. */
+    void finalizeMovedGame(const QString& gameId, const QString& targetLibraryId,
+                           const QString& fromPath, const QString& toPath);
     QVariantList gamesOnLibrary(const QString& libraryId) const;
     /** Remove a storage drive. If games remain and force is false, returns false.
      *  With force, reassigns games to another drive (no file moves) then removes the drive. */
