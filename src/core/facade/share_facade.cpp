@@ -37,6 +37,20 @@ void CoreController::shareGameLink(const QString& entryId)
     showNotice(QCoreApplication::translate("Core", "Link copied"));
 }
 
+void CoreController::toggleBookmark(const QString& entryId)
+{
+    const QString id = entryId.trimmed();
+    if (id.isEmpty())
+        return;
+    const QVariantMap info = entryDetails(id);
+    const QString title = info.value(QStringLiteral("title")).toString();
+    const QString coverUrl = info.value(QStringLiteral("coverUrl")).toString();
+    QString sourceName = info.value(QStringLiteral("sourceName")).toString();
+    if (sourceName.isEmpty())
+        sourceName = info.value(QStringLiteral("sourceId")).toString();
+    m_settings.toggleBookmark(id, title, coverUrl, sourceName);
+}
+
 void CoreController::requestDeepLink(const QString& rawOrUrl)
 {
     const QString gameId = arachnel::parseDeepLinkGameId(rawOrUrl);

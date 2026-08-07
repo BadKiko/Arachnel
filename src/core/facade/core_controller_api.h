@@ -101,6 +101,7 @@
     Q_INVOKABLE void copyPendingCrashReport();
     Q_INVOKABLE QString gameShareUrl(const QString& entryId) const;
     Q_INVOKABLE void shareGameLink(const QString& entryId);
+    Q_INVOKABLE void toggleBookmark(const QString& entryId);
     Q_INVOKABLE void requestDeepLink(const QString& rawOrUrl);
     Q_INVOKABLE void consumePendingDeepLink();
     Q_INVOKABLE void requestCatalogCover(const QString&);

@@ -61,12 +61,32 @@ void SettingsStore::load()
         if (!id.isEmpty() && !m_protonPriority.contains(id))
             m_protonPriority.append(id);
     }
-    m_bookmarkedEntryIds.clear();
-    const QJsonArray bookmarks = obj.value(QStringLiteral("bookmarkedEntryIds")).toArray();
+    m_bookmarks.clear();
+    const QJsonArray bookmarks = obj.contains(QStringLiteral("bookmarks"))
+                                     ? obj.value(QStringLiteral("bookmarks")).toArray()
+                                     : obj.value(QStringLiteral("bookmarkedEntryIds")).toArray();
     for (const QJsonValue& value : bookmarks) {
-        const QString id = value.toString().trimmed();
-        if (!id.isEmpty() && !m_bookmarkedEntryIds.contains(id))
-            m_bookmarkedEntryIds.append(id);
+        BookmarkEntry entry;
+        if (value.isObject()) {
+            const QJsonObject row = value.toObject();
+            entry.id = row.value(QStringLiteral("id")).toString().trimmed();
+            entry.title = row.value(QStringLiteral("title")).toString().trimmed();
+            entry.coverUrl = row.value(QStringLiteral("coverUrl")).toString().trimmed();
+            entry.sourceName = row.value(QStringLiteral("sourceName")).toString().trimmed();
+        } else {
+            entry.id = value.toString().trimmed();
+        }
+        if (entry.id.isEmpty())
+            continue;
+        bool exists = false;
+        for (const auto& prev : m_bookmarks) {
+            if (prev.id == entry.id) {
+                exists = true;
+                break;
+            }
+        }
+        if (!exists)
+            m_bookmarks.append(entry);
     }
 
     if (obj.contains(QStringLiteral("storageLibraries"))) {
@@ -175,9 +195,18 @@ void SettingsStore::save()
         priority.append(id);
     obj.insert(QStringLiteral("protonPriority"), priority);
     QJsonArray bookmarks;
-    for (const QString& id : m_bookmarkedEntryIds)
-        bookmarks.append(id);
-    obj.insert(QStringLiteral("bookmarkedEntryIds"), bookmarks);
+    for (const auto& entry : m_bookmarks) {
+        QJsonObject row;
+        row.insert(QStringLiteral("id"), entry.id);
+        if (!entry.title.isEmpty())
+            row.insert(QStringLiteral("title"), entry.title);
+        if (!entry.coverUrl.isEmpty())
+            row.insert(QStringLiteral("coverUrl"), entry.coverUrl);
+        if (!entry.sourceName.isEmpty())
+            row.insert(QStringLiteral("sourceName"), entry.sourceName);
+        bookmarks.append(row);
+    }
+    obj.insert(QStringLiteral("bookmarks"), bookmarks);
 
     QJsonArray storageLibraries;
     for (const auto& library : m_storageLibraries.libraries()) {

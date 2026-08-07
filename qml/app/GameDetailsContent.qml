@@ -398,7 +398,7 @@ Item {
                                 Accessible.name: favorited
                                                  ? qsTr("Remove from favorites")
                                                  : qsTr("Add to favorites")
-                                onClicked: Core.settings.toggleBookmark(page.gameId)
+                                onClicked: Core.toggleBookmark(page.gameId)
                             }
 
                             MD.Button {

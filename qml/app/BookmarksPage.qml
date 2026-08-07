@@ -7,9 +7,9 @@ import Qcm.Material as MD
 Item {
     id: root
 
-    readonly property int pageMargin: MD.Token.spacing.large
+    readonly property int pageMargin: MD.Token.spacing.medium
     readonly property int gridSpacing: MD.Token.spacing.medium
-    readonly property int minCardWidth: 140
+    readonly property int minCardWidth: 160
     readonly property int metaHeight: 48
     readonly property bool favoritesEmpty: favoritesModel.count === 0
 
@@ -19,26 +19,73 @@ Item {
         id: favoritesModel
     }
 
+    property bool refreshing: false
+
     function refreshFavorites() {
-        const ids = Core.settings.bookmarkedEntryIds || []
+        if (root.refreshing)
+            return
+        root.refreshing = true
+        const rows = Core.settings.bookmarks || []
         favoritesModel.clear()
-        for (let i = 0; i < ids.length; ++i) {
-            const id = String(ids[i] || "")
+        const snapshots = []
+        for (let i = 0; i < rows.length; ++i) {
+            const row = rows[i] || {}
+            const id = String(row.gameId || row.entryId || "").trim()
             if (!id.length)
                 continue
+
             const info = Core.entryDetails(id)
+            const liveTitle = String(info.title || "").trim()
+            const liveCover = String(info.coverUrl || "").trim()
+            const liveSource = String(info.sourceName || info.sourceId || "").trim()
+            const title = liveTitle.length ? liveTitle : String(row.title || "")
+            const coverUrl = liveCover.length ? liveCover : String(row.coverUrl || "")
+            const sourceName = liveSource.length ? liveSource : String(row.sourceName || "")
+
             favoritesModel.append({
                                       gameId: id,
-                                      title: String(info.title || id),
-                                      coverUrl: String(info.coverUrl || ""),
-                                      sourceName: String(info.sourceName || info.sourceId || "")
+                                      title: title,
+                                      coverUrl: coverUrl,
+                                      sourceName: sourceName
                                   })
+
+            if (liveTitle.length || liveCover.startsWith("file:") || liveSource.length)
+                snapshots.push({
+                                   id: id,
+                                   title: liveTitle,
+                                   coverUrl: liveCover,
+                                   sourceName: liveSource
+                               })
+        }
+        root.refreshing = false
+        for (let s = 0; s < snapshots.length; ++s) {
+            const snap = snapshots[s]
+            Core.settings.upsertBookmarkSnapshot(snap.id, snap.title, snap.coverUrl, snap.sourceName)
         }
     }
 
     Connections {
         target: Core.settings
         function onBookmarkedEntryIdsChanged() { root.refreshFavorites() }
+    }
+
+    Connections {
+        target: Core
+        function onPluginsChanged() { root.refreshFavorites() }
+        function onCatalogStatusChanged() { root.refreshFavorites() }
+        function onEntryMetadataChanged(entryId) {
+            for (let i = 0; i < favoritesModel.count; ++i) {
+                if (favoritesModel.get(i).gameId === entryId) {
+                    root.refreshFavorites()
+                    return
+                }
+            }
+        }
+    }
+
+    Connections {
+        target: Core.library
+        function onLibraryChanged() { root.refreshFavorites() }
     }
 
     Component.onCompleted: refreshFavorites()
@@ -143,51 +190,10 @@ Item {
                     cellHeight: gridHost.cellH
                     cacheBuffer: 0
 
-                    delegate: Item {
-                        id: card
+                    delegate: FavoriteGameCard {
                         width: gridHost.cardWidth
                         height: gridHost.cardHeight
-
-                        required property string gameId
-                        required property string title
-                        required property string coverUrl
-                        required property string sourceName
-
-                        ColumnLayout {
-                            anchors.fill: parent
-                            anchors.rightMargin: gridHost.gap
-                            anchors.bottomMargin: gridHost.gap
-                            spacing: MD.Token.spacing.extra_small
-
-                            GamePoster {
-                                Layout.fillWidth: true
-                                Layout.fillHeight: true
-                                source: card.coverUrl
-                                seed: card.title
-                                fallbackText: card.title.length > 0 ? card.title.charAt(0) : "?"
-                                cornerRadius: MD.Token.shape.corner.extra_large
-                                hoverScaleEnabled: true
-                                onClicked: root.openGame(card.gameId)
-                            }
-
-                            MD.Label {
-                                Layout.fillWidth: true
-                                text: card.title
-                                elide: Text.ElideRight
-                                maximumLineCount: 1
-                                typescale: MD.Token.typescale.label_large
-                            }
-
-                            MD.Label {
-                                Layout.fillWidth: true
-                                visible: card.sourceName.length > 0
-                                text: card.sourceName
-                                elide: Text.ElideRight
-                                maximumLineCount: 1
-                                color: MD.Token.color.on_surface_variant
-                                typescale: MD.Token.typescale.label_small
-                            }
-                        }
+                        onOpenDetails: function (id) { root.openGame(id) }
                     }
                 }
             }
