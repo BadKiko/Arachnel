@@ -298,38 +298,141 @@ void SettingsStore::promoteProtonInPriority(const QString& id)
 
 void SettingsStore::setBookmarkedEntryIds(const QStringList& ids)
 {
-    QStringList normalized;
-    normalized.reserve(ids.size());
+    QVector<BookmarkEntry> next;
+    next.reserve(ids.size());
     for (const QString& id : ids) {
         const QString trimmed = id.trimmed();
-        if (!trimmed.isEmpty() && !normalized.contains(trimmed))
-            normalized.append(trimmed);
+        if (trimmed.isEmpty())
+            continue;
+        bool exists = false;
+        for (const auto& entry : next) {
+            if (entry.id == trimmed) {
+                exists = true;
+                break;
+            }
+        }
+        if (exists)
+            continue;
+        BookmarkEntry entry;
+        entry.id = trimmed;
+        for (const auto& prev : m_bookmarks) {
+            if (prev.id == trimmed) {
+                entry = prev;
+                break;
+            }
+        }
+        next.append(entry);
     }
-    if (m_bookmarkedEntryIds == normalized)
-        return;
-    m_bookmarkedEntryIds = normalized;
+    if (m_bookmarks.size() == next.size()) {
+        bool same = true;
+        for (int i = 0; i < next.size(); ++i) {
+            if (m_bookmarks.at(i).id != next.at(i).id) {
+                same = false;
+                break;
+            }
+        }
+        if (same)
+            return;
+    }
+    m_bookmarks = next;
     emit bookmarkedEntryIdsChanged();
     save();
+}
+
+QStringList SettingsStore::bookmarkedEntryIds() const
+{
+    QStringList ids;
+    ids.reserve(m_bookmarks.size());
+    for (const auto& entry : m_bookmarks)
+        ids.append(entry.id);
+    return ids;
+}
+
+QVariantList SettingsStore::bookmarks() const
+{
+    QVariantList out;
+    out.reserve(m_bookmarks.size());
+    for (const auto& entry : m_bookmarks) {
+        out.append(QVariantMap{
+            {QStringLiteral("gameId"), entry.id},
+            {QStringLiteral("entryId"), entry.id},
+            {QStringLiteral("title"), entry.title},
+            {QStringLiteral("coverUrl"), entry.coverUrl},
+            {QStringLiteral("sourceName"), entry.sourceName},
+        });
+    }
+    return out;
 }
 
 bool SettingsStore::isBookmarked(const QString& entryId) const
 {
     const QString normalized = entryId.trimmed();
-    return !normalized.isEmpty() && m_bookmarkedEntryIds.contains(normalized);
+    if (normalized.isEmpty())
+        return false;
+    for (const auto& entry : m_bookmarks) {
+        if (entry.id == normalized)
+            return true;
+    }
+    return false;
 }
 
-void SettingsStore::toggleBookmark(const QString& entryId)
+void SettingsStore::upsertBookmarkSnapshot(const QString& entryId, const QString& title,
+                                           const QString& coverUrl, const QString& sourceName)
+{
+    const QString normalized = entryId.trimmed();
+    if (normalized.isEmpty())
+        return;
+    for (auto& entry : m_bookmarks) {
+        if (entry.id != normalized)
+            continue;
+        bool changed = false;
+        const QString t = title.trimmed();
+        const QString c = coverUrl.trimmed();
+        const QString s = sourceName.trimmed();
+        if (!t.isEmpty() && entry.title != t) {
+            entry.title = t;
+            changed = true;
+        }
+        if (!c.isEmpty() && entry.coverUrl != c) {
+            entry.coverUrl = c;
+            changed = true;
+        }
+        if (!s.isEmpty() && entry.sourceName != s) {
+            entry.sourceName = s;
+            changed = true;
+        }
+        if (!changed)
+            return;
+        emit bookmarkedEntryIdsChanged();
+        save();
+        return;
+    }
+}
+
+void SettingsStore::toggleBookmark(const QString& entryId, const QString& title,
+                                   const QString& coverUrl, const QString& sourceName)
 {
     const QString normalized = entryId.trimmed();
     if (normalized.isEmpty())
         return;
 
-    QStringList next = m_bookmarkedEntryIds;
-    if (next.contains(normalized))
-        next.removeAll(normalized);
-    else
-        next.prepend(normalized);
-    setBookmarkedEntryIds(next);
+    for (int i = 0; i < m_bookmarks.size(); ++i) {
+        if (m_bookmarks.at(i).id != normalized)
+            continue;
+        m_bookmarks.removeAt(i);
+        emit bookmarkedEntryIdsChanged();
+        save();
+        return;
+    }
+
+    BookmarkEntry entry;
+    entry.id = normalized;
+    entry.title = title.trimmed();
+    entry.coverUrl = coverUrl.trimmed();
+    entry.sourceName = sourceName.trimmed();
+    m_bookmarks.prepend(entry);
+    emit bookmarkedEntryIdsChanged();
+    save();
 }
 
 void SettingsStore::clearLegacyProtonPath()

@@ -3,9 +3,11 @@
 #include "source_plugin_model.h"
 #include "storage_library.h"
 #include "storage_library_model.h"
+#include "bookmark_entry.h"
 
 #include <QObject>
 #include <QString>
+#include <QVariantList>
 #include <QVector>
 
 namespace arachnel::core {
@@ -38,8 +40,8 @@ class SettingsStore : public QObject
                    defaultProtonIdChanged)
     Q_PROPERTY(QStringList protonPriority READ protonPriority WRITE setProtonPriority NOTIFY
                    protonPriorityChanged)
-    Q_PROPERTY(QStringList bookmarkedEntryIds READ bookmarkedEntryIds WRITE setBookmarkedEntryIds
-                   NOTIFY bookmarkedEntryIdsChanged)
+    Q_PROPERTY(QStringList bookmarkedEntryIds READ bookmarkedEntryIds NOTIFY bookmarkedEntryIdsChanged)
+    Q_PROPERTY(QVariantList bookmarks READ bookmarks NOTIFY bookmarkedEntryIdsChanged)
 
 public:
     explicit SettingsStore(QObject* parent = nullptr);
@@ -56,7 +58,8 @@ public:
     QString globalLaunchArgs() const { return m_globalLaunchArgs; }
     QString defaultProtonId() const { return m_defaultProtonId; }
     QStringList protonPriority() const { return m_protonPriority; }
-    QStringList bookmarkedEntryIds() const { return m_bookmarkedEntryIds; }
+    QStringList bookmarkedEntryIds() const;
+    QVariantList bookmarks() const;
     QString legacyProtonPath() const { return m_legacyProtonPath; }
     StorageLibraryModel* storageLibraries() { return &m_storageLibraries; }
     const StorageLibraryModel* storageLibraries() const { return &m_storageLibraries; }
@@ -94,7 +97,10 @@ public:
     void promoteProtonInPriority(const QString& id);
     void setBookmarkedEntryIds(const QStringList& ids);
     Q_INVOKABLE bool isBookmarked(const QString& entryId) const;
-    Q_INVOKABLE void toggleBookmark(const QString& entryId);
+    Q_INVOKABLE void toggleBookmark(const QString& entryId, const QString& title = {},
+                                    const QString& coverUrl = {}, const QString& sourceName = {});
+    Q_INVOKABLE void upsertBookmarkSnapshot(const QString& entryId, const QString& title,
+                                            const QString& coverUrl, const QString& sourceName);
     void clearLegacyProtonPath();
 
     QString resolvedProtonId(const QString& gameProtonId, class ProtonManager& manager) const;
@@ -138,7 +144,7 @@ private:
     QString m_globalLaunchArgs;
     QString m_defaultProtonId;
     QStringList m_protonPriority;
-    QStringList m_bookmarkedEntryIds;
+    QVector<BookmarkEntry> m_bookmarks;
     QString m_legacyProtonPath;
     QString m_lastLaunchedAppVersion;
     QVector<SourcePluginInfo> m_sources;
