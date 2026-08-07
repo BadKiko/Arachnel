@@ -48,7 +48,12 @@ void dismissPendingCrashReport()
 
 void openPendingCrashIssue()
 {
-    const QString url = pendingCrashIssueUrl();
+    const QString summary = pendingCrashSummary();
+    const QString details = pendingCrashDetails();
+    // Rebuild so older pending markers (pre-fence) still get a safe GitHub body.
+    const QString url = !summary.isEmpty() && !details.isEmpty()
+                            ? buildIssueUrl(summary, details)
+                            : pendingCrashIssueUrl();
     if (!url.isEmpty())
         QDesktopServices::openUrl(QUrl(url));
 }

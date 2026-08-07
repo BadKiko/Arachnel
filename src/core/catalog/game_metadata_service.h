@@ -4,6 +4,7 @@
 
 #include <QObject>
 #include <QHash>
+#include <QReadWriteLock>
 #include <QSet>
 #include <QStringList>
 #include <QTimer>
@@ -111,6 +112,7 @@ private:
 
     QNetworkAccessManager* m_network = nullptr;
     QHash<QString, GameMetadata> m_cache;
+    mutable QReadWriteLock m_cacheLock;
     QList<PendingRequest> m_pending;
     QSet<QString> m_inFlight;
     QHash<QString, DeferredFullRequest> m_deferredFull;

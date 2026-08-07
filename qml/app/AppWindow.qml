@@ -159,6 +159,12 @@ MD.ApplicationWindow {
         interval: 600
         repeat: false
         onTriggered: {
+            // Don't instantiate Catalog/GridView while a huge merge is about to land.
+            if (Core.catalogLoading) {
+                catalogWarmTimer.interval = 800
+                catalogWarmTimer.start()
+                return
+            }
             if (pageStack.currentItem && pageStack.currentItem.warmCatalogLoaders)
                 pageStack.currentItem.warmCatalogLoaders()
         }

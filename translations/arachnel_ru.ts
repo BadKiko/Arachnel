@@ -1545,8 +1545,60 @@
     </message>
     <message>
         <location line="+20"/>
-        <source>Plugin files were copied but the library failed to load. Rebuild the plugin for your Arachnel version and this OS, then reinstall.</source>
-        <translation>Плагин скопирован, но библиотека не загрузилась. Пересоберите плагин под вашу версию Arachnel и эту ОС и установите снова.</translation>
+        <source>Plugin files were copied but the library failed to load. Update Arachnel, or rebuild the plugin for this app version.</source>
+        <translation>Плагин скопирован, но библиотека не загрузилась. Обновите Arachnel или пересоберите плагин под эту версию приложения.</translation>
+    </message>
+    <message>
+        <source>%1 needs a different Arachnel plugin API (plugin=%2, this app supports %3-%4). Update Arachnel or install a matching plugin build.</source>
+        <translation>%1 требует другой API плагинов Arachnel (плагин=%2, это приложение поддерживает %3-%4). Обновите Arachnel или поставьте подходящую сборку плагина.</translation>
+    </message>
+    <message>
+        <source>%1 only supports Arachnel up to %2 (you have %3). Install a newer plugin build from the store.</source>
+        <translation>%1 поддерживает Arachnel только до %2 (у вас %3). Установите более новую сборку плагина из магазина.</translation>
+    </message>
+    <message>
+        <source>%1 needs Arachnel %2 or newer (you have %3). Update the app.</source>
+        <translation>%1 нужен Arachnel %2 или новее (у вас %3). Обновите приложение.</translation>
+    </message>
+    <message>
+        <source>Could not load %1: %2</source>
+        <translation>Не удалось загрузить %1: %2</translation>
+    </message>
+    <message>
+        <source>%1 is missing required plugin exports. Reinstall from the store.</source>
+        <translation>У %1 нет нужных экспортов плагина. Переустановите из магазина.</translation>
+    </message>
+    <message>
+        <source>%1 is missing API 4 catalog JSON exports. Reinstall from the store.</source>
+        <translation>У %1 нет экспортов каталога API 4 (JSON). Переустановите из магазина.</translation>
+    </message>
+    <message>
+        <source>%1 was built for a different Arachnel SDK (CatalogEntry %2 vs %3 bytes). Update Arachnel, or install a plugin build for this app version.</source>
+        <translation>%1 собран под другой SDK Arachnel (CatalogEntry %2 против %3 байт). Обновите Arachnel или поставьте сборку плагина для этой версии приложения.</translation>
+    </message>
+    <message>
+        <source>%1 is missing the CatalogEntry size check. Reinstall a current plugin build.</source>
+        <translation>У %1 нет проверки размера CatalogEntry. Установите актуальную сборку плагина.</translation>
+    </message>
+    <message>
+        <source>%1 failed to start.</source>
+        <translation>%1 не удалось запустить.</translation>
+    </message>
+    <message>
+        <source>%1 needs a different Arachnel plugin API. Update the app or reinstall a matching plugin.</source>
+        <translation>%1 требует другой API плагинов Arachnel. Обновите приложение или переустановите подходящий плагин.</translation>
+    </message>
+    <message>
+        <source>%1 only supports Arachnel up to %2. Install a newer plugin build.</source>
+        <translation>%1 поддерживает Arachnel только до %2. Установите более новую сборку плагина.</translation>
+    </message>
+    <message>
+        <source>%1 needs Arachnel %2 or newer. Update the app.</source>
+        <translation>%1 нужен Arachnel %2 или новее. Обновите приложение.</translation>
+    </message>
+    <message>
+        <source>%1 is installed but failed to load. Update Arachnel or reinstall the plugin.</source>
+        <translation>%1 установлен, но не загрузился. Обновите Arachnel или переустановите плагин.</translation>
     </message>
     <message>
         <location line="+21"/>

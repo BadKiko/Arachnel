@@ -9,6 +9,7 @@
 #include <QThreadPool>
 #include <QTimer>
 #include <QUuid>
+#include <QWriteLocker>
 #include <QtConcurrent>
 
 namespace arachnel::core {
@@ -44,6 +45,7 @@ void CoreController::initializeServices()
             return nullptr;
         },
         [this]() -> QVector<CatalogEntry>& { return m_catalogCache; }, this);
+    m_catalogCovers->setCacheLock(&m_catalogCacheLock);
 
     if (qEnvironmentVariableIntValue("ARACHNEL_COVER_METRICS") > 0) {
         auto* logTimer = new QTimer(this);
@@ -121,8 +123,14 @@ void CoreController::initializeServices()
         m_catalogFilters->setCacheLock(&m_catalogCacheLock);
     if (m_pluginHost) {
         m_pluginHost->setBeforeUnloadHook([this]() {
+            m_pluginCallsBlocked = true;
+            waitForCatalogAddonEnrich();
             if (m_catalogController)
                 m_catalogController->waitForInFlightPluginCatalogLoads();
+            // Drain anything queued while catalog loads finished.
+            waitForCatalogAddonEnrich();
+            // Install / owned-download workers still hold ISourcePlugin* into the DSO.
+            m_pluginHost->waitForInFlightPluginWorkers();
         });
     }
     connect(m_catalogController, &CatalogController::catalogLoadingChanged, this,
@@ -534,17 +542,24 @@ void CoreController::initializeServices()
 
     connect(m_metadataService, &GameMetadataService::metadataReady, this,
             [this](const QString& entryId, const GameMetadata& metadata) {
-                for (auto& entry : m_catalogCache) {
-                    if (entry.id != entryId)
-                        continue;
-                    applyMetadataToEntry(entry, metadata);
+                bool applied = false;
+                {
+                    QWriteLocker locker(&m_catalogCacheLock);
+                    for (auto& entry : m_catalogCache) {
+                        if (entry.id != entryId)
+                            continue;
+                        applyMetadataToEntry(entry, metadata);
+                        applied = true;
+                        break;
+                    }
+                }
+                if (applied) {
                     syncEntryToCatalogModel(entryId);
                     if (m_catalogFilters
                         && (!m_catalogFilters->genreFilter().isEmpty()
                             || m_catalogFilters->sizeFilter() > 0
                             || m_catalogFilters->playModeFilter() > 0))
                         scheduleCatalogRefilter();
-                    break;
                 }
                 if (!metadata.coverUrl.isEmpty())
                     m_catalogCovers->ensureDiskCover(entryId, metadata.coverUrl);

@@ -70,7 +70,8 @@ bool GameUpdateService::gameHasUpdate(const LibraryGame& game, const CatalogEntr
     const bool remoteHasMarkers = !remote.uploadDate.isEmpty() || !remote.version.isEmpty();
     if (remoteHasMarkers) {
         if (ISourcePlugin* plugin = m_plugins ? m_plugins->plugin(game.sourceId) : nullptr) {
-            if (plugin->detectUpdate(game, remote))
+            if (m_plugins->pluginCatalogEntryLayoutTrusted(game.sourceId)
+                && plugin->detectUpdate(game, remote))
                 return true;
         }
         // Fallback for plugins that omit detectUpdate: compare uploadDate / version.

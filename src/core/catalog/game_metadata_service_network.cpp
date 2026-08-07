@@ -9,11 +9,13 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
+#include <QReadWriteLock>
 #include <QRegularExpression>
 #include <QStandardPaths>
 #include <QTimer>
 #include <QUrl>
 #include <QUrlQuery>
+#include <QWriteLocker>
 
 namespace arachnel::core {
 
@@ -159,36 +161,40 @@ void GameMetadataService::handleAssetsFinished(QNetworkReply* reply)
     const QStringList parentTerms = reply->property("parentTerms").toStringList();
     const QString languageCode = reply->property("languageCode").toString();
 
-    GameMetadata metadata = m_cache.value(entryTitle);
-    metadata.steamAppId = appId;
+    GameMetadata metadata;
+    {
+        QWriteLocker locker(&m_cacheLock);
+        metadata = m_cache.value(entryTitle);
+        metadata.steamAppId = appId;
 
-    if (reply->error() == QNetworkReply::NoError) {
-        const QJsonObject root = QJsonDocument::fromJson(reply->readAll()).object();
-        const QJsonArray storeItems = root.value(QStringLiteral("response"))
-                                          .toObject()
-                                          .value(QStringLiteral("store_items"))
-                                          .toArray();
-        if (!storeItems.isEmpty()) {
-            const QJsonObject storeItem = storeItems.first().toObject();
-            const QJsonObject assets = storeItem.value(QStringLiteral("assets")).toObject();
-            metadata.coverUrl = pickLibraryCover(assets);
-            if (mode == MetadataFetchMode::Full) {
-                const QJsonObject trailers = storeItem.value(QStringLiteral("trailers")).toObject();
-                const QString trailer = pickTrailerFromStoreTrailers(trailers);
-                if (!trailer.isEmpty())
-                    metadata.trailerUrl = trailer;
-                const QString thumbnail = pickTrailerThumbnailFromStoreTrailers(trailers);
-                if (!thumbnail.isEmpty())
-                    metadata.trailerThumbnailUrl = thumbnail;
+        if (reply->error() == QNetworkReply::NoError) {
+            const QJsonObject root = QJsonDocument::fromJson(reply->readAll()).object();
+            const QJsonArray storeItems = root.value(QStringLiteral("response"))
+                                              .toObject()
+                                              .value(QStringLiteral("store_items"))
+                                              .toArray();
+            if (!storeItems.isEmpty()) {
+                const QJsonObject storeItem = storeItems.first().toObject();
+                const QJsonObject assets = storeItem.value(QStringLiteral("assets")).toObject();
+                metadata.coverUrl = pickLibraryCover(assets);
+                if (mode == MetadataFetchMode::Full) {
+                    const QJsonObject trailers = storeItem.value(QStringLiteral("trailers")).toObject();
+                    const QString trailer = pickTrailerFromStoreTrailers(trailers);
+                    if (!trailer.isEmpty())
+                        metadata.trailerUrl = trailer;
+                    const QString thumbnail = pickTrailerThumbnailFromStoreTrailers(trailers);
+                    if (!thumbnail.isEmpty())
+                        metadata.trailerThumbnailUrl = thumbnail;
+                }
             }
         }
-    }
-    reply->deleteLater();
+        reply->deleteLater();
 
-    if (!metadata.trailerUrl.isEmpty() || !metadata.coverUrl.isEmpty()) {
-        m_cache.insert(entryTitle, metadata);
-        m_saveTimer->start();
+        if (!metadata.trailerUrl.isEmpty() || !metadata.coverUrl.isEmpty())
+            m_cache.insert(entryTitle, metadata);
     }
+    if (!metadata.trailerUrl.isEmpty() || !metadata.coverUrl.isEmpty())
+        m_saveTimer->start();
 
     if (metadata.coverUrl.isEmpty() && !parentTerms.isEmpty()
         && mode == MetadataFetchMode::CoverOnly) {
@@ -221,64 +227,68 @@ void GameMetadataService::handleDetailsFinished(QNetworkReply* reply)
     const QString coverUrl = reply->property("coverUrl").toString();
     const QString languageCode = reply->property("languageCode").toString();
 
-    GameMetadata metadata = m_cache.value(entryTitle);
-    metadata.steamAppId = appId;
-    metadata.coverUrl = coverUrl.isEmpty() ? metadata.coverUrl : coverUrl;
-    metadata.descriptionLanguage = languageCode.trimmed().isEmpty() ? QStringLiteral("en")
-                                                                    : languageCode.trimmed();
+    GameMetadata metadata;
+    {
+        QWriteLocker locker(&m_cacheLock);
+        metadata = m_cache.value(entryTitle);
+        metadata.steamAppId = appId;
+        metadata.coverUrl = coverUrl.isEmpty() ? metadata.coverUrl : coverUrl;
+        metadata.descriptionLanguage = languageCode.trimmed().isEmpty() ? QStringLiteral("en")
+                                                                        : languageCode.trimmed();
 
-    if (reply->error() == QNetworkReply::NoError) {
-        const QJsonObject root = QJsonDocument::fromJson(reply->readAll()).object();
-        const QJsonObject appRoot = root.value(appId).toObject();
-        if (appRoot.value(QStringLiteral("success")).toBool()) {
-            const QJsonObject data = appRoot.value(QStringLiteral("data")).toObject();
-            metadata.description = data.value(QStringLiteral("short_description")).toString();
-            QStringList genres;
-            for (const QJsonValue& genreValue : data.value(QStringLiteral("genres")).toArray())
-                genres.append(genreValue.toObject().value(QStringLiteral("description")).toString());
-            // Steam categories carry Single-player / Multi-player / Online Co-op / etc.
-            for (const QJsonValue& catValue : data.value(QStringLiteral("categories")).toArray()) {
-                const QString desc =
-                    catValue.toObject().value(QStringLiteral("description")).toString().trimmed();
-                if (!desc.isEmpty() && !genres.contains(desc))
-                    genres.append(desc);
+        if (reply->error() == QNetworkReply::NoError) {
+            const QJsonObject root = QJsonDocument::fromJson(reply->readAll()).object();
+            const QJsonObject appRoot = root.value(appId).toObject();
+            if (appRoot.value(QStringLiteral("success")).toBool()) {
+                const QJsonObject data = appRoot.value(QStringLiteral("data")).toObject();
+                metadata.description = data.value(QStringLiteral("short_description")).toString();
+                QStringList genres;
+                for (const QJsonValue& genreValue : data.value(QStringLiteral("genres")).toArray())
+                    genres.append(genreValue.toObject().value(QStringLiteral("description")).toString());
+                // Steam categories carry Single-player / Multi-player / Online Co-op / etc.
+                for (const QJsonValue& catValue : data.value(QStringLiteral("categories")).toArray()) {
+                    const QString desc =
+                        catValue.toObject().value(QStringLiteral("description")).toString().trimmed();
+                    if (!desc.isEmpty() && !genres.contains(desc))
+                        genres.append(desc);
+                }
+                metadata.genres = genres.join(QStringLiteral(", "));
+                metadata.screenshotUrls =
+                    parseScreenshotUrls(data.value(QStringLiteral("screenshots")).toArray());
+
+                const QJsonArray movies = data.value(QStringLiteral("movies")).toArray();
+                const QString moviesTrailer = pickTrailerFromMovies(movies);
+                if (!moviesTrailer.isEmpty()) {
+                    if (metadata.trailerUrl.isEmpty())
+                        metadata.trailerUrl = moviesTrailer;
+                    else if (moviesTrailer.contains(QStringLiteral(".mp4"))
+                             && !metadata.trailerUrl.contains(QStringLiteral(".mp4")))
+                        metadata.trailerUrl = moviesTrailer;
+                }
+                const QString moviesThumbnail = pickTrailerThumbnailFromMovies(movies);
+                if (metadata.trailerThumbnailUrl.isEmpty() && !moviesThumbnail.isEmpty())
+                    metadata.trailerThumbnailUrl = moviesThumbnail;
+
+                const QJsonObject recommendations = data.value(QStringLiteral("recommendations")).toObject();
+                const int recTotal = recommendations.value(QStringLiteral("total")).toInt();
+                if (recTotal > 0)
+                    metadata.recommendationsTotal = recTotal;
+
+                const QJsonObject metacritic = data.value(QStringLiteral("metacritic")).toObject();
+                const int metaScore = metacritic.value(QStringLiteral("score")).toInt();
+                if (metaScore > 0)
+                    metadata.metacriticScore = metaScore;
+
+                const QJsonObject release = data.value(QStringLiteral("release_date")).toObject();
+                const QString releaseDate = release.value(QStringLiteral("date")).toString().trimmed();
+                if (!releaseDate.isEmpty())
+                    metadata.releaseDate = releaseDate;
             }
-            metadata.genres = genres.join(QStringLiteral(", "));
-            metadata.screenshotUrls =
-                parseScreenshotUrls(data.value(QStringLiteral("screenshots")).toArray());
-
-            const QJsonArray movies = data.value(QStringLiteral("movies")).toArray();
-            const QString moviesTrailer = pickTrailerFromMovies(movies);
-            if (!moviesTrailer.isEmpty()) {
-                if (metadata.trailerUrl.isEmpty())
-                    metadata.trailerUrl = moviesTrailer;
-                else if (moviesTrailer.contains(QStringLiteral(".mp4"))
-                         && !metadata.trailerUrl.contains(QStringLiteral(".mp4")))
-                    metadata.trailerUrl = moviesTrailer;
-            }
-            const QString moviesThumbnail = pickTrailerThumbnailFromMovies(movies);
-            if (metadata.trailerThumbnailUrl.isEmpty() && !moviesThumbnail.isEmpty())
-                metadata.trailerThumbnailUrl = moviesThumbnail;
-
-            const QJsonObject recommendations = data.value(QStringLiteral("recommendations")).toObject();
-            const int recTotal = recommendations.value(QStringLiteral("total")).toInt();
-            if (recTotal > 0)
-                metadata.recommendationsTotal = recTotal;
-
-            const QJsonObject metacritic = data.value(QStringLiteral("metacritic")).toObject();
-            const int metaScore = metacritic.value(QStringLiteral("score")).toInt();
-            if (metaScore > 0)
-                metadata.metacriticScore = metaScore;
-
-            const QJsonObject release = data.value(QStringLiteral("release_date")).toObject();
-            const QString releaseDate = release.value(QStringLiteral("date")).toString().trimmed();
-            if (!releaseDate.isEmpty())
-                metadata.releaseDate = releaseDate;
         }
-    }
 
-    reply->deleteLater();
-    m_cache.insert(entryTitle, metadata);
+        reply->deleteLater();
+        m_cache.insert(entryTitle, metadata);
+    }
     m_saveTimer->start();
     emit metadataReady(entryId, metadata);
 
@@ -333,84 +343,89 @@ void GameMetadataService::handleDepotSizeFinished(QNetworkReply* reply)
     const QString appId = reply->property("steamAppId").toString();
     const bool viaRelay = reply->property("sizeViaRelay").toBool();
 
-    GameMetadata metadata = m_cache.value(entryTitle);
-    if (metadata.steamAppId.isEmpty())
-        metadata.steamAppId = appId;
+    GameMetadata metadata;
+    {
+        QWriteLocker locker(&m_cacheLock);
+        metadata = m_cache.value(entryTitle);
+        if (metadata.steamAppId.isEmpty())
+            metadata.steamAppId = appId;
 
-    if (reply->error() == QNetworkReply::NoError) {
-        const QJsonObject root = QJsonDocument::fromJson(reply->readAll()).object();
-        // Relay: { sizeBytes, sizeLabel }
-        const QString relayLabel = root.value(QStringLiteral("sizeLabel")).toString().trimmed();
-        const qint64 relayBytes = static_cast<qint64>(root.value(QStringLiteral("sizeBytes")).toDouble());
-        if (!relayLabel.isEmpty()) {
-            metadata.sizeLabel = relayLabel;
-        } else if (relayBytes > 0) {
-            metadata.sizeLabel = formatSizeLabelBytes(relayBytes);
-        } else {
-            const QJsonObject app =
-                root.value(QStringLiteral("data")).toObject().value(appId).toObject();
-            const QJsonObject depots = app.value(QStringLiteral("depots")).toObject();
-            qint64 total = 0;
-            for (auto it = depots.constBegin(); it != depots.constEnd(); ++it) {
-                bool ok = false;
-                it.key().toLongLong(&ok);
-                if (!ok)
-                    continue;
-                const QJsonObject depot = it.value().toObject();
-                if (depot.isEmpty())
-                    continue;
-                // Skip DLC depots and non-English language packs.
-                if (depot.contains(QStringLiteral("dlcappid"))) {
-                    const QJsonValue dlc = depot.value(QStringLiteral("dlcappid"));
-                    if (!(dlc.isNull() || (dlc.isString() && dlc.toString().isEmpty())))
+        if (reply->error() == QNetworkReply::NoError) {
+            const QJsonObject root = QJsonDocument::fromJson(reply->readAll()).object();
+            // Relay: { sizeBytes, sizeLabel }
+            const QString relayLabel = root.value(QStringLiteral("sizeLabel")).toString().trimmed();
+            const qint64 relayBytes = static_cast<qint64>(root.value(QStringLiteral("sizeBytes")).toDouble());
+            if (!relayLabel.isEmpty()) {
+                metadata.sizeLabel = relayLabel;
+            } else if (relayBytes > 0) {
+                metadata.sizeLabel = formatSizeLabelBytes(relayBytes);
+            } else {
+                const QJsonObject app =
+                    root.value(QStringLiteral("data")).toObject().value(appId).toObject();
+                const QJsonObject depots = app.value(QStringLiteral("depots")).toObject();
+                qint64 total = 0;
+                for (auto it = depots.constBegin(); it != depots.constEnd(); ++it) {
+                    bool ok = false;
+                    it.key().toLongLong(&ok);
+                    if (!ok)
                         continue;
+                    const QJsonObject depot = it.value().toObject();
+                    if (depot.isEmpty())
+                        continue;
+                    // Skip DLC depots and non-English language packs.
+                    if (depot.contains(QStringLiteral("dlcappid"))) {
+                        const QJsonValue dlc = depot.value(QStringLiteral("dlcappid"));
+                        if (!(dlc.isNull() || (dlc.isString() && dlc.toString().isEmpty())))
+                            continue;
+                    }
+                    const QJsonObject config = depot.value(QStringLiteral("config")).toObject();
+                    const QString language = config.value(QStringLiteral("language")).toString().trimmed();
+                    if (!language.isEmpty()
+                        && language.compare(QStringLiteral("english"), Qt::CaseInsensitive) != 0)
+                        continue;
+                    const QJsonObject pub =
+                        depot.value(QStringLiteral("manifests")).toObject().value(QStringLiteral("public")).toObject();
+                    qint64 size = 0;
+                    const QJsonValue sizeVal = pub.value(QStringLiteral("size"));
+                    if (sizeVal.isString())
+                        size = sizeVal.toString().toLongLong();
+                    else if (sizeVal.isDouble())
+                        size = static_cast<qint64>(sizeVal.toDouble());
+                    if (size <= 0) {
+                        const QJsonValue maxVal = depot.value(QStringLiteral("maxsize"));
+                        if (maxVal.isString())
+                            size = maxVal.toString().toLongLong();
+                        else if (maxVal.isDouble())
+                            size = static_cast<qint64>(maxVal.toDouble());
+                    }
+                    if (size > 0)
+                        total += size;
                 }
-                const QJsonObject config = depot.value(QStringLiteral("config")).toObject();
-                const QString language = config.value(QStringLiteral("language")).toString().trimmed();
-                if (!language.isEmpty()
-                    && language.compare(QStringLiteral("english"), Qt::CaseInsensitive) != 0)
-                    continue;
-                const QJsonObject pub =
-                    depot.value(QStringLiteral("manifests")).toObject().value(QStringLiteral("public")).toObject();
-                qint64 size = 0;
-                const QJsonValue sizeVal = pub.value(QStringLiteral("size"));
-                if (sizeVal.isString())
-                    size = sizeVal.toString().toLongLong();
-                else if (sizeVal.isDouble())
-                    size = static_cast<qint64>(sizeVal.toDouble());
-                if (size <= 0) {
-                    const QJsonValue maxVal = depot.value(QStringLiteral("maxsize"));
-                    if (maxVal.isString())
-                        size = maxVal.toString().toLongLong();
-                    else if (maxVal.isDouble())
-                        size = static_cast<qint64>(maxVal.toDouble());
-                }
-                if (size > 0)
-                    total += size;
+                if (total > 0)
+                    metadata.sizeLabel = formatSizeLabelBytes(total);
             }
-            if (total > 0)
-                metadata.sizeLabel = formatSizeLabelBytes(total);
+        } else if (viaRelay && metadata.sizeLabel.isEmpty()) {
+            // Relay down — last-ditch direct steamcmd (often times out on Windows).
+            locker.unlock();
+            reply->deleteLater();
+            QUrl url(QStringLiteral("https://api.steamcmd.net/v1/info/%1").arg(appId));
+            QNetworkRequest request(url);
+            request.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("Arachnel/0.1"));
+            request.setTransferTimeout(45000);
+            QNetworkReply* fallback = m_network->get(request);
+            fallback->setProperty("entryId", entryId);
+            fallback->setProperty("entryTitle", entryTitle);
+            fallback->setProperty("steamAppId", appId);
+            fallback->setProperty("sizeViaRelay", false);
+            connect(fallback, &QNetworkReply::finished, this,
+                    [this, fallback]() { handleDepotSizeFinished(fallback); });
+            ++m_activeRequests;
+            return;
         }
-    } else if (viaRelay && metadata.sizeLabel.isEmpty()) {
-        // Relay down — last-ditch direct steamcmd (often times out on Windows).
-        reply->deleteLater();
-        QUrl url(QStringLiteral("https://api.steamcmd.net/v1/info/%1").arg(appId));
-        QNetworkRequest request(url);
-        request.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("Arachnel/0.1"));
-        request.setTransferTimeout(45000);
-        QNetworkReply* fallback = m_network->get(request);
-        fallback->setProperty("entryId", entryId);
-        fallback->setProperty("entryTitle", entryTitle);
-        fallback->setProperty("steamAppId", appId);
-        fallback->setProperty("sizeViaRelay", false);
-        connect(fallback, &QNetworkReply::finished, this,
-                [this, fallback]() { handleDepotSizeFinished(fallback); });
-        ++m_activeRequests;
-        return;
-    }
 
-    reply->deleteLater();
-    m_cache.insert(entryTitle, metadata);
+        reply->deleteLater();
+        m_cache.insert(entryTitle, metadata);
+    }
     m_saveTimer->start();
     emit metadataReady(entryId, metadata);
 
@@ -459,21 +474,25 @@ void GameMetadataService::handlePlayersFinished(QNetworkReply* reply)
     const QString entryTitle = reply->property("entryTitle").toString();
     const QString appId = reply->property("steamAppId").toString();
 
-    GameMetadata metadata = m_cache.value(entryTitle);
-    if (metadata.steamAppId.isEmpty())
-        metadata.steamAppId = appId;
+    GameMetadata metadata;
+    {
+        QWriteLocker locker(&m_cacheLock);
+        metadata = m_cache.value(entryTitle);
+        if (metadata.steamAppId.isEmpty())
+            metadata.steamAppId = appId;
 
-    if (reply->error() == QNetworkReply::NoError) {
-        const QJsonObject root = QJsonDocument::fromJson(reply->readAll()).object();
-        const QJsonObject response = root.value(QStringLiteral("response")).toObject();
-        if (response.value(QStringLiteral("result")).toInt() == 1) {
-            metadata.currentPlayers = response.value(QStringLiteral("player_count")).toInt(0);
-            metadata.playersFetchedAt = QDateTime::currentSecsSinceEpoch();
+        if (reply->error() == QNetworkReply::NoError) {
+            const QJsonObject root = QJsonDocument::fromJson(reply->readAll()).object();
+            const QJsonObject response = root.value(QStringLiteral("response")).toObject();
+            if (response.value(QStringLiteral("result")).toInt() == 1) {
+                metadata.currentPlayers = response.value(QStringLiteral("player_count")).toInt(0);
+                metadata.playersFetchedAt = QDateTime::currentSecsSinceEpoch();
+            }
         }
-    }
 
-    reply->deleteLater();
-    m_cache.insert(entryTitle, metadata);
+        reply->deleteLater();
+        m_cache.insert(entryTitle, metadata);
+    }
     m_saveTimer->start();
     m_inFlight.remove(entryId);
     emit metadataReady(entryId, metadata);

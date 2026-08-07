@@ -161,7 +161,7 @@ arachnel-plugin-<source-id>/
 - **`library`** — base name of the shared library (`my_source_plugin` → `my_source_plugin.dll`).
 - **`catalogUrl`** — where the launcher loads the game list JSON for this source (shown in Settings).
 - **`repository`** — public git/source URL (shown in Plugin store / Plugins / Sources). Also accepted: `homepage`, `sourceUrl`, `git`.
-- **`minArachnel` / `maxArachnel` / `sdkRef`** — used by sourcelist `builds[]` so old launchers keep a compatible package.
+- **`minArachnel` / `maxArachnel` / `sdkRef`** — store picker uses these so old launchers keep a compatible package. **`minArachnel` / `maxArachnel` are also enforced when loading `plugin.json` locally** (manual `.arach` / drop-in). If the running app is outside that range, the plugin is rejected and the UI tells the user to update Arachnel (or install a matching build).
 
 ### 3. `plugin_entry.cpp`
 
@@ -254,10 +254,11 @@ The SDK static library compiles shared helpers from Arachnel core (catalog parse
 ## ABI rules (important)
 
 1. **`plugin.json` → `apiVersion`** must be in the host’s allowed range (**2..4**). Prefer **4** for new plugins.
-2. **API 4:** export `arachnel_plugin_catalog_json` / `_free`. The host does **not** check `sizeof(CatalogEntry)`.
-3. **API 2/3:** `arachnel_plugin_catalog_entry_size()` must match the app or the host rejects the plugin. Migrate to v4 when you can.
-4. Build plugins with the **same MinGW + Qt kit** as Arachnel `release.yml` (`scripts/ci/launcher-toolchain.env`). Set `ARACHNEL_SDK_REF` to that release tag.
-5. After cutting an Arachnel release, bump plugin `ARACHNEL_SDK_REF` / `minArachnel` and let CI ingest sourcelist `builds[]`.
+2. **`plugin.json` → `minArachnel` / `maxArachnel`** — enforced at load (not only in the store). Bump `minArachnel` whenever the plugin needs a newer core/SDK.
+3. **API 4:** export `arachnel_plugin_catalog_json` / `_free`. Still export `arachnel_plugin_catalog_entry_size()`; if the size does not match the host, the plugin is **rejected** (avoids crashes in `entryById` / `detectUpdate`).
+4. **API 2/3:** `arachnel_plugin_catalog_entry_size()` is required and must match the app. Migrate to v4 when you can.
+5. Build plugins with the **same MinGW + Qt kit** as Arachnel `release.yml` (`scripts/ci/launcher-toolchain.env`). Set `ARACHNEL_SDK_REF` to that release tag.
+6. After cutting an Arachnel release that changes `CatalogEntry` / plugin ABI, bump plugin `ARACHNEL_SDK_REF` / `minArachnel` and publish sourcelist `builds[]` for both old and new hosts.
 
 ---
 

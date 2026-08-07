@@ -183,6 +183,7 @@ CoreController::CoreController(QObject* parent)
     m_pluginHost = new PluginHost(this);
     m_pluginHost->scan();
     logDiagnostic(QStringLiteral("Core CatalogEntry=%1 bytes").arg(sizeof(CatalogEntry)));
+    QTimer::singleShot(0, this, &CoreController::reportIncompatiblePlugins);
     m_installAnalyzer = new InstallAnalyzer(m_pluginHost);
     m_installKindProbe = new InstallKindProbeService(m_installAnalyzer, this);
     connect(m_installKindProbe, &InstallKindProbeService::installKindResolved, this,
@@ -191,6 +192,7 @@ CoreController::CoreController(QObject* parent)
             });
     initializeServices();
     connect(m_pluginHost, &PluginHost::pluginsChanged, this, [this]() {
+        m_pluginCallsBlocked = false;
         syncSourcesFromPlugins();
         pruneDisabledCatalogSources();
         // Install/uninstall aborts in-flight catalog workers; kick loads for any
@@ -199,6 +201,7 @@ CoreController::CoreController(QObject* parent)
             m_catalogController->rebuildMergedCatalog();
         reconcileJobInstallState();
         emit pluginsChanged();
+        reportIncompatiblePlugins();
     });
     syncSourcesFromPlugins();
     emit pluginsChanged();

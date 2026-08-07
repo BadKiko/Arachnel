@@ -120,6 +120,9 @@ void CatalogFilterService::applyFilterResult(quint64 generation, QVector<int> in
 {
     if (generation != m_filterGeneration.load(std::memory_order_relaxed) || !m_model)
         return;
+    // Cache was replaced while this worker ran (multi-source merge). Drop stale indices.
+    if (m_cache && cacheSize != m_cache->size())
+        return;
     m_model->setVisibleIndicesPresorted(std::move(indices));
     if (elapsedMs >= 16 || (!needle.isEmpty() && m_model->count() == 0)) {
         logDiagnostic(QStringLiteral("applyCatalogFilter: %1ms cache=%2 visible=%3 needle=\"%4\"")

@@ -1550,7 +1550,59 @@
     </message>
     <message>
         <location line="+20"/>
-        <source>Plugin files were copied but the library failed to load. Rebuild the plugin for your Arachnel version and this OS, then reinstall.</source>
+        <source>Plugin files were copied but the library failed to load. Update Arachnel, or rebuild the plugin for this app version.</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>%1 needs a different Arachnel plugin API (plugin=%2, this app supports %3-%4). Update Arachnel or install a matching plugin build.</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>%1 only supports Arachnel up to %2 (you have %3). Install a newer plugin build from the store.</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>%1 needs Arachnel %2 or newer (you have %3). Update the app.</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Could not load %1: %2</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>%1 is missing required plugin exports. Reinstall from the store.</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>%1 is missing API 4 catalog JSON exports. Reinstall from the store.</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>%1 was built for a different Arachnel SDK (CatalogEntry %2 vs %3 bytes). Update Arachnel, or install a plugin build for this app version.</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>%1 is missing the CatalogEntry size check. Reinstall a current plugin build.</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>%1 failed to start.</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>%1 needs a different Arachnel plugin API. Update the app or reinstall a matching plugin.</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>%1 only supports Arachnel up to %2. Install a newer plugin build.</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>%1 needs Arachnel %2 or newer. Update the app.</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>%1 is installed but failed to load. Update Arachnel or reinstall the plugin.</source>
         <translation></translation>
     </message>
     <message>

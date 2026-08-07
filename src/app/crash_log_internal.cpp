@@ -164,14 +164,32 @@ QString percentEncode(const QString& value)
     return QString::fromUtf8(QUrl::toPercentEncoding(value));
 }
 
+/** Fence long enough that crash text cannot close it early (stack traces rarely have ```). */
+QString markdownFencedReport(const QString& reportBody)
+{
+    int longest = 2;
+    int run = 0;
+    for (const QChar c : reportBody) {
+        if (c == QLatin1Char('`')) {
+            ++run;
+            longest = qMax(longest, run);
+        } else {
+            run = 0;
+        }
+    }
+    const QString fence = QString(longest + 1, QLatin1Char('`'));
+    return fence + QStringLiteral("text\n") + reportBody + QLatin1Char('\n') + fence;
+}
+
 QString buildIssueUrl(const QString& summary, const QString& reportBody)
 {
     const QString title = QStringLiteral("Crash: %1").arg(summary);
+    // Wrap the dump so stack frames like "#0" / "#29" are not turned into issue links.
     const QString body = QStringLiteral(
                              "Auto-generated crash report.\n\n"
                              "Please describe what you were doing before the crash.\n\n"
                              "---\n\n%1")
-                             .arg(reportBody);
+                             .arg(markdownFencedReport(reportBody));
     return QStringLiteral("%1?title=%2&body=%3")
         .arg(QLatin1String(kGithubIssuesNew), percentEncode(title), percentEncode(body));
 }
@@ -554,7 +572,15 @@ void reportUiHang(int hungSeconds)
         "Main thread did not process the event loop. Arachnel was frozen for the user."));
     extra.append(QStringLiteral("Main thread id: %1").arg(static_cast<qulonglong>(g_mainThreadId)));
     const QString stack = captureHungMainThreadStack();
-    handleCrashReport(buildCrashReport(summary, extra.join(QStringLiteral("\n")), stack));
+    const CrashReportData report =
+        buildCrashReport(summary, extra.join(QStringLiteral("\n")), stack);
+
+    // Skip logCrashLines / g_logMutex: the frozen main thread may still hold it
+    // (e.g. mid writeLine). Taking the lock here deadlocks the hang reporter.
+    fprintf(stderr, "\n%s\n\n%s\n", qPrintable(report.summary), qPrintable(report.details));
+    fflush(stderr);
+    persistPendingCrash(report);
+    spawnCrashDialogUi();
 
     // Crash dialog is a detached process. Kill this hung instance so it does
     // not sit in Task Manager forever waiting for a dead UI thread.
@@ -728,8 +754,14 @@ void reportUiHang(int hungSeconds)
         QStringLiteral("UI hang / not responding (~%1s)").arg(hungSeconds);
     const QString extra = QStringLiteral(
         "Main thread did not process the event loop. Arachnel was frozen for the user.");
-    handleCrashReport(buildCrashReport(
-        summary, extra, QStringLiteral("Hung thread stack: (not captured on this platform)")));
+    const CrashReportData report = buildCrashReport(
+        summary, extra, QStringLiteral("Hung thread stack: (not captured on this platform)"));
+
+    // Same as Windows: avoid g_logMutex while the UI thread is stuck.
+    fprintf(stderr, "\n%s\n\n%s\n", qPrintable(report.summary), qPrintable(report.details));
+    fflush(stderr);
+    persistPendingCrash(report);
+    spawnCrashDialogUi();
 
     // Same as Windows: dialog is forked; exit the frozen main process.
     g_shuttingDown = true;

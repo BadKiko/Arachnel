@@ -230,12 +230,8 @@ void CatalogModel::setSortMode(int mode)
         return;
 
     m_sortMode = next;
-    if (!m_indices.isEmpty() && m_source) {
-        beginResetModel();
-        sortIndices();
-        rebuildIdMap();
-        endResetModel();
-    }
+    if (!m_indices.isEmpty() && m_source)
+        replaceVisibleIndices(m_indices, false);
     emit sortModeChanged();
     invalidateScrubStops();
 }
@@ -248,15 +244,6 @@ void CatalogModel::bindSource(const QVector<CatalogEntry>* source)
 void CatalogModel::setExtraEntryLookup(std::function<const CatalogEntry*(const QString&)> lookup)
 {
     m_extraEntryLookup = std::move(lookup);
-}
-
-void CatalogModel::sortIndices()
-{
-    if (!m_source)
-        return;
-    std::stable_sort(m_indices.begin(), m_indices.end(), [this](int ai, int bi) {
-        return catalogEntryLess(m_source->at(ai), m_source->at(bi), m_sortMode);
-    });
 }
 
 void CatalogModel::rebuildIdMap()
@@ -275,25 +262,71 @@ void CatalogModel::rebuildIdMap()
 
 void CatalogModel::setVisibleIndices(QVector<int> indices)
 {
-    if (indices == m_indices)
-        return;
-    beginResetModel();
-    m_indices = std::move(indices);
-    sortIndices();
-    rebuildIdMap();
-    endResetModel();
-    emit countChanged();
-    invalidateScrubStops();
+    replaceVisibleIndices(std::move(indices), false);
 }
 
 void CatalogModel::setVisibleIndicesPresorted(QVector<int> indices)
 {
+    replaceVisibleIndices(std::move(indices), true);
+}
+
+void CatalogModel::replaceVisibleIndices(QVector<int> indices, bool alreadySorted)
+{
+    if (!alreadySorted && m_source)
+        std::stable_sort(indices.begin(), indices.end(), [this](int ai, int bi) {
+            if (!m_source || ai < 0 || bi < 0 || ai >= m_source->size() || bi >= m_source->size())
+                return ai < bi;
+            return catalogEntryLess(m_source->at(ai), m_source->at(bi), m_sortMode);
+        });
+
     if (indices == m_indices)
         return;
-    beginResetModel();
-    m_indices = std::move(indices);
-    rebuildIdMap();
-    endResetModel();
+
+    const int oldCount = m_indices.size();
+    const int newCount = indices.size();
+
+    // Prefer insert/remove + dataChanged over beginResetModel. Full reset after steamidra's
+    // ~100k merge was crashing QML (Qt6QmlMeta near-null) while GridView rebound.
+    if (newCount == 0) {
+        if (oldCount > 0) {
+            beginRemoveRows({}, 0, oldCount - 1);
+            m_indices.clear();
+            m_idToRow.clear();
+            endRemoveRows();
+            emit countChanged();
+            invalidateScrubStops();
+        }
+        return;
+    }
+
+    if (oldCount == 0) {
+        beginInsertRows({}, 0, newCount - 1);
+        m_indices = std::move(indices);
+        rebuildIdMap();
+        endInsertRows();
+        emit countChanged();
+        invalidateScrubStops();
+        return;
+    }
+
+    if (newCount > oldCount) {
+        beginInsertRows({}, oldCount, newCount - 1);
+        m_indices = std::move(indices);
+        rebuildIdMap();
+        endInsertRows();
+        emit dataChanged(index(0), index(oldCount - 1));
+    } else if (newCount < oldCount) {
+        beginRemoveRows({}, newCount, oldCount - 1);
+        m_indices = std::move(indices);
+        rebuildIdMap();
+        endRemoveRows();
+        if (newCount > 0)
+            emit dataChanged(index(0), index(newCount - 1));
+    } else {
+        m_indices = std::move(indices);
+        rebuildIdMap();
+        emit dataChanged(index(0), index(newCount - 1));
+    }
     emit countChanged();
     invalidateScrubStops();
 }
@@ -639,11 +672,11 @@ void CatalogModel::clear()
         invalidateScrubStops();
         return;
     }
-    beginResetModel();
+    beginRemoveRows({}, 0, m_indices.size() - 1);
     m_indices.clear();
     m_idToRow.clear();
     m_source = nullptr;
-    endResetModel();
+    endRemoveRows();
     emit countChanged();
     invalidateScrubStops();
 }

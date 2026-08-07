@@ -507,19 +507,42 @@ void CatalogController::applyMergedCatalogResult(
             *m_mergedCache = std::move(merged);
         }
     }
-    if (m_hooks.mergedEntriesReady)
-        m_hooks.mergedEntriesReady(*m_mergedCache, m_activeSourceIds, m_activeQuery);
 
     int enabledActiveCount = 0;
     QString singleEnabledId;
+    bool waitingOnPeer = false;
     for (const QString& sourceId : m_activeSourceIds) {
         const SourcePluginInfo* source = m_sources->pluginById(sourceId);
-        if (source && source->enabled) {
-            ++enabledActiveCount;
-            if (singleEnabledId.isEmpty())
-                singleEnabledId = sourceId;
-        }
+        if (!source || !source->enabled)
+            continue;
+        ++enabledActiveCount;
+        if (singleEnabledId.isEmpty())
+            singleEnabledId = sourceId;
+        if (m_loadingSourceIds.contains(sourceId))
+            waitingOnPeer = true;
     }
+
+    // Another enabled source is still downloading - don't push a partial catalog into
+    // QML (freetp 2k then steamidra 100k reset was crashing GridView / Qt6QmlMeta).
+    if (waitingOnPeer) {
+        // Cache already swapped above - drop stale visibles and rebuild the id index so
+        // cover/metadata lookups don't use indices from the previous layout.
+        if (m_catalog)
+            m_catalog->setVisibleIndicesPresorted({});
+        if (m_hooks.rebuildIdIndex)
+            m_hooks.rebuildIdIndex();
+        updateCatalogLoadingState();
+        return;
+    }
+
+    // Drop stale visible rows before async filter - old indices point at the previous
+    // cache layout and GridView can crash if it binds through a full model reset later.
+    if (m_catalog)
+        m_catalog->setVisibleIndicesPresorted({});
+
+    if (m_hooks.mergedEntriesReady)
+        m_hooks.mergedEntriesReady(*m_mergedCache, m_activeSourceIds, m_activeQuery);
+
     if (enabledActiveCount == 1 && !singleEnabledId.isEmpty()) {
         const auto it = m_catalogBySource.find(singleEnabledId);
         if (it != m_catalogBySource.end() && !it.value().isEmpty())

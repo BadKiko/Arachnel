@@ -7,6 +7,7 @@
 #include "plugin_api.h"
 #include "plugin_catalog_json.h"
 #include "plugin_urls.h"
+#include "plugin_version.h"
 
 #include <QCoreApplication>
 #include <QDesktopServices>
@@ -267,6 +268,8 @@ QString PluginHost::resolveLibraryFile(const QString& pluginDir, const QString& 
 
 bool PluginHost::loadPluginDir(const QString& dirPath)
 {
+    m_lastLoadRejectReason.clear();
+
     const QString manifestPath = dirPath + QStringLiteral("/plugin.json");
     QFile manifestFile(manifestPath);
     if (!manifestFile.open(QIODevice::ReadOnly))
@@ -276,10 +279,19 @@ bool PluginHost::loadPluginDir(const QString& dirPath)
     const QString id = manifest.value(QStringLiteral("id")).toString();
     const QString libraryBase = manifest.value(QStringLiteral("library")).toString();
     const int apiVersion = manifest.value(QStringLiteral("apiVersion")).toInt(1);
+    const QString displayName = manifest.value(QStringLiteral("name")).toString(id);
 
     if (id.isEmpty() || libraryBase.isEmpty())
         return false;
     if (apiVersion < ARACHNEL_PLUGIN_API_VERSION_MIN || apiVersion > ARACHNEL_PLUGIN_API_VERSION) {
+        setLoadRejectReason(QCoreApplication::translate(
+            "Core",
+            "%1 needs a different Arachnel plugin API (plugin=%2, this app supports %3-%4). "
+            "Update Arachnel or install a matching plugin build.")
+                                .arg(displayName)
+                                .arg(apiVersion)
+                                .arg(ARACHNEL_PLUGIN_API_VERSION_MIN)
+                                .arg(ARACHNEL_PLUGIN_API_VERSION));
         logDiagnostic(QStringLiteral("Plugin rejected (apiVersion %1, allowed %2..%3): %4")
                           .arg(apiVersion)
                           .arg(ARACHNEL_PLUGIN_API_VERSION_MIN)
@@ -287,6 +299,31 @@ bool PluginHost::loadPluginDir(const QString& dirPath)
                           .arg(dirPath));
         return false;
     }
+
+    const QString minArachnel = manifest.value(QStringLiteral("minArachnel")).toString();
+    const QString maxArachnel = manifest.value(QStringLiteral("maxArachnel")).toString();
+    const QString appVersion = QCoreApplication::applicationVersion();
+    if (!appVersionInRange(appVersion, minArachnel, maxArachnel)) {
+        const QString needMin =
+            minArachnel.trimmed().isEmpty() ? QStringLiteral("0.0.0") : minArachnel.trimmed();
+        if (!maxArachnel.trimmed().isEmpty()
+            && compareAppVersions(appVersion, maxArachnel.trimmed()) > 0) {
+            setLoadRejectReason(QCoreApplication::translate(
+                                    "Core",
+                                    "%1 only supports Arachnel up to %2 (you have %3). "
+                                    "Install a newer plugin build from the store.")
+                                    .arg(displayName, maxArachnel.trimmed(), appVersion));
+        } else {
+            setLoadRejectReason(QCoreApplication::translate(
+                                    "Core",
+                                    "%1 needs Arachnel %2 or newer (you have %3). Update the app.")
+                                    .arg(displayName, needMin, appVersion));
+        }
+        logDiagnostic(QStringLiteral("Plugin rejected (Arachnel %1 not in [%2, %3]): %4")
+                          .arg(appVersion, minArachnel, maxArachnel, dirPath));
+        return false;
+    }
+
     if (m_plugins.contains(id))
         return false;
 
@@ -297,6 +334,7 @@ bool PluginHost::loadPluginDir(const QString& dirPath)
     auto* loaded = new LoadedPlugin();
     loaded->rootPath = dirPath;
     loaded->library.setFileName(libraryPath);
+
 #if defined(Q_OS_WIN)
     ScopedAddDllDirectory dllDirectories(
         {QCoreApplication::applicationDirPath(), QFileInfo(libraryPath).absolutePath()});
@@ -345,6 +383,8 @@ bool PluginHost::loadPluginDir(const QString& dirPath)
 #endif
     if (!loaded->library.load()) {
         g_lastPluginLoadError = loaded->library.errorString();
+        setLoadRejectReason(QCoreApplication::translate("Core", "Could not load %1: %2")
+                                .arg(displayName, g_lastPluginLoadError));
         logDiagnostic(QStringLiteral("Plugin library load failed for %1: %2")
                           .arg(libraryPath, g_lastPluginLoadError));
 #if defined(Q_OS_LINUX)
@@ -387,6 +427,9 @@ bool PluginHost::loadPluginDir(const QString& dirPath)
         reinterpret_cast<void (*)(char*)>(resolvePluginFn("arachnel_plugin_catalog_json_free"));
 
     if (!apiVersionFn || !createFn || !destroyFn) {
+        setLoadRejectReason(QCoreApplication::translate(
+            "Core", "%1 is missing required plugin exports. Reinstall from the store.")
+                                .arg(displayName));
         loaded->library.unload();
         delete loaded;
         return false;
@@ -394,14 +437,28 @@ bool PluginHost::loadPluginDir(const QString& dirPath)
     const int exportedApi = apiVersionFn();
     if (exportedApi < ARACHNEL_PLUGIN_API_VERSION_MIN
         || exportedApi > ARACHNEL_PLUGIN_API_VERSION) {
+        setLoadRejectReason(QCoreApplication::translate(
+            "Core",
+            "%1 needs a different Arachnel plugin API (plugin=%2, this app supports %3-%4). "
+            "Update Arachnel or install a matching plugin build.")
+                                .arg(displayName)
+                                .arg(exportedApi)
+                                .arg(ARACHNEL_PLUGIN_API_VERSION_MIN)
+                                .arg(ARACHNEL_PLUGIN_API_VERSION));
         loaded->library.unload();
         delete loaded;
         return false;
     }
 
-    // API 4+: catalog crosses as JSON; sizeof(CatalogEntry) is irrelevant.
+    const int coreEntrySize = static_cast<int>(sizeof(CatalogEntry));
+    bool layoutTrusted = false;
+
+    // API 4+: catalog crosses as JSON. sizeof still gates entryById / detectUpdate.
     if (exportedApi >= 4) {
         if (!catalogJsonFn || !catalogJsonFreeFn) {
+            setLoadRejectReason(QCoreApplication::translate(
+                "Core", "%1 is missing API 4 catalog JSON exports. Reinstall from the store.")
+                                    .arg(displayName));
             logDiagnostic(QStringLiteral(
                               "Plugin rejected (API 4 requires catalog_json exports): %1 from %2")
                               .arg(id, libraryPath));
@@ -411,15 +468,57 @@ bool PluginHost::loadPluginDir(const QString& dirPath)
         }
         loaded->catalogJsonFn = catalogJsonFn;
         loaded->catalogJsonFreeFn = catalogJsonFreeFn;
+
+        if (catalogEntrySizeFn) {
+            const int pluginEntrySize = catalogEntrySizeFn();
+            logDiagnostic(
+                QStringLiteral("Plugin %1 CatalogEntry size: plugin=%2 core=%3 (API %4)")
+                    .arg(id)
+                    .arg(pluginEntrySize)
+                    .arg(coreEntrySize)
+                    .arg(exportedApi));
+            if (pluginEntrySize != coreEntrySize) {
+                setLoadRejectReason(QCoreApplication::translate(
+                    "Core",
+                    "%1 was built for a different Arachnel SDK (CatalogEntry %2 vs %3 bytes). "
+                    "Update Arachnel, or install a plugin build for this app version.")
+                                        .arg(displayName)
+                                        .arg(pluginEntrySize)
+                                        .arg(coreEntrySize));
+                logDiagnostic(
+                    QStringLiteral(
+                        "Plugin rejected (CatalogEntry size mismatch): %1 plugin=%2 core=%3 "
+                        "from %4 - update Arachnel or rebuild plugin against this SDK")
+                        .arg(id)
+                        .arg(pluginEntrySize)
+                        .arg(coreEntrySize)
+                        .arg(libraryPath));
+                loaded->library.unload();
+                delete loaded;
+                return false;
+            }
+            layoutTrusted = true;
+        } else {
+            logDiagnostic(QStringLiteral(
+                "Plugin %1: no catalog_entry_size export - JSON catalog only "
+                "(skip entryById / detectUpdate across DLL)")
+                              .arg(id));
+        }
     } else if (catalogEntrySizeFn) {
         const int pluginEntrySize = catalogEntrySizeFn();
-        const int coreEntrySize = static_cast<int>(sizeof(CatalogEntry));
         logDiagnostic(QStringLiteral("Plugin %1 CatalogEntry size: plugin=%2 core=%3 (legacy API %4)")
                           .arg(id)
                           .arg(pluginEntrySize)
                           .arg(coreEntrySize)
                           .arg(exportedApi));
         if (pluginEntrySize != coreEntrySize) {
+            setLoadRejectReason(QCoreApplication::translate(
+                "Core",
+                "%1 was built for a different Arachnel SDK (CatalogEntry %2 vs %3 bytes). "
+                "Update Arachnel, or install a plugin build for this app version.")
+                                    .arg(displayName)
+                                    .arg(pluginEntrySize)
+                                    .arg(coreEntrySize));
             logDiagnostic(QStringLiteral(
                               "Plugin rejected (CatalogEntry size mismatch): %1 plugin=%2 core=%3 "
                               "from %4 - rebuild with matching SDK or migrate to API v4")
@@ -431,21 +530,31 @@ bool PluginHost::loadPluginDir(const QString& dirPath)
             delete loaded;
             return false;
         }
+        layoutTrusted = true;
         logDiagnostic(QStringLiteral(
                           "Plugin %1 uses legacy CatalogEntry ABI (API %2); prefer API v4 JSON")
                           .arg(id)
                           .arg(exportedApi));
     } else {
+        setLoadRejectReason(QCoreApplication::translate(
+            "Core",
+            "%1 is missing the CatalogEntry size check. Reinstall a current plugin build.")
+                                .arg(displayName));
         logDiagnostic(QStringLiteral(
-                          "Plugin %1: catalog_entry_size export not resolved from %2 (library loaded=%3)")
+                          "Plugin rejected (catalog_entry_size missing): %1 from %2 (API %3)")
                           .arg(id, libraryPath)
-                          .arg(loaded->library.isLoaded() ? QStringLiteral("yes")
-                                                          : QStringLiteral("no")));
+                          .arg(exportedApi));
+        loaded->library.unload();
+        delete loaded;
+        return false;
     }
 
     loaded->instance = createFn(dirPath.toUtf8().constData());
     loaded->destroyFn = destroyFn;
+    loaded->catalogEntryLayoutTrusted = layoutTrusted;
     if (!loaded->instance) {
+        setLoadRejectReason(QCoreApplication::translate("Core", "%1 failed to start.")
+                                .arg(displayName));
         loaded->library.unload();
         delete loaded;
         return false;
@@ -471,9 +580,11 @@ bool PluginHost::loadPluginDir(const QString& dirPath)
 
     m_plugins.insert(id, loaded);
     if (exportedApi >= 4) {
-        logDiagnostic(QStringLiteral("Plugin loaded: %1 v%2 from %3 (API %4, JSON catalog)")
+        logDiagnostic(QStringLiteral("Plugin loaded: %1 v%2 from %3 (API %4, JSON catalog%5)")
                           .arg(info.id, info.pluginVersion, libraryPath)
-                          .arg(exportedApi));
+                          .arg(exportedApi)
+                          .arg(layoutTrusted ? QStringLiteral(", CatalogEntry trusted")
+                                             : QStringLiteral(", CatalogEntry untrusted")));
     } else {
         logDiagnostic(QStringLiteral("Plugin loaded: %1 v%2 from %3 (API %4, CatalogEntry=%5 bytes)")
                           .arg(info.id, info.pluginVersion, libraryPath)
@@ -481,6 +592,13 @@ bool PluginHost::loadPluginDir(const QString& dirPath)
                           .arg(sizeof(CatalogEntry)));
     }
     return true;
+}
+
+void PluginHost::setLoadRejectReason(const QString& reason)
+{
+    m_lastLoadRejectReason = reason;
+    if (!reason.isEmpty())
+        g_lastPluginLoadError = reason;
 }
 
 QByteArray PluginHost::loadPluginCatalogPayload(const QString& id, QByteArray* payloadSha) const

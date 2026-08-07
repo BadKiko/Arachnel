@@ -4,8 +4,11 @@
 #include "source_plugin_model.h"
 
 #include <QObject>
+#include <QFuture>
 #include <QHash>
 #include <QLibrary>
+#include <QMutex>
+#include <QPair>
 #include <QString>
 #include <QVector>
 #include <cstddef>
@@ -22,6 +25,8 @@ struct LoadedPlugin {
     int (*catalogJsonFn)(ISourcePlugin*, char**, size_t*) = nullptr;
     void (*catalogJsonFreeFn)(char*) = nullptr;
     int apiVersion = 0;
+    /** True when CatalogEntry sizeof matched (safe for entryById / detectUpdate). */
+    bool catalogEntryLayoutTrusted = false;
 };
 
 class PluginHost : public QObject
@@ -73,6 +78,9 @@ public:
 
     /** Called immediately before unloading plugin DLLs (wait for catalog futures). */
     void setBeforeUnloadHook(std::function<void()> hook);
+    /** Block until install / owned-download workers leave plugin code. */
+    void waitForInFlightPluginWorkers();
+    bool hasInFlightPluginWorkers() const;
 
     static QStringList pluginSearchRoots();
     /** Copy plugins from install-dir / legacy AppData into the writable plugins folder. */
@@ -80,12 +88,25 @@ public:
 
     bool pluginOwnsDownload(const QString& pluginId) const;
     int pluginApiVersion(const QString& pluginId) const;
+    /**
+     * True when CatalogEntry may cross the DLL (entryById / detectUpdate).
+     * API 4 JSON catalog still works when this is false.
+     */
+    bool pluginCatalogEntryLayoutTrusted(const QString& pluginId) const;
+    /** Human-readable reason the last loadPluginDir failed (empty if ok). */
+    QString lastLoadRejectReason() const { return m_lastLoadRejectReason; }
+    /**
+     * On-disk plugins that did not load, with a short reason (minArachnel, ABI, …).
+     * Used to tell the user to update Arachnel instead of silently skipping.
+     */
+    QVector<QPair<QString, QString>> incompatibleDiskPlugins() const;
 
 signals:
     void pluginsChanged();
 
 private:
     bool loadPluginDir(const QString& dirPath);
+    void setLoadRejectReason(const QString& reason);
     /** Load one plugin id from disk search roots (no unloadAll). */
     bool loadPluginById(const QString& pluginId);
     void unloadAll();
@@ -98,8 +119,13 @@ private:
 
     QHash<QString, LoadedPlugin*> m_plugins;
     QString m_lastError;
+    QString m_lastLoadRejectReason;
     std::function<void()> m_beforeUnload;
     int m_scanDepth = 0;
+    mutable QMutex m_pluginWorkerMutex;
+    QList<QFuture<void>> m_pluginWorkerFutures;
+
+    void trackPluginWorker(QFuture<void> future);
 };
 
 } // namespace arachnel::core

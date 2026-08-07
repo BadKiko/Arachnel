@@ -124,3 +124,10 @@
     bool m_prepareShutdownDone = false;
     bool m_startupLibraryUpdatesHandled = false;
     QSet<QString> m_catalogAddonEnrichInFlight;
+    QList<QFuture<void>> m_catalogAddonEnrichFutures;
+    mutable QMutex m_catalogAddonEnrichMutex;
+    bool m_pluginCallsBlocked = false;
+
+    void waitForCatalogAddonEnrich();
+    bool hasInFlightCatalogAddonEnrich() const;
+    void reportIncompatiblePlugins();

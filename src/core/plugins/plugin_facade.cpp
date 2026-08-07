@@ -220,10 +220,12 @@ void CoreController::runOfficialPluginAutoUpdate()
     if (!m_pluginCatalog || !m_pluginHost || m_autoUpdatingOfficialPlugins)
         return;
 
-    // Don't unload plugin DLLs while QtConcurrent is still inside plugin->catalog().
-    if (m_catalogController
-        && (m_catalogController->catalogLoading()
-            || m_catalogController->hasInFlightPluginCatalogLoads())) {
+    // Don't unload plugin DLLs while QtConcurrent is still inside plugin code.
+    if ((m_catalogController
+         && (m_catalogController->catalogLoading()
+             || m_catalogController->hasInFlightPluginCatalogLoads()))
+        || hasInFlightCatalogAddonEnrich()
+        || (m_pluginHost && m_pluginHost->hasInFlightPluginWorkers())) {
         QTimer::singleShot(1500, this, &CoreController::runOfficialPluginAutoUpdate);
         return;
     }

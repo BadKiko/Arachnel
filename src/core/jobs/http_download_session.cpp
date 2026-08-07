@@ -97,7 +97,7 @@ bool HttpDownloadSession::addJob(const QString& jobId, const QString& url, const
 
     connect(reply, &QNetworkReply::finished, this, [this, jobId, reply, saveDirectory]() {
         if (!m_impl) {
-            delete reply;
+            reply->deleteLater();
             return;
         }
         m_impl->replies.remove(jobId);
@@ -140,8 +140,10 @@ void HttpDownloadSession::cancel(const QString& jobId)
     if (!m_impl)
         return;
     if (QNetworkReply* reply = m_impl->replies.take(jobId)) {
+        // Disconnect first so abort() cannot re-enter finished → deleteLater, then bare delete.
+        reply->disconnect(this);
         reply->abort();
-        delete reply;
+        reply->deleteLater();
     }
 }
 

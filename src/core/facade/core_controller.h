@@ -12,7 +12,9 @@
 #include "plugin_catalog_service.h"
 
 #include <QObject>
+#include <QFuture>
 #include <QHash>
+#include <QMutex>
 #include <QReadWriteLock>
 #include <QSet>
 #include <QUrl>

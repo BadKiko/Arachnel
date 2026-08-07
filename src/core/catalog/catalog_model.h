@@ -78,6 +78,11 @@ public:
     void setVisibleIndices(QVector<int> indices);
     /** Same as setVisibleIndices but indices are already ordered for current sortMode. */
     void setVisibleIndicesPresorted(QVector<int> indices);
+    /**
+     * Replace visible rows without beginResetModel (QML GridView/ListView can crash in
+     * Qt6QmlMeta when reset runs during a bind after a huge catalog merge).
+     */
+    void replaceVisibleIndices(QVector<int> indices, bool alreadySorted);
     /** Notify a visible row that its cache entry changed. Returns false if not visible.
      *  Empty roles → cover/metadata/players only (not all roles — avoids QML rebinding
      *  screenshotUrls/description on every cover apply). */
@@ -97,7 +102,6 @@ signals:
     void scrubStopsChanged();
 
 private:
-    void sortIndices();
     void rebuildIdMap();
     void invalidateScrubStops() const;
     QVariantList buildScrubStops() const;
