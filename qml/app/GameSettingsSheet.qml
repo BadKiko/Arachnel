@@ -336,7 +336,8 @@ MD.BottomSheet {
                         mdState.type: MD.Enum.IBtStandard
                         icon.name: MD.Token.icon.folder_open
                         onClicked: {
-                            const path = Core.browseGameExecutable(exeField.text)
+                            const path = Core.browseGameExecutable(
+                                exeField.text, root.info.installPath || "")
                             if (path.length) {
                                 exeField.text = path
                                 Core.setGameExecutableOverride(root.gameId, path)

@@ -13,6 +13,9 @@
   <a href="https://hosted.weblate.org/engage/arachnel/">
     <img src="https://hosted.weblate.org/widget/arachnel/application/svg-badge.svg" alt="Translation status">
   </a>
+  <a href="docs/badges/virustotal-latest.json">
+    <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/BadKiko/Arachnel/master/docs/badges/virustotal.json&style=for-the-badge" alt="VirusTotal">
+  </a>
 </p>
 
 <br>

@@ -47,7 +47,8 @@
     Q_INVOKABLE bool needsProtonOnPlatform() const;
     Q_INVOKABLE bool ensureProtonReady();
     Q_INVOKABLE bool needsInstallLocationChoice() const;
-    Q_INVOKABLE QString browseGameExecutable(const QString& = {});
+    Q_INVOKABLE QString browseGameExecutable(const QString& currentPath = {},
+                                             const QString& preferredDir = {});
     Q_INVOKABLE QString browseStorageFolder();
     Q_INVOKABLE QVariantMap gameRuntimeContainerInfo(const QString&) const;
     Q_INVOKABLE void openGameRuntimeContainer(const QString&);

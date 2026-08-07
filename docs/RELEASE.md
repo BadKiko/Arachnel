@@ -13,7 +13,8 @@ Artifacts:
 
 - `Arachnel-<version>-Setup.exe` — Windows installer (Inno Setup + app from dist-win)
 - `Arachnel-<version>-x86_64.AppImage` — Linux portable build
-- `checksums.sha256` — SHA-256 for both files
+- `Arachnel-Setup.exe` / `Arachnel-x86_64.AppImage` — stable aliases (always latest of that release; used by VirusTotal badge)
+- `checksums.sha256` — SHA-256 for the versioned files
 
 The release notes body lists commits since the previous `v*` tag.
 
@@ -68,6 +69,22 @@ Export PFX (PowerShell):
 You need an **Authenticode** certificate (OV/EV from a public CA). Self-signed certs do not remove SmartScreen for unknown publishers.
 
 When secrets are set, `.\run.ps1 --installer` (via `setup\inno\pack-inno.ps1`) signs the final Inno `Arachnel-Setup.exe`.
+
+## VirusTotal (release binaries)
+
+CI uploads each release `Setup.exe` + AppImage to VirusTotal and refreshes the README badge.
+
+| Secret | Value |
+|--------|--------|
+| `VT_API_KEY` | API key from [VirusTotal → API key](https://www.virustotal.com/gui/my-apikey) |
+
+Workflow: **Actions → VirusTotal** (also runs on every published release + weekly).
+
+Notes:
+
+- Scans **release binaries only** (what users download). Scanning every source file burns the free API quota and does not help SmartScreen.
+- SmartScreen / Defender “unknown publisher” is mostly about **code signing**, not VirusTotal. VT is transparency for multi-engine results.
+- Release notes get a VirusTotal section with per-file links. Stable aliases `Arachnel-Setup.exe` / `Arachnel-x86_64.AppImage` are uploaded alongside versioned assets.
 
 ### Defender false positives (`Sabsik.TE.A!ml`)
 

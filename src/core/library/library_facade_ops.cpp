@@ -6,12 +6,58 @@
 
 namespace arachnel::core {
 
-QString CoreController::browseGameExecutable(const QString& currentPath)
+namespace {
+
+QString resolveBrowseStartDir(const QString& currentPath, const QString& preferredDir)
 {
+    const auto existingDir = [](const QString& path) -> QString {
+        if (path.isEmpty())
+            return {};
+        const QFileInfo fi(path);
+        if (fi.isDir() && fi.exists())
+            return QDir::toNativeSeparators(fi.absoluteFilePath());
+        if (fi.isFile() && fi.exists())
+            return QDir::toNativeSeparators(fi.absolutePath());
+        const QString parent = QDir::toNativeSeparators(fi.absolutePath());
+        if (!parent.isEmpty() && QFileInfo(parent).isDir())
+            return parent;
+        return {};
+    };
+
+    if (const QString fromCurrent = existingDir(currentPath); !fromCurrent.isEmpty())
+        return fromCurrent;
+    if (const QString fromPreferred = existingDir(preferredDir); !fromPreferred.isEmpty())
+        return fromPreferred;
+    return {};
+}
+
+#if defined(Q_OS_WIN)
+void setDialogStartFolder(IFileDialog* dialog, const QString& folderPath)
+{
+    if (!dialog || folderPath.isEmpty())
+        return;
+    IShellItem* folder = nullptr;
+    if (FAILED(SHCreateItemFromParsingName(reinterpret_cast<LPCWSTR>(folderPath.utf16()),
+                                           nullptr, IID_PPV_ARGS(&folder)))) {
+        return;
+    }
+    // Both: SetDefaultFolder alone loses to the last-used folder; SetFolder forces it.
+    dialog->SetDefaultFolder(folder);
+    dialog->SetFolder(folder);
+    folder->Release();
+}
+#endif
+
+} // namespace
+
+QString CoreController::browseGameExecutable(const QString& currentPath,
+                                             const QString& preferredDir)
+{
+    const QString startDir = resolveBrowseStartDir(currentPath, preferredDir);
 #if defined(Q_OS_WIN)
     QString path;
     HRESULT hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
-    const bool comOwned = SUCCEEDED(hr);
+    const bool comOwned = hr == S_OK;
 
     IFileOpenDialog* dialog = nullptr;
     if (SUCCEEDED(CoCreateInstance(CLSID_FileOpenDialog, nullptr, CLSCTX_ALL,
@@ -22,17 +68,11 @@ QString CoreController::browseGameExecutable(const QString& currentPath)
         };
         dialog->SetFileTypes(2, filters);
         dialog->SetTitle(L"Choose game executable");
+        setDialogStartFolder(dialog, startDir);
 
-        if (!currentPath.isEmpty()) {
-            IShellItem* folder = nullptr;
-            const QString folderPath = QFileInfo(currentPath).absolutePath();
-            if (SUCCEEDED(
-                    SHCreateItemFromParsingName(reinterpret_cast<LPCWSTR>(folderPath.utf16()),
-                                                nullptr, IID_PPV_ARGS(&folder)))) {
-                dialog->SetFolder(folder);
-                folder->Release();
-            }
-        }
+        const QFileInfo currentInfo(currentPath);
+        if (currentInfo.isFile() && currentInfo.exists())
+            dialog->SetFileName(reinterpret_cast<LPCWSTR>(currentInfo.fileName().utf16()));
 
         if (SUCCEEDED(dialog->Show(nullptr))) {
             IShellItem* item = nullptr;
@@ -52,10 +92,12 @@ QString CoreController::browseGameExecutable(const QString& currentPath)
         CoUninitialize();
     return path;
 #else
+    const QString start =
+        !startDir.isEmpty()
+            ? startDir
+            : QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
     return QFileDialog::getOpenFileName(
-        nullptr, QCoreApplication::translate("Core", "Choose game executable"),
-        currentPath.isEmpty() ? QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                              : QFileInfo(currentPath).absolutePath(),
+        nullptr, QCoreApplication::translate("Core", "Choose game executable"), start,
         QCoreApplication::translate("Core", "Executables (*.exe *.sh *.x86_64);;All files (*)"));
 #endif
 }

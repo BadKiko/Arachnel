@@ -1,0 +1,9 @@
+{
+  "updated": null,
+  "files": [],
+  "totals": {
+    "malicious": 0,
+    "suspicious": 0
+  },
+  "note": "Filled by .github/workflows/virustotal.yml after each release scan."
+}
