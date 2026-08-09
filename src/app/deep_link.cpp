@@ -3,13 +3,19 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QFile>
+#include <QGuiApplication>
 #include <QIODevice>
 #include <QLocalServer>
 #include <QLocalSocket>
 #include <QStandardPaths>
 #include <QUrl>
+#include <QWindow>
 
 #if defined(Q_OS_WIN)
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
 #include <QSettings>
 #endif
 
@@ -21,7 +27,62 @@ QString localServerName()
     return QStringLiteral("Arachnel-Arachnel-single-instance");
 }
 
+#if defined(Q_OS_WIN)
+void forceActivateHwnd(HWND hwnd)
+{
+    if (!hwnd || !IsWindow(hwnd))
+        return;
+
+    if (IsIconic(hwnd))
+        ShowWindow(hwnd, SW_RESTORE);
+    else
+        ShowWindow(hwnd, SW_SHOW);
+
+    const HWND foreground = GetForegroundWindow();
+    const DWORD thisTid = GetCurrentThreadId();
+    DWORD fgTid = 0;
+    if (foreground)
+        fgTid = GetWindowThreadProcessId(foreground, nullptr);
+
+    if (fgTid && fgTid != thisTid)
+        AttachThreadInput(fgTid, thisTid, TRUE);
+
+    BringWindowToTop(hwnd);
+    SetForegroundWindow(hwnd);
+    SetFocus(hwnd);
+    SetActiveWindow(hwnd);
+
+    if (fgTid && fgTid != thisTid)
+        AttachThreadInput(fgTid, thisTid, FALSE);
+}
+#endif
+
 } // namespace
+
+void forceActivateApplicationWindows()
+{
+    QGuiApplication* gui = qobject_cast<QGuiApplication*>(QCoreApplication::instance());
+    if (!gui)
+        return;
+
+    const QWindowList windows = gui->topLevelWindows();
+    for (QWindow* window : windows) {
+        if (!window)
+            continue;
+        // Skip transient dialogs without a title when a main window exists.
+        if (window->visibility() == QWindow::Hidden)
+            window->show();
+        if (window->windowStates() & Qt::WindowMinimized)
+            window->showNormal();
+        else
+            window->show();
+        window->raise();
+        window->requestActivate();
+#if defined(Q_OS_WIN)
+        forceActivateHwnd(reinterpret_cast<HWND>(window->winId()));
+#endif
+    }
+}
 
 void registerGameDeepLinkProtocol()
 {
@@ -164,6 +225,12 @@ void SingleInstanceGuard::forwardToPrimary(const QString& payload)
     socket.connectToServer(m_serverName);
     if (!socket.waitForConnected(1500))
         return;
+
+#if defined(Q_OS_WIN)
+    // Secondary was launched by the user (browser / shell) and briefly owns
+    // foreground rights. Hand them to the primary so SetForegroundWindow works.
+    AllowSetForegroundWindow(ASFW_ANY);
+#endif
 
     // Trailing newline so an empty deep-link still wakes readyRead (raise window).
     socket.write(payload.toUtf8() + '\n');

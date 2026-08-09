@@ -16,7 +16,8 @@ Item {
             Layout.fillWidth: true
             Layout.leftMargin: MD.Token.spacing.large
             Layout.rightMargin: MD.Token.spacing.large
-            Layout.topMargin: MD.Token.spacing.medium
+            Layout.topMargin: MD.Token.spacing.large
+            Layout.bottomMargin: MD.Token.spacing.medium
             spacing: MD.Token.spacing.small
 
             MD.IconButton {

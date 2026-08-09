@@ -105,6 +105,7 @@
     Q_INVOKABLE void toggleBookmark(const QString& entryId);
     Q_INVOKABLE void requestDeepLink(const QString& rawOrUrl);
     Q_INVOKABLE void consumePendingDeepLink();
+    Q_INVOKABLE void forceActivateMainWindow();
     Q_INVOKABLE void requestCatalogCover(const QString&);
     Q_INVOKABLE void cancelCatalogCover(const QString&);
     Q_INVOKABLE void invalidateCatalogCover(const QString&);

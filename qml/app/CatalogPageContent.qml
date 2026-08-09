@@ -163,7 +163,8 @@ Item {
         Item {
             id: catalogScrollClip
             anchors.top: page.discoveryMode ? parent.top : catalogStickyToolbar.bottom
-            anchors.topMargin: page.discoveryMode ? MD.Token.spacing.large : MD.Token.spacing.small
+            anchors.topMargin: page.discoveryMode ? MD.Token.spacing.extra_large
+                                                 : MD.Token.spacing.small
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.bottom: parent.bottom
@@ -187,7 +188,7 @@ Item {
                     id: discoveryColumn
                     width: discoveryFlick.width - page.pageMargin * 2
                     x: page.pageMargin
-                    topPadding: MD.Token.spacing.medium
+                    topPadding: MD.Token.spacing.large
                     bottomPadding: MD.Token.spacing.extra_large * 2
                     spacing: MD.Token.spacing.extra_large
 

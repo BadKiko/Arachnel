@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
+import QtQuick.Window
 
 import Arachnel.Core 1.0
 import Qcm.Material as MD
@@ -86,9 +87,15 @@ MD.ApplicationWindow {
     }
 
     function raiseMainWindow() {
-        root.show()
+        if (root.visibility === Window.Minimized || root.visibility === Window.Hidden)
+            root.showNormal()
+        else
+            root.show()
         root.raise()
         root.requestActivate()
+        // Windows often blocks Qt raise when focus came from a second instance;
+        // Core retries with native SetForegroundWindow.
+        Core.forceActivateMainWindow()
     }
 
     function handleDeepLink(gameId) {

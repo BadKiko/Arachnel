@@ -147,7 +147,7 @@ Item {
             Layout.fillWidth: true
             Layout.leftMargin: pageMargin
             Layout.rightMargin: pageMargin
-            Layout.topMargin: MD.Token.spacing.medium
+            Layout.topMargin: MD.Token.spacing.large
             spacing: MD.Token.spacing.medium
 
             ColumnLayout {

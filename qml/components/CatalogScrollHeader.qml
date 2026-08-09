@@ -127,17 +127,6 @@ Item {
             }
         }
 
-        MD.Label {
-            Layout.fillWidth: true
-            visible: Core.catalogStatus.length > 0
-            text: Core.catalogStatus
-            color: MD.Token.color.on_surface_variant
-            typescale: MD.Token.typescale.body_small
-            wrapMode: Text.WordWrap
-            maximumLineCount: 2
-            elide: Text.ElideRight
-        }
-
         Item {
             Layout.preferredHeight: MD.Token.spacing.extra_small
         }

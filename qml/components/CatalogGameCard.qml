@@ -280,13 +280,23 @@ Item {
     }
 
     onVisibleChanged: {
-        if (!visible)
+        if (!visible) {
             root.dismissPeek()
+            return
+        }
+        // Off-tab keepAlive / StackView can create cards while disabled; hover
+        // used to be the only path that re-requested after the page came back.
+        if (root.enabled && !root.displayCoverUrl.length)
+            requestTimer.restart()
     }
 
     onEnabledChanged: {
-        if (!enabled)
+        if (!enabled) {
             root.dismissPeek()
+            return
+        }
+        if (root.visible && !root.displayCoverUrl.length)
+            requestTimer.restart()
     }
 
     onEntryIdChanged: {
