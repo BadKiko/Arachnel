@@ -9,6 +9,7 @@
 namespace arachnel::core {
 
 class PluginHost;
+class ProtonManager;
 class SettingsStore;
 
 class LaunchController : public QObject
@@ -23,7 +24,7 @@ public:
     };
 
     LaunchController(LibraryModel* library, SettingsStore* settings, PluginHost* plugins,
-                     Hooks hooks, QObject* parent = nullptr);
+                     ProtonManager* protons, Hooks hooks, QObject* parent = nullptr);
     bool gameRunning() const { return !m_gameId.isEmpty(); }
     QString runningGameId() const { return m_gameId; }
     QString runningGameTitle() const { return m_gameTitle; }
@@ -41,6 +42,7 @@ private:
     LibraryModel* m_library;
     SettingsStore* m_settings;
     PluginHost* m_plugins;
+    ProtonManager* m_protons = nullptr;
     Hooks m_hooks;
     QString m_gameId;
     QString m_gameTitle;

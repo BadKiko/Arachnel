@@ -69,8 +69,10 @@ MD.BottomSheet {
     readonly property bool readyToInstall: !root.playable
         && (Core.jobs.jobForEntry(gameId).status === "completed")
         && Core.entryDownloadFilesExist(gameId)
-    readonly property bool installFailed: ((Core.jobs.jobForEntry(gameId).detail || "")
-                                         .indexOf("Install failed") >= 0)
+    readonly property bool installFailed: {
+        const job = Core.jobs.jobForEntry(gameId)
+        return !!(job.installFailed) || job.status === "failed"
+    }
     readonly property string sourceLabel: {
         const sid = info.sourceId ?? ""
         if (!sid.length)

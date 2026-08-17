@@ -231,9 +231,15 @@ void InstallSessionService::commitInstalledCatalogGame(const CatalogEntry& entry
     game.libraryId = libId;
     game.hasUpdate = false;
     if (!installPath.isEmpty()) {
+        healWindowsInstallLayout(installPath);
         const QString previousInstall = game.installPath;
         game.installPath = installPath;
-        const QString override = game.executableOverride.trimmed();
+        QString override = game.executableOverride.trimmed();
+        if (override.contains(QLatin1Char('\\'))) {
+            override.replace(QLatin1Char('\\'), QLatin1Char('/'));
+            game.executableOverride = QFileInfo::exists(override) ? override : QString();
+            override = game.executableOverride;
+        }
         const QString cleanInstall = QDir::cleanPath(installPath);
         const QString cleanOverride = QDir::cleanPath(override);
         const bool overrideInsideInstall =

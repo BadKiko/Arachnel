@@ -19,5 +19,7 @@ QString relocatePathPrefix(const QString& path, const QString& oldRoot, const QS
 /** Rewrite absolute path prefixes inside a text/JSON file (install markers). */
 bool rewritePathPrefixInFile(const QString& filePath, const QString& oldRoot,
                              const QString& newRoot);
+/** Turn `Bin\Win64\foo.exe` filenames into real directories. Linux-only; 0 on Windows. */
+int healWindowsInstallLayout(const QString& installPath);
 
 } // namespace arachnel::core

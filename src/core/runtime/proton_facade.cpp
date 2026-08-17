@@ -49,8 +49,10 @@ bool CoreController::ensureRuntimeDependenciesForGame(const LibraryGame& game)
 
     clearRuntimeSetup();
 
-    if (!result.success && !result.error.isEmpty()) {
-        showNotice(result.error);
+    if (!result.success) {
+        showNotice(result.error.isEmpty()
+                       ? QCoreApplication::translate("Core", "Failed to launch game")
+                       : result.error);
         return false;
     }
     return true;

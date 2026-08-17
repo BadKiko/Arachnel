@@ -9,6 +9,8 @@
 
 namespace arachnel::core {
 
+class ProtonManager;
+
 struct ResolvedLaunch {
     QString program;
     QStringList arguments;
@@ -19,6 +21,6 @@ struct ResolvedLaunch {
 QStringList splitLaunchArguments(const QString& text);
 
 ResolvedLaunch resolveLaunch(const LaunchInfo& pluginInfo, const LibraryGame& game,
-                             const SettingsStore& settings);
+                             const SettingsStore& settings, ProtonManager* protonManager = nullptr);
 
 } // namespace arachnel::core

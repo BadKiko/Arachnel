@@ -35,6 +35,8 @@ QVariantMap jobToMap(const JobEntry& job)
         {QStringLiteral("completedAt"), job.completedAt},
         {QStringLiteral("inProgress"), isJobInProgress(job.status)},
         {QStringLiteral("paused"), isJobPaused(job.status)},
+        {QStringLiteral("installFailed"), job.status == QStringLiteral("failed")
+                                              || isJobInstallFailed(job.detail)},
     };
 }
 
@@ -155,6 +157,7 @@ QVariantMap JobModel::jobForEntry(const QString& entryId) const
         return {};
 
     const JobEntry* activeMatch = nullptr;
+    const JobEntry* failedMatch = nullptr;
     const JobEntry* completedMatch = nullptr;
     for (const auto& job : m_jobs) {
         if (job.entryId != entryId)
@@ -163,12 +166,16 @@ QVariantMap JobModel::jobForEntry(const QString& entryId) const
             activeMatch = &job;
             break;
         }
-        if (job.status == QStringLiteral("completed"))
+        if (job.status == QStringLiteral("failed"))
+            failedMatch = &job;
+        else if (job.status == QStringLiteral("completed"))
             completedMatch = &job;
     }
 
     if (activeMatch)
         return jobToMap(*activeMatch);
+    if (failedMatch)
+        return jobToMap(*failedMatch);
     if (completedMatch)
         return jobToMap(*completedMatch);
     return {};
@@ -180,6 +187,7 @@ QVariantMap JobModel::jobForAddon(const QString& parentEntryId, const QString& a
         return {};
 
     const JobEntry* activeMatch = nullptr;
+    const JobEntry* failedMatch = nullptr;
     const JobEntry* completedMatch = nullptr;
     for (const auto& job : m_jobs) {
         if (job.entryId != addonId || job.parentEntryId != parentEntryId)
@@ -188,12 +196,16 @@ QVariantMap JobModel::jobForAddon(const QString& parentEntryId, const QString& a
             activeMatch = &job;
             break;
         }
-        if (job.status == QStringLiteral("completed"))
+        if (job.status == QStringLiteral("failed"))
+            failedMatch = &job;
+        else if (job.status == QStringLiteral("completed"))
             completedMatch = &job;
     }
 
     if (activeMatch)
         return jobToMap(*activeMatch);
+    if (failedMatch)
+        return jobToMap(*failedMatch);
     if (completedMatch)
         return jobToMap(*completedMatch);
     return {};

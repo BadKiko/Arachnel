@@ -1,8 +1,12 @@
 #include "process_launcher.h"
 
+#include <QCoreApplication>
 #include <QFileInfo>
 #include <QProcess>
-#include <QCoreApplication>
+
+#if defined(Q_OS_UNIX)
+#include <unistd.h>
+#endif
 
 namespace arachnel::core {
 
@@ -30,6 +34,9 @@ bool ProcessLauncher::launch(const ResolvedLaunch& launch, QString* errorOut, qi
     process.setArguments(launch.arguments);
     process.setWorkingDirectory(workDir);
     process.setProcessEnvironment(launch.environment);
+#if defined(Q_OS_UNIX)
+    process.setChildProcessModifier([]() { ::setpgid(0, 0); });
+#endif
 
     qint64 processId = 0;
     const bool ok = process.startDetached(&processId);

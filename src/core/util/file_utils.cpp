@@ -6,7 +6,11 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QIODevice>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QThread>
+
+#include <algorithm>
 
 #if defined(Q_OS_WIN)
 #ifndef NOMINMAX
@@ -225,6 +229,85 @@ bool rewritePathPrefixInFile(const QString& filePath, const QString& oldRoot, co
         return false;
     file.write(data);
     return true;
+}
+
+int healWindowsInstallLayout(const QString& installPath)
+{
+#if defined(Q_OS_WIN)
+    Q_UNUSED(installPath);
+    return 0;
+#else
+    if (installPath.isEmpty() || !QFileInfo::exists(installPath))
+        return 0;
+
+    QStringList broken;
+    QDirIterator it(installPath, QDir::Files | QDir::Dirs | QDir::Hidden | QDir::System
+                                     | QDir::NoDotAndDotDot,
+                    QDirIterator::Subdirectories);
+    while (it.hasNext()) {
+        it.next();
+        if (it.fileName().contains(QLatin1Char('\\')))
+            broken.append(it.filePath());
+    }
+    std::sort(broken.begin(), broken.end(), [](const QString& a, const QString& b) {
+        return a.size() > b.size();
+    });
+
+    int moved = 0;
+    for (const QString& src : broken) {
+        const QFileInfo info(src);
+        if (!info.exists())
+            continue;
+        const QString dest = info.dir().filePath(
+            info.fileName().replace(QLatin1Char('\\'), QLatin1Char('/')));
+        if (dest == src)
+            continue;
+        QDir().mkpath(QFileInfo(dest).absolutePath());
+        if (QFileInfo::exists(dest)) {
+            if (info.isDir())
+                QDir(src).removeRecursively();
+            else
+                QFile::remove(src);
+            ++moved;
+            continue;
+        }
+        if (info.isDir() ? QDir().rename(src, dest) : QFile::rename(src, dest))
+            ++moved;
+    }
+
+    const QString marker = QDir(installPath).filePath(QStringLiteral(".arachnel-steamidra"));
+    if (QFileInfo::exists(marker)) {
+        QFile file(marker);
+        if (file.open(QIODevice::ReadOnly)) {
+            const QByteArray data = file.readAll();
+            file.close();
+            const QJsonDocument doc = QJsonDocument::fromJson(data);
+            if (doc.isObject()) {
+                QJsonObject root = doc.object();
+                QJsonObject launch = root.value(QStringLiteral("launch")).toObject();
+                QString path = launch.value(QStringLiteral("path")).toString();
+                if (path.contains(QLatin1Char('\\'))) {
+                    path.replace(QLatin1Char('\\'), QLatin1Char('/'));
+                    launch.insert(QStringLiteral("path"), path);
+                    root.insert(QStringLiteral("launch"), launch);
+                    if (file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+                        file.write(QJsonDocument(root).toJson(QJsonDocument::Indented));
+                        file.close();
+                    }
+                }
+            } else {
+                QByteArray raw = data;
+                raw.replace(QByteArray("\\\\"), QByteArray("/"));
+                raw.replace('\\', '/');
+                if (raw != data && file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+                    file.write(raw);
+                    file.close();
+                }
+            }
+        }
+    }
+    return moved;
+#endif
 }
 
 } // namespace arachnel::core

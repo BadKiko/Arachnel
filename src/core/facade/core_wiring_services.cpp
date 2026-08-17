@@ -427,7 +427,8 @@ void CoreController::initializeServices()
     };
     launchHooks.touchLastPlayed = [this](const QString& gameId) { touchLastPlayed(gameId); };
     m_launchController =
-        new LaunchController(&m_library, &m_settings, m_pluginHost, std::move(launchHooks), this);
+        new LaunchController(&m_library, &m_settings, m_pluginHost, m_protonManager,
+                             std::move(launchHooks), this);
     connect(m_launchController, &LaunchController::runningGameChanged, this,
             &CoreController::runningGameChanged);
     m_appUpdater = new AppUpdater(this);

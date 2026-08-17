@@ -97,7 +97,7 @@ void InstallSessionService::startPluginInstall(const CatalogEntry& entry, const 
                                            ? QStringLiteral("Install failed")
                                            : QStringLiteral("Install failed: %1").arg(result.error);
                 if (!jobId.isEmpty())
-                    m_jobOrchestrator->setJobPhase(jobId, QStringLiteral("completed"), detail);
+                    m_jobOrchestrator->setJobPhase(jobId, QStringLiteral("failed"), detail);
                 clearSession(entry.id);
                 m_hooks.showNotice(QCoreApplication::translate("Core", "Install failed for %1: %2")
                                        .arg(entry.title, result.error),

@@ -115,7 +115,9 @@ Item {
     readonly property bool canRetry: status === "failed" || status === "cancelled"
     readonly property bool canRetryInstall: root.jobId.length > 0 && Core.canRetryJobInstall(root.jobId)
     readonly property bool canManualInstall: root.jobId.length > 0 && Core.canManualInstallJob(root.jobId)
-    readonly property bool installFailed: root.detail.indexOf("Install failed") >= 0
+    readonly property bool installFailed: root.status === "failed"
+        || root.detail.indexOf("Install failed") >= 0
+        || root.detail.indexOf("Ошибка установки") >= 0
 
     property real _lastBytesSample: 0
     property real _lastBytesAtMs: 0

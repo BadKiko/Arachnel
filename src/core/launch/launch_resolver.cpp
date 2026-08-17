@@ -4,6 +4,7 @@
 #include "proton_manager.h"
 
 #include <QDir>
+#include <QFile>
 #include <QFileInfo>
 
 namespace arachnel::core {
@@ -69,12 +70,20 @@ QProcessEnvironment buildProtonEnvironment(const QString& gameId, const QString&
 bool hostBreaksWithLegacySteamRuntime()
 {
     // Legacy ubuntu12_32/steam-runtime/run.sh puts old libs on LD_LIBRARY_PATH.
-    // NixOS (and some immutable hosts) then fail shebang `/usr/bin/env` with
-    // libattr ATTR_1.3. Prefer launching Proton directly on those systems.
+    // NixOS / ostree / Bazzite then fail shebang `/usr/bin/env` with libattr ATTR_1.3.
     if (QFileInfo::exists(QStringLiteral("/etc/NIXOS")))
+        return true;
+    if (QFileInfo::exists(QStringLiteral("/run/ostree-booted")))
         return true;
     if (!qEnvironmentVariableIsEmpty("NIX_STORE") || !qEnvironmentVariableIsEmpty("NIX_PATH"))
         return true;
+    QFile osRelease(QStringLiteral("/etc/os-release"));
+    if (osRelease.open(QIODevice::ReadOnly)) {
+        const QByteArray text = osRelease.readAll().toLower();
+        if (text.contains("bazzite") || text.contains("silverblue")
+            || text.contains("kinoite"))
+            return true;
+    }
     const QByteArray ld = qgetenv("LD_LIBRARY_PATH");
     if (ld.contains("steam-runtime") && ld.contains("libattr"))
         return true;
@@ -99,7 +108,7 @@ QString filterOverlayPreloadForHost(const QString& preload)
 } // namespace
 
 ResolvedLaunch resolveLaunch(const LaunchInfo& pluginInfo, const LibraryGame& game,
-                             const SettingsStore& settings)
+                             const SettingsStore& settings, ProtonManager* protonManager)
 {
     ResolvedLaunch resolved;
 
@@ -133,7 +142,8 @@ ResolvedLaunch resolveLaunch(const LaunchInfo& pluginInfo, const LibraryGame& ga
     const bool useProton = shouldUseProton(executable);
 
     if (useProton) {
-        ProtonManager manager;
+        ProtonManager localManager;
+        ProtonManager& manager = protonManager ? *protonManager : localManager;
         const QString protonId = settings.resolvedProtonId(game.protonId, manager);
         const QString proton = manager.executableForId(protonId);
         if (proton.isEmpty())

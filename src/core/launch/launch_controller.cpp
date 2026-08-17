@@ -2,6 +2,7 @@
 
 #include "crash_log.h"
 #include "launch_resolver.h"
+#include "file_utils.h"
 #include "install_heuristics.h"
 #include "online_fix_overlay.h"
 #include "plugin_host.h"
@@ -19,9 +20,10 @@
 namespace arachnel::core {
 
 LaunchController::LaunchController(LibraryModel* library, SettingsStore* settings,
-                                   PluginHost* plugins, Hooks hooks, QObject* parent)
+                                   PluginHost* plugins, ProtonManager* protons, Hooks hooks,
+                                   QObject* parent)
     : QObject(parent), m_library(library), m_settings(settings), m_plugins(plugins),
-      m_hooks(std::move(hooks)), m_timer(new QTimer(this))
+      m_protons(protons), m_hooks(std::move(hooks)), m_timer(new QTimer(this))
 {
     m_timer->setInterval(1500);
     connect(m_timer, &QTimer::timeout, this, &LaunchController::pollRunningGame);
@@ -70,13 +72,18 @@ void LaunchController::launchGame(const QString& gameId)
 
     arachnel::logBreadcrumb(QStringLiteral("launch"), gameId);
 
-    // Leave QML Button.onClicked before any blocking runtime work (steamcmd / installers).
-    // Nested event loops on the GUI thread abort with QML "object destroyed while handler
-    // is in progress" (seen on Linux AppImage when launching via GameDetailsContent).
-    const LibraryGame gameCopy = *game;
-    QTimer::singleShot(0, this, [this, gameId, gameCopy]() {
+    const LibraryGame gameCopyBase = *game;
+    QTimer::singleShot(0, this, [this, gameId, gameCopyBase]() {
         if (m_library->gameById(gameId) == nullptr)
             return;
+        LibraryGame gameCopy = gameCopyBase;
+        if (!gameCopy.installPath.isEmpty())
+            healWindowsInstallLayout(gameCopy.installPath);
+        if (gameCopy.executableOverride.contains(QLatin1Char('\\'))) {
+            QString override = gameCopy.executableOverride;
+            override.replace(QLatin1Char('\\'), QLatin1Char('/'));
+            gameCopy.executableOverride = QFileInfo::exists(override) ? override : QString();
+        }
         if (m_hooks.ensureRuntime && !m_hooks.ensureRuntime(gameCopy))
             return;
 
@@ -113,7 +120,7 @@ void LaunchController::launchGame(const QString& gameId)
             }
         }
 #endif
-        const ResolvedLaunch resolved = resolveLaunch(info, gameCopy, *m_settings);
+        const ResolvedLaunch resolved = resolveLaunch(info, gameCopy, *m_settings, m_protons);
         if (resolved.program.isEmpty()) {
             if (m_hooks.notice)
                 m_hooks.notice(QCoreApplication::translate("Core", "Executable not found for %1")
