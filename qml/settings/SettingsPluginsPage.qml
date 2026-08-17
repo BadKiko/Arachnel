@@ -13,6 +13,28 @@ Flickable {
 
     signal openStoreRequested
 
+    readonly property var steamPlugin: {
+        const rows = root.pluginRows || []
+        for (let i = 0; i < rows.length; ++i) {
+            if (rows[i].pluginId === "steamidra")
+                return rows[i]
+        }
+        return null
+    }
+
+    readonly property var extraPlugins: {
+        const rows = (root.pluginRows || []).slice()
+        const out = []
+        for (let i = 0; i < rows.length; ++i) {
+            if (rows[i].pluginId !== "steamidra")
+                out.push(rows[i])
+        }
+        out.sort(function (a, b) {
+            return (a.name || "").localeCompare(b.name || "")
+        })
+        return out
+    }
+
     function reloadPlugins() {
         pluginRows = Core.pluginEntries()
     }
@@ -58,175 +80,180 @@ Flickable {
             onClicked: root.openStoreRequested()
         }
 
-        Rectangle {
+        MD.ElevationRectangle {
             Layout.fillWidth: true
             Layout.leftMargin: contentMargin
             Layout.rightMargin: contentMargin
-            visible: root.pluginRows.length === 0
+            visible: !root.steamPlugin && root.extraPlugins.length === 0
+            implicitHeight: emptyCol.implicitHeight + MD.Token.spacing.large * 2
             radius: MD.Token.shape.corner.large
             color: MD.Token.color.surface_container
-            border.width: 1
-            border.color: MD.Token.color.outline_variant
-            implicitHeight: emptyCol.implicitHeight + MD.Token.spacing.medium * 2
+            elevation: MD.Token.elevation.level0
 
             ColumnLayout {
                 id: emptyCol
                 anchors.left: parent.left
                 anchors.right: parent.right
-                anchors.top: parent.top
-                anchors.margins: MD.Token.spacing.medium
-                spacing: MD.Token.spacing.extra_small
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.margins: MD.Token.spacing.large
+                spacing: MD.Token.spacing.small
+
+                MD.ElevationRectangle {
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.preferredWidth: 48
+                    Layout.preferredHeight: 48
+                    radius: MD.Token.shape.corner.full
+                    color: MD.Token.color.primary_container
+                    elevation: MD.Token.elevation.level0
+
+                    MD.Icon {
+                        anchors.centerIn: parent
+                        name: MD.Token.icon.stadia_controller
+                        size: 24
+                        color: MD.Token.color.on_primary_container
+                    }
+                }
 
                 MD.Label {
                     Layout.fillWidth: true
+                    horizontalAlignment: Text.AlignHCenter
                     text: qsTr("No plugins installed")
                     typescale: MD.Token.typescale.title_small
                 }
 
                 MD.Label {
                     Layout.fillWidth: true
+                    horizontalAlignment: Text.AlignHCenter
                     wrapMode: Text.WordWrap
-                    text: qsTr("Open the plugin store or install a plugin file you already have.")
+                    text: qsTr("Open the plugin store. Steam is the one to get first.")
                     color: MD.Token.color.on_surface_variant
-                    typescale: MD.Token.typescale.body_small
+                    typescale: MD.Token.typescale.body_medium
                 }
             }
         }
 
-        ColumnLayout {
+        OfficialPluginCard {
+            Layout.leftMargin: contentMargin
+            Layout.rightMargin: contentMargin
+            visible: !!root.steamPlugin
+            plugin: root.steamPlugin || ({})
+            featured: true
+            installed: true
+            loaded: root.steamPlugin ? root.steamPlugin.loaded !== false : true
+            showSource: false
+            onUninstallClicked: {
+                removeDialog.pluginId = "steamidra"
+                removeDialog.pluginName = qsTr("Steam")
+                removeDialog.open()
+            }
+        }
+
+        MD.Label {
             Layout.fillWidth: true
             Layout.leftMargin: contentMargin
             Layout.rightMargin: contentMargin
-            spacing: MD.Token.spacing.small
-            visible: root.pluginRows.length > 0
+            visible: root.extraPlugins.length > 0
+            text: qsTr("Other plugins")
+            typescale: MD.Token.typescale.title_small
+        }
 
-            MD.Label {
-                Layout.fillWidth: true
-                text: qsTr("Installed plugins")
-                typescale: MD.Token.typescale.title_small
-            }
+        MD.ElevationRectangle {
+            Layout.fillWidth: true
+            Layout.leftMargin: contentMargin
+            Layout.rightMargin: contentMargin
+            visible: root.extraPlugins.length > 0
+            implicitHeight: extraCol.implicitHeight + MD.Token.spacing.small * 2
+            radius: MD.Token.shape.corner.large
+            color: MD.Token.color.surface_container
+            elevation: MD.Token.elevation.level0
 
-            Repeater {
-                model: root.pluginRows
+            ColumnLayout {
+                id: extraCol
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.margins: MD.Token.spacing.small
+                spacing: 0
 
-                Rectangle {
-                    required property var modelData
-
-                    Layout.fillWidth: true
-                    radius: MD.Token.shape.corner.large
-                    color: MD.Token.color.surface_container
-                    border.width: 1
-                    border.color: MD.Token.color.outline_variant
-                    implicitHeight: cardCol.implicitHeight + MD.Token.spacing.medium * 2
+                Repeater {
+                    model: root.extraPlugins
 
                     ColumnLayout {
-                        id: cardCol
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.top: parent.top
-                        anchors.margins: MD.Token.spacing.medium
-                        spacing: MD.Token.spacing.extra_small
+                        id: extraRow
+                        required property var modelData
+                        required property int index
+
+                        Layout.fillWidth: true
+                        spacing: 0
+
+                        readonly property string versionLabel: {
+                            const v = modelData.pluginVersion || ""
+                            return v.length ? qsTr("v%1").arg(v) : ""
+                        }
 
                         RowLayout {
                             Layout.fillWidth: true
-                            spacing: MD.Token.spacing.small
+                            Layout.leftMargin: MD.Token.spacing.small
+                            Layout.rightMargin: MD.Token.spacing.extra_small
+                            Layout.topMargin: MD.Token.spacing.small
+                            Layout.bottomMargin: MD.Token.spacing.small
+                            spacing: MD.Token.spacing.medium
 
-                            ColumnLayout {
-                                Layout.fillWidth: true
-                                spacing: 2
+                            MD.ElevationRectangle {
+                                Layout.preferredWidth: 40
+                                Layout.preferredHeight: 40
+                                Layout.alignment: Qt.AlignVCenter
+                                radius: MD.Token.shape.corner.full
+                                color: MD.Token.color.surface_container_highest
+                                elevation: MD.Token.elevation.level0
 
-                                MD.Label {
-                                    Layout.fillWidth: true
-                                    text: modelData.name
-                                    typescale: MD.Token.typescale.title_small
-                                    elide: Text.ElideRight
-                                }
-
-                                MD.Label {
-                                    Layout.fillWidth: true
-                                    text: modelData.description
+                                MD.Icon {
+                                    anchors.centerIn: parent
+                                    name: MD.Token.icon.extension
+                                    size: 20
                                     color: MD.Token.color.on_surface_variant
-                                    typescale: MD.Token.typescale.body_small
-                                    wrapMode: Text.WordWrap
-                                    maximumLineCount: 2
-                                    elide: Text.ElideRight
                                 }
                             }
 
-                            MD.Button {
-                                mdState.type: MD.Enum.BtText
-                                text: qsTr("Delete")
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: MD.Token.spacing.extra_small
+
+                                MD.Label {
+                                    Layout.fillWidth: true
+                                    text: extraRow.modelData.name
+                                    typescale: MD.Token.typescale.body_large
+                                    elide: Text.ElideRight
+                                }
+
+                                MD.Label {
+                                    Layout.fillWidth: true
+                                    visible: extraRow.modelData.loaded === false
+                                             || extraRow.versionLabel.length > 0
+                                    text: extraRow.modelData.loaded === false
+                                          ? qsTr("Not loaded")
+                                          : extraRow.versionLabel
+                                    color: extraRow.modelData.loaded === false
+                                           ? MD.Token.color.error
+                                           : MD.Token.color.on_surface_variant
+                                    typescale: MD.Token.typescale.body_small
+                                }
+                            }
+
+                            MD.IconButton {
+                                mdState.type: MD.Enum.IBtStandard
                                 icon.name: MD.Token.icon.delete
                                 onClicked: {
-                                    removeDialog.pluginId = modelData.pluginId
-                                    removeDialog.pluginName = modelData.name
+                                    removeDialog.pluginId = extraRow.modelData.pluginId
+                                    removeDialog.pluginName = extraRow.modelData.name
                                     removeDialog.open()
                                 }
                             }
                         }
 
-                        MD.Label {
+                        MD.Divider {
                             Layout.fillWidth: true
-                            text: modelData.loaded === false
-                                  ? qsTr("v%1 · %2 - not loaded").arg(modelData.pluginVersion).arg(modelData.pluginId)
-                                  : qsTr("v%1 · %2").arg(modelData.pluginVersion).arg(modelData.pluginId)
-                            color: modelData.loaded === false ? MD.Token.color.error : MD.Token.color.primary
-                            typescale: MD.Token.typescale.label_small
-                        }
-
-                        MD.Label {
-                            Layout.fillWidth: true
-                            visible: !!(modelData.catalogUrl && modelData.catalogUrl.length)
-                            text: qsTr("Game catalog: %1").arg(modelData.catalogUrl)
-                            color: MD.Token.color.on_surface_variant
-                            typescale: MD.Token.typescale.label_small
-                            elide: Text.ElideMiddle
-                            wrapMode: Text.WordWrap
-                            maximumLineCount: 2
-                        }
-
-                        MD.Label {
-                            Layout.fillWidth: true
-                            visible: !!(modelData.repositoryUrl && modelData.repositoryUrl.length)
-                            text: qsTr("Source: %1").arg(modelData.repositoryUrl)
-                            color: MD.Token.color.on_surface_variant
-                            typescale: MD.Token.typescale.label_small
-                            elide: Text.ElideMiddle
-                            wrapMode: Text.WordWrap
-                            maximumLineCount: 2
-                        }
-
-                        MD.Label {
-                            Layout.fillWidth: true
-                            text: modelData.pluginRootPath
-                            color: MD.Token.color.on_surface_variant
-                            typescale: MD.Token.typescale.label_small
-                            elide: Text.ElideMiddle
-                            maximumLineCount: 2
-                            wrapMode: Text.WordWrap
-                        }
-
-                        RowLayout {
-                            Layout.fillWidth: true
-                            spacing: MD.Token.spacing.small
-                            visible: !!(modelData.repositoryUrl && modelData.repositoryUrl.length)
-                                     || !!(modelData.catalogUrl && modelData.catalogUrl.length)
-
-                            MD.Button {
-                                visible: !!(modelData.repositoryUrl && modelData.repositoryUrl.length)
-                                mdState.type: MD.Enum.BtText
-                                text: qsTr("Source code")
-                                icon.name: MD.Token.icon.open_in_new
-                                onClicked: Core.openExternalUrl(modelData.repositoryUrl)
-                            }
-
-                            MD.Button {
-                                visible: !!(modelData.catalogUrl && modelData.catalogUrl.length)
-                                mdState.type: MD.Enum.BtText
-                                text: qsTr("Catalog URL")
-                                icon.name: MD.Token.icon.open_in_new
-                                onClicked: Core.openExternalUrl(modelData.catalogUrl)
-                            }
+                            visible: extraRow.index < root.extraPlugins.length - 1
                         }
                     }
                 }
@@ -244,7 +271,7 @@ Flickable {
             typescale: MD.Token.typescale.body_small
         }
 
-        ColumnLayout {
+        RowLayout {
             Layout.fillWidth: true
             Layout.leftMargin: contentMargin
             Layout.rightMargin: contentMargin
@@ -253,39 +280,15 @@ Flickable {
 
             MD.Button {
                 Layout.fillWidth: true
-                mdState.type: MD.Enum.BtFilledTonal
+                mdState.type: MD.Enum.BtText
                 text: qsTr("Install from file…")
                 onClicked: Core.browsePluginArach()
             }
 
-            RowLayout {
-                Layout.fillWidth: true
-                spacing: MD.Token.spacing.small
-
-                MD.Button {
-                    Layout.fillWidth: true
-                    mdState.type: MD.Enum.BtText
-                    text: qsTr("Open folder")
-                    onClicked: Core.openPluginsFolder()
-                }
-
-                MD.Button {
-                    Layout.fillWidth: true
-                    mdState.type: MD.Enum.BtText
-                    text: qsTr("Refresh")
-                    onClicked: {
-                        Core.rescanPlugins()
-                        root.reloadPlugins()
-                    }
-                }
-            }
-
-            MD.Label {
-                Layout.fillWidth: true
-                text: qsTr("User-installed: %1").arg(Core.pluginsUserDir)
-                color: MD.Token.color.on_surface_variant
-                typescale: MD.Token.typescale.label_small
-                wrapMode: Text.WordWrap
+            MD.Button {
+                mdState.type: MD.Enum.BtText
+                text: qsTr("Open folder")
+                onClicked: Core.openPluginsFolder()
             }
         }
     }
@@ -340,5 +343,4 @@ Flickable {
             }
         }
     }
-
 }

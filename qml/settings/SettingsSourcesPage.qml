@@ -10,16 +10,16 @@ Flickable {
 
     property int contentMargin: MD.Token.spacing.large
     property int countsRevision: 0
+    property int sourcesRev: 0
 
     signal addSourceRequested()
     signal editSourceRequested(string pluginId, string name, string catalogUrl,
                                string description, bool sourceEnabled)
 
-    contentWidth: width
-    contentHeight: body.implicitHeight
-    clip: true
-    boundsBehavior: Flickable.StopAtBounds
-    flickableDirection: Flickable.VerticalFlick
+    readonly property var hydraCatalogs: {
+        root.sourcesRev
+        return Core.sources.manualCatalogs()
+    }
 
     function formatGameCount(sourceId) {
         root.countsRevision
@@ -27,6 +27,15 @@ Flickable {
         if (count < 0)
             return qsTr("Games: …")
         return qsTr("Games: %1").arg(count)
+    }
+
+    function catalogSupport(row) {
+        const hasUrl = !!(row.catalogUrl && row.catalogUrl.length)
+        if (!hasUrl)
+            return qsTr("No URL - catalog will not load")
+        if (!row.sourceEnabled)
+            return qsTr("Off")
+        return root.formatGameCount(row.pluginId)
     }
 
     Component.onCompleted: Core.prefetchCatalogCounts()
@@ -41,9 +50,16 @@ Flickable {
     Connections {
         target: Core.sources
         function onSourcesChanged() {
+            root.sourcesRev++
             Core.prefetchCatalogCounts()
         }
     }
+
+    contentWidth: width
+    contentHeight: body.implicitHeight
+    clip: true
+    boundsBehavior: Flickable.StopAtBounds
+    flickableDirection: Flickable.VerticalFlick
 
     ColumnLayout {
         id: body
@@ -61,33 +77,60 @@ Flickable {
             typescale: MD.Token.typescale.body_medium
         }
 
-        Rectangle {
+        MD.Button {
             Layout.fillWidth: true
             Layout.leftMargin: contentMargin
             Layout.rightMargin: contentMargin
-            visible: Core.sources.count === 0
+            mdState.type: MD.Enum.BtFilled
+            text: qsTr("Add catalog")
+            icon.name: MD.Token.icon.add
+            onClicked: root.addSourceRequested()
+        }
+
+        MD.ElevationRectangle {
+            Layout.fillWidth: true
+            Layout.leftMargin: contentMargin
+            Layout.rightMargin: contentMargin
+            visible: root.hydraCatalogs.length === 0
+            implicitHeight: emptyCol.implicitHeight + MD.Token.spacing.large * 2
             radius: MD.Token.shape.corner.large
             color: MD.Token.color.surface_container
-            border.width: 1
-            border.color: MD.Token.color.outline_variant
-            implicitHeight: emptySourcesCol.implicitHeight + MD.Token.spacing.medium * 2
+            elevation: MD.Token.elevation.level0
 
             ColumnLayout {
-                id: emptySourcesCol
+                id: emptyCol
                 anchors.left: parent.left
                 anchors.right: parent.right
-                anchors.top: parent.top
-                anchors.margins: MD.Token.spacing.medium
-                spacing: MD.Token.spacing.extra_small
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.margins: MD.Token.spacing.large
+                spacing: MD.Token.spacing.small
+
+                MD.ElevationRectangle {
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.preferredWidth: 48
+                    Layout.preferredHeight: 48
+                    radius: MD.Token.shape.corner.full
+                    color: MD.Token.color.secondary_container
+                    elevation: MD.Token.elevation.level0
+
+                    MD.Icon {
+                        anchors.centerIn: parent
+                        name: MD.Token.icon.link
+                        size: 24
+                        color: MD.Token.color.on_secondary_container
+                    }
+                }
 
                 MD.Label {
                     Layout.fillWidth: true
+                    horizontalAlignment: Text.AlignHCenter
                     text: qsTr("No catalogs yet")
                     typescale: MD.Token.typescale.title_small
                 }
 
                 MD.Label {
                     Layout.fillWidth: true
+                    horizontalAlignment: Text.AlignHCenter
                     text: Messages.settingsSourcesAddHint
                     wrapMode: Text.WordWrap
                     color: MD.Token.color.on_surface_variant
@@ -96,179 +139,142 @@ Flickable {
             }
         }
 
-        ColumnLayout {
+        MD.ElevationRectangle {
             Layout.fillWidth: true
             Layout.leftMargin: contentMargin
             Layout.rightMargin: contentMargin
-            spacing: MD.Token.spacing.small
-            visible: Core.sources.count > 0
+            visible: root.hydraCatalogs.length > 0
+            implicitHeight: catalogCol.implicitHeight + MD.Token.spacing.small * 2
+            radius: MD.Token.shape.corner.large
+            color: MD.Token.color.surface_container
+            elevation: MD.Token.elevation.level0
 
-            Repeater {
-                model: Core.sources
+            ColumnLayout {
+                id: catalogCol
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.margins: MD.Token.spacing.small
+                spacing: 0
 
-                Rectangle {
-                    id: sourceCard
-                    required property string pluginId
-                    required property string name
-                    required property string description
-                    required property string catalogUrl
-                    required property string repositoryUrl
-                    required property bool sourceEnabled
-                    required property bool hasCatalogUrl
-                    required property bool isPlugin
-                    required property string pluginVersion
-
-                    Layout.fillWidth: true
-                    radius: MD.Token.shape.corner.large
-                    color: MD.Token.color.surface_container_low
-                    border.width: 1
-                    border.color: MD.Token.color.outline_variant
-                    implicitHeight: sourceCardBody.implicitHeight + MD.Token.spacing.medium * 2
+                Repeater {
+                    model: root.hydraCatalogs
 
                     ColumnLayout {
-                        id: sourceCardBody
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.top: parent.top
-                        anchors.margins: MD.Token.spacing.medium
-                        spacing: MD.Token.spacing.small
+                        id: catalogRow
+                        required property var modelData
+                        required property int index
+
+                        Layout.fillWidth: true
+                        spacing: 0
+
+                        readonly property bool enabledOn: !!modelData.sourceEnabled
+                        readonly property bool hasUrl: !!(modelData.catalogUrl
+                                                          && modelData.catalogUrl.length)
 
                         RowLayout {
                             Layout.fillWidth: true
+                            Layout.leftMargin: MD.Token.spacing.small
+                            Layout.rightMargin: MD.Token.spacing.extra_small
+                            Layout.topMargin: MD.Token.spacing.small
+                            Layout.bottomMargin: MD.Token.spacing.small
                             spacing: MD.Token.spacing.medium
+
+                            MD.ElevationRectangle {
+                                Layout.preferredWidth: 40
+                                Layout.preferredHeight: 40
+                                Layout.alignment: Qt.AlignVCenter
+                                radius: MD.Token.shape.corner.full
+                                color: MD.Token.color.surface_container_highest
+                                elevation: MD.Token.elevation.level0
+
+                                MD.Icon {
+                                    anchors.centerIn: parent
+                                    name: MD.Token.icon.link
+                                    size: 20
+                                    color: MD.Token.color.on_surface_variant
+                                }
+                            }
 
                             ColumnLayout {
                                 Layout.fillWidth: true
-                                spacing: 2
+                                spacing: MD.Token.spacing.extra_small
 
                                 MD.Label {
                                     Layout.fillWidth: true
-                                    text: sourceCard.name
-                                    typescale: MD.Token.typescale.title_small
+                                    text: catalogRow.modelData.name
+                                    typescale: MD.Token.typescale.body_large
                                     elide: Text.ElideRight
                                 }
 
                                 MD.Label {
                                     Layout.fillWidth: true
-                                    text: sourceCard.description.length
-                                          ? sourceCard.description
-                                          : sourceCard.catalogUrl
-                                    color: MD.Token.color.on_surface_variant
+                                    text: root.catalogSupport(catalogRow.modelData)
+                                    color: catalogRow.hasUrl ? MD.Token.color.on_surface_variant
+                                                             : MD.Token.color.error
                                     typescale: MD.Token.typescale.body_small
-                                    elide: Text.ElideMiddle
-                                    maximumLineCount: 1
+                                    elide: Text.ElideRight
                                 }
                             }
 
                             MD.Switch {
-                                checked: sourceCard.sourceEnabled
-                                onToggled: Core.sources.setSourceEnabled(sourceCard.pluginId, checked)
+                                checked: catalogRow.enabledOn
+                                onToggled: Core.sources.setSourceEnabled(
+                                               catalogRow.modelData.pluginId, checked)
+                            }
+
+                            MD.IconButton {
+                                id: moreButton
+                                mdState.type: MD.Enum.IBtStandard
+                                icon.name: MD.Token.icon.more_vert
+                                onClicked: catalogMenu.open()
+
+                                MD.Menu {
+                                    id: catalogMenu
+                                    y: parent.height
+                                    autoClose: true
+
+                                    MD.MenuItem {
+                                        text: qsTr("Edit")
+                                        icon.name: MD.Token.icon.edit
+                                        onTriggered: root.editSourceRequested(
+                                                         catalogRow.modelData.pluginId,
+                                                         catalogRow.modelData.name,
+                                                         catalogRow.modelData.catalogUrl,
+                                                         catalogRow.modelData.description,
+                                                         catalogRow.enabledOn)
+                                    }
+
+                                    MD.MenuItem {
+                                        enabled: catalogRow.hasUrl
+                                        text: qsTr("Open URL")
+                                        icon.name: MD.Token.icon.open_in_new
+                                        onTriggered: Core.openExternalUrl(
+                                                         catalogRow.modelData.catalogUrl)
+                                    }
+
+                                    MD.MenuItem {
+                                        text: qsTr("Delete")
+                                        icon.name: MD.Token.icon.delete
+                                        onTriggered: Core.sources.removeSource(
+                                                         catalogRow.modelData.pluginId)
+                                    }
+                                }
                             }
                         }
 
-                        MD.Label {
+                        MD.Divider {
                             Layout.fillWidth: true
-                            visible: sourceCard.isPlugin && sourceCard.pluginVersion.length > 0
-                            text: qsTr("Plugin · v%1").arg(sourceCard.pluginVersion)
-                            color: MD.Token.color.primary
-                            typescale: MD.Token.typescale.label_small
-                        }
-
-                        MD.Label {
-                            Layout.fillWidth: true
-                            visible: sourceCard.catalogUrl.length > 0
-                            text: sourceCard.isPlugin
-                                  ? qsTr("Game catalog: %1").arg(sourceCard.catalogUrl)
-                                  : sourceCard.catalogUrl
-                            color: MD.Token.color.on_surface_variant
-                            typescale: MD.Token.typescale.label_small
-                            elide: Text.ElideMiddle
-                            maximumLineCount: 2
-                            wrapMode: Text.WordWrap
-                        }
-
-                        MD.Label {
-                            Layout.fillWidth: true
-                            visible: sourceCard.isPlugin && (sourceCard.repositoryUrl || "").length > 0
-                            text: qsTr("Source: %1").arg(sourceCard.repositoryUrl)
-                            color: MD.Token.color.on_surface_variant
-                            typescale: MD.Token.typescale.label_small
-                            elide: Text.ElideMiddle
-                            maximumLineCount: 2
-                            wrapMode: Text.WordWrap
-                        }
-
-                        MD.Label {
-                            Layout.fillWidth: true
-                            visible: sourceCard.hasCatalogUrl
-                            text: root.formatGameCount(sourceCard.pluginId)
-                            color: MD.Token.color.on_surface_variant
-                            typescale: MD.Token.typescale.label_medium
-                        }
-
-                        RowLayout {
-                            Layout.fillWidth: true
-                            spacing: MD.Token.spacing.small
-
-                            MD.Label {
-                                Layout.fillWidth: true
-                                text: !sourceCard.hasCatalogUrl
-                                      ? qsTr("No URL - catalog will not load")
-                                      : (sourceCard.sourceEnabled
-                                         ? qsTr("Active in catalog")
-                                         : qsTr("Disabled"))
-                                color: sourceCard.hasCatalogUrl
-                                       ? MD.Token.color.on_surface_variant
-                                       : MD.Token.color.error
-                                typescale: MD.Token.typescale.label_medium
-                            }
-
-                            MD.Button {
-                                visible: sourceCard.isPlugin && (sourceCard.repositoryUrl || "").length > 0
-                                mdState.type: MD.Enum.BtText
-                                text: qsTr("Source code")
-                                onClicked: Core.openExternalUrl(sourceCard.repositoryUrl)
-                            }
-
-                            MD.Button {
-                                visible: sourceCard.catalogUrl.length > 0
-                                mdState.type: MD.Enum.BtText
-                                text: qsTr("Open URL")
-                                onClicked: Core.openExternalUrl(sourceCard.catalogUrl)
-                            }
-
-                            MD.Button {
-                                visible: !sourceCard.isPlugin
-                                mdState.type: MD.Enum.BtText
-                                text: qsTr("Edit")
-                                onClicked: root.editSourceRequested(
-                                               sourceCard.pluginId,
-                                               sourceCard.name,
-                                               sourceCard.catalogUrl,
-                                               sourceCard.description,
-                                               sourceCard.sourceEnabled)
-                            }
-
-                            MD.Button {
-                                visible: !sourceCard.isPlugin
-                                mdState.type: MD.Enum.BtText
-                                text: qsTr("Delete")
-                                onClicked: Core.sources.removeSource(sourceCard.pluginId)
-                            }
+                            visible: catalogRow.index < root.hydraCatalogs.length - 1
                         }
                     }
                 }
             }
         }
 
-        MD.Button {
+        Item {
             Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            Layout.bottomMargin: MD.Token.spacing.medium
-            mdState.type: MD.Enum.BtFilledTonal
-            text: qsTr("Add Hydra catalog")
-            onClicked: root.addSourceRequested()
+            Layout.preferredHeight: MD.Token.spacing.medium
         }
     }
 }

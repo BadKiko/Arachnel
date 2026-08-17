@@ -205,17 +205,9 @@ void CoreController::initializeServices()
                                               QString* compatClient) {
         fillProtonInstallFields(entryId, protonId, executable, compatData, compatClient);
     };
-    installHooks.gameCommitted = [this](const LibraryGame& game) {
-#if defined(Q_OS_LINUX)
-        setRuntimeSetupActive(
-            game, QCoreApplication::translate("Core", "Preparing runtime environment…"));
-        QTimer::singleShot(0, this, [this, game]() {
-            ensureRuntimeDependenciesForGame(game);
-            clearRuntimeSetup();
-        });
-#else
+    installHooks.gameCommitted = [](const LibraryGame& game) {
+        // Prefix / VC redist setup runs on Play, not after download.
         Q_UNUSED(game)
-#endif
     };
     m_installSessionService =
         new InstallSessionService(&m_settings, &m_libraryStore, &m_jobStore, &m_jobs,

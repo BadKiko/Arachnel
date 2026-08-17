@@ -166,7 +166,7 @@ ColumnLayout {
     Component {
         id: sourceFormComponent
         SettingsSourceFormPage {
-            property string pageTitle: editing ? qsTr("Edit catalog") : qsTr("New Hydra catalog")
+            property string pageTitle: editing ? qsTr("Edit catalog") : qsTr("New catalog")
             contentMargin: root.contentMargin
             onSaved: stack.navigatePop()
             onCancelled: stack.navigatePop()

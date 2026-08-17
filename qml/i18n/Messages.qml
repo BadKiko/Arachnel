@@ -4,7 +4,7 @@ import QtQuick
 
 // Long / shared UI copy. English source in qsTr(); Russian in translations/arachnel_ru.ts.
 QtObject {
-    readonly property string helpCatalogIntro: qsTr("Add a catalog to browse games, or install a plugin for download, install, and play.")
+    readonly property string helpCatalogIntro: qsTr("Install Steam in Settings → Plugins to browse games, or add a catalog.")
 
     readonly property string helpHydraCatalogBody: qsTr("Paste a catalog link in Settings → Hydra catalogs. Games show up in Catalog.")
 
@@ -12,21 +12,21 @@ QtObject {
 
     readonly property string helpLibraryBody: qsTr("After download and install, the game appears here - launch, updates, and details.")
 
-    readonly property string settingsSourcesConnectHint: qsTr("Add a catalog URL from Hydra or another community list. Install a plugin (e.g. FreeTP) to install and play.")
+    readonly property string settingsSourcesConnectHint: qsTr("Paste a JSON catalog URL from Hydra or another list.")
 
-    readonly property string settingsSourcesAddHint: qsTr("Tap Add catalog and paste the catalog link.")
+    readonly property string settingsSourcesAddHint: qsTr("Add a catalog and paste the JSON link.")
 
-    readonly property string settingsSourceFormDesc: qsTr("Paste a catalog URL. Arachnel loads the game list; a plugin handles install and launch.")
+    readonly property string settingsSourceFormDesc: qsTr("Paste a catalog JSON URL. Arachnel loads the game list from that link.")
 
     readonly property string settingsWeblateHint: qsTr("Missing your language? Help translate Arachnel on <a href=\"%1\">Weblate</a>.")
 
     readonly property string settingsPluginsInstallHint: qsTr("Use Install plugin below and pick a plugin file (e.g. FreeTP).")
 
-    readonly property string settingsPluginsDesc: qsTr("Plugins provide catalogs, install, updates, and launch.")
+    readonly property string settingsPluginsDesc: qsTr("Plugins add game catalogs and handle download, install, and Play. Steam is the one to get first.")
 
-    readonly property string libraryEmptySubtitle: qsTr("Your library is empty. Install a plugin, pick a game in Catalog, and it will appear here.")
+    readonly property string libraryEmptySubtitle: qsTr("Your library is empty. Install Steam, pick a game in Catalog, and it will appear here.")
 
-    readonly property string libraryStep1Body: qsTr("Install a plugin (e.g. FreeTP) in Settings → Plugins.")
+    readonly property string libraryStep1Body: qsTr("Install Steam in Settings → Plugins.")
 
     readonly property string libraryStep2Body: qsTr("Pick a game in Catalog and start the download.")
 
@@ -38,7 +38,7 @@ QtObject {
 
     readonly property string catalogPipelineDesc: qsTr("Browse games from your catalogs and sources.")
 
-    readonly property string catalogConnectHint: qsTr("Add a catalog or install a plugin in Settings.")
+    readonly property string catalogConnectHint: qsTr("Install Steam in Settings → Plugins, or add a catalog.")
 
     readonly property string catalogEnableChipsHint: qsTr("Turn on one or more sources above - or leave them all off.")
 

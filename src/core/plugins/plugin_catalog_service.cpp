@@ -45,6 +45,20 @@ bool platformsSupported(const QStringList& platforms, const QString& platform)
            || platforms.contains(QStringLiteral("all"));
 }
 
+bool isHydraLauncherPlugin(const QJsonObject& obj)
+{
+    const QString id = obj.value(QStringLiteral("id")).toString().trimmed().toLower();
+    const QString name = obj.value(QStringLiteral("name")).toString().toLower();
+    const QString repo = obj.value(QStringLiteral("repository")).toString().toLower();
+    const QString url = obj.value(QStringLiteral("url")).toString().toLower();
+    const auto hit = [](const QString& text) {
+        return text.contains(QStringLiteral("hydralauncher"))
+               || text.contains(QStringLiteral("/hydra-plugin"))
+               || text == QStringLiteral("hydra") || text.startsWith(QStringLiteral("hydra-"));
+    };
+    return hit(id) || hit(repo) || hit(url) || name.contains(QStringLiteral("hydra launcher"));
+}
+
 /** Pick newest build compatible with this Arachnel + platform. */
 QJsonObject pickCompatibleBuild(const QJsonObject& pluginObj, const QString& appVersion,
                                 const QString& platform)
@@ -224,7 +238,7 @@ void PluginCatalogService::refresh()
                 continue;
             const QJsonObject obj = value.toObject();
             const QString pluginId = obj.value(QStringLiteral("id")).toString().trimmed();
-            if (pluginId.isEmpty())
+            if (pluginId.isEmpty() || isHydraLauncherPlugin(obj))
                 continue;
 
             const QJsonObject build = pickCompatibleBuild(obj, appVersion, platform);

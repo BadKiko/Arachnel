@@ -16,12 +16,12 @@ Flickable {
             {
                 id: "plugins",
                 title: qsTr("Plugins"),
-                subtitle: qsTr("FreeTP and others - install, launch, and add-ons")
+                subtitle: qsTr("Steam is the main catalog. FreeTP and others are extra.")
             },
             {
                 id: "sources",
                 title: qsTr("Hydra catalogs"),
-                subtitle: qsTr("Catalog links - import from Hydra or elsewhere")
+                subtitle: qsTr("JSON catalog URLs")
             },
             {
                 id: "storage",

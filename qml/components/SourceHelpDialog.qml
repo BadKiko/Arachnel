@@ -72,7 +72,7 @@ MD.Dialog {
                         Rectangle {
                             Layout.preferredWidth: 40
                             Layout.preferredHeight: 40
-                            radius: MD.Token.shape.corner.medium
+                            radius: MD.Token.shape.corner.full
                             color: MD.Token.color.secondary_container
 
                             MD.Icon {

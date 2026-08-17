@@ -11,6 +11,26 @@ Flickable {
     property int contentMargin: MD.Token.spacing.large
     property var pluginRows: []
 
+    readonly property var catalogPlugins: Core.pluginCatalog ? Core.pluginCatalog.plugins : []
+    readonly property bool catalogBusy: !!(Core.pluginCatalog && Core.pluginCatalog.installing)
+    readonly property var steamPlugin: {
+        const list = root.catalogPlugins
+        for (let i = 0; i < list.length; ++i) {
+            if (list[i].id === "steamidra")
+                return list[i]
+        }
+        return null
+    }
+    readonly property var extraPlugins: {
+        const list = root.catalogPlugins
+        const out = []
+        for (let i = 0; i < list.length; ++i) {
+            if (list[i].id !== "steamidra")
+                out.push(list[i])
+        }
+        return out
+    }
+
     function reloadPlugins() {
         pluginRows = Core.pluginEntries()
     }
@@ -21,6 +41,11 @@ Flickable {
                 return true
         }
         return false
+    }
+
+    function thisInstalling(pluginId) {
+        return Core.pluginCatalog && Core.pluginCatalog.installing
+                && Core.pluginCatalog.installingPluginId === pluginId
     }
 
     function requestUninstall(pluginId, pluginName) {
@@ -57,7 +82,7 @@ Flickable {
             Layout.leftMargin: contentMargin
             Layout.rightMargin: contentMargin
             Layout.topMargin: MD.Token.spacing.small
-            text: qsTr("Install official plugins.")
+            text: Messages.settingsPluginsDesc
             wrapMode: Text.WordWrap
             color: MD.Token.color.on_surface_variant
             typescale: MD.Token.typescale.body_medium
@@ -68,34 +93,10 @@ Flickable {
             Layout.leftMargin: contentMargin
             Layout.rightMargin: contentMargin
             spacing: MD.Token.spacing.small
-            visible: Core.pluginCatalog && (Core.pluginCatalog.catalogUrl || "").length > 0
 
             MD.Label {
                 Layout.fillWidth: true
-                text: qsTr("Index: %1").arg(Core.pluginCatalog.catalogUrl)
-                color: MD.Token.color.on_surface_variant
-                typescale: MD.Token.typescale.label_small
-                elide: Text.ElideMiddle
-                maximumLineCount: 2
-                wrapMode: Text.WordWrap
-            }
-
-            MD.Button {
-                mdState.type: MD.Enum.BtText
-                text: qsTr("Open")
-                onClicked: Core.openExternalUrl(Core.pluginCatalog.catalogUrl)
-            }
-        }
-
-        RowLayout {
-            Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            spacing: MD.Token.spacing.small
-
-            MD.Label {
-                Layout.fillWidth: true
-                text: qsTr("Available")
+                text: qsTr("Start here")
                 typescale: MD.Token.typescale.title_small
             }
 
@@ -134,147 +135,56 @@ Flickable {
             Layout.rightMargin: contentMargin
             visible: Core.pluginCatalog && !Core.pluginCatalog.loading
                      && Core.pluginCatalog.error.length === 0
-                     && Core.pluginCatalog.plugins.length === 0
+                     && root.catalogPlugins.length === 0
             text: qsTr("No official plugins available for this platform.")
             color: MD.Token.color.on_surface_variant
             wrapMode: Text.WordWrap
             typescale: MD.Token.typescale.body_small
         }
 
-        ColumnLayout {
+        OfficialPluginCard {
+            Layout.leftMargin: contentMargin
+            Layout.rightMargin: contentMargin
+            visible: !!root.steamPlugin
+            plugin: root.steamPlugin || ({})
+            featured: true
+            installed: root.steamPlugin ? root.isPluginInstalled(root.steamPlugin.id) : false
+            installing: root.steamPlugin ? root.thisInstalling(root.steamPlugin.id) : false
+            catalogBusy: root.catalogBusy
+            onInstallClicked: Core.installOfficialPlugin("steamidra")
+            onUninstallClicked: root.requestUninstall("steamidra", qsTr("Steam"))
+            onSourceClicked: function (url) { Core.openExternalUrl(url) }
+        }
+
+        MD.Label {
             Layout.fillWidth: true
             Layout.leftMargin: contentMargin
             Layout.rightMargin: contentMargin
-            Layout.bottomMargin: MD.Token.spacing.medium
-            spacing: MD.Token.spacing.small
+            visible: root.extraPlugins.length > 0
+            text: qsTr("Other plugins")
+            typescale: MD.Token.typescale.title_small
+        }
 
-            Repeater {
-                model: Core.pluginCatalog ? Core.pluginCatalog.plugins : []
+        Repeater {
+            model: root.extraPlugins
 
-                Rectangle {
-                    required property var modelData
-
-                    Layout.fillWidth: true
-                    radius: MD.Token.shape.corner.large
-                    color: MD.Token.color.surface_container
-                    border.width: 1
-                    border.color: MD.Token.color.outline_variant
-                    implicitHeight: officialCard.implicitHeight + MD.Token.spacing.medium * 2
-
-                    readonly property bool installed: root.isPluginInstalled(modelData.id)
-                    readonly property bool thisInstalling: Core.pluginCatalog
-                                                          && Core.pluginCatalog.installing
-                                                          && Core.pluginCatalog.installingPluginId === modelData.id
-
-                    ColumnLayout {
-                        id: officialCard
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.top: parent.top
-                        anchors.margins: MD.Token.spacing.medium
-                        spacing: MD.Token.spacing.extra_small
-
-                        RowLayout {
-                            Layout.fillWidth: true
-                            spacing: MD.Token.spacing.small
-
-                            ColumnLayout {
-                                Layout.fillWidth: true
-                                spacing: 2
-
-                                MD.Label {
-                                    Layout.fillWidth: true
-                                    text: modelData.name
-                                    typescale: MD.Token.typescale.title_small
-                                    elide: Text.ElideRight
-                                }
-
-                                MD.Label {
-                                    Layout.fillWidth: true
-                                    visible: !!(modelData.recommended)
-                                    text: qsTr("Recommended")
-                                    color: MD.Token.color.primary
-                                    typescale: MD.Token.typescale.label_small
-                                }
-
-                                MD.Label {
-                                    Layout.fillWidth: true
-                                    text: modelData.description
-                                    color: MD.Token.color.on_surface_variant
-                                    typescale: MD.Token.typescale.body_small
-                                    wrapMode: Text.WordWrap
-                                    maximumLineCount: 3
-                                    elide: Text.ElideRight
-                                }
-
-                                MD.Label {
-                                    Layout.fillWidth: true
-                                    text: qsTr("v%1").arg(modelData.version)
-                                    color: MD.Token.color.primary
-                                    typescale: MD.Token.typescale.label_small
-                                }
-
-                                MD.Label {
-                                    Layout.fillWidth: true
-                                    visible: !!(modelData.repository && modelData.repository.length)
-                                    text: qsTr("Source: %1").arg(modelData.repository)
-                                    color: MD.Token.color.on_surface_variant
-                                    typescale: MD.Token.typescale.label_small
-                                    elide: Text.ElideMiddle
-                                    wrapMode: Text.WordWrap
-                                    maximumLineCount: 2
-                                }
-
-                                MD.Label {
-                                    Layout.fillWidth: true
-                                    visible: !!(modelData.url && modelData.url.length)
-                                    text: qsTr("Download: %1").arg(modelData.url)
-                                    color: MD.Token.color.on_surface_variant
-                                    typescale: MD.Token.typescale.label_small
-                                    elide: Text.ElideMiddle
-                                    wrapMode: Text.WordWrap
-                                    maximumLineCount: 2
-                                }
-                            }
-
-                            ColumnLayout {
-                                spacing: MD.Token.spacing.extra_small
-
-                                MD.Button {
-                                    mdState.type: installed ? MD.Enum.BtText : MD.Enum.BtFilledTonal
-                                    text: installed ? qsTr("Delete")
-                                          : (thisInstalling ? qsTr("Installing…") : qsTr("Install"))
-                                    icon.name: installed ? MD.Token.icon.delete : MD.Token.icon.download
-                                    enabled: installed
-                                             || !(Core.pluginCatalog && Core.pluginCatalog.installing)
-                                    onClicked: {
-                                        if (installed)
-                                            root.requestUninstall(modelData.id, modelData.name)
-                                        else
-                                            Core.installOfficialPlugin(modelData.id)
-                                    }
-                                }
-
-                                MD.Button {
-                                    visible: !!(modelData.repository && modelData.repository.length)
-                                    mdState.type: MD.Enum.BtText
-                                    text: qsTr("Source code")
-                                    icon.name: MD.Token.icon.open_in_new
-                                    onClicked: Core.openExternalUrl(modelData.repository)
-                                }
-
-                                MD.Button {
-                                    visible: !!(modelData.url && modelData.url.length)
-                                    mdState.type: MD.Enum.BtText
-                                    text: qsTr("Package URL")
-                                    icon.name: MD.Token.icon.open_in_new
-                                    onClicked: Core.openExternalUrl(modelData.url)
-                                }
-                            }
-                        }
-                    }
-                }
+            OfficialPluginCard {
+                required property var modelData
+                Layout.leftMargin: contentMargin
+                Layout.rightMargin: contentMargin
+                plugin: modelData
+                installed: root.isPluginInstalled(modelData.id)
+                installing: root.thisInstalling(modelData.id)
+                catalogBusy: root.catalogBusy
+                onInstallClicked: Core.installOfficialPlugin(modelData.id)
+                onUninstallClicked: root.requestUninstall(modelData.id, modelData.name)
+                onSourceClicked: function (url) { Core.openExternalUrl(url) }
             }
+        }
+
+        Item {
+            Layout.fillWidth: true
+            Layout.preferredHeight: MD.Token.spacing.medium
         }
     }
 

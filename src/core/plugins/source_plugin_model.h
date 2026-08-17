@@ -3,6 +3,7 @@
 #include <QAbstractListModel>
 #include <QString>
 #include <QStringList>
+#include <QVariantList>
 #include <QVector>
 
 namespace arachnel::core {
@@ -68,6 +69,8 @@ public:
     Q_INVOKABLE QString nameForId(const QString& id) const;
     Q_INVOKABLE bool isSourceEnabled(const QString& id) const;
     Q_INVOKABLE QString repositoryUrlFor(const QString& id) const;
+    /** URL catalogs added by the user - never includes source plugins. */
+    Q_INVOKABLE QVariantList manualCatalogs() const;
     Q_INVOKABLE QString addSource(const QString& name, const QString& catalogUrl,
                                   const QString& description = {},
                                   const QString& iconName = {});

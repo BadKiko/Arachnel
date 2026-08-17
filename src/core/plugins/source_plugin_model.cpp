@@ -1,6 +1,7 @@
 #include "source_plugin_model.h"
 
 #include <QRegularExpression>
+#include <QVariantMap>
 
 namespace arachnel::core {
 
@@ -196,6 +197,23 @@ QString SourcePluginModel::repositoryUrlFor(const QString& id) const
 {
     const SourcePluginInfo* plugin = pluginById(id);
     return plugin ? plugin->repositoryUrl : QString();
+}
+
+QVariantList SourcePluginModel::manualCatalogs() const
+{
+    QVariantList out;
+    for (const auto& plugin : m_plugins) {
+        if (plugin.isPlugin)
+            continue;
+        QVariantMap row;
+        row.insert(QStringLiteral("pluginId"), plugin.id);
+        row.insert(QStringLiteral("name"), plugin.name);
+        row.insert(QStringLiteral("description"), plugin.description);
+        row.insert(QStringLiteral("catalogUrl"), plugin.catalogUrl);
+        row.insert(QStringLiteral("sourceEnabled"), plugin.enabled);
+        out.append(row);
+    }
+    return out;
 }
 
 QString SourcePluginModel::uniqueIdFromName(const QString& name) const

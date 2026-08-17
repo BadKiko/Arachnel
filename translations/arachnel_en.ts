@@ -60,12 +60,12 @@
 <context>
     <name>AppWindow</name>
     <message>
-        <location filename="../qml/app/AppWindow.qml" line="+16"/>
+        <location filename="../qml/app/AppWindow.qml" line="+17"/>
         <source>Arachnel</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+196"/>
+        <location line="+208"/>
         <source>Library</source>
         <translation></translation>
     </message>
@@ -93,7 +93,7 @@
 <context>
     <name>BookmarksPage</name>
     <message>
-        <location filename="../qml/app/BookmarksPage.qml" line="+69"/>
+        <location filename="../qml/app/BookmarksPage.qml" line="+116"/>
         <source>No favorites</source>
         <translation></translation>
     </message>
@@ -533,7 +533,7 @@
 <context>
     <name>CatalogPageContent</name>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="+289"/>
+        <location filename="../qml/app/CatalogPageContent.qml" line="+290"/>
         <source>With friends</source>
         <translation></translation>
     </message>
@@ -640,7 +640,7 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/facade/share_facade.cpp" line="+34"/>
+        <location filename="../src/core/facade/share_facade.cpp" line="+37"/>
         <source>Link copied</source>
         <translation></translation>
     </message>
@@ -662,7 +662,7 @@
     </message>
     <message>
         <location filename="../src/core/install/install_kind.cpp" line="+11"/>
-        <location filename="../src/core/catalog/catalog_model.cpp" line="+564"/>
+        <location filename="../src/core/catalog/catalog_model.cpp" line="+597"/>
         <source>Portable</source>
         <translation></translation>
     </message>
@@ -742,7 +742,7 @@
     </message>
     <message>
         <location line="+1"/>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="+253"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="+261"/>
         <source>Preparing…</source>
         <translation></translation>
     </message>
@@ -833,7 +833,7 @@
         <location filename="../src/core/library/library_controller.cpp" line="+275"/>
         <location line="+42"/>
         <location line="+58"/>
-        <location filename="../src/core/launch/launch_controller.cpp" line="+93"/>
+        <location filename="../src/core/launch/launch_controller.cpp" line="+100"/>
         <source>Couldn&apos;t update DLC unlocks.</source>
         <translation></translation>
     </message>
@@ -936,8 +936,8 @@
     </message>
     <message>
         <location line="+1"/>
-        <location filename="../src/core/jobs/job_status.cpp" line="+7"/>
-        <location filename="../src/core/catalog/catalog_facade_install.cpp" line="+261"/>
+        <location filename="../src/core/jobs/job_status.cpp" line="+8"/>
+        <location filename="../src/core/catalog/catalog_facade_install.cpp" line="+263"/>
         <location filename="../src/core/library/library_facade_sync.cpp" line="+232"/>
         <source>Install failed</source>
         <translation></translation>
@@ -948,7 +948,7 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="+364"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="+372"/>
         <source>Game not found for add-on</source>
         <translation></translation>
     </message>
@@ -964,7 +964,7 @@
         <translation></translation>
     </message>
     <message>
-        <location line="-384"/>
+        <location line="-392"/>
         <location line="+33"/>
         <source>Moving %1</source>
         <translation type="unfinished"></translation>
@@ -980,7 +980,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+304"/>
+        <location line="+312"/>
         <source>Download complete - install manually</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1041,14 +1041,14 @@
     </message>
     <message>
         <location filename="../src/core/runtime/proton_facade.cpp" line="+34"/>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="-466"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="-474"/>
         <source>Preparing runtime environment…</source>
         <translation></translation>
     </message>
     <message>
         <location filename="../src/core/library/library_controller.cpp" line="+83"/>
         <location filename="../src/core/jobs/job_facade_lifecycle.cpp" line="+102"/>
-        <location filename="../src/core/library/library_facade_ops.cpp" line="+174"/>
+        <location filename="../src/core/library/library_facade_ops.cpp" line="+216"/>
         <location line="+39"/>
         <location line="+37"/>
         <source>Game not found</source>
@@ -1076,7 +1076,7 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/runtime/proton_facade.cpp" line="+203"/>
+        <location filename="../src/core/runtime/proton_facade.cpp" line="+205"/>
         <source>Install Proton-GE in Settings → Launch before downloading games</source>
         <translation></translation>
     </message>
@@ -1118,12 +1118,12 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_facade.cpp" line="+334"/>
+        <location filename="../src/core/plugins/plugin_facade.cpp" line="+336"/>
         <source>Install plugin</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="+233"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="+234"/>
         <source>Plugin install failed</source>
         <translation></translation>
     </message>
@@ -1143,12 +1143,12 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/library/library_facade_ops.cpp" line="-46"/>
+        <location filename="../src/core/library/library_facade_ops.cpp" line="-44"/>
         <source>Choose game executable</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+1"/>
         <source>Executables (*.exe *.sh *.x86_64);;All files (*)</source>
         <translation></translation>
     </message>
@@ -1215,7 +1215,7 @@
     </message>
     <message>
         <location filename="../src/core/catalog/catalog_controller.cpp" line="+239"/>
-        <location line="+191"/>
+        <location line="+214"/>
         <source>%1 · %2 games</source>
         <translation></translation>
     </message>
@@ -1271,12 +1271,12 @@
         <translation>Runtime install did not register in the Proton prefix: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/launch/launch_controller.cpp" line="-28"/>
+        <location filename="../src/core/launch/launch_controller.cpp" line="-33"/>
         <source>Game is not installed yet</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+44"/>
+        <location line="+49"/>
         <source>Steam is not running - Online Fix needs it for SpaceWar/overlay. Starting Steam…</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1291,6 +1291,7 @@
     </message>
     <message>
         <location line="+9"/>
+        <location filename="../src/core/runtime/proton_facade.cpp" line="-188"/>
         <source>Failed to launch game</source>
         <translation></translation>
     </message>
@@ -1380,12 +1381,12 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="+101"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="+108"/>
         <source>Update finished, but version info is incomplete. Refresh the catalog and update again if the chip stays.</source>
         <translation></translation>
     </message>
     <message>
-        <location line="-197"/>
+        <location line="-205"/>
         <source>No catalog sources enabled</source>
         <translation></translation>
     </message>
@@ -1432,7 +1433,7 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_facade.cpp" line="-174"/>
+        <location filename="../src/core/plugins/plugin_facade.cpp" line="-176"/>
         <source>Plugin installed</source>
         <translation></translation>
     </message>
@@ -1453,7 +1454,7 @@
         <translation></translation>
     </message>
     <message>
-        <location line="+110"/>
+        <location line="+112"/>
         <source>Plugins updated</source>
         <translation></translation>
     </message>
@@ -1489,7 +1490,7 @@
     </message>
     <message>
         <location line="+43"/>
-        <location filename="../src/core/launch/process_launcher.cpp" line="+20"/>
+        <location filename="../src/core/launch/process_launcher.cpp" line="+24"/>
         <location filename="../src/core/runtime/windows_runner.cpp" line="+110"/>
         <location line="+108"/>
         <source>File not found: %1</source>
@@ -1549,64 +1550,79 @@
         <translation></translation>
     </message>
     <message>
-        <location line="+20"/>
+        <location line="+22"/>
         <source>Plugin files were copied but the library failed to load. Update Arachnel, or rebuild the plugin for this app version.</source>
         <translation></translation>
     </message>
     <message>
+        <location filename="../src/core/plugins/plugin_host.cpp" line="+287"/>
+        <location line="+153"/>
         <source>%1 needs a different Arachnel plugin API (plugin=%2, this app supports %3-%4). Update Arachnel or install a matching plugin build.</source>
         <translation></translation>
     </message>
     <message>
+        <location line="-129"/>
         <source>%1 only supports Arachnel up to %2 (you have %3). Install a newer plugin build from the store.</source>
         <translation></translation>
     </message>
     <message>
+        <location line="+6"/>
         <source>%1 needs Arachnel %2 or newer (you have %3). Update the app.</source>
         <translation></translation>
     </message>
     <message>
+        <location line="+69"/>
         <source>Could not load %1: %2</source>
         <translation></translation>
     </message>
     <message>
+        <location line="+44"/>
         <source>%1 is missing required plugin exports. Reinstall from the store.</source>
         <translation></translation>
     </message>
     <message>
+        <location line="+29"/>
         <source>%1 is missing API 4 catalog JSON exports. Reinstall from the store.</source>
         <translation></translation>
     </message>
     <message>
+        <location line="+22"/>
+        <location line="+34"/>
         <source>%1 was built for a different Arachnel SDK (CatalogEntry %2 vs %3 bytes). Update Arachnel, or install a plugin build for this app version.</source>
         <translation></translation>
     </message>
     <message>
+        <location line="+24"/>
         <source>%1 is missing the CatalogEntry size check. Reinstall a current plugin build.</source>
         <translation></translation>
     </message>
     <message>
+        <location line="+17"/>
         <source>%1 failed to start.</source>
         <translation></translation>
     </message>
     <message>
+        <location filename="../src/core/plugins/plugin_host_async.cpp" line="+218"/>
         <source>%1 needs a different Arachnel plugin API. Update the app or reinstall a matching plugin.</source>
         <translation></translation>
     </message>
     <message>
+        <location line="+10"/>
         <source>%1 only supports Arachnel up to %2. Install a newer plugin build.</source>
         <translation></translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>%1 needs Arachnel %2 or newer. Update the app.</source>
         <translation></translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>%1 is installed but failed to load. Update Arachnel or reinstall the plugin.</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+21"/>
+        <location filename="../src/core/plugins/plugin_host_packages.cpp" line="+21"/>
         <source>Invalid plugin id</source>
         <translation></translation>
     </message>
@@ -1659,7 +1675,7 @@
     </message>
     <message>
         <location line="+3"/>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="+67"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="+68"/>
         <source>Arachnel %1 is available</source>
         <translation></translation>
     </message>
@@ -1694,7 +1710,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_catalog_service.cpp" line="+201"/>
+        <location filename="../src/core/plugins/plugin_catalog_service.cpp" line="+215"/>
         <source>Could not load plugin list: %1</source>
         <translation></translation>
     </message>
@@ -1796,7 +1812,7 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/util/file_utils.cpp" line="+109"/>
+        <location filename="../src/core/util/file_utils.cpp" line="+113"/>
         <source>Failed to delete file: %1</source>
         <translation></translation>
     </message>
@@ -1862,9 +1878,9 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_host_async.cpp" line="+38"/>
-        <location line="+22"/>
-        <location line="+22"/>
+        <location filename="../src/core/plugins/plugin_host_async.cpp" line="-160"/>
+        <location line="+23"/>
+        <location line="+23"/>
         <source>Plugin not found</source>
         <translation></translation>
     </message>
@@ -1874,7 +1890,7 @@
         <translation></translation>
     </message>
     <message>
-        <location line="+24"/>
+        <location line="+27"/>
         <source>Failed to start process</source>
         <translation></translation>
     </message>
@@ -1918,7 +1934,7 @@
     <message>
         <location filename="../src/core/library/library_controller.cpp" line="-43"/>
         <location line="+21"/>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="-232"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="-233"/>
         <source>Game removed: %1</source>
         <translation></translation>
     </message>
@@ -1971,7 +1987,7 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/settings/settings_store_persistence.cpp" line="+117"/>
+        <location filename="../src/core/settings/settings_store_persistence.cpp" line="+137"/>
         <source>FreeTP torrent catalog - magnet links and add-ons</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2083,7 +2099,7 @@
 <context>
     <name>DownloadJobCard</name>
     <message>
-        <location filename="../qml/components/DownloadJobCard.qml" line="+82"/>
+        <location filename="../qml/components/DownloadJobCard.qml" line="+156"/>
         <source>Unknown download</source>
         <translation></translation>
     </message>
@@ -2210,7 +2226,7 @@
 <context>
     <name>GameDetailsContent</name>
     <message>
-        <location filename="../qml/app/GameDetailsContent.qml" line="+30"/>
+        <location filename="../qml/app/GameDetailsContent.qml" line="+31"/>
         <source>Game details</source>
         <translation></translation>
     </message>
@@ -2391,7 +2407,7 @@
 <context>
     <name>GameDetailsPage</name>
     <message numerus="yes">
-        <location filename="../qml/app/GameDetailsPage.qml" line="+260"/>
+        <location filename="../qml/app/GameDetailsPage.qml" line="+261"/>
         <source>%n source(s)</source>
         <translation>
             <numerusform>%n source</numerusform>
@@ -2455,7 +2471,7 @@
 <context>
     <name>GameSettingsSheet</name>
     <message>
-        <location filename="../qml/app/GameSettingsSheet.qml" line="+117"/>
+        <location filename="../qml/app/GameSettingsSheet.qml" line="+119"/>
         <source>Game settings</source>
         <translation></translation>
     </message>
@@ -2520,7 +2536,7 @@
         <translation></translation>
     </message>
     <message>
-        <location line="+46"/>
+        <location line="+47"/>
         <source>Information</source>
         <translation></translation>
     </message>
@@ -2580,12 +2596,12 @@
         <translation></translation>
     </message>
     <message>
-        <location line="-238"/>
+        <location line="-239"/>
         <source>Online Fix for this game</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+178"/>
+        <location line="+179"/>
         <source>DLC</source>
         <translation></translation>
     </message>
@@ -2907,17 +2923,17 @@
         <translation></translation>
     </message>
     <message>
-        <location line="+50"/>
+        <location line="+51"/>
         <source>Playing</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+11"/>
         <source>Update</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+46"/>
+        <location line="+47"/>
         <source>Running</source>
         <translation></translation>
     </message>
@@ -2969,7 +2985,7 @@
     <name>Messages</name>
     <message>
         <location filename="../qml/i18n/Messages.qml" line="+7"/>
-        <source>Add a catalog to browse games, or install a plugin for download, install, and play.</source>
+        <source>Install Steam in Settings → Plugins to browse games, or add a catalog.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2989,21 +3005,11 @@
     </message>
     <message>
         <location line="+2"/>
-        <source>Add a catalog URL from Hydra or another community list. Install a plugin (e.g. FreeTP) to install and play.</source>
+        <source>Paste a JSON catalog URL from Hydra or another list.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>Tap Add catalog and paste the catalog link.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Paste a catalog URL. Arachnel loads the game list; a plugin handles install and launch.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
+        <location line="+6"/>
         <source>Missing your language? Help translate Arachnel on &lt;a href=&quot;%1&quot;&gt;Weblate&lt;/a&gt;.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3014,11 +3020,21 @@
     </message>
     <message>
         <location line="+2"/>
-        <source>Plugins provide catalogs, install, updates, and launch.</source>
+        <source>Plugins add game catalogs and handle download, install, and Play. Steam is the one to get first.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location line="+2"/>
+        <source>Your library is empty. Install Steam, pick a game in Catalog, and it will appear here.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Install Steam in Settings → Plugins.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
         <source>### Where do the files come from?
 
 Game **chunks** are downloaded from the **Valve Steam CDN** - the same CDN Steam uses for depot files.
@@ -3035,7 +3051,12 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+4"/>
+        <source>Install Steam in Settings → Plugins, or add a catalog.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>Turn on one or more sources above - or leave them all off.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3065,22 +3086,22 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-26"/>
-        <source>Your library is empty. Install a plugin, pick a game in Catalog, and it will appear here.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Install a plugin (e.g. FreeTP) in Settings → Plugins.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
+        <location line="-22"/>
         <source>Pick a game in Catalog and start the download.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="-14"/>
+        <source>Add a catalog and paste the JSON link.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location line="+2"/>
+        <source>Paste a catalog JSON URL. Arachnel loads the game list from that link.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+14"/>
         <source>Installed games live here: launch, updates, and details.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3095,13 +3116,66 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>Add a catalog or install a plugin in Settings.</source>
+        <location line="+16"/>
+        <source>Game files will be deleted from disk. This cannot be undone.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>OfficialPluginCard</name>
+    <message>
+        <location filename="../qml/components/OfficialPluginCard.qml" line="+27"/>
+        <source>v%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+14"/>
-        <source>Game files will be deleted from disk. This cannot be undone.</source>
+        <location line="+8"/>
+        <source>Steam</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Play and download any DRM-free games.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Games from FreeTP as torrents and installers.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+60"/>
+        <source>Get this first</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Main plugin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Not loaded</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>Source code</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Delete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Installing…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Install</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3303,16 +3377,16 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
     <message>
         <location line="+13"/>
-        <source>Source plugins</source>
-        <translation></translation>
+        <source>Get Steam</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+5"/>
-        <source>Plugins enable automatic install and Play (e.g. FreeTP). Without one, you can still browse catalogs and install manually.</source>
-        <translation></translation>
+        <source>Steam is the main plugin. It adds the game list and Play. You don&apos;t import or buy Steam games here.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location line="+9"/>
         <source>Official plugins</source>
         <translation></translation>
     </message>
@@ -3332,18 +3406,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation></translation>
     </message>
     <message>
-        <location line="+25"/>
-        <source>Recommended</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location line="+15"/>
-        <source>v%1</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <location line="+65"/>
+        <location line="+70"/>
         <location line="+68"/>
         <source>Delete</source>
         <translation></translation>
@@ -3364,22 +3427,12 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation></translation>
     </message>
     <message>
-        <location line="-127"/>
-        <source>Installing…</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Install</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location line="+18"/>
+        <location line="-107"/>
         <source>Or install a plugin file you already have.</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+39"/>
+        <location line="+37"/>
         <source>v%1 · %2</source>
         <translation></translation>
     </message>
@@ -3612,7 +3665,12 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation></translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+1"/>
+        <source>Steam is the main catalog. FreeTP and others are extra.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Hydra catalogs</source>
         <translation></translation>
     </message>
@@ -3657,13 +3715,8 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation></translation>
     </message>
     <message>
-        <location line="-19"/>
-        <source>FreeTP and others - install, launch, and add-ons</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Catalog links - import from Hydra or elsewhere</source>
+        <location line="-14"/>
+        <source>JSON catalog URLs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3771,8 +3824,8 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
     <message>
         <location line="+0"/>
-        <source>New Hydra catalog</source>
-        <translation></translation>
+        <source>New catalog</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+10"/>
@@ -3813,19 +3866,9 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
 <context>
     <name>SettingsPluginStorePage</name>
     <message>
-        <location filename="../qml/settings/SettingsPluginStorePage.qml" line="+60"/>
-        <source>Install official plugins.</source>
+        <location filename="../qml/settings/SettingsPluginStorePage.qml" line="+99"/>
+        <source>Start here</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+15"/>
-        <source>Index: %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+23"/>
-        <source>Available</source>
-        <translation></translation>
     </message>
     <message>
         <location line="+6"/>
@@ -3843,48 +3886,27 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation></translation>
     </message>
     <message>
-        <location line="+57"/>
-        <source>Recommended</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location line="+17"/>
-        <source>v%1</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Source: %1</source>
+        <location line="+16"/>
+        <source>Steam</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+11"/>
-        <source>Download: %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+14"/>
         <location line="+72"/>
         <source>Delete</source>
         <translation></translation>
     </message>
     <message>
-        <location line="-56"/>
-        <source>Source code</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Package URL</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+18"/>
+        <location line="-30"/>
         <source>Remove plugin?</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="-33"/>
+        <source>Other plugins</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+41"/>
         <source>Remove &quot;%1&quot;? Catalogs from this plugin will stop working until you install it again.</source>
         <translation></translation>
     </message>
@@ -3893,102 +3915,61 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <source>Cancel</source>
         <translation></translation>
     </message>
-    <message>
-        <location line="-66"/>
-        <source>Installing…</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location line="-161"/>
-        <source>Open</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+161"/>
-        <source>Install</source>
-        <translation></translation>
-    </message>
 </context>
 <context>
     <name>SettingsPluginsPage</name>
     <message>
-        <location filename="../qml/settings/SettingsPluginsPage.qml" line="+172"/>
-        <source>v%1 · %2</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location line="-116"/>
+        <location filename="../qml/settings/SettingsPluginsPage.qml" line="+78"/>
         <source>Plugin store</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+26"/>
+        <location line="+42"/>
         <source>No plugins installed</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+7"/>
-        <source>Open the plugin store or install a plugin file you already have.</source>
-        <translation></translation>
+        <location line="+8"/>
+        <source>Open the plugin store. Steam is the one to get first.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+16"/>
-        <source>Installed plugins</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location line="+53"/>
-        <location line="+174"/>
+        <location line="+207"/>
         <source>Delete</source>
         <translation></translation>
     </message>
     <message>
-        <location line="-161"/>
-        <source>v%1 · %2 - not loaded</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Game catalog: %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Source: %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+27"/>
-        <source>Source code</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Catalog URL</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+31"/>
+        <location line="-51"/>
         <source>Install from file…</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="-138"/>
+        <source>Steam</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Other plugins</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+35"/>
+        <source>v%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+43"/>
+        <source>Not loaded</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+56"/>
         <source>Open folder</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+7"/>
-        <source>Refresh</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>User-installed: %1</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location line="+14"/>
+        <location line="+12"/>
         <source>Remove plugin?</source>
         <translation></translation>
     </message>
@@ -4085,62 +4066,37 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
     <message>
         <location line="+56"/>
+        <source>Add catalog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+42"/>
         <source>No catalogs yet</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+87"/>
-        <source>Plugin · v%1</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Game catalog: %1</source>
+        <location line="-90"/>
+        <source>Off</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+12"/>
-        <source>Source: %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+23"/>
+        <location line="-2"/>
         <source>No URL - catalog will not load</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>Active in catalog</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Disabled</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>Source code</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Open URL</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
+        <location line="+203"/>
         <source>Edit</source>
         <translation></translation>
     </message>
     <message>
         <location line="+12"/>
-        <source>Delete</source>
-        <translation></translation>
+        <source>Open URL</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+15"/>
-        <source>Add Hydra catalog</source>
+        <location line="+7"/>
+        <source>Delete</source>
         <translation></translation>
     </message>
 </context>
