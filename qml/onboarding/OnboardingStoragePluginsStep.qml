@@ -114,12 +114,12 @@ ColumnLayout {
         spacing: MD.Token.spacing.small
         MD.Label {
             Layout.fillWidth: true
-            text: qsTr("Get Steam")
+            text: qsTr("Install a plugin")
             typescale: MD.Token.typescale.headline_small
         }
         MD.Label {
             Layout.fillWidth: true
-            text: qsTr("Steam is the main plugin. It adds the game list and Play. You don't import or buy Steam games here.")
+            text: Messages.settingsPluginsDesc
             wrapMode: Text.WordWrap
             color: MD.Token.color.on_surface_variant
             typescale: MD.Token.typescale.body_medium
@@ -163,23 +163,42 @@ ColumnLayout {
             wrapMode: Text.WordWrap
             typescale: MD.Token.typescale.body_small
         }
-        Repeater {
-            model: Core.pluginCatalog ? Core.pluginCatalog.plugins : []
-            OfficialPluginCard {
-                required property var modelData
-                plugin: modelData
-                featured: modelData.id === "steamidra"
-                installed: root.isPluginInstalled(modelData.id)
-                installing: Core.pluginCatalog && Core.pluginCatalog.installing
-                            && Core.pluginCatalog.installingPluginId === modelData.id
-                catalogBusy: !!(Core.pluginCatalog && Core.pluginCatalog.installing)
-                onInstallClicked: Core.installOfficialPlugin(modelData.id)
-                onUninstallClicked: {
-                    removeDialog.pluginId = modelData.id
-                    removeDialog.pluginName = modelData.name
-                    removeDialog.open()
+        MD.ElevationRectangle {
+            Layout.fillWidth: true
+            visible: Core.pluginCatalog && Core.pluginCatalog.plugins.length > 0
+            implicitHeight: onboardingStoreCol.implicitHeight + MD.Token.spacing.small * 2
+            radius: MD.Token.shape.corner.large
+            color: MD.Token.color.surface_container
+            elevation: MD.Token.elevation.level0
+
+            ColumnLayout {
+                id: onboardingStoreCol
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.margins: MD.Token.spacing.small
+                spacing: 0
+
+                Repeater {
+                    model: Core.pluginCatalog ? Core.pluginCatalog.plugins : []
+                    OfficialPluginCard {
+                        required property var modelData
+                        required property int index
+                        plugin: modelData
+                        installed: root.isPluginInstalled(modelData.id)
+                        installing: Core.pluginCatalog && Core.pluginCatalog.installing
+                                    && Core.pluginCatalog.installingPluginId === modelData.id
+                        catalogBusy: !!(Core.pluginCatalog && Core.pluginCatalog.installing)
+                        showDivider: index < (Core.pluginCatalog ? Core.pluginCatalog.plugins.length : 0) - 1
+                        onInstallClicked: Core.installOfficialPlugin(modelData.id)
+                        onUninstallClicked: {
+                            removeDialog.pluginId = modelData.id
+                            removeDialog.pluginName = modelData.name
+                            removeDialog.open()
+                        }
+                        onSourceClicked: function (url) { Core.openExternalUrl(url) }
+                    }
                 }
-                onSourceClicked: function (url) { Core.openExternalUrl(url) }
             }
         }
         MD.Label {

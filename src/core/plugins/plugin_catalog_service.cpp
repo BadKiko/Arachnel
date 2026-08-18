@@ -267,8 +267,7 @@ void PluginCatalogService::refresh()
                        build.value(QStringLiteral("maxArachnel")).toString());
             row.insert(QStringLiteral("repository"), resolvePluginRepository(pluginId, obj));
             row.insert(QStringLiteral("recommended"),
-                       obj.value(QStringLiteral("recommended")).toBool(false)
-                           || pluginId == QStringLiteral("steamidra"));
+                       obj.value(QStringLiteral("recommended")).toBool(false));
 
             const QStringList platforms =
                 platformsFromJson(build.value(QStringLiteral("platforms")));
@@ -284,12 +283,6 @@ void PluginCatalogService::refresh()
             const bool rightRec = right.value(QStringLiteral("recommended")).toBool();
             if (leftRec != rightRec)
                 return leftRec;
-            const QString leftId = left.value(QStringLiteral("id")).toString();
-            const QString rightId = right.value(QStringLiteral("id")).toString();
-            if (leftId == QStringLiteral("steamidra") && rightId != QStringLiteral("steamidra"))
-                return true;
-            if (rightId == QStringLiteral("steamidra") && leftId != QStringLiteral("steamidra"))
-                return false;
             return QString::localeAwareCompare(left.value(QStringLiteral("name")).toString(),
                                                right.value(QStringLiteral("name")).toString())
                    < 0;

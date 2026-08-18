@@ -39,3 +39,16 @@ Builds: [Releases](https://github.com/BadKiko/Arachnel/releases)
 Bugs/ideas: [Issues](https://github.com/BadKiko/Arachnel/issues)
 
 Build from source: [CONTRIBUTING.md](CONTRIBUTING.md)
+
+## Plugins
+
+Arachnel doesn't ship a game catalog. A plugin is a small add-on that talks to a source, fills Catalog, and handles download, install, and Play.
+
+### Install from the app
+
+1. Open **Settings → Plugins → Plugin store**
+2. Install a plugin from the list (recommended ones are at the top)
+3. Games show up in **Catalog**
+
+You can also use **Install from file…** if you already have a `.arach` package. First launch walks through the same store list.
+

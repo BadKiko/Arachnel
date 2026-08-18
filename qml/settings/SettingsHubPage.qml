@@ -16,7 +16,7 @@ Flickable {
             {
                 id: "plugins",
                 title: qsTr("Plugins"),
-                subtitle: qsTr("Steam is the main catalog. FreeTP and others are extra.")
+                subtitle: qsTr("Install plugins to browse and play games.")
             },
             {
                 id: "sources",

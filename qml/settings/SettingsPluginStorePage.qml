@@ -13,23 +13,6 @@ Flickable {
 
     readonly property var catalogPlugins: Core.pluginCatalog ? Core.pluginCatalog.plugins : []
     readonly property bool catalogBusy: !!(Core.pluginCatalog && Core.pluginCatalog.installing)
-    readonly property var steamPlugin: {
-        const list = root.catalogPlugins
-        for (let i = 0; i < list.length; ++i) {
-            if (list[i].id === "steamidra")
-                return list[i]
-        }
-        return null
-    }
-    readonly property var extraPlugins: {
-        const list = root.catalogPlugins
-        const out = []
-        for (let i = 0; i < list.length; ++i) {
-            if (list[i].id !== "steamidra")
-                out.push(list[i])
-        }
-        return out
-    }
 
     function reloadPlugins() {
         pluginRows = Core.pluginEntries()
@@ -77,30 +60,24 @@ Flickable {
         width: root.width
         spacing: MD.Token.spacing.medium
 
-        MD.Label {
-            Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            Layout.topMargin: MD.Token.spacing.small
-            text: Messages.settingsPluginsDesc
-            wrapMode: Text.WordWrap
-            color: MD.Token.color.on_surface_variant
-            typescale: MD.Token.typescale.body_medium
-        }
-
         RowLayout {
             Layout.fillWidth: true
             Layout.leftMargin: contentMargin
             Layout.rightMargin: contentMargin
+            Layout.topMargin: MD.Token.spacing.small
             spacing: MD.Token.spacing.small
 
             MD.Label {
                 Layout.fillWidth: true
-                text: qsTr("Start here")
-                typescale: MD.Token.typescale.title_small
+                Layout.alignment: Qt.AlignTop
+                text: Messages.settingsPluginsDesc
+                wrapMode: Text.WordWrap
+                color: MD.Token.color.on_surface_variant
+                typescale: MD.Token.typescale.body_medium
             }
 
             MD.Button {
+                Layout.alignment: Qt.AlignTop
                 mdState.type: MD.Enum.BtText
                 text: qsTr("Refresh list")
                 enabled: !(Core.pluginCatalog && Core.pluginCatalog.loading)
@@ -142,43 +119,40 @@ Flickable {
             typescale: MD.Token.typescale.body_small
         }
 
-        OfficialPluginCard {
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            visible: !!root.steamPlugin
-            plugin: root.steamPlugin || ({})
-            featured: true
-            installed: root.steamPlugin ? root.isPluginInstalled(root.steamPlugin.id) : false
-            installing: root.steamPlugin ? root.thisInstalling(root.steamPlugin.id) : false
-            catalogBusy: root.catalogBusy
-            onInstallClicked: Core.installOfficialPlugin("steamidra")
-            onUninstallClicked: root.requestUninstall("steamidra", qsTr("Steam"))
-            onSourceClicked: function (url) { Core.openExternalUrl(url) }
-        }
-
-        MD.Label {
+        MD.ElevationRectangle {
             Layout.fillWidth: true
             Layout.leftMargin: contentMargin
             Layout.rightMargin: contentMargin
-            visible: root.extraPlugins.length > 0
-            text: qsTr("Other plugins")
-            typescale: MD.Token.typescale.title_small
-        }
+            visible: root.catalogPlugins.length > 0
+            implicitHeight: storeCol.implicitHeight + MD.Token.spacing.small * 2
+            radius: MD.Token.shape.corner.large
+            color: MD.Token.color.surface_container
+            elevation: MD.Token.elevation.level0
 
-        Repeater {
-            model: root.extraPlugins
+            ColumnLayout {
+                id: storeCol
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.margins: MD.Token.spacing.small
+                spacing: 0
 
-            OfficialPluginCard {
-                required property var modelData
-                Layout.leftMargin: contentMargin
-                Layout.rightMargin: contentMargin
-                plugin: modelData
-                installed: root.isPluginInstalled(modelData.id)
-                installing: root.thisInstalling(modelData.id)
-                catalogBusy: root.catalogBusy
-                onInstallClicked: Core.installOfficialPlugin(modelData.id)
-                onUninstallClicked: root.requestUninstall(modelData.id, modelData.name)
-                onSourceClicked: function (url) { Core.openExternalUrl(url) }
+                Repeater {
+                    model: root.catalogPlugins
+
+                    OfficialPluginCard {
+                        required property var modelData
+                        required property int index
+                        plugin: modelData
+                        installed: root.isPluginInstalled(modelData.id)
+                        installing: root.thisInstalling(modelData.id)
+                        catalogBusy: root.catalogBusy
+                        showDivider: index < root.catalogPlugins.length - 1
+                        onInstallClicked: Core.installOfficialPlugin(modelData.id)
+                        onUninstallClicked: root.requestUninstall(modelData.id, modelData.name)
+                        onSourceClicked: function (url) { Core.openExternalUrl(url) }
+                    }
+                }
             }
         }
 

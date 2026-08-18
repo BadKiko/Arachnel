@@ -742,7 +742,7 @@
     </message>
     <message>
         <location line="+1"/>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="+261"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="+253"/>
         <source>Preparing…</source>
         <translation></translation>
     </message>
@@ -1041,7 +1041,6 @@
     </message>
     <message>
         <location filename="../src/core/runtime/proton_facade.cpp" line="+34"/>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="-474"/>
         <source>Preparing runtime environment…</source>
         <translation></translation>
     </message>
@@ -1118,12 +1117,12 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_facade.cpp" line="+336"/>
+        <location filename="../src/core/plugins/plugin_facade.cpp" line="+338"/>
         <source>Install plugin</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="+234"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="-240"/>
         <source>Plugin install failed</source>
         <translation></translation>
     </message>
@@ -1491,7 +1490,7 @@
     <message>
         <location line="+43"/>
         <location filename="../src/core/launch/process_launcher.cpp" line="+24"/>
-        <location filename="../src/core/runtime/windows_runner.cpp" line="+110"/>
+        <location filename="../src/core/runtime/windows_runner.cpp" line="+117"/>
         <location line="+108"/>
         <source>File not found: %1</source>
         <translation></translation>
@@ -1720,7 +1719,7 @@
         <translation></translation>
     </message>
     <message>
-        <location line="+108"/>
+        <location line="+101"/>
         <source>Plugin not found in the official list</source>
         <translation></translation>
     </message>
@@ -1895,12 +1894,13 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/runtime/windows_runner.cpp" line="-192"/>
+        <location filename="../src/core/runtime/windows_runner.cpp" line="-196"/>
+        <location line="+2"/>
         <source>Failed to start: %1</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+8"/>
         <location line="+120"/>
         <source>Timeout: %1</source>
         <translation></translation>
@@ -2984,12 +2984,7 @@
 <context>
     <name>Messages</name>
     <message>
-        <location filename="../qml/i18n/Messages.qml" line="+7"/>
-        <source>Install Steam in Settings → Plugins to browse games, or add a catalog.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
+        <location filename="../qml/i18n/Messages.qml" line="+9"/>
         <source>Paste a catalog link in Settings → Hydra catalogs. Games show up in Catalog.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3014,27 +3009,12 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>Use Install plugin below and pick a plugin file (e.g. FreeTP).</source>
+        <location line="+4"/>
+        <source>Arachnel has no games until you install a plugin. Each plugin is a source: it fills Catalog and handles download, install, and Play.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>Plugins add game catalogs and handle download, install, and Play. Steam is the one to get first.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Your library is empty. Install Steam, pick a game in Catalog, and it will appear here.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Install Steam in Settings → Plugins.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
+        <location line="+12"/>
         <source>### Where do the files come from?
 
 Game **chunks** are downloaded from the **Valve Steam CDN** - the same CDN Steam uses for depot files.
@@ -3051,12 +3031,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+4"/>
-        <source>Install Steam in Settings → Plugins, or add a catalog.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
+        <location line="+6"/>
         <source>Turn on one or more sources above - or leave them all off.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3091,7 +3066,12 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-14"/>
+        <location line="-24"/>
+        <source>Install a plugin in Settings → Plugins to browse games, or add a catalog.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
         <source>Add a catalog and paste the JSON link.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3101,7 +3081,22 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="+4"/>
+        <source>Use Install plugin below and pick a .arach file.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Your library is empty. Install a plugin, pick a game in Catalog, and it will appear here.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Install a plugin in Settings → Plugins.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Installed games live here: launch, updates, and details.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3116,7 +3111,12 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+2"/>
+        <source>Install a plugin in Settings → Plugins, or add a catalog.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+14"/>
         <source>Game files will be deleted from disk. This cannot be undone.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3129,37 +3129,12 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+8"/>
-        <source>Steam</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Play and download any DRM-free games.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Games from FreeTP as torrents and installers.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+60"/>
-        <source>Get this first</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Main plugin</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
+        <location line="+47"/>
         <source>Not loaded</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+24"/>
+        <location line="+29"/>
         <source>Source code</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3169,7 +3144,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+7"/>
         <source>Installing…</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3376,17 +3351,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation></translation>
     </message>
     <message>
-        <location line="+13"/>
-        <source>Get Steam</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Steam is the main plugin. It adds the game list and Play. You don&apos;t import or buy Steam games here.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
+        <location line="+27"/>
         <source>Official plugins</source>
         <translation></translation>
     </message>
@@ -3406,7 +3371,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation></translation>
     </message>
     <message>
-        <location line="+70"/>
+        <location line="+89"/>
         <location line="+68"/>
         <source>Delete</source>
         <translation></translation>
@@ -3432,7 +3397,12 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation></translation>
     </message>
     <message>
-        <location line="+37"/>
+        <location line="-89"/>
+        <source>Install a plugin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+126"/>
         <source>v%1 · %2</source>
         <translation></translation>
     </message>
@@ -3665,12 +3635,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Steam is the main catalog. FreeTP and others are extra.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
+        <location line="+5"/>
         <source>Hydra catalogs</source>
         <translation></translation>
     </message>
@@ -3715,7 +3680,12 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation></translation>
     </message>
     <message>
-        <location line="-14"/>
+        <location line="-19"/>
+        <source>Install plugins to browse and play games.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
         <source>JSON catalog URLs</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3866,12 +3836,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
 <context>
     <name>SettingsPluginStorePage</name>
     <message>
-        <location filename="../qml/settings/SettingsPluginStorePage.qml" line="+99"/>
-        <source>Start here</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
+        <location filename="../qml/settings/SettingsPluginStorePage.qml" line="+82"/>
         <source>Refresh list</source>
         <translation></translation>
     </message>
@@ -3886,12 +3851,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation></translation>
     </message>
     <message>
-        <location line="+16"/>
-        <source>Steam</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+72"/>
+        <location line="+85"/>
         <source>Delete</source>
         <translation></translation>
     </message>
@@ -3901,12 +3861,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation></translation>
     </message>
     <message>
-        <location line="-33"/>
-        <source>Other plugins</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+41"/>
+        <location line="+8"/>
         <source>Remove &quot;%1&quot;? Catalogs from this plugin will stop working until you install it again.</source>
         <translation></translation>
     </message>
@@ -3919,7 +3874,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
 <context>
     <name>SettingsPluginsPage</name>
     <message>
-        <location filename="../qml/settings/SettingsPluginsPage.qml" line="+78"/>
+        <location filename="../qml/settings/SettingsPluginsPage.qml" line="+95"/>
         <source>Plugin store</source>
         <translation></translation>
     </message>
@@ -3929,12 +3884,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation></translation>
     </message>
     <message>
-        <location line="+8"/>
-        <source>Open the plugin store. Steam is the one to get first.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+207"/>
+        <location line="+127"/>
         <source>Delete</source>
         <translation></translation>
     </message>
@@ -3944,27 +3894,12 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation></translation>
     </message>
     <message>
-        <location line="-138"/>
-        <source>Steam</source>
+        <location line="-68"/>
+        <source>Open the plugin store and install a plugin to browse games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+10"/>
-        <source>Other plugins</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+35"/>
-        <source>v%1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+43"/>
-        <source>Not loaded</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+56"/>
+        <location line="+74"/>
         <source>Open folder</source>
         <translation></translation>
     </message>
@@ -4265,8 +4200,8 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
     <message>
         <location line="+1"/>
-        <source>Hydra catalog</source>
-        <translation></translation>
+        <source>Plugin</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+5"/>

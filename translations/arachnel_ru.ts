@@ -742,7 +742,7 @@
     </message>
     <message>
         <location line="+1"/>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="+261"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="+253"/>
         <source>Preparing…</source>
         <translation>Подготовка…</translation>
     </message>
@@ -1041,7 +1041,6 @@
     </message>
     <message>
         <location filename="../src/core/runtime/proton_facade.cpp" line="+34"/>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="-474"/>
         <source>Preparing runtime environment…</source>
         <translation>Подготовка среды выполнения…</translation>
     </message>
@@ -1118,12 +1117,12 @@
         <translation>Ручная установка завершена: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/plugins/plugin_facade.cpp" line="+336"/>
+        <location filename="../src/core/plugins/plugin_facade.cpp" line="+338"/>
         <source>Install plugin</source>
         <translation>Установить плагин</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="+234"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="-240"/>
         <source>Plugin install failed</source>
         <translation>Ошибка установки плагина</translation>
     </message>
@@ -1486,7 +1485,7 @@
     <message>
         <location line="+43"/>
         <location filename="../src/core/launch/process_launcher.cpp" line="+24"/>
-        <location filename="../src/core/runtime/windows_runner.cpp" line="+110"/>
+        <location filename="../src/core/runtime/windows_runner.cpp" line="+117"/>
         <location line="+108"/>
         <source>File not found: %1</source>
         <translation>Файл не найден: %1</translation>
@@ -1720,7 +1719,7 @@
         <translation>Список плагинов повреждён</translation>
     </message>
     <message>
-        <location line="+108"/>
+        <location line="+101"/>
         <source>Plugin not found in the official list</source>
         <translation>Плагин не найден в официальном списке</translation>
     </message>
@@ -1895,12 +1894,13 @@
         <translation>Не удалось запустить процесс</translation>
     </message>
     <message>
-        <location filename="../src/core/runtime/windows_runner.cpp" line="-192"/>
+        <location filename="../src/core/runtime/windows_runner.cpp" line="-196"/>
+        <location line="+2"/>
         <source>Failed to start: %1</source>
         <translation>Не удалось запустить: %1</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+8"/>
         <location line="+120"/>
         <source>Timeout: %1</source>
         <translation>Таймаут: %1</translation>
@@ -2990,12 +2990,7 @@
 <context>
     <name>Messages</name>
     <message>
-        <location filename="../qml/i18n/Messages.qml" line="+7"/>
-        <source>Install Steam in Settings → Plugins to browse games, or add a catalog.</source>
-        <translation>Установите Steam в Настройки → Плагины, чтобы смотреть игры, или добавьте каталог.</translation>
-    </message>
-    <message>
-        <location line="+2"/>
+        <location filename="../qml/i18n/Messages.qml" line="+9"/>
         <source>Paste a catalog link in Settings → Hydra catalogs. Games show up in Catalog.</source>
         <translation>Вставьте ссылку на каталог в Настройки → Каталоги Hydra. Игры появятся в Каталоге.</translation>
     </message>
@@ -3020,27 +3015,12 @@
         <translation>Нет вашего языка? Помогите перевести Arachnel на &lt;a href=&quot;%1&quot;&gt;Weblate&lt;/a&gt;.</translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>Use Install plugin below and pick a plugin file (e.g. FreeTP).</source>
-        <translation>Нажмите «Установить плагин» ниже и выберите файл плагина (например FreeTP).</translation>
+        <location line="+4"/>
+        <source>Arachnel has no games until you install a plugin. Each plugin is a source: it fills Catalog and handles download, install, and Play.</source>
+        <translation>Без плагина в Arachnel нет игр. Плагин - это источник: он заполняет Каталог и занимается загрузкой, установкой и Play.</translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>Plugins add game catalogs and handle download, install, and Play. Steam is the one to get first.</source>
-        <translation>Плагины добавляют каталоги игр и занимаются загрузкой, установкой и запуском. Steam стоит установить первым.</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Your library is empty. Install Steam, pick a game in Catalog, and it will appear here.</source>
-        <translation>Библиотека пуста. Установите Steam, выберите игру в Каталоге - она появится здесь.</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Install Steam in Settings → Plugins.</source>
-        <translation>Установите Steam в Настройки → Плагины.</translation>
-    </message>
-    <message>
-        <location line="+8"/>
+        <location line="+12"/>
         <source>### Where do the files come from?
 
 Game **chunks** are downloaded from the **Valve Steam CDN** - the same CDN Steam uses for depot files.
@@ -3069,12 +3049,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
 - Arachnel **не** заявляет антивирусную чистоту и одобрение Valve.</translation>
     </message>
     <message>
-        <location line="+4"/>
-        <source>Install Steam in Settings → Plugins, or add a catalog.</source>
-        <translation>Установите Steam в Настройки → Плагины или добавьте каталог.</translation>
-    </message>
-    <message>
-        <location line="+2"/>
+        <location line="+6"/>
         <source>Turn on one or more sources above - or leave them all off.</source>
         <translation>Включите один или несколько источников выше - или оставьте все выключенными.</translation>
     </message>
@@ -3109,7 +3084,12 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>Выберите игру и запустите установку - торрент скачается сам.</translation>
     </message>
     <message>
-        <location line="-14"/>
+        <location line="-24"/>
+        <source>Install a plugin in Settings → Plugins to browse games, or add a catalog.</source>
+        <translation>Поставьте плагин в Настройки → Плагины, чтобы смотреть игры, или добавьте каталог.</translation>
+    </message>
+    <message>
+        <location line="+10"/>
         <source>Add a catalog and paste the JSON link.</source>
         <translation>Добавьте каталог и вставьте ссылку на JSON.</translation>
     </message>
@@ -3119,7 +3099,22 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>Вставьте URL JSON-каталога. Arachnel загрузит список игр по этой ссылке.</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="+4"/>
+        <source>Use Install plugin below and pick a .arach file.</source>
+        <translation>Нажмите «Установить плагин» ниже и выберите файл .arach.</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Your library is empty. Install a plugin, pick a game in Catalog, and it will appear here.</source>
+        <translation>Библиотека пустая. Поставьте плагин, выберите игру в Каталоге - она появится здесь.</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Install a plugin in Settings → Plugins.</source>
+        <translation>Поставьте плагин в Настройки → Плагины.</translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Installed games live here: launch, updates, and details.</source>
         <translation>Установленные игры живут здесь: запуск, обновления, детали.</translation>
     </message>
@@ -3134,7 +3129,12 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>Игры из ваших каталогов и источников.</translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+2"/>
+        <source>Install a plugin in Settings → Plugins, or add a catalog.</source>
+        <translation>Поставьте плагин в Настройки → Плагины или добавьте каталог.</translation>
+    </message>
+    <message>
+        <location line="+14"/>
         <source>Game files will be deleted from disk. This cannot be undone.</source>
         <translation>Файлы игры будут удалены с диска. Это действие нельзя отменить.</translation>
     </message>
@@ -3147,37 +3147,12 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>v%1</translation>
     </message>
     <message>
-        <location line="+8"/>
-        <source>Steam</source>
-        <translation>Steam</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Play and download any DRM-free games.</source>
-        <translation>Играйте и качайте любые DRM-free игры.</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Games from FreeTP as torrents and installers.</source>
-        <translation>Игры с FreeTP торрентами и установщиками.</translation>
-    </message>
-    <message>
-        <location line="+60"/>
-        <source>Get this first</source>
-        <translation>Сначала этот</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Main plugin</source>
-        <translation>Главный плагин</translation>
-    </message>
-    <message>
-        <location line="+8"/>
+        <location line="+47"/>
         <source>Not loaded</source>
         <translation>Не загружен</translation>
     </message>
     <message>
-        <location line="+24"/>
+        <location line="+29"/>
         <source>Source code</source>
         <translation>Исходный код</translation>
     </message>
@@ -3187,7 +3162,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>Удалить</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+7"/>
         <source>Installing…</source>
         <translation>Установка…</translation>
     </message>
@@ -3394,17 +3369,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>Или оставьте путь по умолчанию из списка выше.</translation>
     </message>
     <message>
-        <location line="+13"/>
-        <source>Get Steam</source>
-        <translation>Установите Steam</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Steam is the main plugin. It adds the game list and Play. You don&apos;t import or buy Steam games here.</source>
-        <translation>Steam - главный плагин. Он даёт список игр и Play. Сюда не импортируют и не покупают игры из Steam.</translation>
-    </message>
-    <message>
-        <location line="+9"/>
+        <location line="+27"/>
         <source>Official plugins</source>
         <translation>Официальные плагины</translation>
     </message>
@@ -3424,7 +3389,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>Для этой платформы нет официальных плагинов.</translation>
     </message>
     <message>
-        <location line="+70"/>
+        <location line="+89"/>
         <location line="+68"/>
         <source>Delete</source>
         <translation>Удалить</translation>
@@ -3450,7 +3415,12 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>Или установите файл плагина, если он уже есть.</translation>
     </message>
     <message>
-        <location line="+37"/>
+        <location line="-89"/>
+        <source>Install a plugin</source>
+        <translation>Установить плагин</translation>
+    </message>
+    <message>
+        <location line="+126"/>
         <source>v%1 · %2</source>
         <translation>v%1 · %2</translation>
     </message>
@@ -3683,12 +3653,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>Плагины</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Steam is the main catalog. FreeTP and others are extra.</source>
-        <translation>Steam - основной каталог. FreeTP и остальные - дополнительные.</translation>
-    </message>
-    <message>
-        <location line="+4"/>
+        <location line="+5"/>
         <source>Hydra catalogs</source>
         <translation>Каталоги Hydra</translation>
     </message>
@@ -3733,7 +3698,12 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>Запуск</translation>
     </message>
     <message>
-        <location line="-14"/>
+        <location line="-19"/>
+        <source>Install plugins to browse and play games.</source>
+        <translation>Плагины, чтобы смотреть каталог и запускать игры.</translation>
+    </message>
+    <message>
+        <location line="+5"/>
         <source>JSON catalog URLs</source>
         <translation>JSON-ссылки на каталоги</translation>
     </message>
@@ -3884,12 +3854,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
 <context>
     <name>SettingsPluginStorePage</name>
     <message>
-        <location filename="../qml/settings/SettingsPluginStorePage.qml" line="+99"/>
-        <source>Start here</source>
-        <translation>Начните здесь</translation>
-    </message>
-    <message>
-        <location line="+6"/>
+        <location filename="../qml/settings/SettingsPluginStorePage.qml" line="+82"/>
         <source>Refresh list</source>
         <translation>Обновить список</translation>
     </message>
@@ -3904,12 +3869,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>Для этой платформы нет официальных плагинов.</translation>
     </message>
     <message>
-        <location line="+16"/>
-        <source>Steam</source>
-        <translation>Steam</translation>
-    </message>
-    <message>
-        <location line="+72"/>
+        <location line="+85"/>
         <source>Delete</source>
         <translation>Удалить</translation>
     </message>
@@ -3919,12 +3879,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>Удалить плагин?</translation>
     </message>
     <message>
-        <location line="-33"/>
-        <source>Other plugins</source>
-        <translation>Другие плагины</translation>
-    </message>
-    <message>
-        <location line="+41"/>
+        <location line="+8"/>
         <source>Remove &quot;%1&quot;? Catalogs from this plugin will stop working until you install it again.</source>
         <translation>Удалить «%1»? Каталоги этого плагина перестанут работать, пока вы не установите его снова.</translation>
     </message>
@@ -3937,7 +3892,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
 <context>
     <name>SettingsPluginsPage</name>
     <message>
-        <location filename="../qml/settings/SettingsPluginsPage.qml" line="+78"/>
+        <location filename="../qml/settings/SettingsPluginsPage.qml" line="+95"/>
         <source>Plugin store</source>
         <translation>Магазин плагинов</translation>
     </message>
@@ -3947,12 +3902,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>Нет установленных плагинов</translation>
     </message>
     <message>
-        <location line="+8"/>
-        <source>Open the plugin store. Steam is the one to get first.</source>
-        <translation>Откройте магазин плагинов. Steam стоит установить первым.</translation>
-    </message>
-    <message>
-        <location line="+207"/>
+        <location line="+127"/>
         <source>Delete</source>
         <translation>Удалить</translation>
     </message>
@@ -3962,27 +3912,12 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>Установить из файла…</translation>
     </message>
     <message>
-        <location line="-138"/>
-        <source>Steam</source>
-        <translation>Steam</translation>
+        <location line="-68"/>
+        <source>Open the plugin store and install a plugin to browse games.</source>
+        <translation>Откройте магазин плагинов и поставьте плагин, чтобы смотреть игры.</translation>
     </message>
     <message>
-        <location line="+10"/>
-        <source>Other plugins</source>
-        <translation>Другие плагины</translation>
-    </message>
-    <message>
-        <location line="+35"/>
-        <source>v%1</source>
-        <translation>v%1</translation>
-    </message>
-    <message>
-        <location line="+43"/>
-        <source>Not loaded</source>
-        <translation>Не загружен</translation>
-    </message>
-    <message>
-        <location line="+56"/>
+        <location line="+74"/>
         <source>Open folder</source>
         <translation>Открыть папку</translation>
     </message>
@@ -4283,8 +4218,8 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
     <message>
         <location line="+1"/>
-        <source>Hydra catalog</source>
-        <translation>Каталог Hydra</translation>
+        <source>Plugin</source>
+        <translation>Плагин</translation>
     </message>
     <message>
         <location line="+5"/>

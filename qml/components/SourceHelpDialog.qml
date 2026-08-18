@@ -17,8 +17,8 @@ MD.Dialog {
         {
             icon: MD.Token.icon.extension,
             step: qsTr("Step 1"),
-            title: qsTr("Hydra catalog"),
-            body: Messages.helpHydraCatalogBody
+            title: qsTr("Plugin"),
+            body: Messages.settingsPluginsDesc
         },
         {
             icon: MD.Token.icon.storefront,

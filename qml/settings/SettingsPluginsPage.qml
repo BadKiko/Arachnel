@@ -13,33 +13,50 @@ Flickable {
 
     signal openStoreRequested
 
-    readonly property var steamPlugin: {
-        const rows = root.pluginRows || []
-        for (let i = 0; i < rows.length; ++i) {
-            if (rows[i].pluginId === "steamidra")
-                return rows[i]
-        }
-        return null
-    }
+    readonly property var catalogPlugins: Core.pluginCatalog ? Core.pluginCatalog.plugins : []
 
-    readonly property var extraPlugins: {
+    readonly property var installedPlugins: {
         const rows = (root.pluginRows || []).slice()
-        const out = []
-        for (let i = 0; i < rows.length; ++i) {
-            if (rows[i].pluginId !== "steamidra")
-                out.push(rows[i])
-        }
-        out.sort(function (a, b) {
+        const catalog = {}
+        const list = root.catalogPlugins
+        for (let i = 0; i < list.length; ++i)
+            catalog[list[i].id] = list[i]
+
+        rows.sort(function (a, b) {
+            const ca = catalog[a.pluginId]
+            const cb = catalog[b.pluginId]
+            const ra = !!(ca && ca.recommended)
+            const rb = !!(cb && cb.recommended)
+            if (ra !== rb)
+                return ra ? -1 : 1
             return (a.name || "").localeCompare(b.name || "")
         })
-        return out
+
+        return rows.map(function (row) {
+            const cat = catalog[row.pluginId] || {}
+            return {
+                id: row.pluginId,
+                pluginId: row.pluginId,
+                name: cat.name || row.name,
+                description: cat.description || row.description || "",
+                iconName: cat.iconName || row.iconName || "extension",
+                version: row.pluginVersion,
+                pluginVersion: row.pluginVersion,
+                repository: row.repositoryUrl || cat.repository || "",
+                repositoryUrl: row.repositoryUrl || cat.repository || "",
+                loaded: row.loaded !== false
+            }
+        })
     }
 
     function reloadPlugins() {
         pluginRows = Core.pluginEntries()
     }
 
-    Component.onCompleted: reloadPlugins()
+    Component.onCompleted: {
+        reloadPlugins()
+        Core.refreshOfficialPlugins()
+    }
 
     Connections {
         target: Core
@@ -84,7 +101,7 @@ Flickable {
             Layout.fillWidth: true
             Layout.leftMargin: contentMargin
             Layout.rightMargin: contentMargin
-            visible: !root.steamPlugin && root.extraPlugins.length === 0
+            visible: root.installedPlugins.length === 0
             implicitHeight: emptyCol.implicitHeight + MD.Token.spacing.large * 2
             radius: MD.Token.shape.corner.large
             color: MD.Token.color.surface_container
@@ -108,7 +125,7 @@ Flickable {
 
                     MD.Icon {
                         anchors.centerIn: parent
-                        name: MD.Token.icon.stadia_controller
+                        name: MD.Token.icon.extension
                         size: 24
                         color: MD.Token.color.on_primary_container
                     }
@@ -125,50 +142,25 @@ Flickable {
                     Layout.fillWidth: true
                     horizontalAlignment: Text.AlignHCenter
                     wrapMode: Text.WordWrap
-                    text: qsTr("Open the plugin store. Steam is the one to get first.")
+                    text: qsTr("Open the plugin store and install a plugin to browse games.")
                     color: MD.Token.color.on_surface_variant
                     typescale: MD.Token.typescale.body_medium
                 }
             }
         }
 
-        OfficialPluginCard {
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            visible: !!root.steamPlugin
-            plugin: root.steamPlugin || ({})
-            featured: true
-            installed: true
-            loaded: root.steamPlugin ? root.steamPlugin.loaded !== false : true
-            showSource: false
-            onUninstallClicked: {
-                removeDialog.pluginId = "steamidra"
-                removeDialog.pluginName = qsTr("Steam")
-                removeDialog.open()
-            }
-        }
-
-        MD.Label {
-            Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            visible: root.extraPlugins.length > 0
-            text: qsTr("Other plugins")
-            typescale: MD.Token.typescale.title_small
-        }
-
         MD.ElevationRectangle {
             Layout.fillWidth: true
             Layout.leftMargin: contentMargin
             Layout.rightMargin: contentMargin
-            visible: root.extraPlugins.length > 0
-            implicitHeight: extraCol.implicitHeight + MD.Token.spacing.small * 2
+            visible: root.installedPlugins.length > 0
+            implicitHeight: listCol.implicitHeight + MD.Token.spacing.small * 2
             radius: MD.Token.shape.corner.large
             color: MD.Token.color.surface_container
             elevation: MD.Token.elevation.level0
 
             ColumnLayout {
-                id: extraCol
+                id: listCol
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.top: parent.top
@@ -176,84 +168,21 @@ Flickable {
                 spacing: 0
 
                 Repeater {
-                    model: root.extraPlugins
+                    model: root.installedPlugins
 
-                    ColumnLayout {
-                        id: extraRow
+                    OfficialPluginCard {
                         required property var modelData
                         required property int index
-
-                        Layout.fillWidth: true
-                        spacing: 0
-
-                        readonly property string versionLabel: {
-                            const v = modelData.pluginVersion || ""
-                            return v.length ? qsTr("v%1").arg(v) : ""
-                        }
-
-                        RowLayout {
-                            Layout.fillWidth: true
-                            Layout.leftMargin: MD.Token.spacing.small
-                            Layout.rightMargin: MD.Token.spacing.extra_small
-                            Layout.topMargin: MD.Token.spacing.small
-                            Layout.bottomMargin: MD.Token.spacing.small
-                            spacing: MD.Token.spacing.medium
-
-                            MD.ElevationRectangle {
-                                Layout.preferredWidth: 40
-                                Layout.preferredHeight: 40
-                                Layout.alignment: Qt.AlignVCenter
-                                radius: MD.Token.shape.corner.full
-                                color: MD.Token.color.surface_container_highest
-                                elevation: MD.Token.elevation.level0
-
-                                MD.Icon {
-                                    anchors.centerIn: parent
-                                    name: MD.Token.icon.extension
-                                    size: 20
-                                    color: MD.Token.color.on_surface_variant
-                                }
-                            }
-
-                            ColumnLayout {
-                                Layout.fillWidth: true
-                                spacing: MD.Token.spacing.extra_small
-
-                                MD.Label {
-                                    Layout.fillWidth: true
-                                    text: extraRow.modelData.name
-                                    typescale: MD.Token.typescale.body_large
-                                    elide: Text.ElideRight
-                                }
-
-                                MD.Label {
-                                    Layout.fillWidth: true
-                                    visible: extraRow.modelData.loaded === false
-                                             || extraRow.versionLabel.length > 0
-                                    text: extraRow.modelData.loaded === false
-                                          ? qsTr("Not loaded")
-                                          : extraRow.versionLabel
-                                    color: extraRow.modelData.loaded === false
-                                           ? MD.Token.color.error
-                                           : MD.Token.color.on_surface_variant
-                                    typescale: MD.Token.typescale.body_small
-                                }
-                            }
-
-                            MD.IconButton {
-                                mdState.type: MD.Enum.IBtStandard
-                                icon.name: MD.Token.icon.delete
-                                onClicked: {
-                                    removeDialog.pluginId = extraRow.modelData.pluginId
-                                    removeDialog.pluginName = extraRow.modelData.name
-                                    removeDialog.open()
-                                }
-                            }
-                        }
-
-                        MD.Divider {
-                            Layout.fillWidth: true
-                            visible: extraRow.index < root.extraPlugins.length - 1
+                        plugin: modelData
+                        installed: true
+                        loaded: modelData.loaded
+                        showSource: false
+                        showVersion: true
+                        showDivider: index < root.installedPlugins.length - 1
+                        onUninstallClicked: {
+                            removeDialog.pluginId = modelData.pluginId
+                            removeDialog.pluginName = modelData.name
+                            removeDialog.open()
                         }
                     }
                 }

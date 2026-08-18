@@ -4,7 +4,7 @@ import QtQuick
 
 // Long / shared UI copy. English source in qsTr(); Russian in translations/arachnel_ru.ts.
 QtObject {
-    readonly property string helpCatalogIntro: qsTr("Install Steam in Settings → Plugins to browse games, or add a catalog.")
+    readonly property string helpCatalogIntro: qsTr("Install a plugin in Settings → Plugins to browse games, or add a catalog.")
 
     readonly property string helpHydraCatalogBody: qsTr("Paste a catalog link in Settings → Hydra catalogs. Games show up in Catalog.")
 
@@ -20,13 +20,13 @@ QtObject {
 
     readonly property string settingsWeblateHint: qsTr("Missing your language? Help translate Arachnel on <a href=\"%1\">Weblate</a>.")
 
-    readonly property string settingsPluginsInstallHint: qsTr("Use Install plugin below and pick a plugin file (e.g. FreeTP).")
+    readonly property string settingsPluginsInstallHint: qsTr("Use Install plugin below and pick a .arach file.")
 
-    readonly property string settingsPluginsDesc: qsTr("Plugins add game catalogs and handle download, install, and Play. Steam is the one to get first.")
+    readonly property string settingsPluginsDesc: qsTr("Arachnel has no games until you install a plugin. Each plugin is a source: it fills Catalog and handles download, install, and Play.")
 
-    readonly property string libraryEmptySubtitle: qsTr("Your library is empty. Install Steam, pick a game in Catalog, and it will appear here.")
+    readonly property string libraryEmptySubtitle: qsTr("Your library is empty. Install a plugin, pick a game in Catalog, and it will appear here.")
 
-    readonly property string libraryStep1Body: qsTr("Install Steam in Settings → Plugins.")
+    readonly property string libraryStep1Body: qsTr("Install a plugin in Settings → Plugins.")
 
     readonly property string libraryStep2Body: qsTr("Pick a game in Catalog and start the download.")
 
@@ -38,7 +38,7 @@ QtObject {
 
     readonly property string catalogPipelineDesc: qsTr("Browse games from your catalogs and sources.")
 
-    readonly property string catalogConnectHint: qsTr("Install Steam in Settings → Plugins, or add a catalog.")
+    readonly property string catalogConnectHint: qsTr("Install a plugin in Settings → Plugins, or add a catalog.")
 
     readonly property string catalogEnableChipsHint: qsTr("Turn on one or more sources above - or leave them all off.")
 
