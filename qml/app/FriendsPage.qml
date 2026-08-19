@@ -16,8 +16,11 @@ Item {
 
     function submitInvite(code) {
         const digits = String(code).replace(/[^0-9]/g, "")
-        if (digits.length === 6)
-            Core.acceptFriendInvite(digits)
+        if (digits.length !== 6)
+            return
+        Core.acceptFriendInvite(digits)
+        emptyAddPin.text = ""
+        listAddPin.text = ""
     }
 
     Item {
@@ -192,63 +195,53 @@ Item {
         ColumnLayout {
             id: listCol
             width: parent.width
-            spacing: MD.Token.spacing.medium
+            spacing: MD.Token.spacing.large
 
-            RowLayout {
+            ColumnLayout {
                 Layout.fillWidth: true
                 Layout.leftMargin: root.pageMargin
                 Layout.rightMargin: root.pageMargin
                 Layout.topMargin: root.pageMargin
                 spacing: MD.Token.spacing.medium
 
-                ColumnLayout {
+                RowLayout {
                     Layout.fillWidth: true
-                    spacing: 2
+                    spacing: MD.Token.spacing.medium
 
-                    MD.Label {
-                        text: qsTr("Friends")
-                        typescale: MD.Token.typescale.headline_small
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: 2
+
+                        MD.Label {
+                            text: qsTr("Friends")
+                            typescale: MD.Token.typescale.headline_small
+                        }
+
+                        MD.Label {
+                            text: qsTr("You appear as %1").arg(Core.social.displayName)
+                            color: MD.Token.color.on_surface_variant
+                            typescale: MD.Token.typescale.body_medium
+                        }
                     }
 
-                    MD.Label {
-                        text: qsTr("You appear as %1").arg(Core.social.displayName)
-                        color: MD.Token.color.on_surface_variant
-                        typescale: MD.Token.typescale.body_medium
+                    FriendCodePin {
+                        visible: (Core.social.pendingInviteCode || "").length > 0
+                        text: Core.social.pendingInviteCode
+                        readOnly: true
+                    }
+
+                    MD.Button {
+                        text: (Core.social.pendingInviteCode || "").length
+                              ? qsTr("New code")
+                              : qsTr("Create code")
+                        icon.name: MD.Token.icon.key
+                        mdState.type: MD.Enum.BtText
+                        onClicked: Core.createFriendInvite()
                     }
                 }
-
-                MD.Button {
-                    text: qsTr("Create code")
-                    mdState.type: MD.Enum.BtText
-                    onClicked: Core.createFriendInvite()
-                }
-            }
-
-            FriendCodePin {
-                Layout.alignment: Qt.AlignHCenter
-                Layout.leftMargin: root.pageMargin
-                Layout.rightMargin: root.pageMargin
-                visible: (Core.social.pendingInviteCode || "").length > 0
-                text: Core.social.pendingInviteCode
-                readOnly: true
-            }
-
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.leftMargin: root.pageMargin
-                Layout.rightMargin: root.pageMargin
-                radius: MD.Token.shape.corner.large
-                color: MD.Token.color.surface_container
-                border.width: 1
-                border.color: MD.Token.color.outline_variant
-                implicitHeight: addRow.implicitHeight + MD.Token.spacing.medium * 2
 
                 RowLayout {
-                    id: addRow
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    anchors.verticalCenter: parent.verticalCenter
-                    anchors.margins: MD.Token.spacing.medium
+                    Layout.fillWidth: true
                     spacing: MD.Token.spacing.small
 
                     FriendCodePin {
@@ -258,83 +251,127 @@ Item {
 
                     MD.Button {
                         text: qsTr("Add")
+                        icon.name: MD.Token.icon.person_add
                         mdState.type: MD.Enum.BtFilledTonal
                         enabled: listAddPin.complete
                         onClicked: root.submitInvite(listAddPin.text)
                     }
+
+                    Item { Layout.fillWidth: true }
                 }
             }
 
-            Repeater {
-                model: Core.social.friends
+            MD.ElevationRectangle {
+                Layout.fillWidth: true
+                Layout.leftMargin: root.pageMargin
+                Layout.rightMargin: root.pageMargin
+                implicitHeight: friendsCol.implicitHeight + MD.Token.spacing.small * 2
+                radius: MD.Token.shape.corner.large
+                color: MD.Token.color.surface_container
+                elevation: MD.Token.elevation.level0
 
-                Rectangle {
-                    required property string friendId
-                    required property string nickname
-                    required property bool online
-                    required property string currentGameId
-                    required property string currentGameTitle
-                    required property string suggestedGameId
-                    required property string suggestedGameTitle
-                    required property string lastSeenAt
+                ColumnLayout {
+                    id: friendsCol
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    anchors.margins: MD.Token.spacing.small
+                    spacing: 0
 
-                    Layout.fillWidth: true
-                    Layout.leftMargin: root.pageMargin
-                    Layout.rightMargin: root.pageMargin
-                    radius: MD.Token.shape.corner.large
-                    color: MD.Token.color.surface_container
-                    border.width: 1
-                    border.color: MD.Token.color.outline_variant
-                    implicitHeight: friendRow.implicitHeight + MD.Token.spacing.medium * 2
-
-                    RowLayout {
-                        id: friendRow
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.verticalCenter: parent.verticalCenter
-                        anchors.margins: MD.Token.spacing.medium
-                        spacing: MD.Token.spacing.medium
+                    Repeater {
+                        model: Core.social.friends
 
                         ColumnLayout {
+                            id: friendItem
+                            required property string friendId
+                            required property string nickname
+                            required property bool online
+                            required property string currentGameId
+                            required property string currentGameTitle
+                            required property string suggestedGameId
+                            required property int index
+
                             Layout.fillWidth: true
-                            spacing: 2
+                            spacing: 0
 
-                            MD.Label {
+                            RowLayout {
                                 Layout.fillWidth: true
-                                text: nickname
-                                typescale: MD.Token.typescale.title_small
+                                Layout.leftMargin: MD.Token.spacing.small
+                                Layout.rightMargin: MD.Token.spacing.extra_small
+                                Layout.topMargin: MD.Token.spacing.small
+                                Layout.bottomMargin: MD.Token.spacing.small
+                                spacing: MD.Token.spacing.medium
+
+                                MD.ElevationRectangle {
+                                    Layout.preferredWidth: MD.Token.spacing.extra_large
+                                    Layout.preferredHeight: MD.Token.spacing.extra_large
+                                    radius: MD.Token.shape.corner.full
+                                    color: friendItem.online ? MD.Token.color.primary_container
+                                                             : MD.Token.color.surface_container_high
+                                    elevation: MD.Token.elevation.level0
+
+                                    MD.Label {
+                                        anchors.centerIn: parent
+                                        text: friendItem.nickname.length
+                                              ? friendItem.nickname.charAt(0).toUpperCase()
+                                              : "?"
+                                        typescale: MD.Token.typescale.title_small
+                                        color: friendItem.online ? MD.Token.color.on_primary_container
+                                                                 : MD.Token.color.on_surface_variant
+                                    }
+                                }
+
+                                ColumnLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 2
+
+                                    MD.Label {
+                                        Layout.fillWidth: true
+                                        text: friendItem.nickname
+                                        elide: Text.ElideRight
+                                        typescale: MD.Token.typescale.title_small
+                                    }
+
+                                    MD.Label {
+                                        Layout.fillWidth: true
+                                        text: friendItem.online
+                                              ? ((friendItem.currentGameTitle || "").length
+                                                 ? qsTr("Playing %1").arg(friendItem.currentGameTitle)
+                                                 : qsTr("Online"))
+                                              : qsTr("Offline")
+                                        elide: Text.ElideRight
+                                        color: friendItem.online ? MD.Token.color.primary
+                                                                 : MD.Token.color.on_surface_variant
+                                        typescale: MD.Token.typescale.body_small
+                                    }
+                                }
+
+                                MD.Button {
+                                    visible: (friendItem.currentGameId || "").length > 0
+                                    text: qsTr("Open")
+                                    mdState.type: MD.Enum.BtText
+                                    onClicked: root.openGame(friendItem.currentGameId)
+                                }
+
+                                MD.Button {
+                                    visible: (friendItem.suggestedGameId || "").length > 0
+                                    text: qsTr("Suggestion")
+                                    mdState.type: MD.Enum.BtText
+                                    onClicked: root.openGame(friendItem.suggestedGameId)
+                                }
+
+                                MD.IconButton {
+                                    mdState.type: MD.Enum.IBtStandard
+                                    icon.name: MD.Token.icon.delete
+                                    onClicked: Core.removeFriendById(friendItem.friendId)
+                                }
                             }
 
-                            MD.Label {
+                            MD.Divider {
                                 Layout.fillWidth: true
-                                text: online
-                                      ? ((currentGameTitle || "").length
-                                         ? qsTr("Playing %1").arg(currentGameTitle)
-                                         : qsTr("Online"))
-                                      : qsTr("Offline")
-                                color: MD.Token.color.on_surface_variant
-                                typescale: MD.Token.typescale.body_small
+                                Layout.leftMargin: MD.Token.spacing.extra_large + MD.Token.spacing.medium
+                                visible: friendItem.index < Core.social.friends.count - 1
                             }
-                        }
-
-                        MD.Button {
-                            visible: (currentGameId || "").length > 0
-                            text: qsTr("Open")
-                            mdState.type: MD.Enum.BtText
-                            onClicked: root.openGame(currentGameId)
-                        }
-
-                        MD.Button {
-                            visible: (suggestedGameId || "").length > 0
-                            text: qsTr("Suggestion")
-                            mdState.type: MD.Enum.BtText
-                            onClicked: root.openGame(suggestedGameId)
-                        }
-
-                        MD.IconButton {
-                            mdState.type: MD.Enum.IBtStandard
-                            icon.name: MD.Token.icon.delete
-                            onClicked: Core.removeFriendById(friendId)
                         }
                     }
                 }
