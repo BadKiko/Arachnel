@@ -17,10 +17,9 @@
 /**
  * Host speaks API 4 (JSON catalog boundary).
  * Plugins with apiVersion 2/3 still load (CatalogEntry ABI + sizeof gate).
- * API 4 plugins export arachnel_plugin_catalog_json / _free.
- * CatalogEntry sizeof is still checked when arachnel_plugin_catalog_entry_size is
- * exported - mismatch rejects the plugin so old Arachnel + new SDK plugins fail
- * closed instead of crashing in entryById / detectUpdate.
+ * API 4 plugins export arachnel_plugin_catalog_json / _free. CatalogEntry sizeof
+ * is optional: match → host may call entryById / detectUpdate; mismatch → load
+ * anyway, those DLL-crossing calls stay skipped.
  */
 #define ARACHNEL_PLUGIN_API_VERSION 4
 #define ARACHNEL_PLUGIN_API_VERSION_MIN 2
@@ -29,7 +28,7 @@ extern "C" {
 
 ARACHNEL_PLUGIN_EXPORT int arachnel_plugin_api_version();
 
-/** ABI canary: sizeof(CatalogEntry). Required for API 2/3; strongly recommended for API 4. */
+/** ABI canary: sizeof(CatalogEntry). Required for API 2/3. Optional for API 4. */
 ARACHNEL_PLUGIN_EXPORT int arachnel_plugin_catalog_entry_size();
 
 ARACHNEL_PLUGIN_EXPORT arachnel::core::ISourcePlugin* arachnel_plugin_create(

@@ -477,27 +477,17 @@ bool PluginHost::loadPluginDir(const QString& dirPath)
                     .arg(pluginEntrySize)
                     .arg(coreEntrySize)
                     .arg(exportedApi));
-            if (pluginEntrySize != coreEntrySize) {
-                setLoadRejectReason(QCoreApplication::translate(
-                    "Core",
-                    "%1 was built for a different Arachnel SDK (CatalogEntry %2 vs %3 bytes). "
-                    "Update Arachnel, or install a plugin build for this app version.")
-                                        .arg(displayName)
-                                        .arg(pluginEntrySize)
-                                        .arg(coreEntrySize));
+            if (pluginEntrySize == coreEntrySize) {
+                layoutTrusted = true;
+            } else {
                 logDiagnostic(
                     QStringLiteral(
-                        "Plugin rejected (CatalogEntry size mismatch): %1 plugin=%2 core=%3 "
-                        "from %4 - update Arachnel or rebuild plugin against this SDK")
+                        "Plugin %1 CatalogEntry size mismatch (plugin=%2 core=%3) - "
+                        "JSON catalog still loads; skip entryById / detectUpdate across DLL")
                         .arg(id)
                         .arg(pluginEntrySize)
-                        .arg(coreEntrySize)
-                        .arg(libraryPath));
-                loaded->library.unload();
-                delete loaded;
-                return false;
+                        .arg(coreEntrySize));
             }
-            layoutTrusted = true;
         } else {
             logDiagnostic(QStringLiteral(
                 "Plugin %1: no catalog_entry_size export - JSON catalog only "

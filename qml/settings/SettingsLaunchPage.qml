@@ -41,7 +41,7 @@ Flickable {
             typescale: MD.Token.typescale.body_medium
         }
 
-        MD.TextField {
+        AppTextField {
             id: globalArgsField
             Layout.fillWidth: true
             Layout.leftMargin: contentMargin

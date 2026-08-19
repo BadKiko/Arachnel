@@ -180,10 +180,7 @@ Item {
                             icon.name: MD.Token.icon.hard_drive
                         }
                         MD.AssistChip {
-                            visible: {
-                                const g = (page.info.genres ?? "").toString().toLowerCase()
-                                return g.split(",").some(t => t.trim() === "drm")
-                            }
+                            visible: !!(page.info.hasDrm)
                             text: qsTr("DRM")
                             icon.name: MD.Token.icon.shield
                             elevated: true

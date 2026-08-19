@@ -341,10 +341,10 @@ void CatalogController::rebuildMergedCatalog()
             if (m_mergedCache && !m_mergedCache->isEmpty()
                 && m_sourceLoadedAtMs.contains(sourceId)) {
                 ++m_mergeGeneration;
-                if (m_hooks.applyFilter)
-                    m_hooks.applyFilter(m_activeQuery);
                 if (m_hooks.rebuildGenres)
                     m_hooks.rebuildGenres();
+                if (m_hooks.applyFilter)
+                    m_hooks.applyFilter(m_activeQuery);
                 const SourcePluginInfo* source = m_sources->pluginById(sourceId);
                 setCatalogStatus(QCoreApplication::translate("Core", "%1 · %2 games")
                                      .arg(source ? source->name : sourceId)
@@ -551,10 +551,10 @@ void CatalogController::applyMergedCatalogResult(
 
     if (m_hooks.rebuildIdIndex)
         m_hooks.rebuildIdIndex();
-    if (m_hooks.applyFilter)
-        m_hooks.applyFilter(m_activeQuery);
     if (m_hooks.rebuildGenres)
         m_hooks.rebuildGenres();
+    if (m_hooks.applyFilter)
+        m_hooks.applyFilter(m_activeQuery);
     if (m_hooks.warmCovers)
         m_hooks.warmCovers();
 

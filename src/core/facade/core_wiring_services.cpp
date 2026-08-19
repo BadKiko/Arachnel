@@ -548,11 +548,9 @@ void CoreController::initializeServices()
                 }
                 if (applied) {
                     syncEntryToCatalogModel(entryId);
-                    if (m_catalogFilters
-                        && (!m_catalogFilters->genreFilter().isEmpty()
-                            || m_catalogFilters->sizeFilter() > 0
-                            || m_catalogFilters->playModeFilter() > 0))
-                        scheduleCatalogRefilter();
+                    const int cacheIndex = m_catalogIdToCacheIndex.value(entryId, -1);
+                    if (m_catalogFilters && cacheIndex >= 0)
+                        m_catalogFilters->syncFilterRow(cacheIndex);
                 }
                 if (!metadata.coverUrl.isEmpty())
                     m_catalogCovers->ensureDiskCover(entryId, metadata.coverUrl);
@@ -561,8 +559,6 @@ void CoreController::initializeServices()
                 emit entryMetadataChanged(entryId);
                 if (m_catalogDiscovery)
                     m_catalogDiscovery->onEntryMetadataChanged(entryId);
-                if (!metadata.genres.isEmpty())
-                    rebuildAvailableCatalogGenres();
             });
 
     connect(m_jobOrchestrator, &JobOrchestrator::downloadCompleted, this,

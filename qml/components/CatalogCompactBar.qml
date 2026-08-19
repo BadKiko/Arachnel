@@ -120,6 +120,12 @@ Rectangle {
             opacity: 0.55 + 0.45 * root.barOpacity
         }
 
+        CatalogSortButton {
+            opacity: 0.4 + 0.6 * root.barOpacity
+            sortOptions: page.sortOptions
+            onSortModeChosen: function (mode) { page.applySortMode(mode) }
+        }
+
         Item {
             Layout.preferredWidth: compactFilterBtn.implicitWidth
             Layout.preferredHeight: compactFilterBtn.implicitHeight

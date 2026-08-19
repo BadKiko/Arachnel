@@ -1,6 +1,8 @@
 #include "library_controller.h"
 
+#include "catalog_genre_normalize.h"
 #include "catalog_model.h"
+#include "catalog_types.h"
 #include "file_utils.h"
 #include "game_metadata_service.h"
 #include "install_heuristics.h"
@@ -180,6 +182,9 @@ QVariantMap LibraryController::entryDetails(const QString& entryId) const
         info.insert(QStringLiteral("addonCount"), addonCount);
         info.insert(QStringLiteral("hasAddons"), addonCount > 0);
         info.insert(QStringLiteral("hasWorkshop"), entry->hasWorkshop);
+        info.insert(QStringLiteral("hasDrm"), entry->hasDrm);
+        if (info.value(QStringLiteral("genres")).toString().isEmpty())
+            info.insert(QStringLiteral("genres"), genreLabelsFromBits(entry->genreBits));
     }
     if (info.value(QStringLiteral("downloadPath")).toString().isEmpty() && m_hooks.findLatestJob) {
         if (const JobEntry* job = m_hooks.findLatestJob(entryId))

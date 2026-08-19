@@ -310,12 +310,9 @@ MD.BottomSheet {
                     typescale: MD.Token.typescale.title_small
                 }
 
-                // Filled + body_large (M3 text field input). Outlined defaults to title_large in QmlMaterial.
-                MD.TextField {
+                AppTextField {
                     id: launchArgsField
                     Layout.fillWidth: true
-                    type: MD.Enum.TextFieldFilled
-                    mdState.dense: true
                     placeholderText: qsTr("Extra launch arguments for this game")
                     onEditingFinished: Core.setGameLaunchArgs(root.gameId, text)
                 }
@@ -324,11 +321,9 @@ MD.BottomSheet {
                     Layout.fillWidth: true
                     spacing: MD.Token.spacing.small
 
-                    MD.TextField {
+                    AppTextField {
                         id: exeField
                         Layout.fillWidth: true
-                        type: MD.Enum.TextFieldFilled
-                        mdState.dense: true
                         placeholderText: qsTr("Custom executable (optional)")
                         onEditingFinished: Core.setGameExecutableOverride(root.gameId, text)
                     }

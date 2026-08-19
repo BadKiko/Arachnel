@@ -46,6 +46,10 @@ const QHash<QString, QString>& genreAliasMap()
         add(QStringLiteral("Free to Play"), {"free to play", "f2p", "бесплатные"});
         add(QStringLiteral("Massively Multiplayer"),
             {"massively multiplayer", "mmo", "mmorpg", "массовый мультиплеер"});
+        add(QStringLiteral("VR"),
+            {"vr", "virtual reality", "vr games", "vr only", "vr-only", "vr support", "vr supported",
+             "valve index", "htc vive", "oculus", "виртуальная реальность", "поддержка vr",
+             "только vr"});
         return m;
     }();
     return map;
@@ -87,8 +91,6 @@ bool isNonGenreFeatureToken(const QString& tokenLower)
         QStringLiteral("full controller support"),
         QStringLiteral("partial controller support"),
         QStringLiteral("tracked controller support"),
-        QStringLiteral("vr support"),
-        QStringLiteral("vr only"),
         QStringLiteral("remote play"),
         QStringLiteral("remote play on phone"),
         QStringLiteral("remote play on tablet"),
@@ -145,10 +147,7 @@ QString canonicalizeGenreToken(const QString& rawToken)
     const auto it = genreAliasMap().constFind(lower);
     if (it != genreAliasMap().cend())
         return it.value();
-    // Title-case unknown short genre-like tokens (avoid dumping long feature strings).
-    if (trimmed.size() > 32 || trimmed.contains(QLatin1Char('(')))
-        return {};
-    return trimmed;
+    return {};
 }
 
 QStringList canonicalizeGenreTokens(const QStringList& rawTokens)
@@ -165,9 +164,9 @@ QStringList canonicalizeGenreTokens(const QStringList& rawTokens)
     return keys;
 }
 
-QStringList curatedGenreKeys()
+const QStringList& curatedGenreKeys()
 {
-    return {
+    static const QStringList keys = {
         QStringLiteral("Action"),
         QStringLiteral("Adventure"),
         QStringLiteral("RPG"),
@@ -190,7 +189,67 @@ QStringList curatedGenreKeys()
         QStringLiteral("Early Access"),
         QStringLiteral("Free to Play"),
         QStringLiteral("Massively Multiplayer"),
+        QStringLiteral("VR"),
     };
+    return keys;
+}
+
+int curatedGenreBitIndex(const QString& canonicalKey)
+{
+    if (canonicalKey.isEmpty())
+        return -1;
+    static const QHash<QString, int> index = [] {
+        QHash<QString, int> m;
+        const QStringList& keys = curatedGenreKeys();
+        m.reserve(keys.size());
+        for (int i = 0; i < keys.size(); ++i)
+            m.insert(keys.at(i), i);
+        return m;
+    }();
+    return index.value(canonicalKey, -1);
+}
+
+quint32 curatedGenreBit(const QString& canonicalKey)
+{
+    const int idx = curatedGenreBitIndex(canonicalKey);
+    if (idx < 0 || idx >= 32)
+        return 0;
+    return quint32(1) << idx;
+}
+
+quint32 genreBitsFromTokens(const QStringList& rawTokens)
+{
+    quint32 bits = 0;
+    for (const QString& raw : rawTokens) {
+        const int idx = curatedGenreBitIndex(canonicalizeGenreToken(raw));
+        if (idx >= 0)
+            bits |= (quint32(1) << idx);
+    }
+    return bits;
+}
+
+QStringList curatedGenreKeysFromBits(quint32 bits)
+{
+    QStringList keys;
+    const QStringList& all = curatedGenreKeys();
+    keys.reserve(all.size());
+    for (int i = 0; i < all.size(); ++i) {
+        if (bits & (quint32(1) << i))
+            keys.append(all.at(i));
+    }
+    return keys;
+}
+
+QString genreLabelsFromBits(quint32 bits)
+{
+    QStringList labels;
+    const QStringList& keys = curatedGenreKeys();
+    labels.reserve(keys.size());
+    for (int i = 0; i < keys.size(); ++i) {
+        if (bits & (quint32(1) << i))
+            labels.append(genreDisplayLabel(keys.at(i)));
+    }
+    return labels.join(QLatin1String(", "));
 }
 
 QString genreDisplayLabel(const QString& canonicalKey)
@@ -198,28 +257,30 @@ QString genreDisplayLabel(const QString& canonicalKey)
     if (canonicalKey.isEmpty())
         return {};
     static const QHash<QString, const char*> trKeys = {
-        {QStringLiteral("Action"), "Action"},
-        {QStringLiteral("Adventure"), "Adventure"},
-        {QStringLiteral("RPG"), "RPG"},
-        {QStringLiteral("Strategy"), "Strategy"},
-        {QStringLiteral("Simulation"), "Simulation"},
-        {QStringLiteral("Sports"), "Sports"},
-        {QStringLiteral("Racing"), "Racing"},
-        {QStringLiteral("Indie"), "Indie"},
-        {QStringLiteral("Casual"), "Casual"},
-        {QStringLiteral("Horror"), "Horror"},
-        {QStringLiteral("Puzzle"), "Puzzle"},
-        {QStringLiteral("Shooter"), "Shooter"},
-        {QStringLiteral("Platformer"), "Platformer"},
-        {QStringLiteral("Fighting"), "Fighting"},
-        {QStringLiteral("Survival"), "Survival"},
-        {QStringLiteral("Open World"), "Open World"},
-        {QStringLiteral("Visual Novel"), "Visual Novel"},
-        {QStringLiteral("Card"), "Card"},
-        {QStringLiteral("Roguelike"), "Roguelike"},
-        {QStringLiteral("Early Access"), "Early Access"},
-        {QStringLiteral("Free to Play"), "Free to Play"},
-        {QStringLiteral("Massively Multiplayer"), "Massively Multiplayer"},
+        {QStringLiteral("Action"), QT_TRANSLATE_NOOP("Core", "Action")},
+        {QStringLiteral("Adventure"), QT_TRANSLATE_NOOP("Core", "Adventure")},
+        {QStringLiteral("RPG"), QT_TRANSLATE_NOOP("Core", "RPG")},
+        {QStringLiteral("Strategy"), QT_TRANSLATE_NOOP("Core", "Strategy")},
+        {QStringLiteral("Simulation"), QT_TRANSLATE_NOOP("Core", "Simulation")},
+        {QStringLiteral("Sports"), QT_TRANSLATE_NOOP("Core", "Sports")},
+        {QStringLiteral("Racing"), QT_TRANSLATE_NOOP("Core", "Racing")},
+        {QStringLiteral("Indie"), QT_TRANSLATE_NOOP("Core", "Indie")},
+        {QStringLiteral("Casual"), QT_TRANSLATE_NOOP("Core", "Casual")},
+        {QStringLiteral("Horror"), QT_TRANSLATE_NOOP("Core", "Horror")},
+        {QStringLiteral("Puzzle"), QT_TRANSLATE_NOOP("Core", "Puzzle")},
+        {QStringLiteral("Shooter"), QT_TRANSLATE_NOOP("Core", "Shooter")},
+        {QStringLiteral("Platformer"), QT_TRANSLATE_NOOP("Core", "Platformer")},
+        {QStringLiteral("Fighting"), QT_TRANSLATE_NOOP("Core", "Fighting")},
+        {QStringLiteral("Survival"), QT_TRANSLATE_NOOP("Core", "Survival")},
+        {QStringLiteral("Open World"), QT_TRANSLATE_NOOP("Core", "Open World")},
+        {QStringLiteral("Visual Novel"), QT_TRANSLATE_NOOP("Core", "Visual Novel")},
+        {QStringLiteral("Card"), QT_TRANSLATE_NOOP("Core", "Card")},
+        {QStringLiteral("Roguelike"), QT_TRANSLATE_NOOP("Core", "Roguelike")},
+        {QStringLiteral("Early Access"), QT_TRANSLATE_NOOP("Core", "Early Access")},
+        {QStringLiteral("Free to Play"), QT_TRANSLATE_NOOP("Core", "Free to Play")},
+        {QStringLiteral("Massively Multiplayer"),
+         QT_TRANSLATE_NOOP("Core", "Massively Multiplayer")},
+        {QStringLiteral("VR"), QT_TRANSLATE_NOOP("Core", "VR")},
     };
     const auto it = trKeys.constFind(canonicalKey);
     if (it != trKeys.cend())

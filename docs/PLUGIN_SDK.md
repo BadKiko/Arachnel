@@ -255,7 +255,7 @@ The SDK static library compiles shared helpers from Arachnel core (catalog parse
 
 1. **`plugin.json` → `apiVersion`** must be in the host’s allowed range (**2..4**). Prefer **4** for new plugins.
 2. **`plugin.json` → `minArachnel` / `maxArachnel`** — enforced at load (not only in the store). Bump `minArachnel` whenever the plugin needs a newer core/SDK.
-3. **API 4:** export `arachnel_plugin_catalog_json` / `_free`. Still export `arachnel_plugin_catalog_entry_size()`; if the size does not match the host, the plugin is **rejected** (avoids crashes in `entryById` / `detectUpdate`).
+3. **API 4:** export `arachnel_plugin_catalog_json` / `_free`. `arachnel_plugin_catalog_entry_size()` is optional. If it matches the host, `entryById` / `detectUpdate` may cross the DLL; if it does not (or is missing), the plugin still loads and those calls are skipped.
 4. **API 2/3:** `arachnel_plugin_catalog_entry_size()` is required and must match the app. Migrate to v4 when you can.
 5. Build plugins with the **same MinGW + Qt kit** as Arachnel `release.yml` (`scripts/ci/launcher-toolchain.env`). Set `ARACHNEL_SDK_REF` to that release tag.
 6. After cutting an Arachnel release that changes `CatalogEntry` / plugin ABI, bump plugin `ARACHNEL_SDK_REF` / `minArachnel` and publish sourcelist `builds[]` for both old and new hosts.

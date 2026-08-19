@@ -190,42 +190,16 @@
 <context>
     <name>CatalogFilterSheet</name>
     <message>
-        <location filename="../qml/components/CatalogFilterSheet.qml" line="+27"/>
-        <source>All</source>
-        <translation>Все</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Portable</source>
-        <translation>Портабл</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Installer</source>
-        <translation>Установщик</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Online fix</source>
-        <translation>Онлайн-фикс</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <location line="+7"/>
+        <location filename="../qml/components/CatalogFilterSheet.qml" line="+23"/>
+        <location line="+6"/>
         <location line="+8"/>
-        <location line="+292"/>
         <source>Any</source>
         <translation>Любой</translation>
     </message>
     <message>
-        <location line="-306"/>
+        <location line="-13"/>
         <source>Single-player</source>
         <translation>Одиночная</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Co-op</source>
-        <translation>Кооп</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -273,47 +247,47 @@
         <translation>За год</translation>
     </message>
     <message>
-        <location line="+62"/>
-        <source>Sort &amp; filters</source>
-        <translation>Сортировка и фильтры</translation>
-    </message>
-    <message>
-        <location line="+24"/>
-        <source>Sort</source>
-        <translation>Сортировка</translation>
-    </message>
-    <message>
-        <location line="+31"/>
-        <source>Type</source>
-        <translation>Тип</translation>
-    </message>
-    <message>
-        <location line="+31"/>
+        <location line="+145"/>
         <source>Players</source>
         <translation>Игроки</translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="-24"/>
+        <source>Filters</source>
+        <translation>Фильтры</translation>
+    </message>
+    <message>
+        <location line="+105"/>
+        <source>Less</source>
+        <translation>Меньше</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>More</source>
+        <translation>Ещё</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Source</source>
+        <translation>Источник</translation>
+    </message>
+    <message>
+        <location line="+19"/>
         <source>Size</source>
         <translation>Размер</translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+29"/>
         <source>Added</source>
         <translation>Добавлено</translation>
     </message>
     <message>
-        <location line="+31"/>
-        <source>Extras</source>
-        <translation>Дополнительно</translation>
-    </message>
-    <message>
-        <location line="+11"/>
+        <location line="+30"/>
         <source>Has add-ons</source>
         <translation>Есть дополнения</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="-143"/>
         <source>Genre</source>
         <translation>Жанр</translation>
     </message>
@@ -323,12 +297,7 @@
         <translation>Поиск жанров</translation>
     </message>
     <message>
-        <location line="+35"/>
-        <source>Showing top genres - type to search more</source>
-        <translation>Показаны популярные жанры - начните ввод, чтобы найти ещё</translation>
-    </message>
-    <message>
-        <location line="+23"/>
+        <location line="+165"/>
         <source>Clear all</source>
         <translation>Сбросить всё</translation>
     </message>
@@ -346,6 +315,14 @@
         <location line="+1"/>
         <source>playing</source>
         <translation>играют</translation>
+    </message>
+</context>
+<context>
+    <name>CatalogGenreTile</name>
+    <message>
+        <location filename="../qml/components/CatalogGenreTile.qml" line="+40"/>
+        <source>Any</source>
+        <translation>Любой</translation>
     </message>
 </context>
 <context>
@@ -521,11 +498,6 @@
     </message>
     <message>
         <location line="+1"/>
-        <source>Co-op</source>
-        <translation>Кооп</translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>Multiplayer</source>
         <translation>Мультиплеер</translation>
     </message>
@@ -576,7 +548,7 @@
 <context>
     <name>CatalogScrollHeader</name>
     <message>
-        <location filename="../qml/components/CatalogScrollHeader.qml" line="+66"/>
+        <location filename="../qml/components/CatalogScrollHeader.qml" line="+68"/>
         <source>Loading catalog…</source>
         <translation>Загрузка каталога…</translation>
     </message>
@@ -589,7 +561,7 @@
 <context>
     <name>CatalogSourceChips</name>
     <message>
-        <location filename="../qml/components/CatalogSourceChips.qml" line="+27"/>
+        <location filename="../qml/components/CatalogSourceChips.qml" line="+30"/>
         <source>%1 · %2</source>
         <translation>%1 · %2</translation>
     </message>
@@ -662,7 +634,7 @@
     </message>
     <message>
         <location filename="../src/core/install/install_kind.cpp" line="+11"/>
-        <location filename="../src/core/catalog/catalog_model.cpp" line="+597"/>
+        <location filename="../src/core/catalog/catalog_model.cpp" line="+598"/>
         <source>Portable</source>
         <translation>Портабл</translation>
     </message>
@@ -830,7 +802,7 @@
     </message>
     <message>
         <location line="-165"/>
-        <location filename="../src/core/library/library_controller.cpp" line="+275"/>
+        <location filename="../src/core/library/library_controller.cpp" line="+280"/>
         <location line="+42"/>
         <location line="+58"/>
         <location filename="../src/core/launch/launch_controller.cpp" line="+100"/>
@@ -948,7 +920,7 @@
         <translation>Ошибка каталога: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="+372"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="+373"/>
         <source>Game not found for add-on</source>
         <translation>Игра не найдена для дополнения</translation>
     </message>
@@ -964,7 +936,7 @@
         <translation>Не удалось найти игру для установки: %1</translation>
     </message>
     <message>
-        <location line="-392"/>
+        <location line="-393"/>
         <location line="+33"/>
         <source>Moving %1</source>
         <translation>Перемещение %1</translation>
@@ -980,7 +952,7 @@
         <translation>Не удалось переместить</translation>
     </message>
     <message>
-        <location line="+312"/>
+        <location line="+313"/>
         <source>Download complete - install manually</source>
         <translation>Загрузка завершена - установите вручную</translation>
     </message>
@@ -1122,7 +1094,7 @@
         <translation>Установить плагин</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="-240"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="-241"/>
         <source>Plugin install failed</source>
         <translation>Ошибка установки плагина</translation>
     </message>
@@ -1400,12 +1372,12 @@
         <translation>Не удалось начать обновление %1</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="+108"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="+109"/>
         <source>Update finished, but version info is incomplete. Refresh the catalog and update again if the chip stays.</source>
         <translation>Обновление завершено, но сведения о версии неполные. Обновите каталог и повторите обновление, если метка останется.</translation>
     </message>
     <message>
-        <location line="-205"/>
+        <location line="-206"/>
         <source>No catalog sources enabled</source>
         <translation>Нет включённых источников каталога</translation>
     </message>
@@ -1580,8 +1552,7 @@
         <translation>У %1 нет экспортов каталога API 4 (JSON). Переустановите из магазина.</translation>
     </message>
     <message>
-        <location line="+22"/>
-        <location line="+34"/>
+        <location line="+46"/>
         <source>%1 was built for a different Arachnel SDK (CatalogEntry %2 vs %3 bytes). Update Arachnel, or install a plugin build for this app version.</source>
         <translation>%1 собран под другой SDK Arachnel (CatalogEntry %2 против %3 байт). Обновите Arachnel или поставьте сборку плагина для этой версии приложения.</translation>
     </message>
@@ -1847,7 +1818,7 @@
         <translation>Каталог пуст или формат не распознан</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_parser.cpp" line="+433"/>
+        <location filename="../src/core/catalog/catalog_parser.cpp" line="+470"/>
         <source>Empty server response</source>
         <translation>Пустой ответ сервера</translation>
     </message>
@@ -1995,6 +1966,121 @@
         <location filename="../src/core/jobs/job_orchestrator.cpp" line="+64"/>
         <source>Move interrupted</source>
         <translation>Перемещение прервано</translation>
+    </message>
+    <message>
+        <location filename="../src/core/catalog/catalog_genre_normalize.cpp" line="+260"/>
+        <source>Action</source>
+        <translation>Экшен</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Adventure</source>
+        <translation>Приключения</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>RPG</source>
+        <translation>RPG</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Strategy</source>
+        <translation>Стратегия</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Simulation</source>
+        <translation>Симулятор</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Sports</source>
+        <translation>Спорт</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Racing</source>
+        <translation>Гонки</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Indie</source>
+        <translation>Инди</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Casual</source>
+        <translation>Казуальные</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Horror</source>
+        <translation>Хоррор</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Puzzle</source>
+        <translation>Головоломки</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Shooter</source>
+        <translation>Шутер</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Platformer</source>
+        <translation>Платформер</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Fighting</source>
+        <translation>Файтинг</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Survival</source>
+        <translation>Выживание</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Open World</source>
+        <translation>Открытый мир</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Visual Novel</source>
+        <translation>Визуальная новелла</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Card</source>
+        <translation>Карточные</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Roguelike</source>
+        <translation>Рогалик</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Early Access</source>
+        <translation>Ранний доступ</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Free to Play</source>
+        <translation>Бесплатные</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Massively Multiplayer</source>
+        <translation>MMO</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>VR</source>
+        <translation>VR</translation>
     </message>
 </context>
 <context>
@@ -2241,7 +2327,7 @@
         <translation>К источникам</translation>
     </message>
     <message>
-        <location line="+112"/>
+        <location line="+109"/>
         <source>DRM</source>
         <translation>DRM</translation>
     </message>
@@ -2528,12 +2614,12 @@
         <translation>Параметры запуска</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+7"/>
         <source>Extra launch arguments for this game</source>
         <translation>Доп. аргументы запуска для этой игры</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="+11"/>
         <source>Custom executable (optional)</source>
         <translation>Свой исполняемый файл (необязательно)</translation>
     </message>
@@ -2598,12 +2684,12 @@
         <translation>Готово</translation>
     </message>
     <message>
-        <location line="-239"/>
+        <location line="-234"/>
         <source>Online Fix for this game</source>
         <translation>Online Fix для этой игры</translation>
     </message>
     <message>
-        <location line="+179"/>
+        <location line="+174"/>
         <source>DLC</source>
         <translation>DLC</translation>
     </message>

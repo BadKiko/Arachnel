@@ -1,5 +1,6 @@
 #include "catalog_model.h"
 
+#include "catalog_genre_normalize.h"
 #include "catalog_types.h"
 #include "install_kind.h"
 
@@ -155,8 +156,7 @@ QVariant CatalogModel::data(const QModelIndex& index, int role) const
     case DescriptionRole:
         return entry->description;
     case GenresRole:
-        return entry->genreKeys.isEmpty() ? entry->genres
-                                          : entry->genreKeys.join(QStringLiteral(", "));
+        return genreLabelsFromBits(entry->genreBits);
     case InstallKindRole:
         return static_cast<int>(entry->installKind);
     case InstallKindLabelRole:
@@ -285,8 +285,6 @@ void CatalogModel::replaceVisibleIndices(QVector<int> indices, bool alreadySorte
     const int oldCount = m_indices.size();
     const int newCount = indices.size();
 
-    // Prefer insert/remove + dataChanged over beginResetModel. Full reset after steamidra's
-    // ~100k merge was crashing QML (Qt6QmlMeta near-null) while GridView rebound.
     if (newCount == 0) {
         if (oldCount > 0) {
             beginRemoveRows({}, 0, oldCount - 1);
@@ -309,24 +307,16 @@ void CatalogModel::replaceVisibleIndices(QVector<int> indices, bool alreadySorte
         return;
     }
 
-    if (newCount > oldCount) {
-        beginInsertRows({}, oldCount, newCount - 1);
-        m_indices = std::move(indices);
-        rebuildIdMap();
-        endInsertRows();
-        emit dataChanged(index(0), index(oldCount - 1));
-    } else if (newCount < oldCount) {
-        beginRemoveRows({}, newCount, oldCount - 1);
-        m_indices = std::move(indices);
-        rebuildIdMap();
-        endRemoveRows();
-        if (newCount > 0)
-            emit dataChanged(index(0), index(newCount - 1));
-    } else {
-        m_indices = std::move(indices);
-        rebuildIdMap();
-        emit dataChanged(index(0), index(newCount - 1));
-    }
+    // Replace the list. Prefix insert/remove + dataChanged morphs old cards in
+    // place, which looks like the filter is being applied live across the grid.
+    beginRemoveRows({}, 0, oldCount - 1);
+    m_indices.clear();
+    m_idToRow.clear();
+    endRemoveRows();
+    beginInsertRows({}, 0, newCount - 1);
+    m_indices = std::move(indices);
+    rebuildIdMap();
+    endInsertRows();
     emit countChanged();
     invalidateScrubStops();
 }
@@ -390,7 +380,8 @@ QVariantMap CatalogModel::toMap(const CatalogEntry& entry) const
         {QStringLiteral("version"), entry.version},
         {QStringLiteral("installPath"), QString()},
         {QStringLiteral("description"), entry.description},
-        {QStringLiteral("genres"), entry.genres},
+        {QStringLiteral("genres"), genreLabelsFromBits(entry.genreBits)},
+        {QStringLiteral("hasDrm"), entry.hasDrm},
         {QStringLiteral("sizeLabel"), entry.sizeLabel},
         {QStringLiteral("installKind"), static_cast<int>(entry.installKind)},
         {QStringLiteral("installKindLabel"), installKindLabel(entry.installKind)},

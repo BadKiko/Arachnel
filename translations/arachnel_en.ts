@@ -190,41 +190,15 @@
 <context>
     <name>CatalogFilterSheet</name>
     <message>
-        <location filename="../qml/components/CatalogFilterSheet.qml" line="+27"/>
-        <source>All</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Portable</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Installer</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Online fix</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <location line="+7"/>
+        <location filename="../qml/components/CatalogFilterSheet.qml" line="+23"/>
+        <location line="+6"/>
         <location line="+8"/>
-        <location line="+292"/>
         <source>Any</source>
         <translation></translation>
     </message>
     <message>
-        <location line="-306"/>
+        <location line="-13"/>
         <source>Single-player</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Co-op</source>
         <translation></translation>
     </message>
     <message>
@@ -273,47 +247,42 @@
         <translation></translation>
     </message>
     <message>
-        <location line="+62"/>
-        <source>Sort &amp; filters</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location line="+24"/>
-        <source>Sort</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location line="+31"/>
-        <source>Type</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location line="+31"/>
+        <location line="+145"/>
         <source>Players</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="-24"/>
+        <source>Filters</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+105"/>
+        <source>Less</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>More</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+34"/>
         <source>Size</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+29"/>
         <source>Added</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+31"/>
-        <source>Extras</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location line="+11"/>
+        <location line="+30"/>
         <source>Has add-ons</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="-143"/>
         <source>Genre</source>
         <translation></translation>
     </message>
@@ -323,12 +292,12 @@
         <translation></translation>
     </message>
     <message>
-        <location line="+35"/>
-        <source>Showing top genres - type to search more</source>
+        <location line="+58"/>
+        <source>Source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location line="+107"/>
         <source>Clear all</source>
         <translation></translation>
     </message>
@@ -346,6 +315,14 @@
         <location line="+1"/>
         <source>playing</source>
         <translation></translation>
+    </message>
+</context>
+<context>
+    <name>CatalogGenreTile</name>
+    <message>
+        <location filename="../qml/components/CatalogGenreTile.qml" line="+40"/>
+        <source>Any</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -501,16 +478,11 @@
     </message>
     <message>
         <location line="+1"/>
-        <source>Co-op</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>Multiplayer</source>
         <translation></translation>
     </message>
     <message>
-        <location line="-23"/>
+        <location line="-22"/>
         <source>All</source>
         <translation></translation>
     </message>
@@ -576,7 +548,7 @@
 <context>
     <name>CatalogScrollHeader</name>
     <message>
-        <location filename="../qml/components/CatalogScrollHeader.qml" line="+66"/>
+        <location filename="../qml/components/CatalogScrollHeader.qml" line="+68"/>
         <source>Loading catalog…</source>
         <translation></translation>
     </message>
@@ -589,7 +561,7 @@
 <context>
     <name>CatalogSourceChips</name>
     <message>
-        <location filename="../qml/components/CatalogSourceChips.qml" line="+27"/>
+        <location filename="../qml/components/CatalogSourceChips.qml" line="+30"/>
         <source>%1 · %2</source>
         <translation></translation>
     </message>
@@ -662,7 +634,7 @@
     </message>
     <message>
         <location filename="../src/core/install/install_kind.cpp" line="+11"/>
-        <location filename="../src/core/catalog/catalog_model.cpp" line="+597"/>
+        <location filename="../src/core/catalog/catalog_model.cpp" line="+598"/>
         <source>Portable</source>
         <translation></translation>
     </message>
@@ -830,7 +802,7 @@
     </message>
     <message>
         <location line="-165"/>
-        <location filename="../src/core/library/library_controller.cpp" line="+275"/>
+        <location filename="../src/core/library/library_controller.cpp" line="+280"/>
         <location line="+42"/>
         <location line="+58"/>
         <location filename="../src/core/launch/launch_controller.cpp" line="+100"/>
@@ -948,7 +920,7 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="+372"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="+373"/>
         <source>Game not found for add-on</source>
         <translation></translation>
     </message>
@@ -964,7 +936,7 @@
         <translation></translation>
     </message>
     <message>
-        <location line="-392"/>
+        <location line="-393"/>
         <location line="+33"/>
         <source>Moving %1</source>
         <translation type="unfinished"></translation>
@@ -980,7 +952,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+312"/>
+        <location line="+313"/>
         <source>Download complete - install manually</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1122,7 +1094,7 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="-240"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="-241"/>
         <source>Plugin install failed</source>
         <translation></translation>
     </message>
@@ -1380,12 +1352,12 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="+108"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="+109"/>
         <source>Update finished, but version info is incomplete. Refresh the catalog and update again if the chip stays.</source>
         <translation></translation>
     </message>
     <message>
-        <location line="-205"/>
+        <location line="-206"/>
         <source>No catalog sources enabled</source>
         <translation></translation>
     </message>
@@ -1585,8 +1557,7 @@
         <translation></translation>
     </message>
     <message>
-        <location line="+22"/>
-        <location line="+34"/>
+        <location line="+46"/>
         <source>%1 was built for a different Arachnel SDK (CatalogEntry %2 vs %3 bytes). Update Arachnel, or install a plugin build for this app version.</source>
         <translation></translation>
     </message>
@@ -1847,7 +1818,7 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_parser.cpp" line="+433"/>
+        <location filename="../src/core/catalog/catalog_parser.cpp" line="+470"/>
         <source>Empty server response</source>
         <translation></translation>
     </message>
@@ -1994,6 +1965,121 @@
     <message>
         <location filename="../src/core/jobs/job_orchestrator.cpp" line="+64"/>
         <source>Move interrupted</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/core/catalog/catalog_genre_normalize.cpp" line="+260"/>
+        <source>Action</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Adventure</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>RPG</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Strategy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Simulation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Sports</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Racing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Indie</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Casual</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Horror</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Puzzle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Shooter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Platformer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Fighting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Survival</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Open World</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Visual Novel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Card</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Roguelike</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Early Access</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Free to Play</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Massively Multiplayer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>VR</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2241,7 +2327,7 @@
         <translation></translation>
     </message>
     <message>
-        <location line="+112"/>
+        <location line="+109"/>
         <source>DRM</source>
         <translation></translation>
     </message>
@@ -2526,12 +2612,12 @@
         <translation></translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+7"/>
         <source>Extra launch arguments for this game</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="+11"/>
         <source>Custom executable (optional)</source>
         <translation></translation>
     </message>
@@ -2596,12 +2682,12 @@
         <translation></translation>
     </message>
     <message>
-        <location line="-239"/>
+        <location line="-234"/>
         <source>Online Fix for this game</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+179"/>
+        <location line="+174"/>
         <source>DLC</source>
         <translation></translation>
     </message>

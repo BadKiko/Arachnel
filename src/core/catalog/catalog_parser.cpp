@@ -3,6 +3,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QJsonValue>
 #include <QRegularExpression>
 #include <QSet>
 
@@ -117,6 +118,42 @@ CatalogEntry parseDownloadObject(const QJsonObject& obj, const QString& sourceId
     return entry;
 }
 
+QString joinJsonStringList(const QJsonValue& value)
+{
+    if (value.isArray()) {
+        QStringList parts;
+        const QJsonArray arr = value.toArray();
+        parts.reserve(arr.size());
+        for (const QJsonValue& item : arr) {
+            QString s;
+            if (item.isString())
+                s = item.toString();
+            else if (item.isObject())
+                s = item.toObject().value(QStringLiteral("description")).toString();
+            s = s.trimmed();
+            if (!s.isEmpty())
+                parts.append(s);
+        }
+        return parts.join(QStringLiteral(", "));
+    }
+    return value.toString().trimmed();
+}
+
+QString genresFromCatalogObject(const QJsonObject& obj)
+{
+    QStringList parts;
+    const QString genres = joinJsonStringList(obj.value(QStringLiteral("genres")));
+    const QString tags = joinJsonStringList(obj.value(QStringLiteral("tags")));
+    const QString categories = joinJsonStringList(obj.value(QStringLiteral("categories")));
+    if (!genres.isEmpty())
+        parts.append(genres);
+    if (!tags.isEmpty())
+        parts.append(tags);
+    if (!categories.isEmpty())
+        parts.append(categories);
+    return parts.join(QStringLiteral(", "));
+}
+
 /** Arachnel Ryuu / steamidra relay catalog entry (not Hydra downloads[]). */
 CatalogEntry parseRyuuEntryObject(const QJsonObject& obj, const QString& sourceId)
 {
@@ -135,7 +172,7 @@ CatalogEntry parseRyuuEntryObject(const QJsonObject& obj, const QString& sourceI
         }
     }
     entry.description = obj.value(QStringLiteral("description")).toString();
-    entry.genres = obj.value(QStringLiteral("genres")).toString();
+    entry.genres = genresFromCatalogObject(obj);
     entry.sizeLabel = obj.value(QStringLiteral("sizeLabel")).toString();
     if (entry.sizeLabel.isEmpty())
         entry.sizeLabel = obj.value(QStringLiteral("fileSize")).toString();

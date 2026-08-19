@@ -11,10 +11,12 @@ Item {
     required property bool hasSelection
     required property bool listViewMode
     property real collapseProgress: 0
+    property var sortOptions: []
 
     signal filterRequested()
     signal viewModeChangeRequested(int mode)
     signal refreshRequested()
+    signal sortModeRequested(int mode)
 
     width: contentWidth
     height: col.implicitHeight
@@ -69,6 +71,11 @@ Item {
                 typescale: MD.Token.typescale.label_large
                 elide: Text.ElideRight
                 maximumLineCount: 1
+            }
+
+            CatalogSortButton {
+                sortOptions: root.sortOptions
+                onSortModeChosen: function (mode) { root.sortModeRequested(mode) }
             }
 
             Item {

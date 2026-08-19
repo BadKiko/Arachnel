@@ -253,9 +253,11 @@ Item {
                 hasSelection: Core.activeCatalogSourceIds.length > 0
                 listViewMode: page.listViewMode
                 collapseProgress: page.compactBarOpacity
+                sortOptions: page.sortOptions
                 onFilterRequested: page.openFilterSheet()
                 onViewModeChangeRequested: function (mode) { prefs.viewMode = mode }
                 onRefreshRequested: Core.refreshSelectedCatalogs()
+                onSortModeRequested: function (mode) { page.applySortMode(mode) }
             }
 
             Component.onCompleted: headerMeasureTimer.start()
@@ -316,9 +318,11 @@ Item {
                 hasSelection: Core.activeCatalogSourceIds.length > 0
                 listViewMode: page.listViewMode
                 collapseProgress: page.compactBarOpacity
+                sortOptions: page.sortOptions
                 onFilterRequested: page.openFilterSheet()
                 onViewModeChangeRequested: function (mode) { prefs.viewMode = mode }
                 onRefreshRequested: Core.refreshSelectedCatalogs()
+                onSortModeRequested: function (mode) { page.applySortMode(mode) }
             }
 
             Component.onCompleted: headerMeasureTimer.start()
