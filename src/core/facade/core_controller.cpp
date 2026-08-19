@@ -38,6 +38,7 @@
 #include "windows_runner.h"
 #include "app_updater.h"
 #include "settings_store.h"
+#include "social_controller.h"
 #include "storage_library_model.h"
 #include "torrent_session.h"
 
@@ -228,6 +229,8 @@ CoreController::CoreController(QObject* parent)
         m_catalogDiscovery->setCache(&m_catalogCache);
         m_catalogDiscovery->setIdIndex(&m_catalogIdToCacheIndex);
     }
+    if (m_socialController)
+        m_socialController->initialize();
 
     // Let the first frame paint before disk-heavy library scan + catalog commit.
     QTimer::singleShot(0, this, [this]() {

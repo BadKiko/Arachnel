@@ -46,7 +46,9 @@ ColumnLayout {
         } else if (pendingSection.length) {
             const section = pendingSection
             pendingSection = ""
-            if (section === "storage")
+            if (section === "friends")
+                stack.navigatePush(friendsComponent, {}, true)
+            else if (section === "storage")
                 stack.navigatePush(storageComponent, {}, true)
             else if (section === "updates")
                 stack.navigatePush(updatesComponent, {}, true)
@@ -79,6 +81,8 @@ ColumnLayout {
             stack.navigatePush(pluginsComponent)
         else if (sectionId === "sources")
             openSources()
+        else if (sectionId === "friends")
+            stack.navigatePush(friendsComponent)
         else if (sectionId === "storage")
             stack.navigatePush(storageComponent)
         else if (sectionId === "updates")
@@ -170,6 +174,14 @@ ColumnLayout {
             contentMargin: root.contentMargin
             onSaved: stack.navigatePop()
             onCancelled: stack.navigatePop()
+        }
+    }
+
+    Component {
+        id: friendsComponent
+        SettingsFriendsPage {
+            property string pageTitle: qsTr("Friends")
+            contentMargin: root.contentMargin
         }
     }
 

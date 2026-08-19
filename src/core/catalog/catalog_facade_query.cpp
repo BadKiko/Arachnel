@@ -1,5 +1,4 @@
 #include "core_controller_impl.h"
-
 namespace arachnel::core {
 
 void CoreController::searchCatalog(const QString& sourceId, const QString& query)

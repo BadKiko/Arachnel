@@ -24,6 +24,11 @@ Flickable {
                 subtitle: qsTr("JSON catalog URLs")
             },
             {
+                id: "friends",
+                title: qsTr("Friends"),
+                subtitle: qsTr("Invite codes and relay presence")
+            },
+            {
                 id: "storage",
                 title: qsTr("Storage"),
                 subtitle: qsTr("Library and download folders")

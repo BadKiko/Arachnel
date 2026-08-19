@@ -12,6 +12,8 @@
 #include <QWriteLocker>
 #include <QtConcurrent>
 
+#include "social_controller.h"
+
 namespace arachnel::core {
 
 void CoreController::initializeServices()
@@ -423,6 +425,35 @@ void CoreController::initializeServices()
                              std::move(launchHooks), this);
     connect(m_launchController, &LaunchController::runningGameChanged, this,
             &CoreController::runningGameChanged);
+    m_socialController = new SocialController(this);
+    connect(m_socialController, &SocialController::noticeRequested, this,
+            [this](const QString& message) { showNotice(message); });
+    connect(m_socialController, &SocialController::friendsChanged, this, [this]() {
+        if (!m_catalogDiscovery || !m_socialController)
+            return;
+        QStringList friendEntryIds;
+        const FriendsModel* model = qobject_cast<const FriendsModel*>(m_socialController->friends());
+        if (!model)
+            return;
+        for (int row = 0; row < model->count(); ++row) {
+            const QVariantMap info = model->friendInfo(row);
+            const QString currentGameId = info.value(QStringLiteral("currentGameId")).toString().trimmed();
+            const QString suggestedGameId = info.value(QStringLiteral("suggestedGameId")).toString().trimmed();
+            if (!currentGameId.isEmpty() && !friendEntryIds.contains(currentGameId))
+                friendEntryIds.append(currentGameId);
+            if (!suggestedGameId.isEmpty() && !friendEntryIds.contains(suggestedGameId))
+                friendEntryIds.append(suggestedGameId);
+        }
+        m_catalogDiscovery->setFriendEntryIds(friendEntryIds);
+    });
+    connect(m_launchController, &LaunchController::runningGameChanged, this, [this]() {
+        if (!m_socialController || !m_launchController)
+            return;
+        m_socialController->setLocalPresence(m_launchController->gameRunning(),
+                                             m_launchController->runningGameId(),
+                                             m_launchController->runningGameTitle(),
+                                             m_launchController->runningGameCoverUrl());
+    });
     m_appUpdater = new AppUpdater(this);
     m_appUpdater->setIncludePreReleases(m_settings.includeAppPreReleases());
     connect(&m_settings, &SettingsStore::includeAppPreReleasesChanged, this, [this]() {

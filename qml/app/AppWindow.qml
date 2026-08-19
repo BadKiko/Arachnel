@@ -234,6 +234,10 @@ MD.ApplicationWindow {
             icon: MD.Token.icon.storefront
         },
         {
+            name: qsTr("Friends"),
+            icon: MD.Token.icon.groups
+        },
+        {
             name: qsTr("Favorites"),
             icon: MD.Token.icon.favorite
         },
@@ -324,7 +328,7 @@ MD.ApplicationWindow {
                 enabled: mainPages.pageIndex === 0 && opacity > 0.99
                 onOpenGame: function (id) { root.openGameDetails(id, false) }
                 onOpenCatalog: root.goToPage(2)
-                onOpenDownloads: root.goToPage(4)
+                onOpenDownloads: root.goToPage(5)
                 onOpenSettings: settingsSheet.openSettings()
                 onAddSourceRequested: settingsSheet.openPlugins()
 
@@ -401,8 +405,8 @@ MD.ApplicationWindow {
 
             BookmarksPage {
                 anchors.fill: parent
-                opacity: mainPages.pageIndex === 3 ? 1 : 0
-                enabled: mainPages.pageIndex === 3 && opacity > 0.99
+                opacity: mainPages.pageIndex === 4 ? 1 : 0
+                enabled: mainPages.pageIndex === 4 && opacity > 0.99
                 onOpenGame: function (id) { root.openGameDetails(id, true) }
 
                 Behavior on opacity {
@@ -415,9 +419,24 @@ MD.ApplicationWindow {
 
             DownloadsPage {
                 anchors.fill: parent
-                opacity: mainPages.pageIndex === 4 ? 1 : 0
-                enabled: mainPages.pageIndex === 4 && opacity > 0.99
+                opacity: mainPages.pageIndex === 5 ? 1 : 0
+                enabled: mainPages.pageIndex === 5 && opacity > 0.99
                 onOpenGame: function (id) { root.openGameDetails(id, false) }
+
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: root.mainTabDuration
+                        easing: MD.Token.easing.emphasized_decelerate
+                    }
+                }
+            }
+
+            FriendsPage {
+                anchors.fill: parent
+                opacity: mainPages.pageIndex === 3 ? 1 : 0
+                enabled: mainPages.pageIndex === 3 && opacity > 0.99
+                onOpenGame: function (id) { root.openGameDetails(id, true) }
+                onOpenSettings: settingsSheet.openFriends()
 
                 Behavior on opacity {
                     NumberAnimation {

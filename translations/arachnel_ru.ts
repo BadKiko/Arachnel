@@ -81,6 +81,11 @@
     </message>
     <message>
         <location line="+4"/>
+        <source>Friends</source>
+        <translation>Друзья</translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Favorites</source>
         <translation>Избранное</translation>
     </message>
@@ -634,7 +639,7 @@
     </message>
     <message>
         <location filename="../src/core/install/install_kind.cpp" line="+11"/>
-        <location filename="../src/core/catalog/catalog_model.cpp" line="+598"/>
+        <location filename="../src/core/catalog/catalog_model.cpp" line="+588"/>
         <source>Portable</source>
         <translation>Портабл</translation>
     </message>
@@ -714,7 +719,7 @@
     </message>
     <message>
         <location line="+1"/>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="+253"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="+255"/>
         <source>Preparing…</source>
         <translation>Подготовка…</translation>
     </message>
@@ -920,7 +925,7 @@
         <translation>Ошибка каталога: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="+373"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="+397"/>
         <source>Game not found for add-on</source>
         <translation>Игра не найдена для дополнения</translation>
     </message>
@@ -936,7 +941,7 @@
         <translation>Не удалось найти игру для установки: %1</translation>
     </message>
     <message>
-        <location line="-393"/>
+        <location line="-417"/>
         <location line="+33"/>
         <source>Moving %1</source>
         <translation>Перемещение %1</translation>
@@ -952,7 +957,7 @@
         <translation>Не удалось переместить</translation>
     </message>
     <message>
-        <location line="+313"/>
+        <location line="+337"/>
         <source>Download complete - install manually</source>
         <translation>Загрузка завершена - установите вручную</translation>
     </message>
@@ -1094,7 +1099,7 @@
         <translation>Установить плагин</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="-241"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="-236"/>
         <source>Plugin install failed</source>
         <translation>Ошибка установки плагина</translation>
     </message>
@@ -1272,7 +1277,7 @@
         <translation>Не удалось остановить игру</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_facade_query.cpp" line="+9"/>
+        <location filename="../src/core/catalog/catalog_facade_query.cpp" line="+8"/>
         <source>Unknown source: %1</source>
         <translation>Неизвестный источник: %1</translation>
     </message>
@@ -1372,12 +1377,12 @@
         <translation>Не удалось начать обновление %1</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="+109"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="+104"/>
         <source>Update finished, but version info is incomplete. Refresh the catalog and update again if the chip stays.</source>
         <translation>Обновление завершено, но сведения о версии неполные. Обновите каталог и повторите обновление, если метка останется.</translation>
     </message>
     <message>
-        <location line="-206"/>
+        <location line="-230"/>
         <source>No catalog sources enabled</source>
         <translation>Нет включённых источников каталога</translation>
     </message>
@@ -1645,7 +1650,7 @@
     </message>
     <message>
         <location line="+3"/>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="+68"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="+97"/>
         <source>Arachnel %1 is available</source>
         <translation>Доступен Arachnel %1</translation>
     </message>
@@ -1823,6 +1828,41 @@
         <translation>Пустой ответ сервера</translation>
     </message>
     <message>
+        <location filename="../src/core/social/social_http.h" line="+23"/>
+        <source>Can't reach the relay</source>
+        <translation>Релей недоступен</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Relay TLS failed</source>
+        <translation>Ошибка TLS релея</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Relay timed out</source>
+        <translation>Релей не ответил</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Invalid or expired code</source>
+        <translation>Код неверный или истёк</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Too many tries, wait a bit</source>
+        <translation>Слишком много попыток, подожди</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Relay rejected the request</source>
+        <translation>Релей отклонил запрос</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Relay request failed</source>
+        <translation>Запрос к релею не удался</translation>
+    </message>
+    <message>
         <location line="+11"/>
         <source>Invalid JSON</source>
         <translation>Некорректный JSON</translation>
@@ -1905,7 +1945,7 @@
     <message>
         <location filename="../src/core/library/library_controller.cpp" line="-43"/>
         <location line="+21"/>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="-233"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="-262"/>
         <source>Game removed: %1</source>
         <translation>Игра удалена: %1</translation>
     </message>
@@ -2310,6 +2350,94 @@
     </message>
 </context>
 <context>
+    <name>FriendCodePin</name>
+    <message>
+        <location filename="../qml/components/FriendCodePin.qml" line="+23"/>
+        <source>Friend code</source>
+        <translation>Код друга</translation>
+    </message>
+</context>
+<context>
+    <name>FriendsPage</name>
+    <message>
+        <location filename="../qml/app/FriendsPage.qml" line="+209"/>
+        <source>Friends</source>
+        <translation>Друзья</translation>
+    </message>
+    <message>
+        <location line="+105"/>
+        <source>Offline</source>
+        <translation>Не в сети</translation>
+    </message>
+    <message>
+        <location line="-269"/>
+        <source>Change in settings</source>
+        <translation>Изменить в настройках</translation>
+    </message>
+    <message>
+        <location line="+46"/>
+        <source>Create a friend code</source>
+        <translation>Создать код друга</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Share it with someone on another device.</source>
+        <translation>Отправьте его человеку на другом устройстве.</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>New code</source>
+        <translation>Новый код</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <location line="+105"/>
+        <source>Create code</source>
+        <translation>Создать код</translation>
+    </message>
+    <message>
+        <location line="+39"/>
+        <source>Add</source>
+        <translation>Добавить</translation>
+    </message>
+    <message>
+        <location line="+62"/>
+        <source>Open</source>
+        <translation>Открыть</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Suggestion</source>
+        <translation>Предложение</translation>
+    </message>
+    <message>
+        <location line="-290"/>
+        <location line="+175"/>
+        <source>You appear as %1</source>
+        <translation>Вас видно как %1</translation>
+    </message>
+    <message>
+        <location line="-54"/>
+        <source>Add a friend</source>
+        <translation>Добавить друга</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Add friend</source>
+        <translation>Добавить друга</translation>
+    </message>
+    <message>
+        <location line="+140"/>
+        <source>Playing %1</source>
+        <translation>Играет в %1</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Online</source>
+        <translation>В сети</translation>
+    </message>
+</context>
+<context>
     <name>GameDetailsContent</name>
     <message>
         <location filename="../qml/app/GameDetailsContent.qml" line="+31"/>
@@ -2387,7 +2515,17 @@
         <translation>URL каталога</translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+20"/>
+        <source>Suggest to friends</source>
+        <translation>Предложить друзьям</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Send this game to a friend who should try it with you.</source>
+        <translation>Отправьте эту игру другу, которому стоит попробовать её с вами.</translation>
+    </message>
+    <message>
+        <location line="+51"/>
         <source>Install failed</source>
         <translation>Ошибка установки</translation>
     </message>
@@ -3732,6 +3870,54 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
 </context>
 <context>
+    <name>SettingsFriendsPage</name>
+    <message>
+        <location filename="../qml/settings/SettingsFriendsPage.qml" line="+69"/>
+        <source>Identity</source>
+        <translation>Профиль</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>This name is shown in invites and presence.</source>
+        <translation>Это имя показывается в приглашениях и статусе.</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Display name</source>
+        <translation>Имя профиля</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Device ID: %1</source>
+        <translation>ID устройства: %1</translation>
+    </message>
+    <message>
+        <location line="+33"/>
+        <source>Relay</source>
+        <translation>Релей</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Used for invites and presence.</source>
+        <translation>Для приглашений и статуса в игре.</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Relay URL</source>
+        <translation>URL релея</translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>Save</source>
+        <translation>Сохранить</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Refresh</source>
+        <translation>Обновить</translation>
+    </message>
+</context>
+<context>
     <name>SettingsHubPage</name>
     <message>
         <location filename="../qml/settings/SettingsHubPage.qml" line="+18"/>
@@ -3745,6 +3931,16 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
     <message>
         <location line="+5"/>
+        <source>Friends</source>
+        <translation>Друзья</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Invite codes and relay presence</source>
+        <translation>Коды приглашений и присутствие через релей</translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Storage</source>
         <translation>Хранилище</translation>
     </message>
@@ -3784,7 +3980,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>Запуск</translation>
     </message>
     <message>
-        <location line="-19"/>
+        <location line="-24"/>
         <source>Install plugins to browse and play games.</source>
         <translation>Плагины, чтобы смотреть каталог и запускать игры.</translation>
     </message>
@@ -3794,7 +3990,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>JSON-ссылки на каталоги</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="+24"/>
         <source>Appearance</source>
         <translation>Оформление</translation>
     </message>
@@ -3872,7 +4068,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location filename="../qml/settings/SettingsPage.qml" line="+25"/>
         <location line="+3"/>
-        <location line="+103"/>
+        <location line="+107"/>
         <source>Settings</source>
         <translation>Настройки</translation>
     </message>
@@ -3903,6 +4099,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
     <message>
         <location line="+10"/>
+        <source>Friends</source>
+        <translation>Друзья</translation>
+    </message>
+    <message>
+        <location line="+8"/>
         <source>Storage</source>
         <translation>Хранилище</translation>
     </message>
@@ -4339,6 +4540,76 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <location line="+34"/>
         <source>Got it</source>
         <translation>Понятно</translation>
+    </message>
+</context>
+<context>
+    <name>arachnel::core::InviteService</name>
+    <message>
+        <location filename="../src/core/social/invite_service.cpp" line="+62"/>
+        <location line="+22"/>
+        <location line="+24"/>
+        <source>Set a relay URL in Friends settings</source>
+        <translation>Укажите URL релея в настройках друзей</translation>
+    </message>
+</context>
+<context>
+    <name>arachnel::core::PresenceService</name>
+    <message>
+        <location filename="../src/core/social/presence_service.cpp" line="+71"/>
+        <location line="+28"/>
+        <source>Set a relay URL in Friends settings</source>
+        <translation>Укажите URL релея в настройках друзей</translation>
+    </message>
+    <message>
+        <location line="+27"/>
+        <location line="+20"/>
+        <source>Relay connected</source>
+        <translation>Релей подключен</translation>
+    </message>
+</context>
+<context>
+    <name>arachnel::core::SocialController</name>
+    <message>
+        <location filename="../src/core/social/social_controller.cpp" line="+50"/>
+        <source>Friend code ready</source>
+        <translation>Код друга готов</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>New friend</source>
+        <translation>Новый друг</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Friend added</source>
+        <translation>Друг добавлен</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Suggestion sent: %1</source>
+        <translation>Предложение отправлено: %1</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <location line="+19"/>
+        <location line="+27"/>
+        <source>Relay URL not set</source>
+        <translation>URL релея не задан</translation>
+    </message>
+    <message>
+        <location line="-46"/>
+        <source>Ready</source>
+        <translation>Готово</translation>
+    </message>
+    <message>
+        <location line="+63"/>
+        <source>Enter a friend code</source>
+        <translation>Введите код друга</translation>
+    </message>
+    <message>
+        <location line="+96"/>
+        <source>Friend</source>
+        <translation>Друг</translation>
     </message>
 </context>
 </TS>

@@ -1,0 +1,254 @@
+#include "social_controller.h"
+
+#include <QDateTime>
+#include <QTimer>
+
+namespace arachnel::core {
+
+SocialController::SocialController(QObject* parent)
+    : QObject(parent)
+    , m_store(this)
+    , m_friendsModel(this)
+    , m_presenceService(new PresenceService(this))
+    , m_inviteService(new InviteService(this))
+    , m_pollTimer(new QTimer(this))
+{
+    m_pollTimer->setInterval(30000);
+    connect(m_pollTimer, &QTimer::timeout, this, &SocialController::refresh);
+
+    connect(&m_store, &SocialStore::identityChanged, this, [this]() {
+        m_presenceService->setIdentity(m_store.identity());
+        m_inviteService->setIdentity(m_store.identity());
+        emit identityChanged();
+    });
+    connect(&m_store, &SocialStore::friendsChanged, this, [this]() {
+        syncFriendsModel();
+        emit friendsChanged();
+    });
+    connect(&m_store, &SocialStore::relayConfigChanged, this, [this]() {
+        m_presenceService->setRelayBaseUrl(m_store.relayBaseUrl());
+        m_inviteService->setRelayBaseUrl(m_store.relayBaseUrl());
+        emit relayBaseUrlChanged();
+    });
+    connect(m_presenceService, &PresenceService::relayStateChanged, this,
+            [this](bool connected, const QString& status) {
+                m_relayConnected = connected;
+                m_relayStatus = status;
+                emit relayStateChanged();
+            });
+    connect(m_presenceService, &PresenceService::requestFailed, this,
+            [this](const QString& message) { emit noticeRequested(message); });
+    connect(m_presenceService, &PresenceService::friendsPresenceReceived, this,
+            &SocialController::applyRemotePresence);
+    connect(m_inviteService, &InviteService::requestFailed, this,
+            [this](const QString& message) { emit noticeRequested(message); });
+    connect(m_inviteService, &InviteService::inviteCodeReady, this, [this](const PendingInvite& invite) {
+        m_pendingInviteCode = invite.code;
+        m_pendingInviteExpiry = invite.expiresAt;
+        m_store.upsertPendingInvite(invite);
+        emit pendingInviteChanged();
+        emit noticeRequested(tr("Friend code ready"));
+    });
+    connect(m_inviteService, &InviteService::friendAccepted, this, [this](FriendEntry entry) {
+        if (entry.friendId.isEmpty())
+            entry.friendId = entry.publicKey.left(16);
+        if (entry.addedAt.isEmpty())
+            entry.addedAt = QDateTime::currentDateTimeUtc().toString(Qt::ISODate);
+        if (entry.nickname.isEmpty())
+            entry.nickname = tr("New friend");
+        m_store.upsertFriend(entry);
+        emit noticeRequested(tr("Friend added"));
+    });
+    connect(m_inviteService, &InviteService::suggestionSent, this,
+            [this](const QString&, const QString& title) {
+                emit noticeRequested(tr("Suggestion sent: %1").arg(title));
+            });
+}
+
+void SocialController::initialize()
+{
+    m_store.load();
+    m_presenceService->setIdentity(m_store.identity());
+    m_presenceService->setRelayBaseUrl(m_store.relayBaseUrl());
+    m_inviteService->setIdentity(m_store.identity());
+    m_inviteService->setRelayBaseUrl(m_store.relayBaseUrl());
+    syncFriendsModel();
+    m_relayStatus = m_store.relayBaseUrl().isEmpty() ? tr("Relay URL not set") : tr("Ready");
+    emit relayStateChanged();
+    if (!m_store.relayBaseUrl().isEmpty()) {
+        m_pollTimer->start();
+        refresh();
+    }
+}
+
+void SocialController::setDisplayName(const QString& name)
+{
+    m_store.setDisplayName(name);
+}
+
+void SocialController::setRelayBaseUrl(const QString& url)
+{
+    m_store.setRelayBaseUrl(url);
+    if (m_store.relayBaseUrl().isEmpty()) {
+        m_pollTimer->stop();
+        m_relayConnected = false;
+        m_relayStatus = tr("Relay URL not set");
+        emit relayStateChanged();
+        return;
+    }
+    m_pollTimer->start();
+    refresh();
+}
+
+void SocialController::setLocalPresence(bool running, const QString& gameId, const QString& title,
+                                        const QString& coverUrl)
+{
+    PresenceSnapshot presence;
+    presence.online = true;
+    if (running) {
+        presence.currentGameId = gameId;
+        presence.currentGameTitle = title;
+        presence.currentGameCoverUrl = coverUrl;
+    }
+    m_presenceService->setLocalPresence(presence);
+    if (!m_store.relayBaseUrl().isEmpty())
+        m_presenceService->publish();
+}
+
+void SocialController::refresh()
+{
+    if (m_store.relayBaseUrl().isEmpty()) {
+        m_relayConnected = false;
+        m_relayStatus = tr("Relay URL not set");
+        emit relayStateChanged();
+        return;
+    }
+    m_presenceService->publish();
+    m_presenceService->refresh();
+}
+
+void SocialController::createInviteCode()
+{
+    m_inviteService->createInviteCode();
+}
+
+void SocialController::acceptInviteCode(const QString& code)
+{
+    const QString trimmed = code.trimmed();
+    if (trimmed.isEmpty()) {
+        emit noticeRequested(tr("Enter a friend code"));
+        return;
+    }
+    m_inviteService->acceptInviteCode(trimmed);
+}
+
+void SocialController::removeFriend(const QString& friendId)
+{
+    m_store.removeFriend(friendId);
+}
+
+void SocialController::renameFriend(const QString& friendId, const QString& nickname)
+{
+    const QString trimmed = nickname.trimmed();
+    if (trimmed.isEmpty())
+        return;
+    QVector<FriendEntry> friends = m_store.friends();
+    for (FriendEntry& entry : friends) {
+        if (entry.friendId != friendId)
+            continue;
+        entry.nickname = trimmed;
+        m_store.setFriends(std::move(friends));
+        return;
+    }
+}
+
+void SocialController::suggestGame(const QString& friendId, const QString& gameId, const QString& title,
+                                   const QString& coverUrl)
+{
+    if (friendId.trimmed().isEmpty() || gameId.trimmed().isEmpty())
+        return;
+    m_inviteService->suggestGame(friendId.trimmed(), gameId.trimmed(), title.trimmed(), coverUrl);
+}
+
+QVariantMap SocialController::friendSummary(const QString& friendId) const
+{
+    const FriendEntry* entry = findFriend(friendId);
+    if (!entry)
+        return {};
+    return {
+        {QStringLiteral("friendId"), entry->friendId},
+        {QStringLiteral("nickname"), entry->nickname},
+        {QStringLiteral("online"), entry->online},
+        {QStringLiteral("currentGameId"), entry->currentGameId},
+        {QStringLiteral("currentGameTitle"), entry->currentGameTitle},
+        {QStringLiteral("currentGameCoverUrl"), entry->currentGameCoverUrl},
+        {QStringLiteral("suggestedGameId"), entry->suggestedGameId},
+        {QStringLiteral("suggestedGameTitle"), entry->suggestedGameTitle},
+        {QStringLiteral("lastSeenAt"), entry->lastSeenAt},
+    };
+}
+
+int SocialController::onlineCount() const
+{
+    int count = 0;
+    for (const FriendEntry& entry : m_store.friends()) {
+        if (entry.online)
+            ++count;
+    }
+    return count;
+}
+
+void SocialController::syncFriendsModel()
+{
+    m_friendsModel.setFriends(m_store.friends());
+}
+
+void SocialController::applyRemotePresence(const QVector<FriendEntry>& remoteFriends)
+{
+    QVector<FriendEntry> merged = m_store.friends();
+    for (const FriendEntry& remote : remoteFriends) {
+        bool found = false;
+        for (FriendEntry& existing : merged) {
+            if (existing.friendId != remote.friendId)
+                continue;
+            if (!remote.nickname.isEmpty())
+                existing.nickname = remote.nickname;
+            existing.publicKey = remote.publicKey.isEmpty() ? existing.publicKey : remote.publicKey;
+            existing.online = remote.online;
+            existing.currentGameId = remote.currentGameId;
+            existing.currentGameTitle = remote.currentGameTitle;
+            existing.currentGameCoverUrl = remote.currentGameCoverUrl;
+            existing.lastSeenAt = remote.lastSeenAt;
+            if (!remote.suggestedGameId.isEmpty()) {
+                existing.suggestedGameId = remote.suggestedGameId;
+                existing.suggestedGameTitle = remote.suggestedGameTitle;
+                existing.suggestedAt = remote.suggestedAt;
+            }
+            found = true;
+            break;
+        }
+        if (!found) {
+            FriendEntry added = remote;
+            if (added.friendId.isEmpty())
+                added.friendId = added.publicKey.left(16);
+            if (added.nickname.isEmpty())
+                added.nickname = tr("Friend");
+            if (added.addedAt.isEmpty())
+                added.addedAt = QDateTime::currentDateTimeUtc().toString(Qt::ISODate);
+            merged.append(added);
+        }
+    }
+    m_store.setFriends(std::move(merged));
+}
+
+const FriendEntry* SocialController::findFriend(const QString& friendId) const
+{
+    const QVector<FriendEntry>& friends = m_store.friends();
+    for (const FriendEntry& entry : friends) {
+        if (entry.friendId == friendId)
+            return &entry;
+    }
+    return nullptr;
+}
+
+} // namespace arachnel::core

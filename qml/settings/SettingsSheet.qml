@@ -27,6 +27,11 @@ MD.BottomSheet {
         open()
     }
 
+    function openFriends() {
+        settingsPage.prepareOpen("friends", false)
+        open()
+    }
+
     function openLaunch() {
         if (Qt.platform.os !== "linux")
             return

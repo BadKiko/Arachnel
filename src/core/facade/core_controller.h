@@ -7,6 +7,7 @@
 #include "library_model.h"
 #include "notification_model.h"
 #include "settings_store.h"
+#include "social_controller.h"
 #include "source_plugin_model.h"
 #include "app_updater.h"
 #include "plugin_catalog_service.h"
@@ -38,6 +39,7 @@ class CatalogController;
 class CatalogCoverCoordinator;
 class CatalogFeedLoader;
 class CoverImageCache;
+class FriendsModel;
 class GameMetadataService;
 class HttpDownloadSession;
 class JobOrchestrator;
@@ -103,6 +105,7 @@ class CoreController : public QObject
     Q_PROPERTY(QStringList availableCatalogGenres READ availableCatalogGenres NOTIFY availableCatalogGenresChanged)
     Q_PROPERTY(QStringList hiddenCatalogSourceIds READ hiddenCatalogSourceIds NOTIFY catalogFiltersChanged)
     Q_PROPERTY(CatalogDiscoveryService* catalogDiscovery READ catalogDiscovery CONSTANT)
+    Q_PROPERTY(QObject* social READ social CONSTANT)
     Q_PROPERTY(QString pendingDeepLinkGameId READ pendingDeepLinkGameId NOTIFY pendingDeepLinkChanged)
 
 public:
@@ -119,6 +122,7 @@ public:
     AppUpdater* appUpdater() { return m_appUpdater; }
     PluginCatalogService* pluginCatalog() { return m_pluginCatalog; }
     CatalogDiscoveryService* catalogDiscovery() { return m_catalogDiscovery; }
+    QObject* social() { return m_socialController; }
 
     QString userNotice() const { return m_userNotice; }
     int userNoticeSerial() const { return m_userNoticeSerial; }

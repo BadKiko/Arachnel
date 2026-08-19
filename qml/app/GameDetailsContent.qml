@@ -297,6 +297,52 @@ Item {
                         }
                     }
 
+                    MD.Card {
+                        Layout.fillWidth: true
+                        visible: Core.social.friends.count > 0 && (page.gameId || "").length > 0
+                        type: MD.Enum.CardOutlined
+                        verticalPadding: MD.Token.spacing.medium
+                        horizontalPadding: MD.Token.spacing.medium
+
+                        contentItem: ColumnLayout {
+                            spacing: MD.Token.spacing.small
+
+                            MD.Label {
+                                Layout.fillWidth: true
+                                text: qsTr("Suggest to friends")
+                                typescale: MD.Token.typescale.title_small
+                            }
+
+                            MD.Label {
+                                Layout.fillWidth: true
+                                text: qsTr("Send this game to a friend who should try it with you.")
+                                color: MD.Token.color.on_surface_variant
+                                typescale: MD.Token.typescale.body_small
+                                wrapMode: Text.WordWrap
+                            }
+
+                            Flow {
+                                Layout.fillWidth: true
+                                spacing: MD.Token.spacing.small
+
+                                Repeater {
+                                    model: Core.social.friends
+
+                                    MD.AssistChip {
+                                        required property string friendId
+                                        required property string nickname
+                                        required property bool online
+
+                                        text: nickname
+                                        icon.name: online ? MD.Token.icon.groups : MD.Token.icon.person
+                                        enabled: online
+                                        onClicked: Core.suggestGameToFriend(friendId, page.gameId)
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     MD.Label {
                         Layout.fillWidth: true
                         visible: page.readyToInstall && !page.installFailed

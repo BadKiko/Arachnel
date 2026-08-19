@@ -105,6 +105,12 @@
     Q_INVOKABLE void copyPendingCrashReport();
     Q_INVOKABLE QString gameShareUrl(const QString& entryId) const;
     Q_INVOKABLE void shareGameLink(const QString& entryId);
+    Q_INVOKABLE void refreshFriends();
+    Q_INVOKABLE void createFriendInvite();
+    Q_INVOKABLE void acceptFriendInvite(const QString& code);
+    Q_INVOKABLE void removeFriendById(const QString& friendId);
+    Q_INVOKABLE void renameFriendById(const QString& friendId, const QString& nickname);
+    Q_INVOKABLE void suggestGameToFriend(const QString& friendId, const QString& entryId);
     Q_INVOKABLE void toggleBookmark(const QString& entryId);
     Q_INVOKABLE void requestDeepLink(const QString& rawOrUrl);
     Q_INVOKABLE void consumePendingDeepLink();

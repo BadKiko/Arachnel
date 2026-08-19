@@ -12,6 +12,8 @@ libs/
 
 # Local IDE
 .vscode/
+.cursor/*kikopi*
+.cursor/ssh-mcp*.toml
 
 # run.ps1 --package (deploy staging + release zip)
 dist-win/
