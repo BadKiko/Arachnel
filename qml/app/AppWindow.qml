@@ -159,6 +159,9 @@ MD.ApplicationWindow {
             const id = Core.pendingDeepLinkGameId
             Qt.callLater(function () { root.handleDeepLink(id) })
         }
+        Qt.callLater(function () {
+            updateSuggestionOverlay()
+        })
     }
 
     Timer {
@@ -669,6 +672,135 @@ MD.ApplicationWindow {
         anchors.fill: parent
         anchors.leftMargin: 88
         z: 3200
+    }
+
+    // Global incoming suggestions: card overlay, works regardless of which tab/page is open.
+    // Driven purely from FriendsModel roles (suggestedGameId/title/suggestedAt), so it doesn't
+    // depend on C++ Q_PROPERTY changes being reflected in the running binary.
+    property string suggestionOverlayFriend: ""
+    property string suggestionOverlayGameId: ""
+    property string suggestionOverlayGameTitle: ""
+    property string suggestionOverlayCoverUrl: ""
+    property string suggestionOverlaySuggestedAt: ""
+    property string suggestionOverlayConsumedAt: ""
+    property string suggestionOverlayConsumedKey: ""
+    property bool suggestionOverlayPrimed: false
+
+    function suggestionOverlayKey(friendName, gameId, gameTitle, suggestedAt) {
+        return [friendName || "", gameId || "", gameTitle || "", suggestedAt || ""].join("|")
+    }
+
+    function clearSuggestionOverlay() {
+        suggestionOverlayFriend = ""
+        suggestionOverlayGameId = ""
+        suggestionOverlayGameTitle = ""
+        suggestionOverlayCoverUrl = ""
+        suggestionOverlaySuggestedAt = ""
+    }
+
+    function consumeCurrentSuggestion() {
+        suggestionOverlayConsumedAt = suggestionOverlaySuggestedAt
+        suggestionOverlayConsumedKey = suggestionOverlayKey(suggestionOverlayFriend,
+                                                            suggestionOverlayGameId,
+                                                            suggestionOverlayGameTitle,
+                                                            suggestionOverlaySuggestedAt)
+        clearSuggestionOverlay()
+    }
+
+    function updateSuggestionOverlay() {
+        const model = Core.social && Core.social.friends
+        const count = model ? model.count : 0
+        if (!count || count <= 0) {
+            clearSuggestionOverlay()
+            return
+        }
+
+        let chosen = null
+        for (let i = 0; i < count; ++i) {
+            const row = model.get ? model.get(i)
+                                   : (model.friendInfo ? model.friendInfo(i) : null)
+            if (!row)
+                continue
+            const gid = (row.suggestedGameId || "").toString()
+            if (gid.length) {
+                chosen = row
+                break
+            }
+        }
+        if (!chosen) {
+            clearSuggestionOverlay()
+            return
+        }
+
+        const nextSuggestedAt = (chosen.suggestedAt || "").toString()
+        const nextKey = suggestionOverlayKey((chosen.friendId || chosen.publicKey || chosen.nickname || "").toString(),
+                                             (chosen.suggestedGameId || "").toString(),
+                                             (chosen.suggestedGameTitle || "").toString(),
+                                             nextSuggestedAt)
+
+        if (!suggestionOverlayPrimed) {
+            suggestionOverlayPrimed = true
+            suggestionOverlayConsumedAt = nextSuggestedAt
+            suggestionOverlayConsumedKey = nextKey
+            clearSuggestionOverlay()
+            return
+        }
+
+        if ((nextSuggestedAt.length && nextSuggestedAt === suggestionOverlayConsumedAt)
+            || (nextKey.length && nextKey === suggestionOverlayConsumedKey)) {
+            // User dismissed this exact suggestion already.
+            return
+        }
+
+        suggestionOverlayFriend = (chosen.nickname || "").toString()
+        suggestionOverlayGameId = (chosen.suggestedGameId || "").toString()
+        suggestionOverlayGameTitle = (chosen.suggestedGameTitle || chosen.suggestedGameId || "").toString()
+        suggestionOverlayCoverUrl = (chosen.suggestedCoverUrl || chosen.currentGameCoverUrl || "").toString()
+        suggestionOverlaySuggestedAt = nextSuggestedAt
+
+        if ((suggestionOverlayGameId || "").length)
+            suggestionDismissTimer.restart()
+    }
+
+    Connections {
+        target: Core.social
+        function onFriendsChanged() { updateSuggestionOverlay() }
+    }
+
+    Connections {
+        target: Core.social && Core.social.friends
+        function onCountChanged() { updateSuggestionOverlay() }
+    }
+
+    Timer {
+        id: suggestionDismissTimer
+        interval: 9000
+        repeat: false
+        onTriggered: {
+            consumeCurrentSuggestion()
+        }
+    }
+
+    SuggestionOverlayCard {
+        id: suggestionOverlay
+        z: 3300
+        anchors.right: parent.right
+        anchors.rightMargin: 20
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 20
+        friendName: suggestionOverlayFriend
+        gameId: suggestionOverlayGameId
+        gameTitle: suggestionOverlayGameTitle
+        fallbackCoverUrl: suggestionOverlayCoverUrl
+        onOpenRequested: function (gameId) {
+            suggestionDismissTimer.stop()
+            consumeCurrentSuggestion()
+            root.openGameDetails(gameId, true)
+        }
+        onDismissed: {
+            suggestionDismissTimer.stop()
+            consumeCurrentSuggestion()
+        }
     }
 
 }

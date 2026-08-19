@@ -42,6 +42,8 @@ QVariant FriendsModel::data(const QModelIndex& index, int role) const
         return entry.suggestedGameId;
     case SuggestedGameTitleRole:
         return entry.suggestedGameTitle;
+    case SuggestedCoverUrlRole:
+        return entry.suggestedCoverUrl;
     case SuggestedAtRole:
         return entry.suggestedAt;
     default:
@@ -63,6 +65,7 @@ QHash<int, QByteArray> FriendsModel::roleNames() const
         {LastSeenAtRole, "lastSeenAt"},
         {SuggestedGameIdRole, "suggestedGameId"},
         {SuggestedGameTitleRole, "suggestedGameTitle"},
+        {SuggestedCoverUrlRole, "suggestedCoverUrl"},
         {SuggestedAtRole, "suggestedAt"},
     };
 }
@@ -92,6 +95,7 @@ QVariantMap FriendsModel::friendInfo(int row) const
         {QStringLiteral("lastSeenAt"), entry.lastSeenAt},
         {QStringLiteral("suggestedGameId"), entry.suggestedGameId},
         {QStringLiteral("suggestedGameTitle"), entry.suggestedGameTitle},
+        {QStringLiteral("suggestedCoverUrl"), entry.suggestedCoverUrl},
         {QStringLiteral("suggestedAt"), entry.suggestedAt},
     };
 }

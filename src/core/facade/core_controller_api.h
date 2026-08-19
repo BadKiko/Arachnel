@@ -65,6 +65,7 @@
     Q_INVOKABLE bool isEntryDownloadComplete(const QString&) const;
     Q_INVOKABLE bool entryDownloadFilesExist(const QString&) const;
     Q_INVOKABLE QVariantMap entryDetails(const QString&) const;
+    Q_INVOKABLE QString suggestionCoverUrl(const QString& gameId, const QString& gameTitle) const;
     Q_INVOKABLE void checkUpdates();
     Q_INVOKABLE void cancelJob(const QString&);
     Q_INVOKABLE void toggleJobPause(const QString&);

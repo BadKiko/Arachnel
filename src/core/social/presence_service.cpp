@@ -28,6 +28,20 @@ FriendEntry friendFromRelayJson(const QJsonObject& obj)
     entry.lastSeenAt = obj.value(QStringLiteral("lastSeenAt")).toString();
     entry.suggestedGameId = obj.value(QStringLiteral("suggestedGameId")).toString();
     entry.suggestedGameTitle = obj.value(QStringLiteral("suggestedGameTitle")).toString();
+    entry.suggestedCoverUrl = obj.value(QStringLiteral("suggestedCoverUrl")).toString();
+    if (entry.suggestedCoverUrl.isEmpty())
+        entry.suggestedCoverUrl = obj.value(QStringLiteral("suggestedGameCoverUrl")).toString();
+    if (entry.suggestedCoverUrl.isEmpty())
+        entry.suggestedCoverUrl = obj.value(QStringLiteral("coverUrl")).toString();
+    const QJsonObject suggested = obj.value(QStringLiteral("suggestedGame")).toObject();
+    if (!suggested.isEmpty()) {
+        if (entry.suggestedGameId.isEmpty())
+            entry.suggestedGameId = suggested.value(QStringLiteral("id")).toString();
+        if (entry.suggestedGameTitle.isEmpty())
+            entry.suggestedGameTitle = suggested.value(QStringLiteral("title")).toString();
+        if (entry.suggestedCoverUrl.isEmpty())
+            entry.suggestedCoverUrl = suggested.value(QStringLiteral("coverUrl")).toString();
+    }
     entry.suggestedAt = obj.value(QStringLiteral("suggestedAt")).toString();
     return entry;
 }

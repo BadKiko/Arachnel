@@ -25,6 +25,7 @@ struct FriendEntry {
     QString lastSeenAt;
     QString suggestedGameId;
     QString suggestedGameTitle;
+    QString suggestedCoverUrl;
     QString suggestedAt;
 };
 

@@ -23,6 +23,10 @@ class SocialController : public QObject
     Q_PROPERTY(QString relayStatus READ relayStatus NOTIFY relayStateChanged)
     Q_PROPERTY(QString pendingInviteCode READ pendingInviteCode NOTIFY pendingInviteChanged)
     Q_PROPERTY(QString pendingInviteExpiry READ pendingInviteExpiry NOTIFY pendingInviteChanged)
+    // Global incoming game suggestion (rendered as a card overlay in AppWindow).
+    Q_PROPERTY(QString suggestionFriend READ suggestionFriend NOTIFY suggestionNotificationChanged)
+    Q_PROPERTY(QString suggestionGameId READ suggestionGameId NOTIFY suggestionNotificationChanged)
+    Q_PROPERTY(QString suggestionGameTitle READ suggestionGameTitle NOTIFY suggestionNotificationChanged)
 
 public:
     explicit SocialController(QObject* parent = nullptr);
@@ -37,6 +41,9 @@ public:
     QString relayStatus() const { return m_relayStatus; }
     QString pendingInviteCode() const { return m_pendingInviteCode; }
     QString pendingInviteExpiry() const { return m_pendingInviteExpiry; }
+    QString suggestionFriend() const { return m_suggestionFriend; }
+    QString suggestionGameId() const { return m_suggestionGameId; }
+    QString suggestionGameTitle() const { return m_suggestionGameTitle; }
 
     void setDisplayName(const QString& name);
     void setRelayBaseUrl(const QString& url);
@@ -50,6 +57,7 @@ public:
     Q_INVOKABLE void renameFriend(const QString& friendId, const QString& nickname);
     Q_INVOKABLE void suggestGame(const QString& friendId, const QString& gameId, const QString& title,
                                  const QString& coverUrl);
+    Q_INVOKABLE void consumeSuggestionNotification();
     Q_INVOKABLE QVariantMap friendSummary(const QString& friendId) const;
     Q_INVOKABLE int onlineCount() const;
 
@@ -60,6 +68,7 @@ signals:
     void pendingInviteChanged();
     void noticeRequested(const QString& message);
     void friendsChanged();
+    void suggestionNotificationChanged();
 
 private:
     void syncFriendsModel();
@@ -75,6 +84,10 @@ private:
     QString m_relayStatus;
     QString m_pendingInviteCode;
     QString m_pendingInviteExpiry;
+
+    QString m_suggestionFriend;
+    QString m_suggestionGameId;
+    QString m_suggestionGameTitle;
 };
 
 } // namespace arachnel::core

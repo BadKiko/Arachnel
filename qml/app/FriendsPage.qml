@@ -353,13 +353,6 @@ Item {
                                     onClicked: root.openGame(friendItem.currentGameId)
                                 }
 
-                                MD.Button {
-                                    visible: (friendItem.suggestedGameId || "").length > 0
-                                    text: qsTr("Suggestion")
-                                    mdState.type: MD.Enum.BtText
-                                    onClicked: root.openGame(friendItem.suggestedGameId)
-                                }
-
                                 MD.IconButton {
                                     mdState.type: MD.Enum.IBtStandard
                                     icon.name: MD.Token.icon.delete

@@ -94,6 +94,29 @@
         <source>Downloads</source>
         <translation></translation>
     </message>
+    <message>
+        <location line="+747"/>
+        <source>Open</source>
+        <translation>Open</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Suggested by %1</source>
+        <translation>Suggested by %1</translation>
+    </message>
+</context>
+<context>
+    <name>SuggestionOverlayCard</name>
+    <message>
+        <location filename="../qml/components/SuggestionOverlayCard.qml" line="+74"/>
+        <source>Open</source>
+        <translation>Open</translation>
+    </message>
+    <message>
+        <location line="-11"/>
+        <source>Suggested by %1</source>
+        <translation>Suggested by %1</translation>
+    </message>
 </context>
 <context>
     <name>BookmarksPage</name>
@@ -2407,7 +2430,7 @@
     </message>
     <message>
         <location line="+7"/>
-        <source>Suggestion</source>
+        <source>Suggested by %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2515,12 +2538,12 @@
     </message>
     <message>
         <location line="+20"/>
-        <source>Suggest to friends</source>
+        <source>Copy link</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+6"/>
-        <source>Send this game to a friend who should try it with you.</source>
+        <source>Suggest to a friend</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2582,6 +2605,11 @@
     <message>
         <location line="+22"/>
         <source>Cancel</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+22"/>
+        <source>Close</source>
         <translation></translation>
     </message>
     <message>
@@ -4569,6 +4597,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location line="+4"/>
         <source>Suggestion sent: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+170"/>
+        <source>%1 suggested %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

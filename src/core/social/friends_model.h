@@ -25,6 +25,7 @@ public:
         LastSeenAtRole,
         SuggestedGameIdRole,
         SuggestedGameTitleRole,
+        SuggestedCoverUrlRole,
         SuggestedAtRole,
     };
     Q_ENUM(Role)

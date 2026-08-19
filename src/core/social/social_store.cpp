@@ -95,6 +95,7 @@ QJsonObject friendToJson(const FriendEntry& entry)
         {QStringLiteral("lastSeenAt"), entry.lastSeenAt},
         {QStringLiteral("suggestedGameId"), entry.suggestedGameId},
         {QStringLiteral("suggestedGameTitle"), entry.suggestedGameTitle},
+        {QStringLiteral("suggestedCoverUrl"), entry.suggestedCoverUrl},
         {QStringLiteral("suggestedAt"), entry.suggestedAt},
     };
 }
@@ -113,6 +114,7 @@ FriendEntry friendFromJson(const QJsonObject& obj)
     entry.lastSeenAt = obj.value(QStringLiteral("lastSeenAt")).toString();
     entry.suggestedGameId = obj.value(QStringLiteral("suggestedGameId")).toString();
     entry.suggestedGameTitle = obj.value(QStringLiteral("suggestedGameTitle")).toString();
+    entry.suggestedCoverUrl = obj.value(QStringLiteral("suggestedCoverUrl")).toString();
     entry.suggestedAt = obj.value(QStringLiteral("suggestedAt")).toString();
     return entry;
 }

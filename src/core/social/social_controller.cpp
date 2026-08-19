@@ -13,7 +13,9 @@ SocialController::SocialController(QObject* parent)
     , m_inviteService(new InviteService(this))
     , m_pollTimer(new QTimer(this))
 {
-    m_pollTimer->setInterval(30000);
+    // Keep relay UI responsive; relay rate limits are per-minute and allow
+    // frequent presence sync without noticeable spam.
+    m_pollTimer->setInterval(5000);
     connect(m_pollTimer, &QTimer::timeout, this, &SocialController::refresh);
 
     connect(&m_store, &SocialStore::identityChanged, this, [this]() {
@@ -184,6 +186,7 @@ QVariantMap SocialController::friendSummary(const QString& friendId) const
         {QStringLiteral("currentGameCoverUrl"), entry->currentGameCoverUrl},
         {QStringLiteral("suggestedGameId"), entry->suggestedGameId},
         {QStringLiteral("suggestedGameTitle"), entry->suggestedGameTitle},
+        {QStringLiteral("suggestedCoverUrl"), entry->suggestedCoverUrl},
         {QStringLiteral("lastSeenAt"), entry->lastSeenAt},
     };
 }
@@ -220,9 +223,22 @@ void SocialController::applyRemotePresence(const QVector<FriendEntry>& remoteFri
             existing.currentGameCoverUrl = remote.currentGameCoverUrl;
             existing.lastSeenAt = remote.lastSeenAt;
             if (!remote.suggestedGameId.isEmpty()) {
+                const bool arrived = existing.suggestedAt != remote.suggestedAt
+                                    && !remote.suggestedAt.isEmpty();
                 existing.suggestedGameId = remote.suggestedGameId;
                 existing.suggestedGameTitle = remote.suggestedGameTitle;
+                if (!remote.suggestedCoverUrl.isEmpty())
+                    existing.suggestedCoverUrl = remote.suggestedCoverUrl;
                 existing.suggestedAt = remote.suggestedAt;
+            if (arrived) {
+                const QString title =
+                    remote.suggestedGameTitle.isEmpty() ? remote.suggestedGameId : remote.suggestedGameTitle;
+                const QString name = existing.nickname.isEmpty() ? remote.nickname : existing.nickname;
+                m_suggestionFriend = name;
+                m_suggestionGameId = remote.suggestedGameId;
+                m_suggestionGameTitle = title;
+                emit suggestionNotificationChanged();
+            }
             }
             found = true;
             break;
@@ -239,6 +255,16 @@ void SocialController::applyRemotePresence(const QVector<FriendEntry>& remoteFri
         }
     }
     m_store.setFriends(std::move(merged));
+}
+
+void SocialController::consumeSuggestionNotification()
+{
+    if (m_suggestionGameId.isEmpty() && m_suggestionGameTitle.isEmpty() && m_suggestionFriend.isEmpty())
+        return;
+    m_suggestionFriend.clear();
+    m_suggestionGameId.clear();
+    m_suggestionGameTitle.clear();
+    emit suggestionNotificationChanged();
 }
 
 const FriendEntry* SocialController::findFriend(const QString& friendId) const

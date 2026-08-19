@@ -94,6 +94,29 @@
         <source>Downloads</source>
         <translation>Загрузки</translation>
     </message>
+    <message>
+        <location line="+747"/>
+        <source>Open</source>
+        <translation>Открыть</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Suggested by %1</source>
+        <translation>Предложил %1</translation>
+    </message>
+</context>
+<context>
+    <name>SuggestionOverlayCard</name>
+    <message>
+        <location filename="../qml/components/SuggestionOverlayCard.qml" line="+74"/>
+        <source>Open</source>
+        <translation>Открыть</translation>
+    </message>
+    <message>
+        <location line="-11"/>
+        <source>Suggested by %1</source>
+        <translation>Предложил %1</translation>
+    </message>
 </context>
 <context>
     <name>BookmarksPage</name>
@@ -2407,8 +2430,8 @@
     </message>
     <message>
         <location line="+7"/>
-        <source>Suggestion</source>
-        <translation>Предложение</translation>
+        <source>Suggested by %1</source>
+        <translation>Предложение от %1</translation>
     </message>
     <message>
         <location line="-290"/>
@@ -2516,13 +2539,13 @@
     </message>
     <message>
         <location line="+20"/>
-        <source>Suggest to friends</source>
-        <translation>Предложить друзьям</translation>
+        <source>Copy link</source>
+        <translation>Скопировать ссылку</translation>
     </message>
     <message>
         <location line="+6"/>
-        <source>Send this game to a friend who should try it with you.</source>
-        <translation>Отправьте эту игру другу, которому стоит попробовать её с вами.</translation>
+        <source>Suggest to a friend</source>
+        <translation>Предложить другу</translation>
     </message>
     <message>
         <location line="+51"/>
@@ -2584,6 +2607,11 @@
         <location line="+22"/>
         <source>Cancel</source>
         <translation>Отмена</translation>
+    </message>
+    <message>
+        <location line="+22"/>
+        <source>Close</source>
+        <translation>Закрыть</translation>
     </message>
     <message>
         <location line="-226"/>
@@ -4588,6 +4616,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <location line="+4"/>
         <source>Suggestion sent: %1</source>
         <translation>Предложение отправлено: %1</translation>
+    </message>
+    <message>
+        <location line="+170"/>
+        <source>%1 suggested %2</source>
+        <translation>%1 предлагает: %2</translation>
     </message>
     <message>
         <location line="+12"/>

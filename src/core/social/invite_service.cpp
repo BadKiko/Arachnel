@@ -94,13 +94,17 @@ void InviteService::suggestGame(const QString& friendId, const QString& gameId, 
         return;
     }
 
+    QString cover = coverUrl.trimmed();
+    if (!cover.startsWith(QLatin1String("https://"), Qt::CaseInsensitive))
+        cover.clear();
+
     const QJsonObject payload = {
         {QStringLiteral("fromDeviceId"), m_identity.deviceId},
         {QStringLiteral("fromPublicKey"), m_identity.publicKey},
         {QStringLiteral("friendId"), friendId},
         {QStringLiteral("gameId"), gameId},
         {QStringLiteral("title"), title},
-        {QStringLiteral("coverUrl"), coverUrl},
+        {QStringLiteral("coverUrl"), cover},
         {QStringLiteral("sentAt"), QDateTime::currentDateTimeUtc().toString(Qt::ISODate)},
     };
     QNetworkReply* reply = m_network->post(makeRelayRequest(QUrl(endpoint), true),

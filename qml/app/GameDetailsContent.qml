@@ -253,7 +253,7 @@ Item {
                             text: qsTr("Share")
                             icon.name: MD.Token.icon.share
                             mdState.type: MD.Enum.BtText
-                            onClicked: Core.shareGameLink(page.gameId)
+                            onClicked: shareDialog.open()
                         }
 
                         MD.Button {
@@ -294,52 +294,6 @@ Item {
                             mdState.type: MD.Enum.BtText
                             onClicked: Core.openExternalUrl(
                                 Core.sources.catalogUrlFor(page.info.sourceId ?? ""))
-                        }
-                    }
-
-                    MD.Card {
-                        Layout.fillWidth: true
-                        visible: Core.social.friends.count > 0 && (page.gameId || "").length > 0
-                        type: MD.Enum.CardOutlined
-                        verticalPadding: MD.Token.spacing.medium
-                        horizontalPadding: MD.Token.spacing.medium
-
-                        contentItem: ColumnLayout {
-                            spacing: MD.Token.spacing.small
-
-                            MD.Label {
-                                Layout.fillWidth: true
-                                text: qsTr("Suggest to friends")
-                                typescale: MD.Token.typescale.title_small
-                            }
-
-                            MD.Label {
-                                Layout.fillWidth: true
-                                text: qsTr("Send this game to a friend who should try it with you.")
-                                color: MD.Token.color.on_surface_variant
-                                typescale: MD.Token.typescale.body_small
-                                wrapMode: Text.WordWrap
-                            }
-
-                            Flow {
-                                Layout.fillWidth: true
-                                spacing: MD.Token.spacing.small
-
-                                Repeater {
-                                    model: Core.social.friends
-
-                                    MD.AssistChip {
-                                        required property string friendId
-                                        required property string nickname
-                                        required property bool online
-
-                                        text: nickname
-                                        icon.name: online ? MD.Token.icon.groups : MD.Token.icon.person
-                                        enabled: online
-                                        onClicked: Core.suggestGameToFriend(friendId, page.gameId)
-                                    }
-                                }
-                            }
                         }
                     }
 
@@ -557,6 +511,73 @@ Item {
     GameSettingsSheet {
         id: gameSettingsSheet
         anchors.fill: parent
+    }
+
+    MD.Dialog {
+        id: shareDialog
+        title: qsTr("Share")
+        modal: true
+        width: Math.min(420, page.width > 0 ? page.width - 48 : 420)
+
+        ColumnLayout {
+            width: shareDialog.width - shareDialog.horizontalPadding * 2
+            spacing: MD.Token.spacing.medium
+
+            MD.Button {
+                Layout.fillWidth: true
+                text: qsTr("Copy link")
+                icon.name: MD.Token.icon.link
+                mdState.type: MD.Enum.BtFilledTonal
+                onClicked: {
+                    Core.shareGameLink(page.gameId)
+                    shareDialog.close()
+                }
+            }
+
+            MD.Label {
+                Layout.fillWidth: true
+                visible: Core.social.friends.count > 0
+                text: qsTr("Suggest to a friend")
+                typescale: MD.Token.typescale.title_small
+            }
+
+            Repeater {
+                model: Core.social.friends
+
+                MD.Button {
+                    required property string friendId
+                    required property string nickname
+                    required property bool online
+
+                    Layout.fillWidth: true
+                    text: nickname
+                    icon.name: online ? MD.Token.icon.groups : MD.Token.icon.person
+                    mdState.type: MD.Enum.BtText
+                    onClicked: {
+                        Core.suggestGameToFriend(friendId, page.gameId)
+                        shareDialog.close()
+                    }
+                }
+            }
+        }
+
+        footer: Item {
+            implicitHeight: shareFooterRow.implicitHeight + MD.Token.spacing.medium
+
+            MD.DialogButtonBox {
+                id: shareFooterRow
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+
+                MD.Button {
+                    mdState.type: MD.Enum.BtText
+                    text: qsTr("Close")
+                    DialogButtonBox.buttonRole: DialogButtonBox.RejectRole
+                    onClicked: shareDialog.close()
+                }
+            }
+        }
     }
 
     MD.Dialog {
