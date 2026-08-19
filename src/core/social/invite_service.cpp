@@ -85,6 +85,33 @@ void InviteService::acceptInviteCode(const QString& code)
             [this, reply]() { handleAcceptFinished(reply); });
 }
 
+void InviteService::removeFriend(const QString& friendId)
+{
+    const QString endpoint = joinRelayUrl(m_relayBaseUrl, QStringLiteral("/v1/social/friends/remove"));
+    if (endpoint.isEmpty()) {
+        emit requestFailed(tr("Set a relay URL in Friends settings"));
+        return;
+    }
+
+    const QString fid = friendId.trimmed();
+    if (fid.isEmpty()) {
+        emit requestFailed(tr("Friend not found"));
+        return;
+    }
+
+    const QJsonObject payload = {
+        {QStringLiteral("deviceId"), m_identity.deviceId},
+        {QStringLiteral("publicKey"), m_identity.publicKey},
+        {QStringLiteral("displayName"), m_identity.displayName},
+        {QStringLiteral("friendId"), fid},
+    };
+    QNetworkReply* reply = m_network->post(makeRelayRequest(QUrl(endpoint), true),
+                                           QJsonDocument(payload).toJson(QJsonDocument::Compact));
+    reply->setProperty("friendId", fid);
+    connect(reply, &QNetworkReply::finished, this,
+            [this, reply]() { handleRemoveFinished(reply); });
+}
+
 void InviteService::suggestGame(const QString& friendId, const QString& gameId, const QString& title,
                                 const QString& coverUrl)
 {
@@ -154,6 +181,18 @@ void InviteService::handleSuggestFinished(QNetworkReply* reply)
         return;
     }
     emit suggestionSent(friendId, title);
+}
+
+void InviteService::handleRemoveFinished(QNetworkReply* reply)
+{
+    const QString friendId = reply->property("friendId").toString();
+    const int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    reply->deleteLater();
+    if (reply->error() != QNetworkReply::NoError && status != 404) {
+        emit requestFailed(describeRelayError(reply));
+        return;
+    }
+    emit friendRemoved(friendId);
 }
 
 } // namespace arachnel::core

@@ -61,6 +61,11 @@ SocialController::SocialController(QObject* parent)
         m_store.upsertFriend(entry);
         emit noticeRequested(tr("Friend added"));
     });
+    connect(m_inviteService, &InviteService::friendRemoved, this, [this](const QString& friendId) {
+        if (!friendId.isEmpty())
+            m_store.removeFriend(friendId);
+        emit noticeRequested(tr("Friend removed"));
+    });
     connect(m_inviteService, &InviteService::suggestionSent, this,
             [this](const QString&, const QString& title) {
                 emit noticeRequested(tr("Suggestion sent: %1").arg(title));
@@ -146,7 +151,14 @@ void SocialController::acceptInviteCode(const QString& code)
 
 void SocialController::removeFriend(const QString& friendId)
 {
-    m_store.removeFriend(friendId);
+    const QString fid = friendId.trimmed();
+    if (fid.isEmpty())
+        return;
+    if (m_store.relayBaseUrl().isEmpty()) {
+        m_store.removeFriend(fid);
+        return;
+    }
+    m_inviteService->removeFriend(fid);
 }
 
 void SocialController::renameFriend(const QString& friendId, const QString& nickname)
@@ -208,51 +220,58 @@ void SocialController::syncFriendsModel()
 
 void SocialController::applyRemotePresence(const QVector<FriendEntry>& remoteFriends)
 {
-    QVector<FriendEntry> merged = m_store.friends();
+    const QVector<FriendEntry> localFriends = m_store.friends();
+    QVector<FriendEntry> merged;
+    merged.reserve(remoteFriends.size());
+
     for (const FriendEntry& remote : remoteFriends) {
-        bool found = false;
-        for (FriendEntry& existing : merged) {
-            if (existing.friendId != remote.friendId)
-                continue;
-            if (!remote.nickname.isEmpty())
-                existing.nickname = remote.nickname;
-            existing.publicKey = remote.publicKey.isEmpty() ? existing.publicKey : remote.publicKey;
-            existing.online = remote.online;
-            existing.currentGameId = remote.currentGameId;
-            existing.currentGameTitle = remote.currentGameTitle;
-            existing.currentGameCoverUrl = remote.currentGameCoverUrl;
-            existing.lastSeenAt = remote.lastSeenAt;
-            if (!remote.suggestedGameId.isEmpty()) {
-                const bool arrived = existing.suggestedAt != remote.suggestedAt
-                                    && !remote.suggestedAt.isEmpty();
-                existing.suggestedGameId = remote.suggestedGameId;
-                existing.suggestedGameTitle = remote.suggestedGameTitle;
-                if (!remote.suggestedCoverUrl.isEmpty())
-                    existing.suggestedCoverUrl = remote.suggestedCoverUrl;
-                existing.suggestedAt = remote.suggestedAt;
+        FriendEntry entry = remote;
+        if (entry.friendId.isEmpty())
+            entry.friendId = entry.publicKey.left(16);
+
+        const FriendEntry* local = findFriend(entry.friendId);
+        if (!local && !entry.publicKey.isEmpty()) {
+            for (const FriendEntry& candidate : localFriends) {
+                if (candidate.publicKey == entry.publicKey) {
+                    local = &candidate;
+                    break;
+                }
+            }
+        }
+
+        if (local && !local->nickname.isEmpty())
+            entry.nickname = local->nickname;
+        else if (entry.nickname.isEmpty())
+            entry.nickname = tr("Friend");
+        if (entry.addedAt.isEmpty())
+            entry.addedAt = local && !local->addedAt.isEmpty()
+                                ? local->addedAt
+                                : QDateTime::currentDateTimeUtc().toString(Qt::ISODate);
+
+        if (!remote.suggestedGameId.isEmpty()) {
+            const bool arrived = (!local || local->suggestedAt != remote.suggestedAt)
+                                && !remote.suggestedAt.isEmpty();
+            entry.suggestedGameId = remote.suggestedGameId;
+            entry.suggestedGameTitle = remote.suggestedGameTitle;
+            if (!remote.suggestedCoverUrl.isEmpty())
+                entry.suggestedCoverUrl = remote.suggestedCoverUrl;
+            entry.suggestedAt = remote.suggestedAt;
             if (arrived) {
                 const QString title =
                     remote.suggestedGameTitle.isEmpty() ? remote.suggestedGameId : remote.suggestedGameTitle;
-                const QString name = existing.nickname.isEmpty() ? remote.nickname : existing.nickname;
-                m_suggestionFriend = name;
+                m_suggestionFriend = entry.nickname;
                 m_suggestionGameId = remote.suggestedGameId;
                 m_suggestionGameTitle = title;
                 emit suggestionNotificationChanged();
             }
-            }
-            found = true;
-            break;
+        } else if (local) {
+            entry.suggestedGameId = local->suggestedGameId;
+            entry.suggestedGameTitle = local->suggestedGameTitle;
+            entry.suggestedCoverUrl = local->suggestedCoverUrl;
+            entry.suggestedAt = local->suggestedAt;
         }
-        if (!found) {
-            FriendEntry added = remote;
-            if (added.friendId.isEmpty())
-                added.friendId = added.publicKey.left(16);
-            if (added.nickname.isEmpty())
-                added.nickname = tr("Friend");
-            if (added.addedAt.isEmpty())
-                added.addedAt = QDateTime::currentDateTimeUtc().toString(Qt::ISODate);
-            merged.append(added);
-        }
+
+        merged.append(entry);
     }
     m_store.setFriends(std::move(merged));
 }
