@@ -57,6 +57,7 @@ set(ARACHNEL_APP_SOURCES
     src/core/install/install_kind_probe_service.cpp
     src/core/install/install_session_service.cpp
     src/core/install/install_session_service_install.cpp
+    src/core/install/steamless_service.cpp
     src/core/jobs/job_orchestrator.cpp
     src/core/jobs/job_orchestrator_progress.cpp
     src/core/jobs/job_orchestrator_completion.cpp

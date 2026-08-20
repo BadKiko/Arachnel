@@ -325,4 +325,19 @@ void CoreController::addGameToSteam(const QString& gameId)
 #endif
 }
 
+void CoreController::reapplySteamless(const QString& gameId)
+{
+    const LibraryGame* game = m_libraryStore.gameById(gameId);
+    if (!game || game->installPath.isEmpty()) {
+        showNotice(QCoreApplication::translate("Core", "Game not found"));
+        return;
+    }
+    if (!m_steamlessService) {
+        showNotice(QCoreApplication::translate("Core", "Steamless is not available"));
+        return;
+    }
+    showNotice(QCoreApplication::translate("Core", "Applying Steamless to %1…").arg(game->title));
+    m_steamlessService->processInstall(game->installPath, game->title);
+}
+
 } // namespace arachnel::core

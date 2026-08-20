@@ -58,6 +58,8 @@ public:
     void refreshLatestGeRelease();
     void downloadLatestGe();
     void invalidateScanCache();
+    /** Fix prefix dirs that became files (Proton then refuses to start). Returns count repaired. */
+    int repairCorruptPrefixForGame(const QString& gameId) const;
 
 signals:
     void downloadStateChanged();

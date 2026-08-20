@@ -8,6 +8,7 @@
 #include "plugin_interface.h"
 #include "proton_manager.h"
 #include "settings_store.h"
+#include "steamless_service.h"
 
 #include <QCoreApplication>
 #include <QDate>
@@ -336,6 +337,10 @@ void InstallSessionService::commitInstalledCatalogGame(const CatalogEntry& entry
     m_hooks.syncLibrary();
     m_hooks.recalculateLibraryUpdates();
     m_hooks.gameCommitted(game);
+
+    // Apply Steamless to the freshly installed game (SteamStub DRM removal).
+    if (m_steamless && !game.installPath.isEmpty())
+        m_steamless->processInstall(game.installPath, game.title);
 }
 
 } // namespace arachnel::core

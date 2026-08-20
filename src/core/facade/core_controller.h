@@ -53,6 +53,7 @@ class LaunchController;
 class PluginHost;
 class ProtonManager;
 class RuntimeDependencyService;
+class SteamlessService;
 class TorrentSession;
 
 /** QML singleton façade (`Arachnel.Core`). Bodies live in domain TUs. */
@@ -81,6 +82,7 @@ class CoreController : public QObject
     Q_PROPERTY(QString runningGameId READ runningGameId NOTIFY runningGameChanged)
     Q_PROPERTY(QString runningGameTitle READ runningGameTitle NOTIFY runningGameChanged)
     Q_PROPERTY(QString runningGameCoverUrl READ runningGameCoverUrl NOTIFY runningGameChanged)
+    Q_PROPERTY(bool gamingMode READ gamingMode CONSTANT)
     Q_PROPERTY(bool runtimeSetupInProgress READ runtimeSetupInProgress NOTIFY runtimeSetupChanged)
     Q_PROPERTY(QString runtimeSetupGameId READ runtimeSetupGameId NOTIFY runtimeSetupChanged)
     Q_PROPERTY(QString runtimeSetupTitle READ runtimeSetupTitle NOTIFY runtimeSetupChanged)
@@ -140,6 +142,7 @@ public:
     QString runningGameId() const;
     QString runningGameTitle() const;
     QString runningGameCoverUrl() const;
+    bool gamingMode() const;
     bool runtimeSetupInProgress() const { return m_runtimeSetupInProgress; }
     QString runtimeSetupGameId() const { return m_runtimeSetupGameId; }
     QString runtimeSetupTitle() const { return m_runtimeSetupTitle; }

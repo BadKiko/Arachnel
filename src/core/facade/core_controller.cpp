@@ -100,6 +100,29 @@ QStringList variantListToStringList(const QVariantList& values)
 
 bool g_crashReporterMode = false;
 
+// Steam Gaming Mode (Deck UI under gamescope) keeps the launcher fullscreen and
+// steals focus from a freshly booted game - hide until the game exits.
+bool detectSteamGamingMode()
+{
+    if (qEnvironmentVariableIsSet("ARACHNEL_GAMING_MODE")) {
+        const QString value = qEnvironmentVariable("ARACHNEL_GAMING_MODE").trimmed().toLower();
+        if (value == QLatin1String("1") || value == QLatin1String("true")
+            || value == QLatin1String("yes") || value == QLatin1String("on"))
+            return true;
+        if (value == QLatin1String("0") || value == QLatin1String("false")
+            || value == QLatin1String("no") || value == QLatin1String("off"))
+            return false;
+    }
+    if (qEnvironmentVariable("SteamDeck") == QLatin1String("1")
+        || qEnvironmentVariable("STEAM_DECK") == QLatin1String("1"))
+        return true;
+    if (qEnvironmentVariable("XDG_CURRENT_DESKTOP")
+            .compare(QLatin1String("gamescope"), Qt::CaseInsensitive)
+        == 0)
+        return true;
+    return false;
+}
+
 } // namespace
 
 CoreController* CoreController::create(QQmlEngine* engine, QJSEngine* scriptEngine)
@@ -153,6 +176,12 @@ QString CoreController::runningGameTitle() const
 QString CoreController::runningGameCoverUrl() const
 {
     return m_launchController ? m_launchController->runningGameCoverUrl() : QString();
+}
+
+bool CoreController::gamingMode() const
+{
+    static const bool value = detectSteamGamingMode();
+    return value;
 }
 
 void CoreController::setCrashReporterMode(bool enabled)

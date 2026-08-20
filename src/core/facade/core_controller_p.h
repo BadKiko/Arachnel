@@ -101,6 +101,7 @@
     LaunchController* m_launchController = nullptr;
     RuntimeDependencyService* m_runtimeDependencyService = nullptr;
     ProtonManager* m_protonManager = nullptr;
+    SteamlessService* m_steamlessService = nullptr;
     SocialController* m_socialController = nullptr;
     AppUpdater* m_appUpdater = nullptr;
     PluginCatalogService* m_pluginCatalog = nullptr;

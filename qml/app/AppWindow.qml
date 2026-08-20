@@ -213,6 +213,15 @@ MD.ApplicationWindow {
         function onActivationRequested() {
             root.raiseMainWindow()
         }
+        function onRunningGameChanged() {
+            // In Steam Gaming Mode the launcher is a fullscreen surface that
+            // otherwise keeps focus over a freshly booted game. Step aside so
+            // the game window takes focus; restore when the game exits.
+            if (Core.gameRunning && Core.gamingMode)
+                root.hide()
+            else if (!Core.gameRunning)
+                root.raiseMainWindow()
+        }
     }
 
     Connections {

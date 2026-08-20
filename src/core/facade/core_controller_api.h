@@ -17,6 +17,9 @@
     Q_INVOKABLE void rescanPlugins();
     Q_INVOKABLE void launchGame(const QString&);
     Q_INVOKABLE void stopRunningGame();
+    Q_INVOKABLE QString gameLaunchLog() const;
+    Q_INVOKABLE void copyGameLaunchLog();
+    Q_INVOKABLE void saveGameLaunchLog();
     Q_INVOKABLE void searchCatalog(const QString&, const QString&);
     Q_INVOKABLE void installCatalogEntry(const QString&, const QString& = {},
                                          const QVariantList& = {}, const QString& = {});
@@ -42,6 +45,8 @@
     Q_INVOKABLE void createGameDesktopShortcut(const QString& gameId);
     Q_INVOKABLE void createGameStartMenuShortcut(const QString& gameId);
     Q_INVOKABLE void addGameToSteam(const QString& gameId);
+    /** Re-run Steamless (SteamStub removal) on an already-installed game. */
+    Q_INVOKABLE void reapplySteamless(const QString& gameId);
     Q_INVOKABLE void refreshAvailableProtons();
     Q_INVOKABLE void moveProtonInPriority(const QString&, int);
     Q_INVOKABLE QString protonNameForId(const QString&) const;

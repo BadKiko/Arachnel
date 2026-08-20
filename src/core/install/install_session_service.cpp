@@ -17,7 +17,7 @@ namespace arachnel::core {
 InstallSessionService::InstallSessionService(
     SettingsStore* settings, LibraryStore* libraryStore, JobStore* jobStore, JobModel* jobs,
     JobOrchestrator* jobOrchestrator, PluginHost* pluginHost, InstallAnalyzer* installAnalyzer,
-    ProtonManager* protonManager, Hooks hooks, QObject* parent)
+    ProtonManager* protonManager, SteamlessService* steamless, Hooks hooks, QObject* parent)
     : QObject(parent)
     , m_settings(settings)
     , m_libraryStore(libraryStore)
@@ -27,6 +27,7 @@ InstallSessionService::InstallSessionService(
     , m_pluginHost(pluginHost)
     , m_installAnalyzer(installAnalyzer)
     , m_protonManager(protonManager)
+    , m_steamless(steamless)
     , m_hooks(std::move(hooks))
 {
 }

@@ -211,10 +211,22 @@ void CoreController::initializeServices()
         // Prefix / VC redist setup runs on Play, not after download.
         Q_UNUSED(game)
     };
+    m_steamlessService = new SteamlessService(
+        [this](const QString& message) { showNotice(message); }, this);
+
+    // One-time Steamless setup: only downloads when the tool is missing or was
+    // deleted; already-installed setups are a no-op. Delayed so it never blocks
+    // startup UI (and Wine is checked first on Linux).
+    QTimer::singleShot(3000, this, [this]() {
+        if (m_steamlessService)
+            m_steamlessService->ensureSetup();
+    });
+
     m_installSessionService =
         new InstallSessionService(&m_settings, &m_libraryStore, &m_jobStore, &m_jobs,
                                   m_jobOrchestrator, m_pluginHost, m_installAnalyzer,
-                                  m_protonManager, std::move(installHooks), this);
+                                  m_protonManager, m_steamlessService, std::move(installHooks),
+                                  this);
     LibraryController::Hooks libraryHooks;
     libraryHooks.syncLibrary = [this]() { syncLibraryFromStore(); };
     libraryHooks.removeJobs = [this](const QString& entryId) { removeJobsForEntry(entryId); };

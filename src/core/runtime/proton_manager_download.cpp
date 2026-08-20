@@ -15,11 +15,58 @@
 #include <QRegularExpression>
 #include <QSet>
 #include <QStandardPaths>
+#include <QSysInfo>
 #include <QUrl>
 #include <QEventLoop>
 
 namespace arachnel::core {
 
+namespace {
+
+// GE-Proton releases ship both x86_64 and aarch64 archives. Pick the one
+// matching the host CPU - downloading the foreign arch is silently broken.
+QString geProtonArchSuffix()
+{
+    const QString arch = QSysInfo::currentCpuArchitecture();
+    if (arch == QLatin1String("arm64") || arch == QLatin1String("aarch64"))
+        return QStringLiteral("aarch64");
+    return QStringLiteral("x86_64");
+}
+
+bool pickGeProtonAsset(const QJsonArray& assets, QString* urlOut, QString* nameOut)
+{
+    QString fallbackUrl;
+    QString fallbackName;
+    const QString arch = geProtonArchSuffix();
+    for (const QJsonValue& value : assets) {
+        const QJsonObject asset = value.toObject();
+        const QString name = asset.value(QStringLiteral("name")).toString();
+        if (!name.startsWith(QStringLiteral("GE-Proton"))
+            || !name.endsWith(QStringLiteral(".tar.gz"), Qt::CaseInsensitive)
+            || name.contains(QStringLiteral("sha512"), Qt::CaseInsensitive))
+            continue;
+        const QString url = asset.value(QStringLiteral("browser_download_url")).toString();
+        const QString versionName =
+            name.left(name.size() - QStringLiteral(".tar.gz").size());
+        if (name.contains(arch, Qt::CaseInsensitive)) {
+            *urlOut = url;
+            *nameOut = versionName;
+            return true;
+        }
+        if (fallbackUrl.isEmpty()) {
+            fallbackUrl = url;
+            fallbackName = versionName;
+        }
+    }
+    if (!fallbackUrl.isEmpty()) {
+        *urlOut = fallbackUrl;
+        *nameOut = fallbackName;
+        return true;
+    }
+    return false;
+}
+
+} // namespace
 
 #include "proton_manager_helpers.h"
 
@@ -39,19 +86,8 @@ bool ProtonManager::fetchLatestGeReleaseInfo(QString* versionNameOut, QString* d
     connect(reply, &QNetworkReply::finished, this, [&]() {
         if (reply->error() == QNetworkReply::NoError) {
             const QJsonObject release = QJsonDocument::fromJson(reply->readAll()).object();
-            for (const QJsonValue& value : release.value(QStringLiteral("assets")).toArray()) {
-                const QJsonObject asset = value.toObject();
-                const QString name = asset.value(QStringLiteral("name")).toString();
-                if (name.startsWith(QStringLiteral("GE-Proton"))
-                    && name.endsWith(QStringLiteral(".tar.gz"), Qt::CaseInsensitive)
-                    && !name.contains(QStringLiteral("sha512"), Qt::CaseInsensitive)) {
-                    *downloadUrlOut = asset.value(QStringLiteral("browser_download_url")).toString();
-                    *versionNameOut =
-                        name.left(name.size() - QStringLiteral(".tar.gz").size());
-                    ok = true;
-                    break;
-                }
-            }
+            ok = pickGeProtonAsset(release.value(QStringLiteral("assets")).toArray(),
+                                   downloadUrlOut, versionNameOut);
         }
         loop.quit();
     });
@@ -80,20 +116,12 @@ void ProtonManager::refreshLatestGeRelease()
             return;
 
         const QJsonObject release = QJsonDocument::fromJson(reply->readAll()).object();
-        for (const QJsonValue& value : release.value(QStringLiteral("assets")).toArray()) {
-            const QJsonObject asset = value.toObject();
-            const QString name = asset.value(QStringLiteral("name")).toString();
-            if (name.startsWith(QStringLiteral("GE-Proton"))
-                && name.endsWith(QStringLiteral(".tar.gz"), Qt::CaseInsensitive)
-                && !name.contains(QStringLiteral("sha512"), Qt::CaseInsensitive)) {
-                const QString versionName =
-                    name.left(name.size() - QStringLiteral(".tar.gz").size());
-                if (m_latestGeReleaseName != versionName) {
-                    m_latestGeReleaseName = versionName;
-                    emit latestGeReleaseChanged();
-                }
-                return;
-            }
+        QString url;
+        QString versionName;
+        if (pickGeProtonAsset(release.value(QStringLiteral("assets")).toArray(), &url, &versionName)
+            && m_latestGeReleaseName != versionName) {
+            m_latestGeReleaseName = versionName;
+            emit latestGeReleaseChanged();
         }
     });
 #endif

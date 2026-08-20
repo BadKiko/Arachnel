@@ -298,7 +298,8 @@ QByteArray serializeShortcutsVdf(const QVector<ShortcutEntry>& entries)
         out.append('\x08'); // end tags
         out.append('\x08'); // end shortcut
     }
-    out.append('\x08'); // end shortcuts
+    out.append('\x08'); // end shortcuts map
+    out.append('\x08'); // end root map (Steam resets shortcuts.vdf if this is missing)
     return out;
 }
 
@@ -522,13 +523,25 @@ SteamShortcutResult addOrUpdateSteamShortcut(const SteamShortcutRequest& request
     }
 
     QDir().mkpath(QFileInfo(vdfPath).absolutePath());
-    QFile out(vdfPath);
+    // Atomic replace: a truncated/partial shortcuts.vdf makes Steam clear every non-Steam shortcut.
+    const QString tmpPath = vdfPath + QStringLiteral(".arachnel.tmp");
+    QFile out(tmpPath);
     if (!out.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
         result.error = QStringLiteral("Could not write shortcuts.vdf");
         return result;
     }
     out.write(serializeShortcutsVdf(entries));
+    out.flush();
     out.close();
+
+    QFile::remove(vdfPath);
+    if (!QFile::rename(tmpPath, vdfPath)) {
+        QFile::remove(tmpPath);
+        if (QFileInfo::exists(backup))
+            QFile::copy(backup, vdfPath);
+        result.error = QStringLiteral("Could not write shortcuts.vdf");
+        return result;
+    }
 
     const QString gridDir = QFileInfo(vdfPath).absolutePath() + QStringLiteral("/grid");
     installGridArtwork(gridDir, appId, request.steamAppId, request.coverFileUrl);

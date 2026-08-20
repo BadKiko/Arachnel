@@ -3,6 +3,7 @@
 #include "library_model.h"
 
 #include <QObject>
+#include <QStringList>
 #include <QTimer>
 #include <functional>
 
@@ -29,6 +30,10 @@ public:
     QString runningGameId() const { return m_gameId; }
     QString runningGameTitle() const { return m_gameTitle; }
     QString runningGameCoverUrl() const { return m_gameCoverUrl; }
+
+    QString launchLogText() const;
+    QString launchLogFilePath() const;
+
     void launchGame(const QString& gameId);
     void stopRunningGame();
 
@@ -39,6 +44,7 @@ private:
     void markRunning(const LibraryGame& game, qint64 processId);
     void clearRunning();
     void pollRunningGame();
+    void logLine(const QString& line);
     LibraryModel* m_library;
     SettingsStore* m_settings;
     PluginHost* m_plugins;
@@ -49,6 +55,8 @@ private:
     QString m_gameCoverUrl;
     qint64 m_processId = 0;
     QTimer* m_timer = nullptr;
+    QString m_logGameId;
+    QStringList m_launchLogLines;
 };
 
 } // namespace arachnel::core

@@ -399,6 +399,18 @@ Item {
                                 onClicked: Core.toggleBookmark(page.gameId)
                             }
 
+                            MD.IconButton {
+                                Layout.alignment: Qt.AlignVCenter
+                                visible: page.installed
+                                mdState.type: MD.Enum.IBtOutlined
+                                icon.name: MD.Token.icon.receipt_long
+                                Accessible.name: qsTr("Launch log")
+                                onClicked: {
+                                    launchLogTextArea.text = Core.gameLaunchLog()
+                                    launchLogDialog.open()
+                                }
+                            }
+
                             MD.Button {
                                 Layout.alignment: Qt.AlignVCenter
                                 visible: page.playable
@@ -418,6 +430,15 @@ Item {
                                 mdState.type: MD.Enum.IBtOutlined
                                 icon.name: MD.Token.icon.settings
                                 onClicked: gameSettingsSheet.openForGame(page.gameId)
+                            }
+
+                            MD.Button {
+                                Layout.alignment: Qt.AlignVCenter
+                                visible: page.installed
+                                text: qsTr("Apply Steamless")
+                                icon.name: MD.Token.icon.shield
+                                mdState.type: MD.Enum.BtOutlined
+                                onClicked: Core.reapplySteamless(page.gameId)
                             }
 
                             MD.Button {
@@ -511,6 +532,78 @@ Item {
     GameSettingsSheet {
         id: gameSettingsSheet
         anchors.fill: parent
+    }
+
+    MD.Dialog {
+        id: launchLogDialog
+        title: qsTr("Launch log")
+        modal: true
+        width: Math.min(720, page.width > 0 ? page.width - 48 : 720)
+        height: Math.min(540, page.height > 0 ? page.height - 48 : 540)
+
+        MD.Label {
+            width: launchLogDialog.width - launchLogDialog.horizontalPadding * 2
+            text: qsTr("Why the game may not boot, including the game's own output.")
+            color: MD.Token.color.on_surface_variant
+            typescale: MD.Token.typescale.body_medium
+            wrapMode: Text.WordWrap
+        }
+
+        ScrollView {
+            width: launchLogDialog.width - launchLogDialog.horizontalPadding * 2
+            height: launchLogDialog.height - launchLogDialog.topPadding
+                    - launchLogDialog.bottomPadding - launchLogFooter.implicitHeight
+                    - MD.Token.spacing.large
+            clip: true
+
+            TextArea {
+                id: launchLogTextArea
+                readOnly: true
+                wrapMode: TextEdit.Wrap
+                selectByMouse: true
+                persistentSelection: true
+                text: qsTr("No launch has been attempted yet.")
+                padding: 12
+                color: MD.Token.color.on_surface
+                background: Rectangle {
+                    color: MD.Token.color.surface_container
+                    radius: MD.Token.shape.corner.medium
+                }
+            }
+        }
+
+        footer: Item {
+            id: launchLogFooter
+            implicitHeight: launchLogFooterRow.implicitHeight + MD.Token.spacing.medium
+
+            MD.DialogButtonBox {
+                id: launchLogFooterRow
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+
+                MD.Button {
+                    mdState.type: MD.Enum.BtText
+                    text: qsTr("Close")
+                    DialogButtonBox.buttonRole: DialogButtonBox.RejectRole
+                    onClicked: launchLogDialog.close()
+                }
+                MD.Button {
+                    mdState.type: MD.Enum.BtOutlined
+                    text: qsTr("Copy")
+                    icon.name: MD.Token.icon.content_copy
+                    DialogButtonBox.buttonRole: DialogButtonBox.ActionRole
+                    onClicked: Core.copyGameLaunchLog()
+                }
+                MD.Button {
+                    mdState.type: MD.Enum.BtFilled
+                    text: qsTr("Save log.txt")
+                    icon.name: MD.Token.icon.save
+                    DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole
+                    onClicked: Core.saveGameLaunchLog()
+                }
+            }
+        }
     }
 
     MD.Dialog {
