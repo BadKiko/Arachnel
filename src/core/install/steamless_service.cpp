@@ -14,7 +14,7 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QProcess>
-#include <QRegularExpression>
+#include <QProcessEnvironment>
 #include <QStandardPaths>
 #include <QUrl>
 #include <QtConcurrent>
@@ -52,6 +52,8 @@ bool downloadToFile(const QString& url, const QString& path, QString* errorOut)
     QNetworkRequest request{QUrl(url)};
     request.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("Arachnel"));
     request.setTransferTimeout(120000);
+    request.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
+                         QNetworkRequest::NoLessSafeRedirectPolicy);
 
     QNetworkReply* reply = nam.get(request);
     QEventLoop loop;
@@ -79,36 +81,27 @@ bool downloadToFile(const QString& url, const QString& path, QString* errorOut)
     return true;
 }
 
-bool isZipArchive(const QString& path)
-{
-    QFile file(path);
-    if (!file.open(QIODevice::ReadOnly))
-        return false;
-    const QByteArray magic = file.read(4);
-    return magic.startsWith(QByteArray("PK\x03\x04", 4));
-}
-
-QString escapePowerShellSingleQuotedLiteral(const QString& value)
-{
-    QString out = value;
-    out.replace(QLatin1Char('\''), QStringLiteral("''"));
-    return out;
-}
-
 bool extractZipArchive(const QString& archivePath, const QString& destDir, QString* errorOut)
 {
     QDir().mkpath(destDir);
-    if (!isZipArchive(archivePath)) {
-        if (errorOut)
-            *errorOut = QCoreApplication::translate("Core", "Downloaded file is not a ZIP archive");
-        return false;
+    {
+        QFile file(archivePath);
+        if (!file.open(QIODevice::ReadOnly)
+            || !file.read(4).startsWith(QByteArray("PK\x03\x04", 4))) {
+            if (errorOut)
+                *errorOut =
+                    QCoreApplication::translate("Core", "Downloaded file is not a ZIP archive");
+            return false;
+        }
     }
 
     QProcess process;
 #if defined(Q_OS_WIN)
+    QString escapedArchive = archivePath;
+    escapedArchive.replace(QLatin1Char('\''), QStringLiteral("''"));
+    QString escapedDest = destDir;
+    escapedDest.replace(QLatin1Char('\''), QStringLiteral("''"));
     process.setProgram(QStringLiteral("powershell"));
-    const QString escapedArchive = escapePowerShellSingleQuotedLiteral(archivePath);
-    const QString escapedDest = escapePowerShellSingleQuotedLiteral(destDir);
     process.setArguments({
         QStringLiteral("-NoProfile"),
         QStringLiteral("-ExecutionPolicy"),
@@ -163,6 +156,33 @@ QString findFileInTree(const QString& root, const QString& fileName)
     return it.hasNext() ? it.next() : QString();
 }
 
+bool copyFileIfMissing(const QString& source, const QString& dest)
+{
+    if (QFileInfo::exists(dest))
+        return true;
+    if (!QFileInfo::exists(source))
+        return false;
+    QDir().mkpath(QFileInfo(dest).absolutePath());
+    QFile::remove(dest);
+    return QFile::copy(source, dest);
+}
+
+bool plantResourceFile(const QString& resourcePath, const QString& dest)
+{
+    if (QFileInfo::exists(dest))
+        return true;
+    QFile src(resourcePath);
+    if (!src.open(QIODevice::ReadOnly))
+        return false;
+    QDir().mkpath(QFileInfo(dest).absolutePath());
+    QFile::remove(dest);
+    QFile out(dest);
+    if (!out.open(QIODevice::WriteOnly | QIODevice::Truncate))
+        return false;
+    out.write(src.readAll());
+    return true;
+}
+
 #if !defined(Q_OS_WIN)
 QString wineExecutable()
 {
@@ -177,172 +197,6 @@ QString toWinePath(const QString& path)
     if (!win.startsWith(QStringLiteral("Z:\\")))
         win.prepend(QStringLiteral("Z:\\"));
     return win;
-}
-
-// Wine Mono on Fedora-family distros links libmono-2.0-x86.dll against the
-// 32-bit MinGW runtime (libgcc_s_dw2-1.dll, libwinpthread-1.dll), but those
-// DLLs are not shipped with the wine-mono package. Steamless.CLI.exe is a
-// 32-bit .NET app, so mono cannot start without them. Place them next to the
-// CLI (wine searches the exe's directory first) so the runtime resolves.
-bool copyFileIfMissing(const QString& source, const QString& dest)
-{
-    if (QFileInfo::exists(dest))
-        return true;
-    if (!QFileInfo::exists(source))
-        return false;
-    QDir().mkpath(QFileInfo(dest).absolutePath());
-    QFile::remove(dest);
-    return QFile::copy(source, dest);
-}
-
-// Compare package versions like "16.2.0-3" or "14.0.0.r248.g7735a1a63-1" by
-// numeric segments; returns true when a < b.
-bool versionLess(const QString& a, const QString& b)
-{
-    static const QRegularExpression tokenRe(QStringLiteral("[0-9]+|[a-z]+"));
-    QStringList ta;
-    QStringList tb;
-    for (auto it = tokenRe.globalMatch(a); it.hasNext();)
-        ta.append(it.next().captured(0));
-    for (auto it = tokenRe.globalMatch(b); it.hasNext();)
-        tb.append(it.next().captured(0));
-    const int n = qMin(ta.size(), tb.size());
-    for (int i = 0; i < n; ++i) {
-        bool aNum = false;
-        bool bNum = false;
-        const qlonglong av = ta.at(i).toLongLong(&aNum);
-        const qlonglong bv = tb.at(i).toLongLong(&bNum);
-        if (aNum && bNum) {
-            if (av != bv)
-                return av < bv;
-        } else if (ta.at(i) != tb.at(i)) {
-            return ta.at(i) < tb.at(i);
-        }
-    }
-    return ta.size() < tb.size();
-}
-
-// Extract a MSYS2-style .pkg.tar.zst archive (plain zstd-compressed tar).
-bool extractTarZst(const QString& archivePath, const QString& destDir, QString* errorOut)
-{
-    QDir().mkpath(destDir);
-    QStringList tried;
-    for (const QString& program : {QStringLiteral("tar"), QStringLiteral("bsdtar")}) {
-        const QString exe = QStandardPaths::findExecutable(program);
-        if (exe.isEmpty())
-            continue;
-        QProcess process;
-        if (program == QLatin1String("tar")) {
-            process.setProgram(exe);
-            process.setArguments({QStringLiteral("--zstd"), QStringLiteral("-xf"),
-                                  archivePath, QStringLiteral("-C"), destDir});
-        } else {
-            process.setProgram(exe);
-            process.setArguments({QStringLiteral("-xf"), archivePath,
-                                  QStringLiteral("-C"), destDir});
-        }
-        process.start();
-        if (!process.waitForStarted(15000))
-            continue;
-        if (process.waitForFinished(120000)
-            && process.exitStatus() == QProcess::NormalExit
-            && process.exitCode() == 0)
-            return true;
-        tried.append(program);
-    }
-    if (errorOut) {
-        *errorOut = QCoreApplication::translate(
-                         "Core", "Could not extract %1 (tried %2); install tar with zstd support")
-                         .arg(QFileInfo(archivePath).fileName(), tried.join(QLatin1String(", ")));
-    }
-    return false;
-}
-
-QString versionOfMsys2Package(const QString& fileName)
-{
-    // mingw-w64-i686-gcc-libs-16.2.0-3-any.pkg.tar.zst -> 16.2.0-3
-    QString name = fileName;
-    name.remove(QStringLiteral(".pkg.tar.zst"));
-    const int dash = name.lastIndexOf(QLatin1Char('-')); // -any suffix
-    if (dash >= 0)
-        name.truncate(dash);
-    const int dash2 = name.lastIndexOf(QLatin1Char('-')); // -release
-    if (dash2 >= 0)
-        name.truncate(dash2);
-    return name;
-}
-
-// Fetch the newest MSYS2 package filename matching pkgPrefix from the listing.
-QString latestMsys2Package(const QString& listing, const QString& pkgPrefix)
-{
-    const QRegularExpression re(QStringLiteral("href=\"(%1-[^\"]*\\.pkg\\.tar\\.zst)\"")
-                                   .arg(QRegularExpression::escape(pkgPrefix)));
-    QString best;
-    for (auto it = re.globalMatch(listing); it.hasNext();) {
-        const QString name = it.next().captured(1);
-        if (best.isEmpty() || versionLess(versionOfMsys2Package(best), versionOfMsys2Package(name)))
-            best = name;
-    }
-    return best;
-}
-
-// Fetch a DLL by downloading the small MSYS2 package that ships it and
-// extracting the file next to the Steamless CLI.
-bool downloadMsys2Dll(const QString& dllName, const QString& pkgPrefix, const QString& cliDir,
-                      QString* errorOut)
-{
-    QNetworkAccessManager nam;
-    QNetworkRequest listingRequest(
-        QUrl(QStringLiteral("https://repo.msys2.org/mingw/mingw32/")));
-    listingRequest.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("Arachnel"));
-    listingRequest.setTransferTimeout(30000);
-    QNetworkReply* listingReply = nam.get(listingRequest);
-    QEventLoop loop;
-    QObject::connect(listingReply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
-    loop.exec();
-
-    if (listingReply->error() != QNetworkReply::NoError) {
-        if (errorOut)
-            *errorOut = listingReply->errorString();
-        listingReply->deleteLater();
-        return false;
-    }
-    const QString listing = QString::fromUtf8(listingReply->readAll());
-    listingReply->deleteLater();
-
-    const QString pkgName = latestMsys2Package(listing, pkgPrefix);
-    if (pkgName.isEmpty()) {
-        if (errorOut)
-            *errorOut = QCoreApplication::translate("Core", "No %1 package found on MSYS2")
-                            .arg(pkgPrefix);
-        return false;
-    }
-
-    const QString downloadDir = QFileInfo(cliDir).absolutePath() + QStringLiteral("/.download");
-    QDir().mkpath(downloadDir);
-    const QString pkgPath = downloadDir + QLatin1Char('/') + pkgName;
-    if (!downloadToFile(QStringLiteral("https://repo.msys2.org/mingw/mingw32/") + pkgName,
-                        pkgPath, errorOut))
-        return false;
-
-    QString extractError;
-    const QString extractDir = downloadDir + QStringLiteral("/mingw");
-    if (!extractTarZst(pkgPath, extractDir, &extractError)) {
-        QFile::remove(pkgPath);
-        if (errorOut)
-            *errorOut = extractError;
-        return false;
-    }
-    QFile::remove(pkgPath);
-
-    const QString found = findFileInTree(extractDir, dllName);
-    if (found.isEmpty() || !copyFileIfMissing(found, cliDir + QLatin1Char('/') + dllName)) {
-        if (errorOut)
-            *errorOut = QCoreApplication::translate("Core", "%1 not found in %2")
-                            .arg(dllName, pkgName);
-        return false;
-    }
-    return true;
 }
 #endif
 
@@ -388,14 +242,29 @@ bool SteamlessService::isAvailable() const
     return !cliPath().isEmpty() && QFileInfo::exists(cliPath());
 }
 
+QStringList SteamlessService::collectExeCandidates(const QString& installPath)
+{
+    QStringList candidates;
+    QDirIterator it(installPath, {QStringLiteral("*.exe")}, QDir::Files | QDir::NoSymLinks,
+                    QDirIterator::Subdirectories);
+    int seen = 0;
+    while (it.hasNext() && seen < 4000) {
+        it.next();
+        ++seen;
+        const QString relative = QDir(installPath).relativeFilePath(it.filePath());
+        const int depth = relative.count(QLatin1Char('/')) + relative.count(QLatin1Char('\\'));
+        if (depth > 8)
+            continue;
+        candidates.append(it.filePath());
+        if (candidates.size() >= 48)
+            break;
+    }
+    return candidates;
+}
+
 bool SteamlessService::ensureTool(QString* errorOut)
 {
-    if (isAvailable())
-        return true;
-
 #if !defined(Q_OS_WIN)
-    // Steamless is a Windows tool - on Linux it must run under Wine. Do not
-    // download it before confirming Wine exists.
     if (QStandardPaths::findExecutable(QStringLiteral("wine")).isEmpty()) {
         if (errorOut)
             *errorOut = QCoreApplication::translate(
@@ -404,95 +273,99 @@ bool SteamlessService::ensureTool(QString* errorOut)
     }
 #endif
 
-    // Locate a downloadable release asset on GitHub.
-    QString assetUrl;
-    QString assetName;
-    {
-        QNetworkAccessManager nam;
-        QNetworkRequest request(QUrl(
-            QStringLiteral("https://api.github.com/repos/atom0s/Steamless/releases/latest")));
-        request.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("Arachnel"));
-        request.setTransferTimeout(20000);
-        QNetworkReply* reply = nam.get(request);
-        QEventLoop loop;
-        QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
-        loop.exec();
+    if (!isAvailable()) {
+        QString assetUrl;
+        QString assetName;
+        {
+            QNetworkAccessManager nam;
+            QNetworkRequest request(QUrl(
+                QStringLiteral("https://api.github.com/repos/atom0s/Steamless/releases/latest")));
+            request.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("Arachnel"));
+            request.setTransferTimeout(20000);
+            request.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
+                                 QNetworkRequest::NoLessSafeRedirectPolicy);
+            QNetworkReply* reply = nam.get(request);
+            QEventLoop loop;
+            QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+            loop.exec();
 
-        if (reply->error() != QNetworkReply::NoError) {
-            if (errorOut)
-                *errorOut = reply->errorString();
-            reply->deleteLater();
-            return false;
-        }
-
-        const QJsonObject release = QJsonDocument::fromJson(reply->readAll()).object();
-        const QJsonArray assets = release.value(QStringLiteral("assets")).toArray();
-        for (const QJsonValue& value : assets) {
-            const QString name = value.toObject().value(QStringLiteral("name")).toString();
-            if (name.endsWith(QStringLiteral(".zip"), Qt::CaseInsensitive)
-                && name.contains(QStringLiteral("win-x64"), Qt::CaseInsensitive)) {
-                assetUrl = value.toObject().value(QStringLiteral("browser_download_url")).toString();
-                assetName = name;
-                break;
+            if (reply->error() != QNetworkReply::NoError) {
+                if (errorOut)
+                    *errorOut = reply->errorString();
+                reply->deleteLater();
+                return false;
             }
-        }
-        if (assetUrl.isEmpty()) {
+
+            const QJsonObject release = QJsonDocument::fromJson(reply->readAll()).object();
+            const QJsonArray assets = release.value(QStringLiteral("assets")).toArray();
             for (const QJsonValue& value : assets) {
                 const QString name = value.toObject().value(QStringLiteral("name")).toString();
-                if (name.endsWith(QStringLiteral(".zip"), Qt::CaseInsensitive)) {
+                if (name.endsWith(QStringLiteral(".zip"), Qt::CaseInsensitive)
+                    && name.contains(QStringLiteral("win-x64"), Qt::CaseInsensitive)) {
                     assetUrl =
                         value.toObject().value(QStringLiteral("browser_download_url")).toString();
                     assetName = name;
                     break;
                 }
             }
+            if (assetUrl.isEmpty()) {
+                for (const QJsonValue& value : assets) {
+                    const QString name = value.toObject().value(QStringLiteral("name")).toString();
+                    if (name.endsWith(QStringLiteral(".zip"), Qt::CaseInsensitive)) {
+                        assetUrl = value.toObject()
+                                       .value(QStringLiteral("browser_download_url"))
+                                       .toString();
+                        assetName = name;
+                        break;
+                    }
+                }
+            }
+            reply->deleteLater();
         }
-        reply->deleteLater();
-    }
 
-    if (assetUrl.isEmpty()) {
-        if (errorOut)
-            *errorOut = QCoreApplication::translate("Core", "No Steamless release asset found");
-        return false;
-    }
+        if (assetUrl.isEmpty()) {
+            if (errorOut)
+                *errorOut =
+                    QCoreApplication::translate("Core", "No Steamless release asset found");
+            return false;
+        }
 
-    const QString root = toolRoot();
-    const QString downloadDir = root + QStringLiteral("/.download");
-    const QString zipPath = downloadDir + QLatin1Char('/') + assetName;
+        const QString root = toolRoot();
+        const QString zipPath = root + QStringLiteral("/.download/") + assetName;
+        QString downloadError;
+        if (!downloadToFile(assetUrl, zipPath, &downloadError)) {
+            if (errorOut)
+                *errorOut = downloadError;
+            return false;
+        }
 
-    QString downloadError;
-    if (!downloadToFile(assetUrl, zipPath, &downloadError)) {
-        if (errorOut)
-            *errorOut = downloadError;
-        return false;
-    }
-
-    QString extractError;
-    if (!extractZipArchive(zipPath, root, &extractError)) {
+        QString extractError;
+        if (!extractZipArchive(zipPath, root, &extractError)) {
+            QFile::remove(zipPath);
+            if (errorOut)
+                *errorOut = extractError;
+            return false;
+        }
         QFile::remove(zipPath);
-        if (errorOut)
-            *errorOut = extractError;
-        return false;
-    }
-    QFile::remove(zipPath);
 
-    m_cachedCliPath = findFileInTree(root, QStringLiteral("Steamless.CLI.exe"));
-    if (m_cachedCliPath.isEmpty()) {
-        if (errorOut)
-            *errorOut = QCoreApplication::translate("Core", "Steamless.CLI.exe not found in release");
-        return false;
+        m_cachedCliPath = findFileInTree(root, QStringLiteral("Steamless.CLI.exe"));
+        if (m_cachedCliPath.isEmpty()) {
+            if (errorOut)
+                *errorOut = QCoreApplication::translate(
+                    "Core", "Steamless.CLI.exe not found in release");
+            return false;
+        }
+        emit toolAvailableChanged();
     }
 
 #if !defined(Q_OS_WIN)
     QString runtimeError;
-    if (!prepareLinuxRuntime(m_cachedCliPath, &runtimeError)) {
+    if (!prepareLinuxRuntime(cliPath(), &runtimeError)) {
         if (errorOut)
             *errorOut = runtimeError;
         return false;
     }
 #endif
-
-    emit toolAvailableChanged();
     return true;
 }
 
@@ -501,9 +374,7 @@ bool SteamlessService::prepareLinuxRuntime(const QString& cliPath, QString* erro
 {
     const QString cliDir = QFileInfo(cliPath).absolutePath();
 
-    // Mono resolves Steamless.API from the exe's directory (unlike Windows
-    // .NET which tolerates the Plugins/ subfolder). Mirror the plugin DLLs
-    // next to the CLI so the assembly reference resolves under Wine Mono.
+    // Wine Mono resolves Steamless.API from the exe directory.
     const QString pluginsDir = cliDir + QStringLiteral("/Plugins");
     if (QDir(pluginsDir).exists()) {
         QDirIterator it(pluginsDir, {QStringLiteral("*.dll")}, QDir::Files);
@@ -513,44 +384,22 @@ bool SteamlessService::prepareLinuxRuntime(const QString& cliPath, QString* erro
         }
     }
 
-    // Wine Mono on Fedora-family distros needs the 32-bit MinGW runtime.
+    // Bundled MinGW runtime - no MSYS2 download.
     const QStringList runtimeDlls = {QStringLiteral("libgcc_s_dw2-1.dll"),
                                      QStringLiteral("libwinpthread-1.dll")};
-    const QStringList sysrootCandidates = {
-        QStringLiteral("/usr/i686-w64-mingw32/sys-root/mingw/bin"),
-        QStringLiteral("/usr/i686-w64-mingw32/bin"),
-        QStringLiteral("/opt/mingw32/bin"),
-    };
-
     for (const QString& dll : runtimeDlls) {
-        if (QFileInfo::exists(cliDir + QLatin1Char('/') + dll))
+        const QString dest = cliDir + QLatin1Char('/') + dll;
+        if (QFileInfo::exists(dest))
             continue;
-
-        bool copied = false;
-        for (const QString& dir : sysrootCandidates) {
-            if (copyFileIfMissing(dir + QLatin1Char('/') + dll,
-                                  cliDir + QLatin1Char('/') + dll)) {
-                copied = true;
-                break;
-            }
-        }
-        if (copied)
+        if (plantResourceFile(QStringLiteral(":/steamless/") + dll, dest))
             continue;
-
-        const QString pkg = dll == QLatin1String("libgcc_s_dw2-1.dll")
-                                ? QStringLiteral("mingw-w64-i686-gcc-libs")
-                                : QStringLiteral("mingw-w64-i686-libwinpthread");
-        QString downloadError;
-        if (!downloadMsys2Dll(dll, pkg, cliDir, &downloadError)) {
-            if (errorOut) {
-                *errorOut = QCoreApplication::translate(
-                                 "Core",
-                                 "Steamless needs the 32-bit MinGW runtime for Wine Mono "
-                                 "(%1 missing); auto-download failed: %2")
-                                 .arg(dll, downloadError);
-            }
-            return false;
+        if (errorOut) {
+            *errorOut = QCoreApplication::translate(
+                             "Core",
+                             "Steamless needs %1 next to the CLI (bundled runtime missing)")
+                             .arg(dll);
         }
+        return false;
     }
     return true;
 }
@@ -558,23 +407,7 @@ bool SteamlessService::prepareLinuxRuntime(const QString& cliPath, QString* erro
 
 void SteamlessService::ensureSetup()
 {
-    // Already installed - nothing to do (this is the normal "once" path).
-    if (isAvailable())
-        return;
-
-    QString error;
-    if (!ensureTool(&error)) {
-        if (m_notice) {
-            m_notice(QCoreApplication::translate("Core", "Steamless setup skipped: %1")
-                         .arg(error.isEmpty()
-                                  ? QCoreApplication::translate("Core", "unknown error")
-                                  : error));
-        }
-        return;
-    }
-
-    if (m_notice)
-        m_notice(QCoreApplication::translate("Core", "Steamless is ready"));
+    ensureTool(nullptr);
 }
 
 bool SteamlessService::hasSteamStub(const QString& exePath)
@@ -640,6 +473,9 @@ bool SteamlessService::stripExecutable(const QString& exePath, const QString& cl
     }
     process.setProgram(wineExecutable());
     process.setArguments({cliPath, QStringLiteral("--quiet"), toWinePath(exePath)});
+    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    env.insert(QStringLiteral("WINEDEBUG"), QStringLiteral("-all"));
+    process.setProcessEnvironment(env);
 #endif
     process.setWorkingDirectory(QFileInfo(cliPath).absolutePath());
     process.start();
@@ -687,51 +523,27 @@ SteamlessService::Result SteamlessService::processInstallSync(const QString& ins
         return result;
     }
 
-    QStringList candidates;
-    QDirIterator it(installPath, {QStringLiteral("*.exe")},
-                    QDir::Files | QDir::NoSymLinks, QDirIterator::Subdirectories);
-    int seen = 0;
-    while (it.hasNext() && seen < 4000) {
-        it.next();
-        ++seen;
-        const QString relative = QDir(installPath).relativeFilePath(it.filePath());
-        const int depth = relative.count(QLatin1Char('/')) + relative.count(QLatin1Char('\\'));
-        if (depth > 8)
-            continue;
-        candidates.append(it.filePath());
-        if (candidates.size() >= 48)
-            break;
-    }
-
+    const QStringList candidates = collectExeCandidates(installPath);
     if (candidates.isEmpty()) {
         result.error = QCoreApplication::translate("Core", "No executables found");
         return result;
     }
 
-    for (const QString& exe : std::as_const(candidates)) {
-        if (hasSteamStub(exe)) {
-            QString error;
-            if (stripExecutable(exe, cliPath, &error)) {
-                ++result.stripped;
-                result.messages.append(QCoreApplication::translate("Core", "Steamless unpacked %1")
-                                           .arg(QFileInfo(exe).fileName()));
-            } else {
-                result.messages.append(
-                    QCoreApplication::translate("Core", "Steamless failed on %1: %2")
-                        .arg(QFileInfo(exe).fileName(),
-                             error.isEmpty()
-                                 ? QCoreApplication::translate("Core", "unknown error")
-                                 : error));
-            }
+    for (const QString& exe : candidates) {
+        if (!hasSteamStub(exe))
             continue;
+        QString error;
+        if (stripExecutable(exe, cliPath, &error)) {
+            ++result.stripped;
+            result.messages.append(QCoreApplication::translate("Core", "Steamless unpacked %1")
+                                       .arg(QFileInfo(exe).fileName()));
+        } else {
+            result.messages.append(QCoreApplication::translate("Core", "Steamless failed on %1: %2")
+                                       .arg(QFileInfo(exe).fileName(),
+                                            error.isEmpty()
+                                                ? QCoreApplication::translate("Core", "unknown error")
+                                                : error));
         }
-
-        // No SteamStub wrapper. Distinguish "already applied earlier" (the
-        // backup sibling exists) from "never protected / doesn't need it".
-        if (QFileInfo::exists(exe + QStringLiteral(".steamstub.bak")))
-            ++result.alreadyApplied;
-        else
-            ++result.notProtected;
     }
     return result;
 }
@@ -741,36 +553,18 @@ void SteamlessService::processInstall(const QString& installPath, const QString&
     if (installPath.isEmpty())
         return;
 
-    if (!isAvailable()) {
-        QString error;
-        if (!ensureTool(&error)) {
-            if (m_notice) {
-                m_notice(QCoreApplication::translate("Core", "Steamless is not available: %1")
-                             .arg(error.isEmpty()
-                                      ? QCoreApplication::translate("Core", "unknown error")
-                                      : error));
-            }
-            return;
+    QString error;
+    if (!ensureTool(&error)) {
+        if (m_notice) {
+            m_notice(QCoreApplication::translate("Core", "Steamless is not available: %1")
+                         .arg(error.isEmpty()
+                                  ? QCoreApplication::translate("Core", "unknown error")
+                                  : error));
         }
+        return;
     }
 
     const QString cli = cliPath();
-
-#if !defined(Q_OS_WIN)
-    // Self-heal an already-downloaded tool (e.g. installed before this logic
-    // existed): mirror plugins and provision the MinGW runtime DLLs so Wine
-    // Mono can actually run the CLI.
-    QString runtimeError;
-    if (!prepareLinuxRuntime(cli, &runtimeError)) {
-        if (m_notice) {
-            m_notice(QCoreApplication::translate("Core", "Steamless is not available: %1")
-                         .arg(runtimeError));
-        }
-        emit finished(installPath, 0);
-        return;
-    }
-#endif
-
     auto* watcher = new QFutureWatcher<Result>(this);
     connect(watcher, &QFutureWatcher<Result>::finished, this,
             [this, watcher, installPath, title]() {
@@ -780,24 +574,15 @@ void SteamlessService::processInstall(const QString& installPath, const QString&
                 if (!result.error.isEmpty() && result.messages.isEmpty()) {
                     if (m_notice)
                         m_notice(QCoreApplication::translate("Core", "Steamless: %1").arg(result.error));
-                } else {
+                } else if (result.stripped > 0) {
                     for (const QString& message : result.messages) {
                         if (m_notice)
                             m_notice(message);
                     }
-                    if (result.stripped > 0 && m_notice) {
+                    if (m_notice) {
                         m_notice(QCoreApplication::translate(
                                      "Core", "Steamless removed SteamStub from %1 file(s) in %2")
                                      .arg(result.stripped)
-                                     .arg(title));
-                    } else if (result.alreadyApplied > 0 && m_notice) {
-                        m_notice(QCoreApplication::translate(
-                                     "Core", "Steamless already applied to %1 (%2 file(s)) - nothing to do")
-                                     .arg(title)
-                                     .arg(result.alreadyApplied));
-                    } else if (result.notProtected > 0 && m_notice) {
-                        m_notice(QCoreApplication::translate(
-                                     "Core", "Steamless not needed - %1 has no SteamStub DRM")
                                      .arg(title));
                     }
                 }
@@ -807,6 +592,82 @@ void SteamlessService::processInstall(const QString& installPath, const QString&
     watcher->setFuture(QtConcurrent::run([installPath, cli]() {
         return processInstallSync(installPath, cli);
     }));
+}
+
+int SteamlessService::ensureUnpacked(const QString& installPath, QString* errorOut)
+{
+    if (installPath.isEmpty() || !QFileInfo::exists(installPath)) {
+        if (errorOut)
+            *errorOut = QCoreApplication::translate("Core", "Game folder not found");
+        return -1;
+    }
+
+    bool needsStrip = false;
+    for (const QString& exe : collectExeCandidates(installPath)) {
+        if (hasSteamStub(exe)) {
+            needsStrip = true;
+            break;
+        }
+    }
+    if (!needsStrip)
+        return 0;
+
+    QString toolError;
+    if (!ensureTool(&toolError)) {
+        if (errorOut) {
+            *errorOut = toolError.isEmpty()
+                            ? QCoreApplication::translate("Core", "Steamless is not available")
+                            : toolError;
+        }
+        return -1;
+    }
+
+    const Result result = processInstallSync(installPath, cliPath());
+    if (!result.error.isEmpty() && result.stripped == 0) {
+        if (errorOut)
+            *errorOut = result.error;
+        return -1;
+    }
+    return result.stripped;
+}
+
+QVariantMap SteamlessService::installInfo(const QString& installPath)
+{
+    QVariantMap info{
+        {QStringLiteral("steamlessRelevant"), false},
+        {QStringLiteral("steamlessApplied"), false},
+        {QStringLiteral("steamlessStubPresent"), false},
+        {QStringLiteral("steamlessLabel"),
+         QCoreApplication::translate("Core", "Not needed")},
+    };
+    if (installPath.isEmpty() || !QFileInfo::exists(installPath))
+        return info;
+
+    const QStringList candidates = collectExeCandidates(installPath);
+    if (candidates.isEmpty())
+        return info;
+
+    info.insert(QStringLiteral("steamlessRelevant"), true);
+    bool stubPresent = false;
+    bool applied = false;
+    for (const QString& exe : candidates) {
+        if (hasSteamStub(exe))
+            stubPresent = true;
+        if (QFileInfo::exists(exe + QStringLiteral(".steamstub.bak")))
+            applied = true;
+    }
+    info.insert(QStringLiteral("steamlessStubPresent"), stubPresent);
+    info.insert(QStringLiteral("steamlessApplied"), applied && !stubPresent);
+
+    QString label;
+    if (stubPresent)
+        label = QCoreApplication::translate("Core", "Needed");
+    else if (applied)
+        label = QCoreApplication::translate("Core", "Applied");
+    else
+        label = QCoreApplication::translate("Core", "Not needed");
+    info.insert(QStringLiteral("steamlessLabel"), label);
+    return info;
 }
 
 } // namespace arachnel::core

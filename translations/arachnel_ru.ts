@@ -807,10 +807,10 @@
     </message>
     <message>
         <location line="-165"/>
-        <location filename="../src/core/library/library_controller.cpp" line="+280"/>
+        <location filename="../src/core/library/library_controller.cpp" line="+298"/>
         <location line="+42"/>
         <location line="+58"/>
-        <location filename="../src/core/launch/launch_controller.cpp" line="+169"/>
+        <location filename="../src/core/launch/launch_controller.cpp" line="+307"/>
         <source>Couldn&apos;t update DLC unlocks.</source>
         <translation>Не удалось обновить разблокировку DLC.</translation>
     </message>
@@ -925,7 +925,7 @@
         <translation>Ошибка каталога: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="+397"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="+403"/>
         <source>Game not found for add-on</source>
         <translation>Игра не найдена для дополнения</translation>
     </message>
@@ -941,7 +941,7 @@
         <translation>Не удалось найти игру для установки: %1</translation>
     </message>
     <message>
-        <location line="-417"/>
+        <location line="-423"/>
         <location line="+33"/>
         <source>Moving %1</source>
         <translation>Перемещение %1</translation>
@@ -957,7 +957,7 @@
         <translation>Не удалось переместить</translation>
     </message>
     <message>
-        <location line="+337"/>
+        <location line="+343"/>
         <source>Download complete - install manually</source>
         <translation>Загрузка завершена - установите вручную</translation>
     </message>
@@ -1027,7 +1027,6 @@
         <location filename="../src/core/library/library_facade_ops.cpp" line="+216"/>
         <location line="+39"/>
         <location line="+37"/>
-        <location line="+40"/>
         <source>Game not found</source>
         <translation>Игра не найдена</translation>
     </message>
@@ -1068,7 +1067,7 @@
         <translation>Нет ссылки для загрузки: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/library/library_facade_ops.cpp" line="-212"/>
+        <location filename="../src/core/library/library_facade_ops.cpp" line="-172"/>
         <location line="+24"/>
         <source>Choose library folder</source>
         <translation>Выберите папку библиотеки</translation>
@@ -1191,14 +1190,9 @@
         <translation>Добавлено в Steam. Перезапусти Steam, чтобы увидеть игру и обложки.</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location filename="../src/core/install/steamless_service.cpp" line="+619"/>
         <source>Steamless is not available</source>
         <translation>Steamless недоступен</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Applying Steamless to %1…</source>
-        <translation>Применение Steamless к %1…</translation>
     </message>
     <message>
         <location filename="../src/core/catalog/catalog_controller.cpp" line="+239"/>
@@ -1258,7 +1252,7 @@
         <translation>Установка runtime не зарегистрировалась в префиксе Proton: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/launch/launch_controller.cpp" line="-127"/>
+        <location filename="../src/core/launch/launch_controller.cpp" line="-246"/>
         <source>Game process started (PID %1)</source>
         <translation>Процесс игры запущен (PID %1)</translation>
     </message>
@@ -1273,22 +1267,43 @@
         <translation>Процесс игры завершился</translation>
     </message>
     <message>
-        <location line="+40"/>
+        <location line="+21"/>
+        <source>Online Fix quit right after launch</source>
+        <translation>Online Fix сразу завершился после запуска</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Disabling Online Fix and launching without it</source>
+        <translation>Отключаю Online Fix и запускаю без него</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Online Fix failed to start this game - launched without it. You can turn Online Fix back on in game settings.</source>
+        <translation>Online Fix не смог запустить эту игру - запустил без него. Включить снова можно в настройках игры.</translation>
+    </message>
+    <message>
+        <location line="+60"/>
         <source>--- Game output (%1) ---</source>
         <translation>--- Вывод игры (%1) ---</translation>
     </message>
     <message>
         <location line="+8"/>
+        <location filename="../src/core/launch/launch_facade.cpp" line="+80"/>
         <source>No launch has been attempted for this game yet.</source>
         <translation>Запуск этой игры ещё не пытались выполнить.</translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location line="+25"/>
+        <source>Online Fix showed an error dialog</source>
+        <translation>Online Fix показал окно ошибки</translation>
+    </message>
+    <message>
+        <location line="+19"/>
         <source>Game is not installed yet</source>
         <translation>Игра ещё не установлена</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+17"/>
         <source>Launching %1 (%2)</source>
         <translation>Запуск %1 (%2)</translation>
     </message>
@@ -1318,12 +1333,27 @@
         <translation>Не удалось подготовить runtime (Proton/Wine)</translation>
     </message>
     <message>
-        <location line="+27"/>
+        <location line="+9"/>
+        <source>Steamless removed SteamStub from %1 file(s)</source>
+        <translation>Steamless снял SteamStub с %1 файл(ов)</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Steamless failed: %1</source>
+        <translation>Steamless не удалось: %1</translation>
+    </message>
+    <message>
+        <location line="+34"/>
+        <source>Game files are missing or incomplete - reinstall from the catalog. Steam Store launch is not used.</source>
+        <translation>Файлы игры отсутствуют или неполные - переустанови из каталога. Запуск через Steam Store не используется.</translation>
+    </message>
+    <message>
+        <location line="+22"/>
         <source>Online Fix overlay detected</source>
         <translation>Обнаружен оверлей Online Fix</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+12"/>
         <source>Steam is not running - Online Fix needs it for SpaceWar/overlay. Starting Steam…</source>
         <translation>Steam не запущен - Online Fix нужен для SpaceWar/overlay. Запускаем Steam…</translation>
     </message>
@@ -1334,7 +1364,7 @@
     </message>
     <message>
         <location line="+5"/>
-        <location filename="../src/core/library/library_facade_ops.cpp" line="-118"/>
+        <location filename="../src/core/library/library_facade_ops.cpp" line="-102"/>
         <location line="+39"/>
         <location line="+37"/>
         <location line="+16"/>
@@ -1368,7 +1398,7 @@
         <translation>Не удалось запустить игру</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="+20"/>
         <source>Failed to stop game</source>
         <translation>Не удалось остановить игру</translation>
     </message>
@@ -1478,7 +1508,7 @@
         <translation>Обновление завершено, но сведения о версии неполные. Обновите каталог и повторите обновление, если метка останется.</translation>
     </message>
     <message>
-        <location line="-230"/>
+        <location line="-236"/>
         <source>No catalog sources enabled</source>
         <translation>Нет включённых источников каталога</translation>
     </message>
@@ -1541,12 +1571,12 @@
         <translation>Неверный файл плагина. Выберите пакет плагина (.arach)</translation>
     </message>
     <message>
-        <location filename="../src/core/install/steamless_service.cpp" line="+103"/>
+        <location filename="../src/core/install/steamless_service.cpp" line="-526"/>
         <source>Downloaded file is not a ZIP archive</source>
         <translation>Скачанный файл не является ZIP-архивом</translation>
     </message>
     <message>
-        <location line="+27"/>
+        <location line="+30"/>
         <location filename="../src/core/plugins/plugin_host_packages.cpp" line="+30"/>
         <source>Could not start archive extraction</source>
         <translation>Не удалось запустить распаковку архива</translation>
@@ -1563,66 +1593,42 @@
         <translation>Не удалось распаковать архив</translation>
     </message>
     <message>
-        <location line="+104"/>
-        <source>Could not extract %1 (tried %2); install tar with zstd support</source>
-        <translation>Не удалось распаковать %1 (пробовали %2); установите tar с поддержкой zstd</translation>
-    </message>
-    <message>
-        <location line="+62"/>
-        <source>No %1 package found on MSYS2</source>
-        <translation>Пакет %1 не найден на MSYS2</translation>
-    </message>
-    <message>
-        <location line="+25"/>
-        <source>%1 not found in %2</source>
-        <translation>%1 не найден в %2</translation>
-    </message>
-    <message>
-        <location line="+60"/>
-        <location line="+236"/>
+        <location line="+127"/>
+        <location line="+200"/>
         <source>Steamless needs Wine on Linux (install wine first)</source>
         <translation>Для Steamless на Linux нужен Wine (сначала установите wine)</translation>
     </message>
     <message>
-        <location line="-182"/>
+        <location line="-141"/>
         <source>No Steamless release asset found</source>
         <translation>Не найден файл релиза Steamless</translation>
     </message>
     <message>
-        <location line="+27"/>
+        <location line="+25"/>
         <source>Steamless.CLI.exe not found in release</source>
         <translation>Steamless.CLI.exe не найден в релизе</translation>
     </message>
     <message>
-        <location line="+64"/>
-        <source>Steamless needs the 32-bit MinGW runtime for Wine Mono (%1 missing); auto-download failed: %2</source>
-        <translation>Steamless нужен 32-битный runtime MinGW для Wine Mono (нет %1); автозагрузка не удалась: %2</translation>
-    </message>
-    <message>
-        <location line="+22"/>
-        <source>Steamless setup skipped: %1</source>
-        <translation>Настройка Steamless пропущена: %1</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <location line="+153"/>
-        <location line="+27"/>
-        <location filename="../src/core/launch/launch_controller.cpp" line="-23"/>
+        <location line="+190"/>
+        <location line="+17"/>
+        <location filename="../src/core/launch/launch_controller.cpp" line="-123"/>
+        <location line="+6"/>
+        <location line="+93"/>
         <source>unknown error</source>
         <translation>неизвестная ошибка</translation>
     </message>
     <message>
-        <location line="-173"/>
-        <source>Steamless is ready</source>
-        <translation>Steamless готов</translation>
-    </message>
-    <message>
-        <location line="+72"/>
+        <location line="-76"/>
         <source>Steamless failed to start</source>
         <translation>Не удалось запустить Steamless</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="-88"/>
+        <source>Steamless needs %1 next to the CLI (bundled runtime missing)</source>
+        <translation>Steamless нужен файл %1 рядом с CLI (нет встроенного runtime)</translation>
+    </message>
+    <message>
+        <location line="+94"/>
         <source>Steamless timed out</source>
         <translation>Истекло время ожидания Steamless</translation>
     </message>
@@ -1643,32 +1649,33 @@
     </message>
     <message>
         <location line="+11"/>
+        <location line="+79"/>
         <source>Game folder not found</source>
         <translation>Папка игры не найдена</translation>
     </message>
     <message>
-        <location line="+21"/>
+        <location line="-73"/>
         <source>No executables found</source>
         <translation>Исполняемые файлы не найдены</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+10"/>
         <source>Steamless unpacked %1</source>
         <translation>Steamless распаковал %1</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+3"/>
         <source>Steamless failed on %1: %2</source>
         <translation>Steamless не смог обработать %1: %2</translation>
     </message>
     <message>
-        <location line="+28"/>
         <location line="+18"/>
         <source>Steamless is not available: %1</source>
         <translation>Steamless недоступен: %1</translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+17"/>
+        <location filename="../src/core/launch/launch_controller.cpp" line="-101"/>
         <source>Steamless: %1</source>
         <translation>Steamless: %1</translation>
     </message>
@@ -1678,14 +1685,20 @@
         <translation>Steamless снял SteamStub с %1 файл(ов) в %2</translation>
     </message>
     <message>
-        <location line="+5"/>
-        <source>Steamless already applied to %1 (%2 file(s)) - nothing to do</source>
-        <translation>Steamless уже применён к %1 (%2 файл(ов)) - делать нечего</translation>
+        <location line="+58"/>
+        <location line="+27"/>
+        <source>Not needed</source>
+        <translation>Не нужен</translation>
     </message>
     <message>
-        <location line="+5"/>
-        <source>Steamless not needed - %1 has no SteamStub DRM</source>
-        <translation>Steamless не нужен - у %1 нет SteamStub DRM</translation>
+        <location line="-4"/>
+        <source>Needed</source>
+        <translation>Нужен</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Applied</source>
+        <translation>Применён</translation>
     </message>
     <message>
         <location filename="../src/core/plugins/plugin_host_packages.cpp" line="+11"/>
@@ -1883,7 +1896,7 @@
     </message>
     <message>
         <location line="+3"/>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="+97"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="+103"/>
         <source>Arachnel %1 is available</source>
         <translation>Доступен Arachnel %1</translation>
     </message>
@@ -1980,7 +1993,7 @@
         <translation>Автозапуск установщика доступен только на Windows</translation>
     </message>
     <message>
-        <location filename="../src/core/install/online_fix_overlay.cpp" line="+602"/>
+        <location filename="../src/core/install/online_fix_overlay.cpp" line="+624"/>
         <source>Not installed</source>
         <translation>Не установлен</translation>
     </message>
@@ -2143,7 +2156,7 @@
     <message>
         <location filename="../src/core/library/library_controller.cpp" line="-43"/>
         <location line="+21"/>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="-262"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="-268"/>
         <source>Game removed: %1</source>
         <translation>Игра удалена: %1</translation>
     </message>
@@ -2321,12 +2334,12 @@
         <translation>VR</translation>
     </message>
     <message>
-        <location filename="../src/core/launch/launch_facade.cpp" line="+53"/>
+        <location filename="../src/core/launch/launch_facade.cpp" line="-12"/>
         <source>Launch log copied</source>
         <translation>Лог запуска скопирован</translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location line="+18"/>
         <source>Save launch log</source>
         <translation>Сохранить лог запуска</translation>
     </message>
@@ -2489,7 +2502,7 @@
 <context>
     <name>DownloadProgressButton</name>
     <message>
-        <location filename="../qml/components/DownloadProgressButton.qml" line="+19"/>
+        <location filename="../qml/components/DownloadProgressButton.qml" line="+20"/>
         <source>Download</source>
         <translation>Загрузка</translation>
     </message>
@@ -2504,12 +2517,17 @@
         <translation>Установка…</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+4"/>
         <source>Retry install</source>
         <translation>Повторить установку</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="-2"/>
+        <source>Retry download</source>
+        <translation>Повторить загрузку</translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Install</source>
         <translation>Установить</translation>
     </message>
@@ -2659,7 +2677,7 @@
 <context>
     <name>GameDetailsContent</name>
     <message>
-        <location filename="../qml/app/GameDetailsContent.qml" line="+31"/>
+        <location filename="../qml/app/GameDetailsContent.qml" line="+53"/>
         <source>Game details</source>
         <translation>Детали игры</translation>
     </message>
@@ -2705,12 +2723,12 @@
     </message>
     <message>
         <location line="+22"/>
-        <location line="+358"/>
+        <location line="+360"/>
         <source>Share</source>
         <translation>Поделиться</translation>
     </message>
     <message>
-        <location line="-348"/>
+        <location line="-350"/>
         <source>Source page</source>
         <translation>Страница на источнике</translation>
     </message>
@@ -2735,38 +2753,33 @@
         <translation>URL каталога</translation>
     </message>
     <message>
-        <location line="+115"/>
-        <location line="+132"/>
+        <location line="+120"/>
+        <location line="+120"/>
         <source>Launch log</source>
         <translation>Лог запуска</translation>
     </message>
     <message>
-        <location line="-101"/>
-        <source>Apply Steamless</source>
-        <translation>Применить Steamless</translation>
-    </message>
-    <message>
-        <location line="+108"/>
+        <location line="+16"/>
         <source>Why the game may not boot, including the game&apos;s own output.</source>
         <translation>Почему игра может не запускаться, включая её собственный вывод.</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="+17"/>
         <source>No launch has been attempted yet.</source>
         <translation>Запуск ещё не пытались выполнить.</translation>
     </message>
     <message>
-        <location line="+28"/>
+        <location line="+32"/>
         <source>Copy</source>
         <translation>Копировать</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+6"/>
         <source>Save log.txt</source>
         <translation>Сохранить log.txt</translation>
     </message>
     <message>
-        <location line="+21"/>
+        <location line="+20"/>
         <source>Copy link</source>
         <translation>Скопировать ссылку</translation>
     </message>
@@ -2781,7 +2794,12 @@
         <translation>Ошибка установки</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="-1"/>
+        <source>Download failed</source>
+        <translation>Ошибка загрузки</translation>
+    </message>
+    <message>
+        <location line="+19"/>
         <source>Stop</source>
         <translation>Остановить</translation>
     </message>
@@ -2796,7 +2814,7 @@
         <translation>Играть</translation>
     </message>
     <message>
-        <location line="+51"/>
+        <location line="+54"/>
         <source>Remove from favorites</source>
         <translation>Убрать из избранного</translation>
     </message>
@@ -2806,13 +2824,13 @@
         <translation>В избранное</translation>
     </message>
     <message>
-        <location line="+21"/>
+        <location line="+18"/>
         <location line="+287"/>
         <source>Delete</source>
         <translation>Удалить</translation>
     </message>
     <message>
-        <location line="-259"/>
+        <location line="-268"/>
         <source>Update</source>
         <translation>Обновление</translation>
     </message>
@@ -2827,7 +2845,7 @@
         <translation>Описание пока недоступно.</translation>
     </message>
     <message>
-        <location line="+157"/>
+        <location line="+166"/>
         <source>Remove game?</source>
         <translation>Удалить игру?</translation>
     </message>
@@ -2843,7 +2861,7 @@
         <translation>Закрыть</translation>
     </message>
     <message>
-        <location line="-354"/>
+        <location line="-356"/>
         <source>Ready to download from Steam CDN. Online Fix can be included when needed.</source>
         <translation>Готово к загрузке с Steam CDN. При необходимости можно включить Online Fix.</translation>
     </message>
@@ -2889,7 +2907,7 @@
 <context>
     <name>GameDetailsPage</name>
     <message numerus="yes">
-        <location filename="../qml/app/GameDetailsPage.qml" line="+261"/>
+        <location filename="../qml/app/GameDetailsPage.qml" line="+265"/>
         <source>%n source(s)</source>
         <translation>
             <numerusform>%n источник</numerusform>
@@ -2954,7 +2972,7 @@
 <context>
     <name>GameSettingsSheet</name>
     <message>
-        <location filename="../qml/app/GameSettingsSheet.qml" line="+119"/>
+        <location filename="../qml/app/GameSettingsSheet.qml" line="+123"/>
         <source>Game settings</source>
         <translation>Настройки игры</translation>
     </message>
@@ -3050,6 +3068,11 @@
     </message>
     <message>
         <location line="+8"/>
+        <source>Steamless</source>
+        <translation>Steamless</translation>
+    </message>
+    <message>
+        <location line="+6"/>
         <source>Install path</source>
         <translation>Путь установки</translation>
     </message>
@@ -3059,7 +3082,7 @@
         <translation>Установка…</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Waiting to install</source>
         <translation>Ожидает установки</translation>
     </message>
@@ -3079,7 +3102,7 @@
         <translation>Готово</translation>
     </message>
     <message>
-        <location line="-234"/>
+        <location line="-241"/>
         <source>Online Fix for this game</source>
         <translation>Online Fix для этой игры</translation>
     </message>
@@ -3099,6 +3122,8 @@
         <translation>Не установлен</translation>
     </message>
     <message>
+        <location line="+1"/>
+        <location line="+5"/>
         <location line="+1"/>
         <source>Not needed</source>
         <translation>Не нужен</translation>

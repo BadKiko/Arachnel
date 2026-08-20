@@ -8,6 +8,31 @@ import Qcm.Material as MD
 Item {
     required property var page
 
+    readonly property bool hasLaunchLog: {
+        const _rev = page.detailsRevision
+        return Core.hasGameLaunchLog(page.gameId)
+    }
+
+    function openLaunchLog() {
+        launchLogTextArea.text = Core.gameLaunchLog(page.gameId)
+        launchLogDialog.open()
+    }
+
+    Connections {
+        target: Core
+        function onLaunchSessionEnded(gameId, elapsedMs, suppressQuickExitLog) {
+            if (gameId !== page.gameId)
+                return
+            page.detailsRevision++
+            // Quick exit usually means crash / bad launch - show the log.
+            // Skip when Online Fix auto-retries without the fix.
+            if (suppressQuickExitLog)
+                return
+            if (elapsedMs >= 0 && elapsedMs < 20000)
+                openLaunchLog()
+        }
+    }
+
     ColumnLayout {
         anchors.fill: parent
         spacing: 0
@@ -319,8 +344,10 @@ Item {
 
                     MD.Label {
                         Layout.fillWidth: true
-                        visible: page.installFailed
-                        text: page.downloadJob.detail || qsTr("Install failed")
+                        visible: page.downloadFailed || page.installFailed
+                        text: page.downloadJob.detail
+                              || (page.downloadFailed ? qsTr("Download failed")
+                                                      : qsTr("Install failed"))
                         wrapMode: Text.WordWrap
                         color: MD.Token.color.error
                         typescale: MD.Token.typescale.body_medium
@@ -372,10 +399,13 @@ Item {
                                 paused: page.downloadPaused
                                 completed: false
                                 readyToInstall: page.readyToInstall
+                                downloadFailed: page.downloadFailed
                                 installFailed: page.installFailed
                                 installing: page.isInstalling
                                 onActivated: {
-                                    if (page.installFailed || page.readyToInstall)
+                                    if (page.downloadFailed)
+                                        Core.retryJob(page.downloadJob.jobId)
+                                    else if (page.installFailed || page.readyToInstall)
                                         Core.retryInstall(page.downloadJob.jobId)
                                     else
                                         page.beginInstall()
@@ -401,14 +431,11 @@ Item {
 
                             MD.IconButton {
                                 Layout.alignment: Qt.AlignVCenter
-                                visible: page.installed
+                                visible: hasLaunchLog
                                 mdState.type: MD.Enum.IBtOutlined
                                 icon.name: MD.Token.icon.receipt_long
                                 Accessible.name: qsTr("Launch log")
-                                onClicked: {
-                                    launchLogTextArea.text = Core.gameLaunchLog()
-                                    launchLogDialog.open()
-                                }
+                                onClicked: openLaunchLog()
                             }
 
                             MD.Button {
@@ -430,15 +457,6 @@ Item {
                                 mdState.type: MD.Enum.IBtOutlined
                                 icon.name: MD.Token.icon.settings
                                 onClicked: gameSettingsSheet.openForGame(page.gameId)
-                            }
-
-                            MD.Button {
-                                Layout.alignment: Qt.AlignVCenter
-                                visible: page.installed
-                                text: qsTr("Apply Steamless")
-                                icon.name: MD.Token.icon.shield
-                                mdState.type: MD.Enum.BtOutlined
-                                onClicked: Core.reapplySteamless(page.gameId)
                             }
 
                             MD.Button {
@@ -539,35 +557,43 @@ Item {
         title: qsTr("Launch log")
         modal: true
         width: Math.min(720, page.width > 0 ? page.width - 48 : 720)
-        height: Math.min(540, page.height > 0 ? page.height - 48 : 540)
+        height: Math.min(560, page.height > 0 ? page.height - 48 : 560)
 
-        MD.Label {
-            width: launchLogDialog.width - launchLogDialog.horizontalPadding * 2
-            text: qsTr("Why the game may not boot, including the game's own output.")
-            color: MD.Token.color.on_surface_variant
-            typescale: MD.Token.typescale.body_medium
-            wrapMode: Text.WordWrap
-        }
-
-        ScrollView {
+        ColumnLayout {
             width: launchLogDialog.width - launchLogDialog.horizontalPadding * 2
             height: launchLogDialog.height - launchLogDialog.topPadding
-                    - launchLogDialog.bottomPadding - launchLogFooter.implicitHeight
-                    - MD.Token.spacing.large
-            clip: true
+                    - launchLogDialog.bottomPadding
+                    - (launchLogFooter.implicitHeight > 0 ? launchLogFooter.implicitHeight
+                                                         : 0)
+                    - MD.Token.spacing.medium
+            spacing: MD.Token.spacing.small
 
-            TextArea {
-                id: launchLogTextArea
-                readOnly: true
-                wrapMode: TextEdit.Wrap
-                selectByMouse: true
-                persistentSelection: true
-                text: qsTr("No launch has been attempted yet.")
-                padding: 12
-                color: MD.Token.color.on_surface
-                background: Rectangle {
-                    color: MD.Token.color.surface_container
-                    radius: MD.Token.shape.corner.medium
+            MD.Label {
+                Layout.fillWidth: true
+                text: qsTr("Why the game may not boot, including the game's own output.")
+                color: MD.Token.color.on_surface_variant
+                typescale: MD.Token.typescale.body_medium
+                wrapMode: Text.WordWrap
+            }
+
+            ScrollView {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                clip: true
+
+                TextArea {
+                    id: launchLogTextArea
+                    readOnly: true
+                    wrapMode: TextEdit.Wrap
+                    selectByMouse: true
+                    persistentSelection: true
+                    text: qsTr("No launch has been attempted yet.")
+                    padding: 12
+                    color: MD.Token.color.on_surface
+                    background: Rectangle {
+                        color: MD.Token.color.surface_container
+                        radius: MD.Token.shape.corner.medium
+                    }
                 }
             }
         }
@@ -576,31 +602,32 @@ Item {
             id: launchLogFooter
             implicitHeight: launchLogFooterRow.implicitHeight + MD.Token.spacing.medium
 
-            MD.DialogButtonBox {
+            RowLayout {
                 id: launchLogFooterRow
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.top: parent.top
+                spacing: MD.Token.spacing.small
 
                 MD.Button {
                     mdState.type: MD.Enum.BtText
                     text: qsTr("Close")
-                    DialogButtonBox.buttonRole: DialogButtonBox.RejectRole
                     onClicked: launchLogDialog.close()
                 }
+
+                Item { Layout.fillWidth: true }
+
                 MD.Button {
                     mdState.type: MD.Enum.BtOutlined
                     text: qsTr("Copy")
                     icon.name: MD.Token.icon.content_copy
-                    DialogButtonBox.buttonRole: DialogButtonBox.ActionRole
-                    onClicked: Core.copyGameLaunchLog()
+                    onClicked: Core.copyGameLaunchLog(page.gameId)
                 }
                 MD.Button {
                     mdState.type: MD.Enum.BtFilled
                     text: qsTr("Save log.txt")
                     icon.name: MD.Token.icon.save
-                    DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole
-                    onClicked: Core.saveGameLaunchLog()
+                    onClicked: Core.saveGameLaunchLog(page.gameId)
                 }
             }
         }

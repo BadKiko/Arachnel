@@ -94,8 +94,11 @@ Item {
         const _rev = root.detailsRevision
         return Core.isEntryDownloadComplete(gameId)
     }
-    readonly property bool installFailed: !!(downloadJob.installFailed)
-        || downloadJob.status === "failed"
+    readonly property bool downloadFailed: downloadJob.status === "failed"
+        || downloadJob.status === "cancelled"
+    // Install-phase failure only (completed download with bad install, not a network drop).
+    readonly property bool installFailed: !root.downloadFailed
+        && !!(downloadJob.installFailed)
     readonly property bool isInstalling: downloadJob.status === "installing"
     readonly property bool readyToInstall: !root.playable
         && !root.installed
@@ -108,6 +111,7 @@ Item {
         || root.showDownloadProgress
         || root.readyToInstall
         || root.installFailed
+        || root.downloadFailed
     )
 
     property var downloadJob: ({})

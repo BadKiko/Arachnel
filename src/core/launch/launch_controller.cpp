@@ -11,27 +11,41 @@
 #include "process_tracker.h"
 #include "proton_manager.h"
 #include "settings_store.h"
+#include "steamless_service.h"
+#include "wine_error_probe.h"
 
 #include <QCoreApplication>
 #include <QDateTime>
+#include <QDir>
 #include <QFile>
 #include <QFileInfo>
 #include <QStandardPaths>
 #include <QTimer>
 
+#include <algorithm>
+
 namespace arachnel::core {
 
+namespace {
+constexpr int kPollIntervalMs = 1500;
+constexpr int kOnlineFixPollIntervalMs = 400;
+constexpr int kOnlineFixWatchMs = 20000;
+constexpr int kOnlineFixEarlyExitMs = 12000;
+} // namespace
+
 LaunchController::LaunchController(LibraryModel* library, SettingsStore* settings,
-                                   PluginHost* plugins, ProtonManager* protons, Hooks hooks,
-                                   QObject* parent)
+                                   PluginHost* plugins, ProtonManager* protons,
+                                   SteamlessService* steamless, Hooks hooks, QObject* parent)
     : QObject(parent), m_library(library), m_settings(settings), m_plugins(plugins),
-      m_protons(protons), m_hooks(std::move(hooks)), m_timer(new QTimer(this))
+      m_protons(protons), m_steamless(steamless), m_hooks(std::move(hooks)),
+      m_timer(new QTimer(this))
 {
-    m_timer->setInterval(1500);
+    m_timer->setInterval(kPollIntervalMs);
     connect(m_timer, &QTimer::timeout, this, &LaunchController::pollRunningGame);
 }
 
-void LaunchController::markRunning(const LibraryGame& game, qint64 processId)
+void LaunchController::markRunning(const LibraryGame& game, qint64 processId,
+                                   bool watchingOnlineFix, const WineErrorWatchHints& watchHints)
 {
     if (m_hooks.touchLastPlayed)
         m_hooks.touchLastPlayed(game.id);
@@ -39,6 +53,13 @@ void LaunchController::markRunning(const LibraryGame& game, qint64 processId)
     m_gameTitle = game.title;
     m_gameCoverUrl = game.coverUrl;
     m_processId = processId;
+    m_launchStartedAt = QDateTime::currentDateTime();
+    m_watchingOnlineFix = watchingOnlineFix;
+    m_watchHints = watchHints;
+    m_sawGameExecutable = false;
+    m_onlineFixWatchUntil =
+        watchingOnlineFix ? m_launchStartedAt.addMSecs(kOnlineFixWatchMs) : QDateTime();
+    m_timer->setInterval(watchingOnlineFix ? kOnlineFixPollIntervalMs : kPollIntervalMs);
     logLine(QCoreApplication::translate("Core", "Game process started (PID %1)")
                 .arg(processId > 0 ? QString::number(processId)
                                    : QCoreApplication::translate("Core", "n/a")));
@@ -46,17 +67,73 @@ void LaunchController::markRunning(const LibraryGame& game, qint64 processId)
     processId > 0 ? m_timer->start() : m_timer->stop();
 }
 
-void LaunchController::clearRunning()
+void LaunchController::terminateTrackedLaunch()
+{
+    if (m_processId > 0) {
+        for (qint64 pid : relatedLaunchPids(m_processId, m_watchHints)) {
+            if (pid > 0)
+                ProcessTracker::terminateProcess(pid);
+        }
+        ProcessTracker::terminateProcess(m_processId);
+    }
+}
+
+void LaunchController::clearRunning(bool allowOnlineFixFallback, bool suppressQuickExitLog)
 {
     if (m_gameId.isEmpty())
         return;
     logLine(QCoreApplication::translate("Core", "Game process exited"));
+    const QString endedId = m_gameId;
+    const qint64 elapsedMs =
+        m_launchStartedAt.isValid() ? m_launchStartedAt.msecsTo(QDateTime::currentDateTime()) : 0;
+    const bool earlyOfExit = allowOnlineFixFallback && m_watchingOnlineFix
+        && !m_onlineFixFallbackUsed && elapsedMs >= 0 && elapsedMs < kOnlineFixEarlyExitMs;
     m_gameId.clear();
     m_gameTitle.clear();
     m_gameCoverUrl.clear();
     m_processId = 0;
+    m_launchStartedAt = {};
+    m_watchingOnlineFix = false;
+    m_onlineFixWatchUntil = {};
+    m_watchHints = {};
+    m_sawGameExecutable = false;
+    m_timer->setInterval(kPollIntervalMs);
     m_timer->stop();
     emit runningGameChanged();
+    // Suppress log when OF auto-retry will kick in (dialog path or silent early exit).
+    emit launchSessionEnded(endedId, elapsedMs, suppressQuickExitLog || earlyOfExit);
+    if (earlyOfExit) {
+        QTimer::singleShot(0, this, [this, endedId]() {
+            handleOnlineFixLaunchFailure(
+                endedId,
+                QCoreApplication::translate("Core", "Online Fix quit right after launch"));
+        });
+    }
+}
+
+void LaunchController::handleOnlineFixLaunchFailure(const QString& gameId, const QString& reason)
+{
+    if (gameId.isEmpty() || m_onlineFixFallbackUsed)
+        return;
+    m_onlineFixFallbackUsed = true;
+    logLine(reason);
+    logLine(QCoreApplication::translate(
+        "Core", "Disabling Online Fix and launching without it"));
+
+    if (m_hooks.setOnlineFixEnabled)
+        m_hooks.setOnlineFixEnabled(gameId, false);
+
+    if (m_hooks.notice) {
+        m_hooks.notice(QCoreApplication::translate(
+            "Core",
+            "Online Fix failed to start this game - launched without it. "
+            "You can turn Online Fix back on in game settings."));
+    }
+
+    terminateTrackedLaunch();
+    clearRunning(false, true);
+    m_relaunchWithoutOnlineFix = true;
+    QTimer::singleShot(350, this, [this, gameId]() { launchGame(gameId); });
 }
 
 void LaunchController::logLine(const QString& line)
@@ -68,7 +145,12 @@ void LaunchController::logLine(const QString& line)
 
 QString LaunchController::launchLogFilePath() const
 {
-    QString id = m_logGameId.isEmpty() ? m_gameId : m_logGameId;
+    return launchLogFilePath(m_logGameId.isEmpty() ? m_gameId : m_logGameId);
+}
+
+QString LaunchController::launchLogFilePath(const QString& gameId) const
+{
+    QString id = gameId.trimmed();
     if (id.isEmpty())
         return {};
     for (QChar& ch : id) {
@@ -81,8 +163,18 @@ QString LaunchController::launchLogFilePath() const
 
 QString LaunchController::launchLogText() const
 {
-    QString text = m_launchLogLines.join(QLatin1Char('\n'));
-    const QString capturePath = launchLogFilePath();
+    return launchLogText(m_logGameId.isEmpty() ? m_gameId : m_logGameId);
+}
+
+QString LaunchController::launchLogText(const QString& gameId) const
+{
+    QString text;
+    if (!gameId.isEmpty() && gameId == m_logGameId)
+        text = m_launchLogLines.join(QLatin1Char('\n'));
+    else if (gameId.isEmpty())
+        text = m_launchLogLines.join(QLatin1Char('\n'));
+
+    const QString capturePath = launchLogFilePath(gameId);
     if (!capturePath.isEmpty() && QFileInfo::exists(capturePath)) {
         QFile file(capturePath);
         if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -102,10 +194,51 @@ QString LaunchController::launchLogText() const
     return text;
 }
 
+bool LaunchController::hasLaunchLog(const QString& gameId) const
+{
+    if (gameId.isEmpty())
+        return false;
+    if (gameId == m_logGameId && !m_launchLogLines.isEmpty())
+        return true;
+    const QString path = launchLogFilePath(gameId);
+    return !path.isEmpty() && QFileInfo::exists(path) && QFileInfo(path).size() > 0;
+}
+
 void LaunchController::pollRunningGame()
 {
-    if (m_processId > 0 && !ProcessTracker::isProcessRunning(m_processId))
-        QTimer::singleShot(0, this, &LaunchController::clearRunning);
+    if (m_processId <= 0)
+        return;
+
+    if (m_watchingOnlineFix && !m_onlineFixFallbackUsed && m_onlineFixWatchUntil.isValid()
+        && QDateTime::currentDateTime() <= m_onlineFixWatchUntil) {
+        if (wineErrorDialogVisible(m_processId, m_watchHints)) {
+            const QString gameId = m_gameId;
+            handleOnlineFixLaunchFailure(
+                gameId, QCoreApplication::translate("Core", "Online Fix showed an error dialog"));
+            return;
+        }
+
+        // Proton often reparents the game off the launch pid. If we saw the exe and it
+        // vanishes (silent crash, no MessageBox), fall back the same way.
+        if (relatedGameExecutableAlive(m_processId, m_watchHints)) {
+            m_sawGameExecutable = true;
+        } else if (m_sawGameExecutable) {
+            const QString gameId = m_gameId;
+            handleOnlineFixLaunchFailure(
+                gameId,
+                QCoreApplication::translate("Core", "Online Fix quit right after launch"));
+            return;
+        }
+    }
+
+    if (m_watchingOnlineFix && m_onlineFixWatchUntil.isValid()
+        && QDateTime::currentDateTime() > m_onlineFixWatchUntil) {
+        m_watchingOnlineFix = false;
+        m_timer->setInterval(kPollIntervalMs);
+    }
+
+    if (!ProcessTracker::isProcessRunning(m_processId))
+        QTimer::singleShot(0, this, [this]() { clearRunning(true); });
 }
 
 void LaunchController::launchGame(const QString& gameId)
@@ -121,8 +254,15 @@ void LaunchController::launchGame(const QString& gameId)
 
     arachnel::logBreadcrumb(QStringLiteral("launch"), gameId);
 
+    const bool fromOfFallback = m_relaunchWithoutOnlineFix;
+    m_relaunchWithoutOnlineFix = false;
+    // Fresh Play click can retry OF fallback; auto relaunch after disable must not.
+    if (!fromOfFallback)
+        m_onlineFixFallbackUsed = false;
+
     m_logGameId = gameId;
-    m_launchLogLines.clear();
+    if (!fromOfFallback)
+        m_launchLogLines.clear();
     logLine(QCoreApplication::translate("Core", "Launching %1 (%2)").arg(game->title, gameId));
     logLine(QCoreApplication::translate("Core", "Install path: %1").arg(game->installPath));
     logLine(QCoreApplication::translate("Core", "Source: %1").arg(game->sourceId));
@@ -156,6 +296,30 @@ void LaunchController::launchGame(const QString& gameId)
             return;
         }
 
+        // Default Play pipeline: Steamless (SteamStub) then Online Fix env.
+        if (m_steamless) {
+            QString steamlessError;
+            const int stripped = m_steamless->ensureUnpacked(gameCopy.installPath, &steamlessError);
+            if (stripped > 0) {
+                logLine(QCoreApplication::translate(
+                            "Core", "Steamless removed SteamStub from %1 file(s)")
+                            .arg(stripped));
+            } else if (stripped < 0) {
+                logLine(QCoreApplication::translate("Core", "Steamless: %1")
+                            .arg(steamlessError.isEmpty()
+                                     ? QCoreApplication::translate("Core", "unknown error")
+                                     : steamlessError));
+                if (m_hooks.notice) {
+                    m_hooks.notice(QCoreApplication::translate(
+                                       "Core", "Steamless failed: %1")
+                                       .arg(steamlessError.isEmpty()
+                                                ? QCoreApplication::translate("Core", "unknown error")
+                                                : steamlessError));
+                }
+                // Still try to launch - games without a live stub may boot anyway.
+            }
+        }
+
         LaunchInfo info;
         if (ISourcePlugin* plugin = m_plugins->plugin(gameCopy.sourceId)) {
             // Keep SteamFix.ini / stplug lua in sync with library toggles (toggle alone can race).
@@ -172,15 +336,81 @@ void LaunchController::launchGame(const QString& gameId)
         }
         if (info.executable.isEmpty() && gameCopy.executableOverride.isEmpty())
             info.executable = findGameExecutableInTree(gameCopy.installPath);
+
+        // Refuse steam://rungameid - that needs a Store license. Depot installs
+        // must run the local exe (Proton / Windows), never Steam as the game host.
+        const bool steamUriLaunch = std::any_of(
+            info.arguments.cbegin(), info.arguments.cend(), [](const QString& arg) {
+                return arg.startsWith(QStringLiteral("steam://rungameid/"), Qt::CaseInsensitive);
+            });
+        if (steamUriLaunch) {
+            const QString reason = QCoreApplication::translate(
+                "Core",
+                "Game files are missing or incomplete - reinstall from the catalog. "
+                "Steam Store launch is not used.");
+            logLine(reason);
+            if (m_hooks.notice)
+                m_hooks.notice(reason);
+            return;
+        }
+
+        const OnlineFixOverlayState overlayBefore = detectOnlineFixOverlay(gameCopy.installPath);
+        const bool watchOnlineFix = overlayBefore.enabled && !m_onlineFixFallbackUsed;
+        WineErrorWatchHints watchHints;
+        if (watchOnlineFix) {
+            watchHints.installPath = gameCopy.installPath;
+            const QString exePath = !info.executable.isEmpty()
+                ? info.executable
+                : (!gameCopy.executableOverride.isEmpty() ? gameCopy.executableOverride
+                                                          : QString());
+            watchHints.executableName = QFileInfo(exePath).fileName();
+            watchHints.fakeSteamAppId = QStringLiteral("480");
+            const QString ov =
+                overlayBefore.overlayDir.isEmpty() ? gameCopy.installPath : overlayBefore.overlayDir;
+            const QString onlineFixIni = QDir(ov).filePath(QStringLiteral("OnlineFix.ini"));
+            const QString steamFixIni = QDir(ov).filePath(QStringLiteral("SteamFix.ini"));
+            auto readFake = [](const QString& path) -> QString {
+                QFile f(path);
+                if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
+                    return {};
+                const QString text = QString::fromUtf8(f.readAll());
+                for (const QString& line : text.split(QLatin1Char('\n'))) {
+                    const QString t = line.trimmed();
+                    if (t.startsWith(QLatin1String("FakeAppId="), Qt::CaseInsensitive))
+                        return t.section(QLatin1Char('='), 1).trimmed();
+                }
+                return {};
+            };
+            if (QFileInfo::exists(onlineFixIni)) {
+                const QString id = readFake(onlineFixIni);
+                if (!id.isEmpty())
+                    watchHints.fakeSteamAppId = id;
+            } else if (QFileInfo::exists(steamFixIni)) {
+                const QString id = readFake(steamFixIni);
+                if (!id.isEmpty())
+                    watchHints.fakeSteamAppId = id;
+            }
+        }
         applyOnlineFixLaunchInfo(gameCopy.installPath, &info);
 #if defined(Q_OS_LINUX)
-        if (detectOnlineFixOverlay(gameCopy.installPath).enabled
-            || info.environmentExtras.value(QStringLiteral("ARACHNEL_USE_STEAM_RUNTIME"))
-                   == QStringLiteral("legacy")
-            || info.environmentExtras.value(QStringLiteral("ARACHNEL_USE_STEAM_RUNTIME"))
-                   == QStringLiteral("1")) {
-            logLine(QCoreApplication::translate("Core", "Online Fix overlay detected"));
-            if (!isSteamClientRunning()) {
+        {
+            const OnlineFixOverlayState overlay = detectOnlineFixOverlay(gameCopy.installPath);
+            const bool ofEnabled = overlay.enabled
+                || info.environmentExtras.value(QStringLiteral("ARACHNEL_USE_STEAM_RUNTIME"))
+                       == QStringLiteral("legacy")
+                || info.environmentExtras.value(QStringLiteral("ARACHNEL_USE_STEAM_RUNTIME"))
+                       == QStringLiteral("1");
+            if (ofEnabled)
+                logLine(QCoreApplication::translate("Core", "Online Fix overlay detected"));
+
+            // FreeTP SteamFix needs the Steam client for SpaceWar/overlay IPC.
+            // OF.me (OnlineFix.ini) does not - starting Steam next to it often trips
+            // Self-protection (error 4) under Proton.
+            const QString ov = overlay.overlayDir.isEmpty() ? gameCopy.installPath : overlay.overlayDir;
+            const bool steamFix = QDir(ov).exists(QStringLiteral("SteamFix.ini"))
+                                  || QDir(ov).exists(QStringLiteral("SteamFix64.dll"))
+                                  || QDir(ov).exists(QStringLiteral("SteamFix32.dll"));
+            if (overlay.enabled && steamFix && !isSteamClientRunning()) {
                 tryStartSteamClient();
                 if (m_hooks.notice) {
                     m_hooks.notice(QCoreApplication::translate(
@@ -220,8 +450,8 @@ void LaunchController::launchGame(const QString& gameId)
             }
             return;
         }
-        QTimer::singleShot(0, this, [this, gameCopy, processId]() {
-            markRunning(gameCopy, processId);
+        QTimer::singleShot(0, this, [this, gameCopy, processId, watchOnlineFix, watchHints]() {
+            markRunning(gameCopy, processId, watchOnlineFix, watchHints);
         });
     });
 }
@@ -231,10 +461,9 @@ void LaunchController::stopRunningGame()
     if (!gameRunning())
         return;
     arachnel::logBreadcrumb(QStringLiteral("stop"), m_gameId);
-    if (m_processId <= 0 || ProcessTracker::terminateProcess(m_processId))
-        QTimer::singleShot(0, this, &LaunchController::clearRunning);
-    else if (m_hooks.notice)
-        m_hooks.notice(QCoreApplication::translate("Core", "Failed to stop game"));
+    m_watchingOnlineFix = false;
+    terminateTrackedLaunch();
+    QTimer::singleShot(0, this, [this]() { clearRunning(false); });
 }
 
 } // namespace arachnel::core

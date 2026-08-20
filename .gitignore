@@ -10,6 +10,10 @@ compile_commands.json
 CMakeUserPresets.json
 libs/
 
+# Accidental colcon workspace junk (ROS tooling) - not used by Arachnel
+install/
+log/
+
 # Local IDE
 .vscode/
 .cursor/*kikopi*

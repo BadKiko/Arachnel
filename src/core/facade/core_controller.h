@@ -191,6 +191,7 @@ signals:
     void pluginInstallBusyChanged();
     void pluginAutoUpdatingChanged();
     void runningGameChanged();
+    void launchSessionEnded(const QString& gameId, qint64 elapsedMs, bool suppressQuickExitLog);
     void runtimeSetupChanged();
     void protonDownloadChanged();
     void protonLatestReleaseChanged();

@@ -17,6 +17,7 @@
 #include "plugin_interface.h"
 #include "settings_store.h"
 #include "source_plugin_model.h"
+#include "steamless_service.h"
 #include "storage_library.h"
 
 #include <QCoreApplication>
@@ -69,12 +70,24 @@ bool LibraryController::isEntryPlayable(const QString& entryId) const
     if (!overridePath.isEmpty())
         return QFileInfo::exists(overridePath);
 
-    // Steamidra can launch via steam://rungameid - skip expensive tree walks on bind.
+    // Steamidra depot installs must have a local Windows exe. Do not treat
+    // steamAppId alone as playable - that used to enable Play and fall back to
+    // steam://rungameid (Store license error) on empty/broken installs.
     if (game->sourceId == QStringLiteral("steamidra")) {
-        if (!game->steamAppId.trimmed().isEmpty())
-            return true;
-        if (game->id.startsWith(QStringLiteral("steam-")) && game->id.size() > 6)
-            return true;
+        const QString markerPath = game->installPath + QStringLiteral("/.arachnel-steamidra");
+        QFile marker(markerPath);
+        if (marker.open(QIODevice::ReadOnly)) {
+            const QJsonObject launch =
+                QJsonDocument::fromJson(marker.readAll()).object().value(QStringLiteral("launch")).toObject();
+            const QString type = launch.value(QStringLiteral("type")).toString();
+            if (type == QLatin1String("exe")) {
+                const QString path = launch.value(QStringLiteral("path")).toString().trimmed();
+                if (!path.isEmpty() && QFileInfo::exists(path))
+                    return true;
+            }
+            if (type == QLatin1String("steam") || type == QLatin1String("missing"))
+                return !findGameExecutableInTree(game->installPath).isEmpty();
+        }
     }
 
     return !findGameExecutableInTree(game->installPath).isEmpty();
@@ -201,6 +214,11 @@ QVariantMap LibraryController::entryDetails(const QString& entryId) const
         || installKind == static_cast<int>(InstallKind::FixDownload);
     info.insert(QStringLiteral("onlineFixRelevant"),
                 fixInfo.value(QStringLiteral("onlineFixPresent")).toBool() || catalogWantsFix);
+
+    const QVariantMap steamlessInfo = SteamlessService::installInfo(installPath);
+    for (auto it = steamlessInfo.constBegin(); it != steamlessInfo.constEnd(); ++it)
+        info.insert(it.key(), it.value());
+
     return info;
 }
 

@@ -807,10 +807,10 @@
     </message>
     <message>
         <location line="-165"/>
-        <location filename="../src/core/library/library_controller.cpp" line="+280"/>
+        <location filename="../src/core/library/library_controller.cpp" line="+298"/>
         <location line="+42"/>
         <location line="+58"/>
-        <location filename="../src/core/launch/launch_controller.cpp" line="+169"/>
+        <location filename="../src/core/launch/launch_controller.cpp" line="+307"/>
         <source>Couldn&apos;t update DLC unlocks.</source>
         <translation></translation>
     </message>
@@ -925,7 +925,7 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="+397"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="+403"/>
         <source>Game not found for add-on</source>
         <translation></translation>
     </message>
@@ -941,7 +941,7 @@
         <translation></translation>
     </message>
     <message>
-        <location line="-417"/>
+        <location line="-423"/>
         <location line="+33"/>
         <source>Moving %1</source>
         <translation type="unfinished"></translation>
@@ -957,7 +957,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+337"/>
+        <location line="+343"/>
         <source>Download complete - install manually</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1027,7 +1027,6 @@
         <location filename="../src/core/library/library_facade_ops.cpp" line="+216"/>
         <location line="+39"/>
         <location line="+37"/>
-        <location line="+40"/>
         <source>Game not found</source>
         <translation></translation>
     </message>
@@ -1068,7 +1067,7 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/library/library_facade_ops.cpp" line="-212"/>
+        <location filename="../src/core/library/library_facade_ops.cpp" line="-172"/>
         <location line="+24"/>
         <source>Choose library folder</source>
         <translation></translation>
@@ -1191,13 +1190,8 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location filename="../src/core/install/steamless_service.cpp" line="+619"/>
         <source>Steamless is not available</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Applying Steamless to %1…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1258,7 +1252,7 @@
         <translation>Runtime install did not register in the Proton prefix: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/launch/launch_controller.cpp" line="-127"/>
+        <location filename="../src/core/launch/launch_controller.cpp" line="-246"/>
         <source>Game process started (PID %1)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1273,22 +1267,43 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+40"/>
+        <location line="+21"/>
+        <source>Online Fix quit right after launch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Disabling Online Fix and launching without it</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Online Fix failed to start this game - launched without it. You can turn Online Fix back on in game settings.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+60"/>
         <source>--- Game output (%1) ---</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+8"/>
+        <location filename="../src/core/launch/launch_facade.cpp" line="+80"/>
         <source>No launch has been attempted for this game yet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location line="+25"/>
+        <source>Online Fix showed an error dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+19"/>
         <source>Game is not installed yet</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+17"/>
         <source>Launching %1 (%2)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1318,12 +1333,27 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+27"/>
+        <location line="+9"/>
+        <source>Steamless removed SteamStub from %1 file(s)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Steamless failed: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+34"/>
+        <source>Game files are missing or incomplete - reinstall from the catalog. Steam Store launch is not used.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+22"/>
         <source>Online Fix overlay detected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+12"/>
         <source>Steam is not running - Online Fix needs it for SpaceWar/overlay. Starting Steam…</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1334,7 +1364,7 @@
     </message>
     <message>
         <location line="+5"/>
-        <location filename="../src/core/library/library_facade_ops.cpp" line="-118"/>
+        <location filename="../src/core/library/library_facade_ops.cpp" line="-102"/>
         <location line="+39"/>
         <location line="+37"/>
         <location line="+16"/>
@@ -1368,7 +1398,7 @@
         <translation></translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="+20"/>
         <source>Failed to stop game</source>
         <translation></translation>
     </message>
@@ -1458,7 +1488,7 @@
         <translation></translation>
     </message>
     <message>
-        <location line="-230"/>
+        <location line="-236"/>
         <source>No catalog sources enabled</source>
         <translation></translation>
     </message>
@@ -1546,12 +1576,12 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/install/steamless_service.cpp" line="+103"/>
+        <location filename="../src/core/install/steamless_service.cpp" line="-526"/>
         <source>Downloaded file is not a ZIP archive</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+27"/>
+        <location line="+30"/>
         <location filename="../src/core/plugins/plugin_host_packages.cpp" line="+30"/>
         <source>Could not start archive extraction</source>
         <translation></translation>
@@ -1568,66 +1598,42 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+104"/>
-        <source>Could not extract %1 (tried %2); install tar with zstd support</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+62"/>
-        <source>No %1 package found on MSYS2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+25"/>
-        <source>%1 not found in %2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+60"/>
-        <location line="+236"/>
+        <location line="+127"/>
+        <location line="+200"/>
         <source>Steamless needs Wine on Linux (install wine first)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-182"/>
+        <location line="-141"/>
         <source>No Steamless release asset found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+27"/>
+        <location line="+25"/>
         <source>Steamless.CLI.exe not found in release</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+64"/>
-        <source>Steamless needs the 32-bit MinGW runtime for Wine Mono (%1 missing); auto-download failed: %2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+22"/>
-        <source>Steamless setup skipped: %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <location line="+153"/>
-        <location line="+27"/>
-        <location filename="../src/core/launch/launch_controller.cpp" line="-23"/>
+        <location line="+190"/>
+        <location line="+17"/>
+        <location filename="../src/core/launch/launch_controller.cpp" line="-123"/>
+        <location line="+6"/>
+        <location line="+93"/>
         <source>unknown error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-173"/>
-        <source>Steamless is ready</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+72"/>
+        <location line="-76"/>
         <source>Steamless failed to start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="-88"/>
+        <source>Steamless needs %1 next to the CLI (bundled runtime missing)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+94"/>
         <source>Steamless timed out</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1648,32 +1654,33 @@
     </message>
     <message>
         <location line="+11"/>
+        <location line="+79"/>
         <source>Game folder not found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+21"/>
+        <location line="-73"/>
         <source>No executables found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+10"/>
         <source>Steamless unpacked %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+3"/>
         <source>Steamless failed on %1: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+28"/>
         <location line="+18"/>
         <source>Steamless is not available: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+17"/>
+        <location filename="../src/core/launch/launch_controller.cpp" line="-101"/>
         <source>Steamless: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1683,13 +1690,19 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+5"/>
-        <source>Steamless already applied to %1 (%2 file(s)) - nothing to do</source>
+        <location line="+58"/>
+        <location line="+27"/>
+        <source>Not needed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+5"/>
-        <source>Steamless not needed - %1 has no SteamStub DRM</source>
+        <location line="-4"/>
+        <source>Needed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Applied</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1883,7 +1896,7 @@
     </message>
     <message>
         <location line="+3"/>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="+97"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="+103"/>
         <source>Arachnel %1 is available</source>
         <translation></translation>
     </message>
@@ -1980,7 +1993,7 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/core/install/online_fix_overlay.cpp" line="+602"/>
+        <location filename="../src/core/install/online_fix_overlay.cpp" line="+624"/>
         <source>Not installed</source>
         <translation></translation>
     </message>
@@ -2143,7 +2156,7 @@
     <message>
         <location filename="../src/core/library/library_controller.cpp" line="-43"/>
         <location line="+21"/>
-        <location filename="../src/core/facade/core_wiring_services.cpp" line="-262"/>
+        <location filename="../src/core/facade/core_wiring_services.cpp" line="-268"/>
         <source>Game removed: %1</source>
         <translation></translation>
     </message>
@@ -2321,12 +2334,12 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/launch/launch_facade.cpp" line="+53"/>
+        <location filename="../src/core/launch/launch_facade.cpp" line="-12"/>
         <source>Launch log copied</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location line="+18"/>
         <source>Save launch log</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2489,7 +2502,7 @@
 <context>
     <name>DownloadProgressButton</name>
     <message>
-        <location filename="../qml/components/DownloadProgressButton.qml" line="+19"/>
+        <location filename="../qml/components/DownloadProgressButton.qml" line="+20"/>
         <source>Download</source>
         <translation></translation>
     </message>
@@ -2504,12 +2517,17 @@
         <translation></translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+4"/>
         <source>Retry install</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="-2"/>
+        <source>Retry download</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Install</source>
         <translation></translation>
     </message>
@@ -2659,7 +2677,7 @@
 <context>
     <name>GameDetailsContent</name>
     <message>
-        <location filename="../qml/app/GameDetailsContent.qml" line="+31"/>
+        <location filename="../qml/app/GameDetailsContent.qml" line="+53"/>
         <source>Game details</source>
         <translation></translation>
     </message>
@@ -2704,12 +2722,12 @@
     </message>
     <message>
         <location line="+22"/>
-        <location line="+358"/>
+        <location line="+360"/>
         <source>Share</source>
         <translation></translation>
     </message>
     <message>
-        <location line="-348"/>
+        <location line="-350"/>
         <source>Source page</source>
         <translation></translation>
     </message>
@@ -2734,38 +2752,38 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+115"/>
-        <location line="+132"/>
+        <location line="+32"/>
+        <source>Download failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+88"/>
+        <location line="+120"/>
         <source>Launch log</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-101"/>
-        <source>Apply Steamless</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+108"/>
+        <location line="+16"/>
         <source>Why the game may not boot, including the game&apos;s own output.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="+17"/>
         <source>No launch has been attempted yet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+28"/>
+        <location line="+32"/>
         <source>Copy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+6"/>
         <source>Save log.txt</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+21"/>
+        <location line="+20"/>
         <source>Copy link</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2795,7 +2813,7 @@
         <translation></translation>
     </message>
     <message>
-        <location line="+51"/>
+        <location line="+54"/>
         <source>Remove from favorites</source>
         <translation></translation>
     </message>
@@ -2805,13 +2823,13 @@
         <translation></translation>
     </message>
     <message>
-        <location line="+21"/>
+        <location line="+18"/>
         <location line="+287"/>
         <source>Delete</source>
         <translation></translation>
     </message>
     <message>
-        <location line="-259"/>
+        <location line="-268"/>
         <source>Update</source>
         <translation></translation>
     </message>
@@ -2826,7 +2844,7 @@
         <translation></translation>
     </message>
     <message>
-        <location line="+157"/>
+        <location line="+166"/>
         <source>Remove game?</source>
         <translation></translation>
     </message>
@@ -2842,7 +2860,7 @@
         <translation></translation>
     </message>
     <message>
-        <location line="-354"/>
+        <location line="-356"/>
         <source>Ready to download from Steam CDN. Online Fix can be included when needed.</source>
         <translation></translation>
     </message>
@@ -2888,7 +2906,7 @@
 <context>
     <name>GameDetailsPage</name>
     <message numerus="yes">
-        <location filename="../qml/app/GameDetailsPage.qml" line="+261"/>
+        <location filename="../qml/app/GameDetailsPage.qml" line="+265"/>
         <source>%n source(s)</source>
         <translation>
             <numerusform>%n source</numerusform>
@@ -2952,7 +2970,7 @@
 <context>
     <name>GameSettingsSheet</name>
     <message>
-        <location filename="../qml/app/GameSettingsSheet.qml" line="+119"/>
+        <location filename="../qml/app/GameSettingsSheet.qml" line="+123"/>
         <source>Game settings</source>
         <translation></translation>
     </message>
@@ -3048,6 +3066,11 @@
     </message>
     <message>
         <location line="+8"/>
+        <source>Steamless</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
         <source>Install path</source>
         <translation></translation>
     </message>
@@ -3057,7 +3080,7 @@
         <translation></translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Waiting to install</source>
         <translation></translation>
     </message>
@@ -3077,7 +3100,7 @@
         <translation></translation>
     </message>
     <message>
-        <location line="-234"/>
+        <location line="-241"/>
         <source>Online Fix for this game</source>
         <translation></translation>
     </message>
@@ -3097,6 +3120,8 @@
         <translation></translation>
     </message>
     <message>
+        <location line="+1"/>
+        <location line="+5"/>
         <location line="+1"/>
         <source>Not needed</source>
         <translation></translation>

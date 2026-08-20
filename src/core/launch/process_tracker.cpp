@@ -155,6 +155,25 @@ bool pidAlive(qint64 processId)
 
 } // namespace
 
+QList<qint64> ProcessTracker::processTreePids(const qint64 processId)
+{
+    QList<qint64> out;
+    if (processId <= 0)
+        return out;
+#if defined(Q_OS_WIN)
+    out.append(processId);
+    QList<DWORD> kids;
+    collectDescendants(static_cast<DWORD>(processId), &kids);
+    for (DWORD kid : kids)
+        out.append(static_cast<qint64>(kid));
+#else
+    if (pidAlive(processId))
+        out.append(processId);
+    out += collectTreePids(processId);
+#endif
+    return out;
+}
+
 bool ProcessTracker::isProcessRunning(const qint64 processId)
 {
     if (processId <= 0)

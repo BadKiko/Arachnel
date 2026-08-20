@@ -43,9 +43,24 @@ QString CoreController::gameLaunchLog() const
     return m_launchController ? m_launchController->launchLogText() : QString();
 }
 
+QString CoreController::gameLaunchLog(const QString& gameId) const
+{
+    return m_launchController ? m_launchController->launchLogText(gameId) : QString();
+}
+
+bool CoreController::hasGameLaunchLog(const QString& gameId) const
+{
+    return m_launchController && m_launchController->hasLaunchLog(gameId);
+}
+
 void CoreController::copyGameLaunchLog()
 {
-    const QString text = gameLaunchLog();
+    copyGameLaunchLog(QString());
+}
+
+void CoreController::copyGameLaunchLog(const QString& gameId)
+{
+    const QString text = gameId.isEmpty() ? gameLaunchLog() : gameLaunchLog(gameId);
     if (QGuiApplication* gui = qobject_cast<QGuiApplication*>(QCoreApplication::instance())) {
         if (QClipboard* clipboard = gui->clipboard())
             clipboard->setText(text);
@@ -55,8 +70,14 @@ void CoreController::copyGameLaunchLog()
 
 void CoreController::saveGameLaunchLog()
 {
-    const QString text = gameLaunchLog();
-    if (text.isEmpty())
+    saveGameLaunchLog(QString());
+}
+
+void CoreController::saveGameLaunchLog(const QString& gameId)
+{
+    const QString text = gameId.isEmpty() ? gameLaunchLog() : gameLaunchLog(gameId);
+    if (text.isEmpty()
+        || text == QCoreApplication::translate("Core", "No launch has been attempted for this game yet."))
         return;
     const QString defaultPath =
         QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)

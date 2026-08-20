@@ -57,6 +57,7 @@ QProcessEnvironment buildProtonEnvironment(const QString& gameId, const QString&
     // That breaks /usr/bin/env (ATTR_1.3) and unrelated host tools. Keep a clean
     // baseline; Proton and optional run.sh set up what they need themselves.
     env.remove(QStringLiteral("LD_LIBRARY_PATH"));
+    env.remove(QStringLiteral("LD_PRELOAD"));
     env.remove(QStringLiteral("STEAM_RUNTIME"));
     env.remove(QStringLiteral("STEAM_RUNTIME_LIBRARY_PATH"));
     env.insert(QStringLiteral("STEAM_COMPAT_CLIENT_INSTALL_PATH"), manager.steamCompatClientPath());
@@ -209,8 +210,11 @@ ResolvedLaunch resolveLaunch(const LaunchInfo& pluginInfo, const LibraryGame& ga
                 QString added = filterOverlayPreloadForHost(it.value().trimmed());
                 while (added.startsWith(QLatin1Char(':')))
                     added.remove(0, 1);
-                if (added.isEmpty())
+                if (added.isEmpty()) {
+                    // Empty extra = strip host/Steam overlay preload for this launch.
+                    resolved.environment.remove(QStringLiteral("LD_PRELOAD"));
                     continue;
+                }
                 resolved.environment.insert(QStringLiteral("LD_PRELOAD"),
                                             existing.isEmpty() ? added
                                                                : existing + QLatin1Char(':') + added);
@@ -228,18 +232,20 @@ ResolvedLaunch resolveLaunch(const LaunchInfo& pluginInfo, const LibraryGame& ga
     resolved.arguments = pluginInfo.argumentsPrefix + arguments;
     resolved.workingDirectory = workDir;
     resolved.environment = QProcessEnvironment::systemEnvironment();
+    resolved.environment.remove(QStringLiteral("LD_PRELOAD"));
     for (auto it = pluginInfo.environmentExtras.constBegin();
          it != pluginInfo.environmentExtras.constEnd(); ++it) {
         if (it.key().isEmpty() || it.key() == QStringLiteral("ARACHNEL_USE_STEAM_RUNTIME"))
             continue;
         if (it.key() == QStringLiteral("LD_PRELOAD")) {
-            const QString existing = resolved.environment.value(QStringLiteral("LD_PRELOAD"));
             QString added = it.value().trimmed();
             while (added.startsWith(QLatin1Char(':')))
                 added.remove(0, 1);
-            resolved.environment.insert(QStringLiteral("LD_PRELOAD"),
-                                        existing.isEmpty() ? added
-                                                           : existing + QLatin1Char(':') + added);
+            if (added.isEmpty()) {
+                resolved.environment.remove(QStringLiteral("LD_PRELOAD"));
+                continue;
+            }
+            resolved.environment.insert(QStringLiteral("LD_PRELOAD"), added);
         } else {
             resolved.environment.insert(it.key(), it.value());
         }

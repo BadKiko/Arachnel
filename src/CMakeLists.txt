@@ -81,6 +81,7 @@ set(ARACHNEL_APP_SOURCES
     src/core/runtime/proton_manager_download.cpp
     src/core/runtime/windows_runner.cpp
     src/core/launch/process_tracker.cpp
+    src/core/launch/wine_error_probe.cpp
     src/core/launch/launch_controller.cpp
     src/core/platform/game_launch_target.cpp
     src/core/platform/desktop_shortcut_service.cpp

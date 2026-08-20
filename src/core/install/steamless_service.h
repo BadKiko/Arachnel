@@ -3,19 +3,15 @@
 #include <QObject>
 #include <QString>
 #include <QStringList>
+#include <QVariantMap>
 
 #include <functional>
 
 namespace arachnel::core {
 
 /**
- * Applies Steamless (SteamStub DRM remover) to freshly installed games.
- *
- * SteamStub is the Steamworks SDK DRM that wraps a game's main executable in a
- * `.bind` section. Steamless unpacks that wrapper so the game can run without
- * Steam checking the executable. This service detects SteamStub-protected .exe
- * files after an install finishes and rewrites them with Steamless' unpacked
- * output, keeping the original as `<exe>.steamstub.bak`.
+ * SteamStub remover (Steamless.CLI). Detects PE `.bind` sections and unpacks
+ * them so depot games can boot outside Steam. On Linux the CLI runs under Wine.
  */
 class SteamlessService : public QObject
 {
@@ -26,28 +22,27 @@ public:
 
     explicit SteamlessService(NoticeFn notice, QObject* parent = nullptr);
 
-    /** Resolve the Steamless CLI path (bundled location or ARACHNEL_STEAMLESS_PATH). */
     QString cliPath() const;
     bool isAvailable() const;
 
-    /**
-     * Download and extract the latest Steamless release when the CLI is missing.
-     * Runs on the calling (GUI) thread with an event-loop-friendly wait.
-     */
+    /** Download Steamless if missing; on Linux also plant bundled MinGW DLLs. */
     bool ensureTool(QString* errorOut = nullptr);
 
-    /**
-     * One-time setup: check for Steamless and download/configure it only when
-     * it is missing (or was deleted). No-op when already installed. Reports
-     * success/skip through the notice callback.
-     */
+    /** Silent startup bootstrap. */
     void ensureSetup();
 
-    /** Scan installPath for SteamStub-protected executables and strip them (async). */
+    /** After install: strip SteamStub asynchronously (quiet when not needed). */
     void processInstall(const QString& installPath, const QString& title);
 
-    /** True when the PE file has a SteamStub `.bind` section. */
+    /**
+     * Sync path for Play. Returns stripped count, 0 if nothing to do, -1 on error.
+     */
+    int ensureUnpacked(const QString& installPath, QString* errorOut = nullptr);
+
     static bool hasSteamStub(const QString& exePath);
+
+    /** Status for game settings: Applied / Needed / Not needed. */
+    static QVariantMap installInfo(const QString& installPath);
 
 signals:
     void toolAvailableChanged();
@@ -56,8 +51,6 @@ signals:
 private:
     struct Result {
         int stripped = 0;
-        int alreadyApplied = 0;
-        int notProtected = 0;
         QString error;
         QStringList messages;
     };
@@ -65,15 +58,9 @@ private:
     static Result processInstallSync(const QString& installPath, const QString& cliPath);
     static bool stripExecutable(const QString& exePath, const QString& cliPath, QString* errorOut);
     static QString toolRoot();
+    static QStringList collectExeCandidates(const QString& installPath);
 
 #if !defined(Q_OS_WIN)
-    /**
-     * Make the CLI actually runnable under Wine Mono on Linux: mirror the
-     * Plugins/*.dll files next to the CLI (mono resolves Steamless.API from
-     * the exe's directory) and provision the 32-bit MinGW runtime DLLs that
-     * Fedora-family wine-mono builds link against. Returns false with a
-     * human-readable error when the runtime cannot be made available.
-     */
     static bool prepareLinuxRuntime(const QString& cliPath, QString* errorOut);
 #endif
 

@@ -432,11 +432,17 @@ void CoreController::initializeServices()
         return ensureRuntimeDependenciesForGame(game);
     };
     launchHooks.touchLastPlayed = [this](const QString& gameId) { touchLastPlayed(gameId); };
+    launchHooks.setOnlineFixEnabled = [this](const QString& gameId, bool enabled) {
+        if (m_libraryController)
+            m_libraryController->setGameOnlineFixEnabled(gameId, enabled);
+    };
     m_launchController =
         new LaunchController(&m_library, &m_settings, m_pluginHost, m_protonManager,
-                             std::move(launchHooks), this);
+                             m_steamlessService, std::move(launchHooks), this);
     connect(m_launchController, &LaunchController::runningGameChanged, this,
             &CoreController::runningGameChanged);
+    connect(m_launchController, &LaunchController::launchSessionEnded, this,
+            &CoreController::launchSessionEnded);
     m_socialController = new SocialController(this);
     connect(m_socialController, &SocialController::noticeRequested, this,
             [this](const QString& message) { showNotice(message); });
