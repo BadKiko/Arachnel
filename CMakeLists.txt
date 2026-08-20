@@ -55,6 +55,15 @@ FetchContent_Declare(
     EXCLUDE_FROM_ALL
     PATCH_COMMAND ${CMAKE_COMMAND} -DSRC=<SOURCE_DIR> -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/patch-qml-material-win.cmake
 )
+# PATCH_COMMAND only runs on first fetch; re-apply when the tree is already populated.
+FetchContent_GetProperties(qml_material)
+if(qml_material_POPULATED)
+    execute_process(
+        COMMAND ${CMAKE_COMMAND} -DSRC=${qml_material_SOURCE_DIR}
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/patch-qml-material-win.cmake
+        COMMAND_ERROR_IS_FATAL ANY
+    )
+endif()
 FetchContent_MakeAvailable(qml_material)
 
 if(WIN32 AND EXISTS "${qml_material_SOURCE_DIR}/CMakeLists.txt")

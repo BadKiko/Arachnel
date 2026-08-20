@@ -2,9 +2,12 @@
 
 #include <QClipboard>
 #include <QFile>
-#include <QFileDialog>
+#include <QFileInfo>
 #include <QGuiApplication>
 #include <QStandardPaths>
+#if !defined(Q_OS_WIN)
+#include <QFileDialog>
+#endif
 
 namespace arachnel::core {
 
@@ -82,9 +85,57 @@ void CoreController::saveGameLaunchLog(const QString& gameId)
     const QString defaultPath =
         QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
         + QStringLiteral("/log.txt");
-    const QString target = QFileDialog::getSaveFileName(
+
+    QString target;
+#if defined(Q_OS_WIN)
+    HRESULT hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+    const bool comOwned = hr == S_OK;
+
+    IFileSaveDialog* dialog = nullptr;
+    if (SUCCEEDED(CoCreateInstance(CLSID_FileSaveDialog, nullptr, CLSCTX_ALL,
+                                   IID_PPV_ARGS(&dialog)))) {
+        const COMDLG_FILTERSPEC filters[] = {
+            {L"Text files (*.txt)", L"*.txt"},
+            {L"All files (*.*)", L"*.*"},
+        };
+        dialog->SetFileTypes(2, filters);
+        dialog->SetDefaultExtension(L"txt");
+        const QString title = QCoreApplication::translate("Core", "Save launch log");
+        dialog->SetTitle(reinterpret_cast<LPCWSTR>(title.utf16()));
+
+        const QFileInfo info(defaultPath);
+        const QString folderPath = info.absolutePath();
+        const QString fileName = info.fileName();
+        IShellItem* folder = nullptr;
+        if (SUCCEEDED(SHCreateItemFromParsingName(reinterpret_cast<LPCWSTR>(folderPath.utf16()),
+                                                  nullptr, IID_PPV_ARGS(&folder)))) {
+            dialog->SetDefaultFolder(folder);
+            dialog->SetFolder(folder);
+            folder->Release();
+        }
+        dialog->SetFileName(reinterpret_cast<LPCWSTR>(fileName.utf16()));
+
+        if (SUCCEEDED(dialog->Show(nullptr))) {
+            IShellItem* item = nullptr;
+            if (SUCCEEDED(dialog->GetResult(&item))) {
+                PWSTR widePath = nullptr;
+                if (SUCCEEDED(item->GetDisplayName(SIGDN_FILESYSPATH, &widePath))) {
+                    target = QString::fromWCharArray(widePath);
+                    CoTaskMemFree(widePath);
+                }
+                item->Release();
+            }
+        }
+        dialog->Release();
+    }
+
+    if (comOwned)
+        CoUninitialize();
+#else
+    target = QFileDialog::getSaveFileName(
         nullptr, QCoreApplication::translate("Core", "Save launch log"), defaultPath,
         QCoreApplication::translate("Core", "Text files (*.txt);;All files (*)"));
+#endif
     if (target.isEmpty())
         return;
 

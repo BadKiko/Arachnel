@@ -15,6 +15,11 @@ ensure_material_fonts() {
 needs_configure() {
   local cache="${BUILD}/CMakeCache.txt"
   [[ ! -f "${cache}" ]] && return 0
+  if grep -q '^CMAKE_GENERATOR:INTERNAL=Ninja' "${cache}" 2>/dev/null; then
+    [[ ! -f "${BUILD}/build.ninja" ]] && return 0
+  elif grep -q '^CMAKE_GENERATOR:INTERNAL=Unix Makefiles' "${cache}" 2>/dev/null; then
+    [[ ! -f "${BUILD}/Makefile" ]] && return 0
+  fi
   for f in "${ROOT}/CMakeLists.txt" "${ROOT}"/cmake/*.cmake; do
     [[ "${f}" -nt "${cache}" ]] && return 0
   done
