@@ -32,6 +32,7 @@ public:
     explicit SocialController(QObject* parent = nullptr);
 
     void initialize();
+    void goOffline();
 
     QAbstractItemModel* friends() { return &m_friendsModel; }
     QString displayName() const { return m_store.identity().displayName; }

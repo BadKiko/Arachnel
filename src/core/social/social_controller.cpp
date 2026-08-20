@@ -79,6 +79,10 @@ void SocialController::initialize()
     m_presenceService->setRelayBaseUrl(m_store.relayBaseUrl());
     m_inviteService->setIdentity(m_store.identity());
     m_inviteService->setRelayBaseUrl(m_store.relayBaseUrl());
+    // App open = online. Game fields are filled separately when a title is running.
+    PresenceSnapshot presence;
+    presence.online = true;
+    m_presenceService->setLocalPresence(presence);
     syncFriendsModel();
     m_relayStatus = m_store.relayBaseUrl().isEmpty() ? tr("Relay URL not set") : tr("Ready");
     emit relayStateChanged();
@@ -88,9 +92,22 @@ void SocialController::initialize()
     }
 }
 
+void SocialController::goOffline()
+{
+    m_pollTimer->stop();
+    PresenceSnapshot presence;
+    presence.online = false;
+    m_presenceService->setLocalPresence(presence);
+    if (!m_store.relayBaseUrl().isEmpty())
+        m_presenceService->publish();
+}
+
 void SocialController::setDisplayName(const QString& name)
 {
     m_store.setDisplayName(name);
+    // identityChanged already refreshed PresenceService identity; push now so friends see it.
+    if (!m_store.relayBaseUrl().isEmpty())
+        m_presenceService->publish();
 }
 
 void SocialController::setRelayBaseUrl(const QString& url)
@@ -111,6 +128,7 @@ void SocialController::setLocalPresence(bool running, const QString& gameId, con
                                         const QString& coverUrl)
 {
     PresenceSnapshot presence;
+    // Still in the launcher = online, even with no game running.
     presence.online = true;
     if (running) {
         presence.currentGameId = gameId;
@@ -239,9 +257,10 @@ void SocialController::applyRemotePresence(const QVector<FriendEntry>& remoteFri
             }
         }
 
-        if (local && !local->nickname.isEmpty())
+        // Relay displayName is source of truth so renames reach friends.
+        if (entry.nickname.isEmpty() && local && !local->nickname.isEmpty())
             entry.nickname = local->nickname;
-        else if (entry.nickname.isEmpty())
+        if (entry.nickname.isEmpty())
             entry.nickname = tr("Friend");
         if (entry.addedAt.isEmpty())
             entry.addedAt = local && !local->addedAt.isEmpty()

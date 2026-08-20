@@ -740,10 +740,17 @@ MD.ApplicationWindow {
 
         if (!suggestionOverlayPrimed) {
             suggestionOverlayPrimed = true
-            suggestionOverlayConsumedAt = nextSuggestedAt
-            suggestionOverlayConsumedKey = nextKey
-            clearSuggestionOverlay()
-            return
+            // Stale suggestions from a previous session stay silent. Fresh ones
+            // (e.g. friend suggested while you were offline) still show once.
+            if (nextSuggestedAt.length) {
+                const ageMs = Date.now() - Date.parse(nextSuggestedAt)
+                if (Number.isNaN(ageMs) || ageMs > 15 * 60 * 1000) {
+                    suggestionOverlayConsumedAt = nextSuggestedAt
+                    suggestionOverlayConsumedKey = nextKey
+                    clearSuggestionOverlay()
+                    return
+                }
+            }
         }
 
         if ((nextSuggestedAt.length && nextSuggestedAt === suggestionOverlayConsumedAt)

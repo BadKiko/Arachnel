@@ -569,6 +569,9 @@ void CoreController::prepareShutdown()
         return;
     m_prepareShutdownDone = true;
 
+    if (m_socialController)
+        m_socialController->goOffline();
+
     if (m_launchController)
         m_launchController->stopRunningGame();
 
