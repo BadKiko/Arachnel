@@ -77,6 +77,12 @@ void PresenceService::publish()
         return;
     }
 
+    // Relay only accepts https covers. Library covers are often file:// cache paths -
+    // sending those makes the whole presence publish fail, so friends never see the game.
+    QString cover = m_localPresence.currentGameCoverUrl.trimmed();
+    if (!cover.startsWith(QLatin1String("https://"), Qt::CaseInsensitive))
+        cover.clear();
+
     const QJsonObject payload = {
         {QStringLiteral("deviceId"), m_identity.deviceId},
         {QStringLiteral("publicKey"), m_identity.publicKey},
@@ -84,7 +90,7 @@ void PresenceService::publish()
         {QStringLiteral("online"), m_localPresence.online},
         {QStringLiteral("currentGameId"), m_localPresence.currentGameId},
         {QStringLiteral("currentGameTitle"), m_localPresence.currentGameTitle},
-        {QStringLiteral("currentGameCoverUrl"), m_localPresence.currentGameCoverUrl},
+        {QStringLiteral("currentGameCoverUrl"), cover},
         {QStringLiteral("sentAt"), QDateTime::currentDateTimeUtc().toString(Qt::ISODate)},
     };
 
