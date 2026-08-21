@@ -1,26 +1,40 @@
 ---
-name: Test Case
-about: Template for creating a new test case
-title: '[Test Case]: '
-labels: ''
+name: '🐛 Bug Report'
+about: Report a bug to help improve Arachnel
+title: '[BUG]: '
+labels: ['bug', 'triage']
 assignees: ''
 ---
 
-### Description
-*Briefly describe the feature or functionality being tested.*
+### Summary
+<!-- A clear and concise description of what the issue is. -->
 
-**Preconditions:**
-- [ ] Latest version of the application is installed
-- [ ] Environment configured (e.g., Development / Staging)
+### Steps to Reproduce
+1. Launch Arachnel
+2. Go to '...'
+3. Click on / Trigger '...'
+4. See error
 
-**Steps to Reproduce:**
-1. Open the application.
-2. Navigate to ...
-3. Perform action ...
+### Actual Behavior
+<!-- What actually happened? (e.g. game fails to launch, UI freezes, metadata not fetching) -->
 
-**Expected Result:**
-- What should happen when the test passes successfully.
+### Expected Behavior
+<!-- What you expected to happen instead. -->
 
-**Actual Result / Status:**
-- [ ] Passed
-- [ ] Failed (Found a bug)
+### Screenshots / Recordings
+<!-- Drag & drop screenshots, GIFs, or short video clips showing the issue. -->
+
+### Game / Source Details
+- **Game Title:** [e.g., Cyberpunk 2077]
+- **Platform / Integration:** [e.g., Steam / GOG / Heroic / Custom Directory]
+- **Runner / Compatibility Layer (if applicable):** [e.g., Native / Proton 8.0 / Wine-GE / None]
+
+### Environment
+- **OS:** [e.g., Windows 11 23H2 / Arch Linux (Kernel 6.10) / SteamOS]
+- **Arachnel Version / Commit:** [e.g., v0.2.1 or commit SHA]
+- **Display Server (Linux only):** [Wayland / X11 / N/A]
+
+### App Logs & Console Output
+<!-- Paste relevant logs from Arachnel (or terminal output) inside the code block below. -->
+```text
+
