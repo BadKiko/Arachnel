@@ -400,9 +400,9 @@ void LaunchController::launchGame(const QString& gameId)
             }
         }
         applyOnlineFixLaunchInfo(gameCopy.installPath, &info);
-#if defined(Q_OS_LINUX)
         {
             const OnlineFixOverlayState overlay = detectOnlineFixOverlay(gameCopy.installPath);
+#if defined(Q_OS_LINUX)
             const bool ofEnabled = overlay.enabled
                 || info.environmentExtras.value(QStringLiteral("ARACHNEL_USE_STEAM_RUNTIME"))
                        == QStringLiteral("legacy")
@@ -410,6 +410,7 @@ void LaunchController::launchGame(const QString& gameId)
                        == QStringLiteral("1");
             if (ofEnabled)
                 logLine(QCoreApplication::translate("Core", "Online Fix overlay detected"));
+#endif
 
             // FreeTP SteamFix needs the Steam client for SpaceWar/overlay IPC.
             // OF.me (OnlineFix.ini) does not - starting Steam next to it often trips
@@ -427,7 +428,6 @@ void LaunchController::launchGame(const QString& gameId)
                 }
             }
         }
-#endif
         {
             QString provisionExe = gameCopy.executableOverride;
             if (provisionExe.isEmpty())

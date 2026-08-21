@@ -1,5 +1,7 @@
 #include "online_fix_overlay.h"
 
+#include "steam_shortcut_service.h"
+
 #include <QCoreApplication>
 #include <QDir>
 #include <QDirIterator>
@@ -12,6 +14,14 @@
 #include <QRegularExpression>
 #include <QStandardPaths>
 #include <QSet>
+
+#if defined(Q_OS_WIN)
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+#include <tlhelp32.h>
+#endif
 
 namespace arachnel::core {
 namespace {
@@ -490,9 +500,27 @@ void updateMarkerEnabled(const QString& installPath, bool enabled)
 
 } // namespace
 
-#if defined(Q_OS_LINUX)
 bool isSteamClientRunning()
 {
+#if defined(Q_OS_WIN)
+    HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (snap == INVALID_HANDLE_VALUE)
+        return false;
+    PROCESSENTRY32W entry;
+    entry.dwSize = sizeof(entry);
+    bool found = false;
+    if (Process32FirstW(snap, &entry)) {
+        do {
+            const QString name = QString::fromWCharArray(entry.szExeFile);
+            if (name.compare(QStringLiteral("steam.exe"), Qt::CaseInsensitive) == 0) {
+                found = true;
+                break;
+            }
+        } while (Process32NextW(snap, &entry));
+    }
+    CloseHandle(snap);
+    return found;
+#else
     QProcess process;
     process.start(QStringLiteral("pidof"), {QStringLiteral("steam")});
     if (process.waitForFinished(3000) && process.exitStatus() == QProcess::NormalExit
@@ -501,10 +529,29 @@ bool isSteamClientRunning()
     process.start(QStringLiteral("pgrep"), {QStringLiteral("-x"), QStringLiteral("steam")});
     return process.waitForFinished(3000) && process.exitStatus() == QProcess::NormalExit
         && process.exitCode() == 0;
+#endif
 }
 
 bool tryStartSteamClient()
 {
+#if defined(Q_OS_WIN)
+    QStringList candidates;
+    const QString install = findSteamInstallPath();
+    if (!install.isEmpty())
+        candidates.append(install + QStringLiteral("/steam.exe"));
+    candidates.append({
+        QStringLiteral("C:/Program Files (x86)/Steam/steam.exe"),
+        QStringLiteral("C:/Program Files/Steam/steam.exe"),
+    });
+    for (const QString& path : candidates) {
+        if (!QFileInfo::exists(path))
+            continue;
+        qint64 pid = 0;
+        if (QProcess::startDetached(path, {}, QFileInfo(path).absolutePath(), &pid))
+            return true;
+    }
+    return false;
+#else
     const QStringList candidates = {
         QStringLiteral("steam"),
         QDir::homePath() + QStringLiteral("/.local/share/Steam/steam.sh"),
@@ -530,8 +577,8 @@ bool tryStartSteamClient()
             return true;
     }
     return false;
-}
 #endif
+}
 
 OnlineFixOverlayState detectOnlineFixOverlay(const QString& installPath)
 {

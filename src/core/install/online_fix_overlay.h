@@ -27,10 +27,8 @@ QVariantMap onlineFixOverlayInfo(const QString& installPath);
  */
 void applyOnlineFixLaunchInfo(const QString& installPath, LaunchInfo* info);
 
-#if defined(Q_OS_LINUX)
 bool isSteamClientRunning();
-/** Best-effort: spawn `steam` detached. Returns true if the process was started. */
+/** Best-effort: spawn Steam detached. Returns true if the process was started. */
 bool tryStartSteamClient();
-#endif
 
 } // namespace arachnel::core
