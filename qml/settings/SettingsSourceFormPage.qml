@@ -135,7 +135,7 @@ Flickable {
             typescale: MD.Token.typescale.body_medium
         }
 
-        MD.TextField {
+        AppTextField {
             id: nameField
             Layout.fillWidth: true
             Layout.leftMargin: contentMargin
@@ -144,7 +144,7 @@ Flickable {
             onTextChanged: errorLabel.text = ""
         }
 
-        MD.TextField {
+        AppTextField {
             id: urlField
             Layout.fillWidth: true
             Layout.leftMargin: contentMargin
@@ -153,7 +153,7 @@ Flickable {
             onTextChanged: errorLabel.text = ""
         }
 
-        MD.TextField {
+        AppTextField {
             id: descriptionField
             Layout.fillWidth: true
             Layout.leftMargin: contentMargin

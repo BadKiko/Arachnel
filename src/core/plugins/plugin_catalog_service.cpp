@@ -45,6 +45,20 @@ bool platformsSupported(const QStringList& platforms, const QString& platform)
            || platforms.contains(QStringLiteral("all"));
 }
 
+bool isHydraLauncherPlugin(const QJsonObject& obj)
+{
+    const QString id = obj.value(QStringLiteral("id")).toString().trimmed().toLower();
+    const QString name = obj.value(QStringLiteral("name")).toString().toLower();
+    const QString repo = obj.value(QStringLiteral("repository")).toString().toLower();
+    const QString url = obj.value(QStringLiteral("url")).toString().toLower();
+    const auto hit = [](const QString& text) {
+        return text.contains(QStringLiteral("hydralauncher"))
+               || text.contains(QStringLiteral("/hydra-plugin"))
+               || text == QStringLiteral("hydra") || text.startsWith(QStringLiteral("hydra-"));
+    };
+    return hit(id) || hit(repo) || hit(url) || name.contains(QStringLiteral("hydra launcher"));
+}
+
 /** Pick newest build compatible with this Arachnel + platform. */
 QJsonObject pickCompatibleBuild(const QJsonObject& pluginObj, const QString& appVersion,
                                 const QString& platform)
@@ -224,7 +238,7 @@ void PluginCatalogService::refresh()
                 continue;
             const QJsonObject obj = value.toObject();
             const QString pluginId = obj.value(QStringLiteral("id")).toString().trimmed();
-            if (pluginId.isEmpty())
+            if (pluginId.isEmpty() || isHydraLauncherPlugin(obj))
                 continue;
 
             const QJsonObject build = pickCompatibleBuild(obj, appVersion, platform);
@@ -253,8 +267,7 @@ void PluginCatalogService::refresh()
                        build.value(QStringLiteral("maxArachnel")).toString());
             row.insert(QStringLiteral("repository"), resolvePluginRepository(pluginId, obj));
             row.insert(QStringLiteral("recommended"),
-                       obj.value(QStringLiteral("recommended")).toBool(false)
-                           || pluginId == QStringLiteral("steamidra"));
+                       obj.value(QStringLiteral("recommended")).toBool(false));
 
             const QStringList platforms =
                 platformsFromJson(build.value(QStringLiteral("platforms")));
@@ -270,12 +283,6 @@ void PluginCatalogService::refresh()
             const bool rightRec = right.value(QStringLiteral("recommended")).toBool();
             if (leftRec != rightRec)
                 return leftRec;
-            const QString leftId = left.value(QStringLiteral("id")).toString();
-            const QString rightId = right.value(QStringLiteral("id")).toString();
-            if (leftId == QStringLiteral("steamidra") && rightId != QStringLiteral("steamidra"))
-                return true;
-            if (rightId == QStringLiteral("steamidra") && leftId != QStringLiteral("steamidra"))
-                return false;
             return QString::localeAwareCompare(left.value(QStringLiteral("name")).toString(),
                                                right.value(QStringLiteral("name")).toString())
                    < 0;

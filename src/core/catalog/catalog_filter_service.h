@@ -40,6 +40,9 @@ public:
     void setGenreFilter(const QString& genre);
     int playModeFilter() const { return m_playModeFilter; }
     void setPlayModeFilter(int filter);
+    QStringList hiddenSourceIds() const { return m_hiddenSourceIds; }
+    void setHiddenSourceIds(QStringList ids);
+    void setSourceHidden(const QString& sourceId, bool hidden);
 
     int activeFilterCount() const;
     QStringList availableGenres() const { return m_availableGenres; }
@@ -52,7 +55,10 @@ public:
                            int playModeFilter = 0);
 
     void applyFilter(const QString& query);
-    void rebuildAvailableGenres();
+    /** Rebuild SoA + present-genre bits from the merged cache (once per merge). */
+    void rebuildFilterTable();
+    /** Patch one SoA row after metadata enrich (no 100k rescan). */
+    void syncFilterRow(int cacheIndex);
     void scheduleRefilter();
 
 signals:
@@ -67,34 +73,43 @@ private:
         int sizeFilter = 0;
         int recencyFilter = 0;
         bool hasAddonsFilter = false;
-        QString genreFilter;
+        quint32 genreBit = 0;
         int playModeFilter = 0;
+        quint32 sourceMask = 0;
+        bool checkSource = false;
         int sortMode = 0;
         bool anySideFilter = false;
     };
 
-    static bool entryMatches(const CatalogEntry& entry, const FilterSnapshot& snap);
+    static int normalizePlayModeFilter(int filter);
+    quint32 genreBitForFilter(const QString& genre) const;
+    quint8 internSourceSlot(const QString& sourceId);
+    void refreshAvailableGenres();
+    static bool rowMatches(const CatalogFilterRow& row, const FilterSnapshot& snap);
     void notifyFiltersChanged();
     void applyFilterResult(quint64 generation, QVector<int> indices, qint64 elapsedMs, int cacheSize,
                            const QString& needle);
-    void applyGenreResult(quint64 generation, QStringList genres);
 
     CatalogModel* m_model = nullptr;
     QVector<CatalogEntry>* m_cache = nullptr;
     QReadWriteLock* m_cacheLock = nullptr;
+    QVector<CatalogFilterRow> m_rows;
+    QVector<QString> m_titleLowers;
+    QStringList m_sourceIdsBySlot;
+    quint32 m_presentGenreBits = 0;
     QString m_activeQuery;
     QString m_filterNeedle;
     qint64 m_filterCutoffDay = 0;
     QStringList m_availableGenres;
     QTimer* m_refilterTimer = nullptr;
     std::atomic<quint64> m_filterGeneration{0};
-    std::atomic<quint64> m_genreGeneration{0};
     int m_typeFilter = -1;
     int m_sizeFilter = 0;
     int m_recencyFilter = 0;
     bool m_hasAddonsFilter = false;
     QString m_genreFilter;
     int m_playModeFilter = 0;
+    QStringList m_hiddenSourceIds;
 };
 
 } // namespace arachnel::core

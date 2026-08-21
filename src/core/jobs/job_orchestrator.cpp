@@ -291,8 +291,8 @@ void JobOrchestrator::updateJobInModel(const JobEntry& job)
 QString JobOrchestrator::startCatalogDownload(const CatalogEntry& entry, JobKind kind,
                                               const QString& libraryId)
 {
-    const QString magnet = pickMagnet(entry.magnetUris);
-    if (magnet.isEmpty())
+    const QString uri = pickMagnet(entry.magnetUris);
+    if (uri.isEmpty())
         return {};
 
     const QString existing = findActiveJobId(entry.id, {});
@@ -307,8 +307,10 @@ QString JobOrchestrator::startCatalogDownload(const CatalogEntry& entry, JobKind
                               : QStringLiteral("Downloading %1").arg(entry.title);
 
     const QString libId = libraryId.isEmpty() ? m_settings->defaultLibraryId() : libraryId;
-    return createJob(title, kind, entry.id, entry.sourceId, magnet, saveSubdir, entry.coverUrl,
-                     libId);
+    const bool http = uri.startsWith(QStringLiteral("http://"), Qt::CaseInsensitive)
+                      || uri.startsWith(QStringLiteral("https://"), Qt::CaseInsensitive);
+    return createJob(title, kind, entry.id, entry.sourceId, uri, saveSubdir, entry.coverUrl, libId,
+                     {}, http);
 }
 
 QString JobOrchestrator::startPluginOwnedDownload(const CatalogEntry& entry, JobKind kind,

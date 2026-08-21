@@ -1,9 +1,11 @@
 #include "launch_resolver.h"
 
+#include "file_utils.h"
 #include "install_heuristics.h"
 #include "proton_manager.h"
 
 #include <QDir>
+#include <QFile>
 #include <QFileInfo>
 
 namespace arachnel::core {
@@ -56,6 +58,7 @@ QProcessEnvironment buildProtonEnvironment(const QString& gameId, const QString&
     // That breaks /usr/bin/env (ATTR_1.3) and unrelated host tools. Keep a clean
     // baseline; Proton and optional run.sh set up what they need themselves.
     env.remove(QStringLiteral("LD_LIBRARY_PATH"));
+    env.remove(QStringLiteral("LD_PRELOAD"));
     env.remove(QStringLiteral("STEAM_RUNTIME"));
     env.remove(QStringLiteral("STEAM_RUNTIME_LIBRARY_PATH"));
     env.insert(QStringLiteral("STEAM_COMPAT_CLIENT_INSTALL_PATH"), manager.steamCompatClientPath());
@@ -69,27 +72,38 @@ QProcessEnvironment buildProtonEnvironment(const QString& gameId, const QString&
 bool hostBreaksWithLegacySteamRuntime()
 {
     // Legacy ubuntu12_32/steam-runtime/run.sh puts old libs on LD_LIBRARY_PATH.
-    // NixOS (and some immutable hosts) then fail shebang `/usr/bin/env` with
-    // libattr ATTR_1.3. Prefer launching Proton directly on those systems.
+    // NixOS / ostree / Bazzite then fail shebang `/usr/bin/env` with libattr ATTR_1.3.
     if (QFileInfo::exists(QStringLiteral("/etc/NIXOS")))
+        return true;
+    if (QFileInfo::exists(QStringLiteral("/run/ostree-booted")))
         return true;
     if (!qEnvironmentVariableIsEmpty("NIX_STORE") || !qEnvironmentVariableIsEmpty("NIX_PATH"))
         return true;
+    QFile osRelease(QStringLiteral("/etc/os-release"));
+    if (osRelease.open(QIODevice::ReadOnly)) {
+        const QByteArray text = osRelease.readAll().toLower();
+        if (text.contains("bazzite") || text.contains("silverblue")
+            || text.contains("kinoite"))
+            return true;
+    }
     const QByteArray ld = qgetenv("LD_LIBRARY_PATH");
     if (ld.contains("steam-runtime") && ld.contains("libattr"))
         return true;
     return false;
 }
 
-QString filterOverlayPreloadForHost(const QString& preload)
+QString filterOverlayPreloadForHost(const QString& preload, int gameBits)
 {
-    // 32-bit gameoverlayrenderer cannot be preloaded into 64-bit Proton; keep 64-bit only.
+    // Overlay .so must match the game PE bitness; wrong ELF class is skipped by ld.so.
+    // Unknown bitness: keep both.
     QStringList kept;
     for (const QString& part : preload.split(QLatin1Char(':'), Qt::SkipEmptyParts)) {
         const QString p = part.trimmed();
         if (p.isEmpty())
             continue;
-        if (p.contains(QStringLiteral("ubuntu12_32/")))
+        if (gameBits == 32 && !p.contains(QStringLiteral("ubuntu12_32/")))
+            continue;
+        if (gameBits == 64 && !p.contains(QStringLiteral("ubuntu12_64/")))
             continue;
         kept.append(p);
     }
@@ -99,7 +113,7 @@ QString filterOverlayPreloadForHost(const QString& preload)
 } // namespace
 
 ResolvedLaunch resolveLaunch(const LaunchInfo& pluginInfo, const LibraryGame& game,
-                             const SettingsStore& settings)
+                             const SettingsStore& settings, ProtonManager* protonManager)
 {
     ResolvedLaunch resolved;
 
@@ -122,8 +136,10 @@ ResolvedLaunch resolveLaunch(const LaunchInfo& pluginInfo, const LibraryGame& ga
     if (executable.isEmpty())
         executable = pluginExe;
 
+    const int gameBits = peImageBits(executable);
+
     QString workDir = pluginInfo.workingDirectory;
-    if (workDir.isEmpty())
+    if (workDir.isEmpty() || !overrideExe.isEmpty())
         workDir = QFileInfo(executable).absolutePath();
 
     QStringList arguments = pluginInfo.arguments;
@@ -133,7 +149,8 @@ ResolvedLaunch resolveLaunch(const LaunchInfo& pluginInfo, const LibraryGame& ga
     const bool useProton = shouldUseProton(executable);
 
     if (useProton) {
-        ProtonManager manager;
+        ProtonManager localManager;
+        ProtonManager& manager = protonManager ? *protonManager : localManager;
         const QString protonId = settings.resolvedProtonId(game.protonId, manager);
         const QString proton = manager.executableForId(protonId);
         if (proton.isEmpty())
@@ -196,11 +213,14 @@ ResolvedLaunch resolveLaunch(const LaunchInfo& pluginInfo, const LibraryGame& ga
                 continue;
             if (it.key() == QStringLiteral("LD_PRELOAD")) {
                 const QString existing = resolved.environment.value(QStringLiteral("LD_PRELOAD"));
-                QString added = filterOverlayPreloadForHost(it.value().trimmed());
+                QString added = filterOverlayPreloadForHost(it.value().trimmed(), gameBits);
                 while (added.startsWith(QLatin1Char(':')))
                     added.remove(0, 1);
-                if (added.isEmpty())
+                if (added.isEmpty()) {
+                    // Empty extra = strip host/Steam overlay preload for this launch.
+                    resolved.environment.remove(QStringLiteral("LD_PRELOAD"));
                     continue;
+                }
                 resolved.environment.insert(QStringLiteral("LD_PRELOAD"),
                                             existing.isEmpty() ? added
                                                                : existing + QLatin1Char(':') + added);
@@ -218,18 +238,20 @@ ResolvedLaunch resolveLaunch(const LaunchInfo& pluginInfo, const LibraryGame& ga
     resolved.arguments = pluginInfo.argumentsPrefix + arguments;
     resolved.workingDirectory = workDir;
     resolved.environment = QProcessEnvironment::systemEnvironment();
+    resolved.environment.remove(QStringLiteral("LD_PRELOAD"));
     for (auto it = pluginInfo.environmentExtras.constBegin();
          it != pluginInfo.environmentExtras.constEnd(); ++it) {
         if (it.key().isEmpty() || it.key() == QStringLiteral("ARACHNEL_USE_STEAM_RUNTIME"))
             continue;
         if (it.key() == QStringLiteral("LD_PRELOAD")) {
-            const QString existing = resolved.environment.value(QStringLiteral("LD_PRELOAD"));
             QString added = it.value().trimmed();
             while (added.startsWith(QLatin1Char(':')))
                 added.remove(0, 1);
-            resolved.environment.insert(QStringLiteral("LD_PRELOAD"),
-                                        existing.isEmpty() ? added
-                                                           : existing + QLatin1Char(':') + added);
+            if (added.isEmpty()) {
+                resolved.environment.remove(QStringLiteral("LD_PRELOAD"));
+                continue;
+            }
+            resolved.environment.insert(QStringLiteral("LD_PRELOAD"), added);
         } else {
             resolved.environment.insert(it.key(), it.value());
         }

@@ -2,6 +2,77 @@
 
 namespace arachnel::core {
 
+namespace {
+
+QString normalizeLookupTitle(QString text)
+{
+    text = text.trimmed().toLower();
+    QString out;
+    out.reserve(text.size());
+    for (const QChar ch : text) {
+        if (ch.isLetterOrNumber())
+            out.append(ch);
+    }
+    return out;
+}
+
+QString steamAppIdFromAny(QString value)
+{
+    value = value.trimmed();
+    if (value.startsWith(QStringLiteral("steam-"), Qt::CaseInsensitive))
+        value = value.mid(6);
+
+    QString digits;
+    digits.reserve(value.size());
+    for (const QChar ch : value) {
+        if (ch.isDigit())
+            digits.append(ch);
+        else if (!digits.isEmpty())
+            break;
+    }
+    return digits;
+}
+
+QString steamLibraryHeroUrl(const QString& appId)
+{
+    if (appId.isEmpty())
+        return {};
+    return QStringLiteral("https://cdn.cloudflare.steamstatic.com/steam/apps/%1/library_hero.jpg")
+        .arg(appId);
+}
+
+QString firstBannerFromMap(const QVariantMap& details)
+{
+    const QString trailer = details.value(QStringLiteral("trailerThumbnailUrl")).toString().trimmed();
+    if (!trailer.isEmpty())
+        return trailer;
+
+    const QVariant shotsValue = details.value(QStringLiteral("screenshotUrls"));
+    const QStringList shots = shotsValue.toStringList();
+    if (!shots.isEmpty() && !shots.first().trimmed().isEmpty())
+        return shots.first().trimmed();
+
+    const QString cover = details.value(QStringLiteral("coverUrl")).toString().trimmed();
+    return cover;
+}
+
+QString firstBannerFromEntry(const CatalogEntry& entry)
+{
+    if (!entry.trailerThumbnailUrl.isEmpty())
+        return entry.trailerThumbnailUrl;
+    if (!entry.screenshotUrls.isEmpty() && !entry.screenshotUrls.first().trimmed().isEmpty())
+        return entry.screenshotUrls.first().trimmed();
+    if (!entry.coverUrl.isEmpty())
+        return entry.coverUrl;
+    if (!entry.remoteCoverUrl.isEmpty())
+        return entry.remoteCoverUrl;
+    if (!entry.steamAppId.isEmpty())
+        return steamLibraryHeroUrl(entry.steamAppId);
+    return {};
+}
+
+} // namespace
+
 void CoreController::advanceInstallSession(const QString& entryId)
 {
     m_installSessionService->advanceInstallSession(entryId);
@@ -236,6 +307,44 @@ bool CoreController::entryDownloadFilesExist(const QString& entryId) const
 QVariantMap CoreController::entryDetails(const QString& entryId) const
 {
     return m_libraryController ? m_libraryController->entryDetails(entryId) : QVariantMap();
+}
+
+QString CoreController::suggestionCoverUrl(const QString& gameId, const QString& gameTitle) const
+{
+    const QString id = gameId.trimmed();
+    if (!id.isEmpty()) {
+        const QString appId = steamAppIdFromAny(id);
+        if (!appId.isEmpty())
+            return steamLibraryHeroUrl(appId);
+
+        const QVariantMap details = entryDetails(id);
+        const QString fromDetails = firstBannerFromMap(details);
+        if (!fromDetails.isEmpty())
+            return fromDetails;
+        if (const CatalogEntry* entry = findCatalogEntry(id)) {
+            const QString fromEntry = firstBannerFromEntry(*entry);
+            if (!fromEntry.isEmpty())
+                return fromEntry;
+        }
+    }
+
+    const QString needle = normalizeLookupTitle(gameTitle);
+    if (needle.isEmpty())
+        return {};
+
+    QReadLocker locker(const_cast<QReadWriteLock*>(&m_catalogCacheLock));
+    for (const CatalogEntry& entry : m_catalogCache) {
+        const QString title = normalizeLookupTitle(entry.title);
+        if (title.isEmpty())
+            continue;
+        if (title == needle || title.contains(needle) || needle.contains(title)) {
+            const QString fromEntry = firstBannerFromEntry(entry);
+            if (!fromEntry.isEmpty())
+                return fromEntry;
+        }
+    }
+
+    return {};
 }
 
 void CoreController::reconcileJobInstallState()

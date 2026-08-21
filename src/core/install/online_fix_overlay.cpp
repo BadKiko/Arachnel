@@ -223,19 +223,41 @@ QString gameOverlayPreloadPaths()
     return soPaths.join(QLatin1Char(':'));
 }
 
-void appendSteamOverlayEnvironment(LaunchInfo* info, const QString& fakeSteamId)
+bool dirHasBundledSteamOverlayDll(const QString& dir)
 {
+    const QDir d(dir);
+    return d.exists(QStringLiteral("SteamOverlay32.dll"))
+        || d.exists(QStringLiteral("SteamOverlay64.dll"));
+}
+
+void appendSteamOverlayEnvironment(LaunchInfo* info, const QString& fakeSteamId,
+                                   const QString& overlayDir)
+{
+    const QString overlayId = fakeSteamId.isEmpty() ? QStringLiteral("480") : fakeSteamId;
+    // SpaceWar AppId is still required for SteamFix / OF.me IPC.
+    info->environmentExtras.insert(QStringLiteral("SteamAppId"), overlayId);
+    info->environmentExtras.insert(QStringLiteral("SteamGameId"), overlayId);
+    info->environmentExtras.insert(QStringLiteral("SteamOverlayGameId"), overlayId);
+
+    // OF.me ships SteamOverlay32/64 next to the game. Forcing Valve's
+    // gameoverlayrenderer on top makes Steam show "Failed to load steam overlay
+    // dll" (126) on 32-bit titles and can trip OF.me self-protection.
+    if (dirHasBundledSteamOverlayDll(overlayDir)
+        || QDir(overlayDir).exists(QStringLiteral("OnlineFix.dll"))
+        || QDir(overlayDir).exists(QStringLiteral("OnlineFix64.dll"))) {
+        // Explicit clear so host/Steam LD_PRELOAD cannot leak into Proton.
+        info->environmentExtras.insert(QStringLiteral("LD_PRELOAD"), QString());
+        info->environmentExtras.insert(QStringLiteral("ENABLE_VK_LAYER_VALVE_steam_overlay_1"),
+                                       QStringLiteral("0"));
+        return;
+    }
+
     const QString preload = gameOverlayPreloadPaths();
     const QString existing = info->environmentExtras.value(QStringLiteral("LD_PRELOAD"));
     info->environmentExtras.insert(QStringLiteral("LD_PRELOAD"),
                                    existing.isEmpty() ? preload : existing + QLatin1Char(':') + preload);
     info->environmentExtras.insert(QStringLiteral("ENABLE_VK_LAYER_VALVE_steam_overlay_1"),
                                    QStringLiteral("true"));
-    const QString overlayId = fakeSteamId.isEmpty() ? QStringLiteral("480") : fakeSteamId;
-    info->environmentExtras.insert(QStringLiteral("SteamOverlayGameId"), overlayId);
-    // Help SteamFix/IPC find the same client SOFL uses.
-    info->environmentExtras.insert(QStringLiteral("SteamAppId"), overlayId);
-    info->environmentExtras.insert(QStringLiteral("SteamGameId"), overlayId);
 }
 #endif
 
@@ -651,10 +673,10 @@ void applyOnlineFixLaunchInfo(const QString& installPath, LaunchInfo* info)
         }
     }
 
-    // SOFL: Proton + WINEDLLOVERRIDES + LD_PRELOAD. Optional legacy steam-runtime/run.sh —
-    // never SteamLinuxRuntime_sniper (bwrap/userns breaks under Ubuntu AppArmor).
-    info->environmentExtras.insert(QStringLiteral("ARACHNEL_USE_STEAM_RUNTIME"),
-                                   QStringLiteral("legacy"));
+    // Proton + WINEDLLOVERRIDES is enough for Online Fix. Do not wrap in legacy
+    // steam-runtime/run.sh: that helper often exits after fork, so the launcher
+    // thinks the game died immediately while Wine may still be starting.
+    info->environmentExtras.remove(QStringLiteral("ARACHNEL_USE_STEAM_RUNTIME"));
 
     QString fakeAppId = QStringLiteral("480");
     const QString steamFixIni = QDir(overlayDir).filePath(QStringLiteral("SteamFix.ini"));
@@ -701,9 +723,52 @@ void applyOnlineFixLaunchInfo(const QString& installPath, LaunchInfo* info)
     if (!info->executable.isEmpty())
         plantFreetpPromoBlock(QFileInfo(info->executable).absolutePath());
 
+    // Proton Steam client LoadLibrary("GameOverlayRenderer.dll") for Spacewar - many
+    // prefixes only have the x64 renderer. Alias FreeTP SteamOverlay* to that name.
+    // Do NOT plant the alias next to OF.me: an extra GameOverlayRenderer.dll trips
+    // Self-protection (error 4). Valve overlay is already disabled for OF.me above.
+    auto plantOverlayAlias = [](const QString& dir) {
+        if (dir.isEmpty() || !QDir(dir).exists())
+            return;
+        const QString ov32 = dir + QStringLiteral("/SteamOverlay32.dll");
+        const QString ov64 = dir + QStringLiteral("/SteamOverlay64.dll");
+        auto copyAlias = [](const QString& src, const QString& dst) {
+            if (!QFileInfo::exists(src))
+                return;
+            if (QFileInfo::exists(dst))
+                QFile::remove(dst);
+            QFile::copy(src, dst);
+        };
+        if (QFileInfo::exists(ov32))
+            copyAlias(ov32, dir + QStringLiteral("/GameOverlayRenderer.dll"));
+        if (QFileInfo::exists(ov64))
+            copyAlias(ov64, dir + QStringLiteral("/GameOverlayRenderer64.dll"));
+    };
+    auto stripOfMeOverlayAlias = [](const QString& dir) {
+        if (dir.isEmpty() || !QDir(dir).exists())
+            return;
+        QFile::remove(dir + QStringLiteral("/GameOverlayRenderer.dll"));
+        QFile::remove(dir + QStringLiteral("/GameOverlayRenderer64.dll"));
+    };
+    const QDir ovDir(overlayDir);
+    const bool onlineFixMe = ovDir.exists(QStringLiteral("OnlineFix.ini"))
+                             || ovDir.exists(QStringLiteral("OnlineFix.dll"))
+                             || ovDir.exists(QStringLiteral("OnlineFix64.dll"));
+    auto applyAliasPolicy = [&](const QString& dir) {
+        if (onlineFixMe)
+            stripOfMeOverlayAlias(dir);
+        else
+            plantOverlayAlias(dir);
+    };
+    applyAliasPolicy(overlayDir);
+    if (!info->workingDirectory.isEmpty())
+        applyAliasPolicy(info->workingDirectory);
+    if (!info->executable.isEmpty())
+        applyAliasPolicy(QFileInfo(info->executable).absolutePath());
+
 #if defined(Q_OS_LINUX)
-    // Always attach overlay preload when OF is on (SOFL default use-steam-overlay).
-    appendSteamOverlayEnvironment(info, fakeAppId);
+    // Valve LD_PRELOAD only when the install does not already ship OF.me overlay DLLs.
+    appendSteamOverlayEnvironment(info, fakeAppId, overlayDir);
 #endif
 }
 

@@ -88,11 +88,12 @@ struct CatalogEntry {
     QString titleLower;
     qint64 sizeBytes = 0;
     qint64 uploadDay = 0; // Julian day; 0 if unknown
-    QStringList genreTokens;
-    /** Canonical genre keys (Action, RPG, …) derived from genreTokens. */
-    QStringList genreKeys;
+    /** Curated genre bits (see curatedGenreKeys). Unmapped locale tags are dropped. */
+    quint32 genreBits = 0;
     /** Bitmask: Single=1, Co-op=2, Multiplayer=4 (from Steam categories / genres). */
     quint8 playModeMask = 0;
+    /** Ryuu/DRM token - not a genre bit. */
+    bool hasDrm = false;
 
     // Steam-enrichment discovery signals (any catalog source; keyed by steamAppId).
     int recommendationsTotal = 0;
@@ -106,6 +107,37 @@ struct CatalogEntry {
 constexpr quint8 kPlayModeSingle = 1;
 constexpr quint8 kPlayModeCoop = 2;
 constexpr quint8 kPlayModeMulti = 4;
+constexpr quint8 kPlayModeTogether = kPlayModeCoop | kPlayModeMulti;
+
+constexpr quint8 kFilterFlagGame = 0x01;
+constexpr quint8 kFilterFlagHasAddons = 0x02;
+
+/** Tight row for the 100k filter worker (filled at merge, not from CatalogEntry). */
+struct CatalogFilterRow {
+    quint32 genreBits = 0;
+    qint64 sizeBytes = 0;
+    qint32 uploadDay = 0;
+    quint8 playModeMask = 0;
+    quint8 sourceSlot = 0;
+    quint8 installKind = 0;
+    quint8 flags = 0;
+};
+
+inline CatalogFilterRow catalogFilterRowFromEntry(const CatalogEntry& entry, quint8 sourceSlot)
+{
+    CatalogFilterRow row;
+    row.genreBits = entry.genreBits;
+    row.sizeBytes = entry.sizeBytes;
+    row.uploadDay = static_cast<qint32>(entry.uploadDay);
+    row.playModeMask = entry.playModeMask;
+    row.sourceSlot = sourceSlot;
+    row.installKind = static_cast<quint8>(entry.installKind);
+    if (entry.itemKind == CatalogItemKind::Game)
+        row.flags |= kFilterFlagGame;
+    if (entry.dlcCount > 0 || !entry.addons.isEmpty())
+        row.flags |= kFilterFlagHasAddons;
+    return row;
+}
 
 /** Derive play-mode bits from genre/category tokens (+ online-fix installKind fallback). */
 quint8 playModeMaskFromEntry(const QStringList& genreTokens, InstallKind installKind);
@@ -122,7 +154,7 @@ qint64 parseSizeLabelBytes(const QString& label);
 /** Format byte counts as "512 MB" / "67.5 GB" for catalog size chips. */
 QString formatSizeLabelBytes(qint64 bytes);
 
-/** Fill titleLower / sizeBytes / uploadDay / genreTokens from primary fields. */
+/** Fill titleLower / sizeBytes / uploadDay / genreBits from primary fields. */
 void prepareCatalogEntry(CatalogEntry& entry);
 
 } // namespace arachnel::core

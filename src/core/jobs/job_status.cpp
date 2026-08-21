@@ -35,7 +35,8 @@ QString jobStatusLabel(const QString& status)
 
 QString jobDisplayStatusLabel(const QString& status, const QString& detail)
 {
-    if (status == QStringLiteral("completed") && isJobInstallFailed(detail))
+    if ((status == QStringLiteral("completed") || status == QStringLiteral("failed"))
+        && isJobInstallFailed(detail))
         return QCoreApplication::translate("Core", "Install failed");
     return jobStatusLabel(status);
 }

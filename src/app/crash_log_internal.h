@@ -63,6 +63,7 @@ void writeLine(const QString& line, bool toStderr = true);
 
 CrashReportData buildCrashReport(const QString& summary, const QString& extraDetails,
                                  const QString& stackTrace);
+QString buildIssueUrl(const QString& summary, const QString& reportBody);
 void handleCrashReport(const CrashReportData& report);
 void reportUiHang(int hungSeconds);
 

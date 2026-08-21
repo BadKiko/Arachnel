@@ -55,6 +55,15 @@ FetchContent_Declare(
     EXCLUDE_FROM_ALL
     PATCH_COMMAND ${CMAKE_COMMAND} -DSRC=<SOURCE_DIR> -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/patch-qml-material-win.cmake
 )
+# PATCH_COMMAND only runs on first fetch; re-apply when the tree is already populated.
+FetchContent_GetProperties(qml_material)
+if(qml_material_POPULATED)
+    execute_process(
+        COMMAND ${CMAKE_COMMAND} -DSRC=${qml_material_SOURCE_DIR}
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/patch-qml-material-win.cmake
+        COMMAND_ERROR_IS_FATAL ANY
+    )
+endif()
 FetchContent_MakeAvailable(qml_material)
 
 if(WIN32 AND EXISTS "${qml_material_SOURCE_DIR}/CMakeLists.txt")
@@ -125,6 +134,15 @@ qt_add_resources(arachnel_app "arachnel_app_icons"
         resources/icons/png/512.png
 )
 
+# MinGW i686 runtime for Steamless.CLI.exe under Wine Mono (Linux only at runtime).
+qt_add_resources(arachnel_app "arachnel_steamless"
+    PREFIX "/steamless"
+    BASE "${CMAKE_CURRENT_SOURCE_DIR}/resources/steamless"
+    FILES
+        resources/steamless/libgcc_s_dw2-1.dll
+        resources/steamless/libwinpthread-1.dll
+)
+
 file(GLOB_RECURSE ARACHNEL_QML_FILES CONFIGURE_DEPENDS
      RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
      "${CMAKE_CURRENT_SOURCE_DIR}/qml/*.qml")
@@ -180,4 +198,9 @@ if(WIN32)
 else()
     target_link_libraries(arachnel_app PRIVATE Qt6::Widgets)
     target_link_options(arachnel_app PRIVATE -rdynamic)
+    find_package(X11)
+    if(X11_FOUND)
+        target_compile_definitions(arachnel_app PRIVATE ARACHNEL_HAVE_X11=1)
+        target_link_libraries(arachnel_app PRIVATE X11::X11)
+    endif()
 endif()

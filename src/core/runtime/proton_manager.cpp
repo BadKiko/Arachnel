@@ -1,5 +1,6 @@
 #include "proton_manager.h"
 
+#include <QCoreApplication>
 #include <QCryptographicHash>
 #include <QDir>
 #include <QDirIterator>
@@ -13,12 +14,35 @@
 #include <QNetworkRequest>
 #include <QProcess>
 #include <QRegularExpression>
+#include <QSaveFile>
 #include <QSet>
 #include <QStandardPaths>
+#include <QSysInfo>
 #include <QUrl>
 #include <QEventLoop>
 
 namespace arachnel::core {
+
+namespace {
+
+// GE-Proton archives are now arch-suffixed (e.g. GE-Proton11-5-x86_64 vs
+// GE-Proton11-5-aarch64). A directory built for a different CPU silently
+// cannot boot any Windows game, so filter it out of the available list.
+bool isForeignArchGeProton(const QString& dirName)
+{
+    if (!dirName.startsWith(QStringLiteral("GE-Proton"), Qt::CaseInsensitive))
+        return false;
+    const bool isArm = dirName.contains(QStringLiteral("aarch64"), Qt::CaseInsensitive);
+    const bool isX86 = dirName.contains(QStringLiteral("x86_64"), Qt::CaseInsensitive);
+    if (!isArm && !isX86)
+        return false;
+
+    const QString arch = QSysInfo::currentCpuArchitecture();
+    const bool hostArm = (arch == QLatin1String("arm64") || arch == QLatin1String("aarch64"));
+    return hostArm ? isX86 : isArm;
+}
+
+} // namespace
 
 
 #include "proton_manager_helpers.h"
@@ -187,6 +211,8 @@ void ProtonManager::scanEntries(QVector<ProtonEntry>* out) const
     const QStringList arachnelDirs =
         arachnelRoot.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name | QDir::Reversed);
     for (const QString& dirName : arachnelDirs) {
+        if (isForeignArchGeProton(dirName))
+            continue;
         appendEntry(out, QStringLiteral("arachnel"), QStringLiteral("Arachnel"),
                     arachnelRoot.filePath(dirName), dirName);
     }
@@ -401,11 +427,99 @@ QString ProtonManager::steamCompatClientPath() const
 #endif
 }
 
+int ProtonManager::repairCorruptPrefixForGame(const QString& gameId) const
+{
+#if !defined(Q_OS_LINUX)
+    Q_UNUSED(gameId);
+    return 0;
+#else
+    const QString safeId = gameId.trimmed().isEmpty() ? QStringLiteral("default") : gameId;
+    const QString windowsDir =
+        compatDataRoot() + QLatin1Char('/') + safeId + QStringLiteral("/pfx/drive_c/windows");
+    int repaired = 0;
+
+    // Proton creates these as directories. A previous launcher/runtime copy bug could
+    // leave a DLL at the directory path (notably openvr_api_dxvk.dll at `syswow64`),
+    // making Proton abort before it can start the game. Preserve the bad file for
+    // diagnosis, then let Proton recreate the directory and its builtins.
+    for (const QString& name : {QStringLiteral("system32"), QStringLiteral("syswow64")}) {
+        const QString path = QDir(windowsDir).filePath(name);
+        const QFileInfo info(path);
+        if (!info.exists() || !info.isFile())
+            continue;
+
+        QString backup = path + QStringLiteral(".arachnel-corrupt");
+        if (QFileInfo::exists(backup)) {
+            int suffix = 2;
+            do {
+                backup = path + QStringLiteral(".arachnel-corrupt.%1").arg(suffix++);
+            } while (QFileInfo::exists(backup));
+        }
+
+        if (QFile::rename(path, backup) || QFile::remove(path))
+            ++repaired;
+    }
+    return repaired;
+#endif
+}
+
+QString ProtonManager::repairLegacyPrefixVersionForGame(const QString& gameId,
+                                                         const QString& protonVersion) const
+{
+#if !defined(Q_OS_LINUX)
+    Q_UNUSED(gameId);
+    Q_UNUSED(protonVersion);
+    return {};
+#else
+    const QString targetVersion = protonVersion.trimmed();
+    if (targetVersion.isEmpty())
+        return {};
+
+    const QString safeId = gameId.trimmed().isEmpty() ? QStringLiteral("default") : gameId;
+    const QString root = compatDataRoot() + QLatin1Char('/') + safeId;
+    const QString versionPath = root + QStringLiteral("/version");
+    QFile versionFile(versionPath);
+    if (!versionFile.open(QIODevice::ReadOnly | QIODevice::Text))
+        return {};
+
+    const QString oldVersion = QString::fromUtf8(versionFile.readAll()).trimmed();
+    versionFile.close();
+    if (oldVersion.isEmpty() || oldVersion == targetVersion
+        || !oldVersion.startsWith(QStringLiteral("CachyOS-"), Qt::CaseInsensitive))
+        return {};
+
+    // GE-Proton expects major.minor-...; older CachyOS wrote CachyOS-11.0-100.
+    QString backupPath = versionPath + QStringLiteral(".arachnel-backup");
+    if (QFileInfo::exists(backupPath)) {
+        int suffix = 2;
+        do {
+            backupPath = versionPath + QStringLiteral(".arachnel-backup.%1").arg(suffix++);
+        } while (QFileInfo::exists(backupPath));
+    }
+    if (!QFile::copy(versionPath, backupPath))
+        return {};
+
+    QSaveFile replacement(versionPath);
+    if (!replacement.open(QIODevice::WriteOnly | QIODevice::Text)
+        || replacement.write((targetVersion + QLatin1Char('\n')).toUtf8()) < 0
+        || !replacement.commit()) {
+        QFile::remove(versionPath);
+        QFile::copy(backupPath, versionPath);
+        return {};
+    }
+
+    return QCoreApplication::translate("Core",
+                                       "Normalized legacy Proton prefix marker %1 -> %2 (backup: %3)")
+        .arg(oldVersion, targetVersion, QFileInfo(backupPath).fileName());
+#endif
+}
+
 QString ProtonManager::compatDataPathForGame(const QString& gameId) const
 {
     const QString safeId = gameId.trimmed().isEmpty() ? QStringLiteral("default") : gameId;
     const QString path = compatDataRoot() + QLatin1Char('/') + safeId;
     QDir().mkpath(path);
+    repairCorruptPrefixForGame(gameId);
     return path;
 }
 

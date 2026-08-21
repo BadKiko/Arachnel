@@ -3,6 +3,9 @@
     Q_INVOKABLE void clearCatalogFilters();
     Q_INVOKABLE void setCatalogFilters(int, int, int, bool, const QString&, int = 0);
     Q_INVOKABLE void applyCatalogPresentation(int, int, int, int, bool, const QString&, int = 0);
+    Q_INVOKABLE QString catalogGenreLabel(const QString& canonicalKey) const;
+    Q_INVOKABLE void setHiddenCatalogSourceIds(const QStringList& ids);
+    Q_INVOKABLE void setCatalogSourceHidden(const QString& sourceId, bool hidden);
     Q_INVOKABLE QVariantList pluginEntries() const;
     Q_INVOKABLE bool isPluginInstalledOnDisk(const QString&) const;
     Q_INVOKABLE void browsePluginArach();
@@ -14,6 +17,13 @@
     Q_INVOKABLE void rescanPlugins();
     Q_INVOKABLE void launchGame(const QString&);
     Q_INVOKABLE void stopRunningGame();
+    Q_INVOKABLE QString gameLaunchLog() const;
+    Q_INVOKABLE QString gameLaunchLog(const QString& gameId) const;
+    Q_INVOKABLE bool hasGameLaunchLog(const QString& gameId) const;
+    Q_INVOKABLE void copyGameLaunchLog();
+    Q_INVOKABLE void copyGameLaunchLog(const QString& gameId);
+    Q_INVOKABLE void saveGameLaunchLog();
+    Q_INVOKABLE void saveGameLaunchLog(const QString& gameId);
     Q_INVOKABLE void searchCatalog(const QString&, const QString&);
     Q_INVOKABLE void installCatalogEntry(const QString&, const QString& = {},
                                          const QVariantList& = {}, const QString& = {});
@@ -47,7 +57,8 @@
     Q_INVOKABLE bool needsProtonOnPlatform() const;
     Q_INVOKABLE bool ensureProtonReady();
     Q_INVOKABLE bool needsInstallLocationChoice() const;
-    Q_INVOKABLE QString browseGameExecutable(const QString& = {});
+    Q_INVOKABLE QString browseGameExecutable(const QString& currentPath = {},
+                                             const QString& preferredDir = {});
     Q_INVOKABLE QString browseStorageFolder();
     Q_INVOKABLE QVariantMap gameRuntimeContainerInfo(const QString&) const;
     Q_INVOKABLE void openGameRuntimeContainer(const QString&);
@@ -61,6 +72,7 @@
     Q_INVOKABLE bool isEntryDownloadComplete(const QString&) const;
     Q_INVOKABLE bool entryDownloadFilesExist(const QString&) const;
     Q_INVOKABLE QVariantMap entryDetails(const QString&) const;
+    Q_INVOKABLE QString suggestionCoverUrl(const QString& gameId, const QString& gameTitle) const;
     Q_INVOKABLE void checkUpdates();
     Q_INVOKABLE void cancelJob(const QString&);
     Q_INVOKABLE void toggleJobPause(const QString&);
@@ -101,9 +113,16 @@
     Q_INVOKABLE void copyPendingCrashReport();
     Q_INVOKABLE QString gameShareUrl(const QString& entryId) const;
     Q_INVOKABLE void shareGameLink(const QString& entryId);
+    Q_INVOKABLE void refreshFriends();
+    Q_INVOKABLE void createFriendInvite();
+    Q_INVOKABLE void acceptFriendInvite(const QString& code);
+    Q_INVOKABLE void removeFriendById(const QString& friendId);
+    Q_INVOKABLE void renameFriendById(const QString& friendId, const QString& nickname);
+    Q_INVOKABLE void suggestGameToFriend(const QString& friendId, const QString& entryId);
     Q_INVOKABLE void toggleBookmark(const QString& entryId);
     Q_INVOKABLE void requestDeepLink(const QString& rawOrUrl);
     Q_INVOKABLE void consumePendingDeepLink();
+    Q_INVOKABLE void forceActivateMainWindow();
     Q_INVOKABLE void requestCatalogCover(const QString&);
     Q_INVOKABLE void cancelCatalogCover(const QString&);
     Q_INVOKABLE void invalidateCatalogCover(const QString&);

@@ -1,12 +1,18 @@
 #include "process_launcher.h"
 
+#include <QCoreApplication>
 #include <QFileInfo>
 #include <QProcess>
-#include <QCoreApplication>
+
+#if defined(Q_OS_UNIX)
+#include <fcntl.h>
+#include <unistd.h>
+#endif
 
 namespace arachnel::core {
 
-bool ProcessLauncher::launch(const ResolvedLaunch& launch, QString* errorOut, qint64* processIdOut)
+bool ProcessLauncher::launch(const ResolvedLaunch& launch, QString* errorOut, qint64* processIdOut,
+                             const QString& logFilePath)
 {
     if (launch.program.isEmpty()) {
         if (errorOut)
@@ -30,6 +36,30 @@ bool ProcessLauncher::launch(const ResolvedLaunch& launch, QString* errorOut, qi
     process.setArguments(launch.arguments);
     process.setWorkingDirectory(workDir);
     process.setProcessEnvironment(launch.environment);
+
+    const QString capturePath = logFilePath.trimmed();
+#if defined(Q_OS_UNIX)
+    // Pre-encode in the parent: the child modifier runs after fork() where
+    // allocating a QString/utf8 is not async-signal-safe.
+    const QByteArray captureBytes = capturePath.toUtf8();
+    process.setChildProcessModifier([captureBytes]() {
+        ::setpgid(0, 0);
+        if (!captureBytes.isEmpty()) {
+            const int fd = ::open(captureBytes.constData(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
+            if (fd >= 0) {
+                ::dup2(fd, STDOUT_FILENO);
+                ::dup2(fd, STDERR_FILENO);
+                if (fd > STDERR_FILENO)
+                    ::close(fd);
+            }
+        }
+    });
+#else
+    if (!capturePath.isEmpty()) {
+        process.setStandardOutputFile(capturePath);
+        process.setStandardErrorFile(capturePath);
+    }
+#endif
 
     qint64 processId = 0;
     const bool ok = process.startDetached(&processId);

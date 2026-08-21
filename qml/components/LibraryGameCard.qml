@@ -78,6 +78,7 @@ Item {
     readonly property bool isRunning: Core.gameRunning && Core.runningGameId === root.gameId
 
     signal openDetails(string gameId)
+    signal requestUpdate(string gameId)
 
     Connections {
         target: Core
@@ -123,6 +124,7 @@ Item {
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.margins: MD.Token.spacing.medium
                 visible: root.hasUpdate
+                enabled: !(activeJob.inProgress)
                 text: qsTr("Update")
                 icon.name: MD.Token.icon.update
                 elevated: true
@@ -130,6 +132,7 @@ Item {
                 mdState.textColor: MD.Token.color.on_tertiary_container
                 mdState.iconColor: MD.Token.color.on_tertiary_container
                 mdState.outlineColor: MD.Token.color.tertiary_container
+                onClicked: root.requestUpdate(root.gameId)
             }
 
             MD.AssistChip {

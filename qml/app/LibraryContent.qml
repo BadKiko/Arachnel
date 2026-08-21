@@ -356,6 +356,12 @@ Item {
                             width: gridHost.cardWidth
                             height: gridHost.cardHeight
                             onOpenDetails: function (id) { page.openGame(id) }
+                            onRequestUpdate: function (id) {
+                                if (Core.catalogUpdateHasDlcRisk(id))
+                                    dlcUpdateRiskDialog.openForGame(id)
+                                else
+                                    Core.updateCatalogEntry(id)
+                            }
                         }
                     }
                 }

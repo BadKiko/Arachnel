@@ -1,0 +1,7 @@
+MinGW-w64 i686 runtime DLLs for Steamless.CLI.exe under Wine Mono on Linux.
+
+Source packages (MSYS2 mingw32):
+- mingw-w64-i686-gcc-libs (libgcc_s_dw2-1.dll)
+- mingw-w64-i686-libwinpthread-git (libwinpthread-1.dll)
+
+Redistributable runtime libraries from MinGW-w64.

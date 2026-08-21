@@ -9,7 +9,10 @@
 #include <QThreadPool>
 #include <QTimer>
 #include <QUuid>
+#include <QWriteLocker>
 #include <QtConcurrent>
+
+#include "social_controller.h"
 
 namespace arachnel::core {
 
@@ -44,6 +47,7 @@ void CoreController::initializeServices()
             return nullptr;
         },
         [this]() -> QVector<CatalogEntry>& { return m_catalogCache; }, this);
+    m_catalogCovers->setCacheLock(&m_catalogCacheLock);
 
     if (qEnvironmentVariableIntValue("ARACHNEL_COVER_METRICS") > 0) {
         auto* logTimer = new QTimer(this);
@@ -121,8 +125,14 @@ void CoreController::initializeServices()
         m_catalogFilters->setCacheLock(&m_catalogCacheLock);
     if (m_pluginHost) {
         m_pluginHost->setBeforeUnloadHook([this]() {
+            m_pluginCallsBlocked = true;
+            waitForCatalogAddonEnrich();
             if (m_catalogController)
                 m_catalogController->waitForInFlightPluginCatalogLoads();
+            // Drain anything queued while catalog loads finished.
+            waitForCatalogAddonEnrich();
+            // Install / owned-download workers still hold ISourcePlugin* into the DSO.
+            m_pluginHost->waitForInFlightPluginWorkers();
         });
     }
     connect(m_catalogController, &CatalogController::catalogLoadingChanged, this,
@@ -197,22 +207,26 @@ void CoreController::initializeServices()
                                               QString* compatClient) {
         fillProtonInstallFields(entryId, protonId, executable, compatData, compatClient);
     };
-    installHooks.gameCommitted = [this](const LibraryGame& game) {
-#if defined(Q_OS_LINUX)
-        setRuntimeSetupActive(
-            game, QCoreApplication::translate("Core", "Preparing runtime environment…"));
-        QTimer::singleShot(0, this, [this, game]() {
-            ensureRuntimeDependenciesForGame(game);
-            clearRuntimeSetup();
-        });
-#else
+    installHooks.gameCommitted = [](const LibraryGame& game) {
+        // Prefix / VC redist setup runs on Play, not after download.
         Q_UNUSED(game)
-#endif
     };
+    m_steamlessService = new SteamlessService(
+        [this](const QString& message) { showNotice(message); }, this);
+
+    // One-time Steamless setup: only downloads when the tool is missing or was
+    // deleted; already-installed setups are a no-op. Delayed so it never blocks
+    // startup UI (and Wine is checked first on Linux).
+    QTimer::singleShot(3000, this, [this]() {
+        if (m_steamlessService)
+            m_steamlessService->ensureSetup();
+    });
+
     m_installSessionService =
         new InstallSessionService(&m_settings, &m_libraryStore, &m_jobStore, &m_jobs,
                                   m_jobOrchestrator, m_pluginHost, m_installAnalyzer,
-                                  m_protonManager, std::move(installHooks), this);
+                                  m_protonManager, m_steamlessService, std::move(installHooks),
+                                  this);
     LibraryController::Hooks libraryHooks;
     libraryHooks.syncLibrary = [this]() { syncLibraryFromStore(); };
     libraryHooks.removeJobs = [this](const QString& entryId) { removeJobsForEntry(entryId); };
@@ -418,10 +432,46 @@ void CoreController::initializeServices()
         return ensureRuntimeDependenciesForGame(game);
     };
     launchHooks.touchLastPlayed = [this](const QString& gameId) { touchLastPlayed(gameId); };
+    launchHooks.setOnlineFixEnabled = [this](const QString& gameId, bool enabled) {
+        if (m_libraryController)
+            m_libraryController->setGameOnlineFixEnabled(gameId, enabled);
+    };
     m_launchController =
-        new LaunchController(&m_library, &m_settings, m_pluginHost, std::move(launchHooks), this);
+        new LaunchController(&m_library, &m_settings, m_pluginHost, m_protonManager,
+                             m_steamlessService, std::move(launchHooks), this);
     connect(m_launchController, &LaunchController::runningGameChanged, this,
             &CoreController::runningGameChanged);
+    connect(m_launchController, &LaunchController::launchSessionEnded, this,
+            &CoreController::launchSessionEnded);
+    m_socialController = new SocialController(this);
+    connect(m_socialController, &SocialController::noticeRequested, this,
+            [this](const QString& message) { showNotice(message); });
+    connect(m_socialController, &SocialController::friendsChanged, this, [this]() {
+        if (!m_catalogDiscovery || !m_socialController)
+            return;
+        QStringList friendEntryIds;
+        const FriendsModel* model = qobject_cast<const FriendsModel*>(m_socialController->friends());
+        if (!model)
+            return;
+        for (int row = 0; row < model->count(); ++row) {
+            const QVariantMap info = model->friendInfo(row);
+            const QString currentGameId = info.value(QStringLiteral("currentGameId")).toString().trimmed();
+            const QString suggestedGameId = info.value(QStringLiteral("suggestedGameId")).toString().trimmed();
+            if (!currentGameId.isEmpty() && !friendEntryIds.contains(currentGameId))
+                friendEntryIds.append(currentGameId);
+            if (!suggestedGameId.isEmpty() && !friendEntryIds.contains(suggestedGameId))
+                friendEntryIds.append(suggestedGameId);
+        }
+        m_catalogDiscovery->setFriendEntryIds(friendEntryIds);
+    });
+    connect(m_launchController, &LaunchController::runningGameChanged, this, [this]() {
+        if (!m_socialController || !m_launchController)
+            return;
+        m_socialController->setLocalPresence(m_launchController->gameRunning(),
+                                             m_launchController->runningGameId(),
+                                             m_launchController->runningGameTitle(),
+                                             m_launchController->runningGameCoverUrl());
+    });
     m_appUpdater = new AppUpdater(this);
     m_appUpdater->setIncludePreReleases(m_settings.includeAppPreReleases());
     connect(&m_settings, &SettingsStore::includeAppPreReleasesChanged, this, [this]() {
@@ -534,17 +584,22 @@ void CoreController::initializeServices()
 
     connect(m_metadataService, &GameMetadataService::metadataReady, this,
             [this](const QString& entryId, const GameMetadata& metadata) {
-                for (auto& entry : m_catalogCache) {
-                    if (entry.id != entryId)
-                        continue;
-                    applyMetadataToEntry(entry, metadata);
+                bool applied = false;
+                {
+                    QWriteLocker locker(&m_catalogCacheLock);
+                    for (auto& entry : m_catalogCache) {
+                        if (entry.id != entryId)
+                            continue;
+                        applyMetadataToEntry(entry, metadata);
+                        applied = true;
+                        break;
+                    }
+                }
+                if (applied) {
                     syncEntryToCatalogModel(entryId);
-                    if (m_catalogFilters
-                        && (!m_catalogFilters->genreFilter().isEmpty()
-                            || m_catalogFilters->sizeFilter() > 0
-                            || m_catalogFilters->playModeFilter() > 0))
-                        scheduleCatalogRefilter();
-                    break;
+                    const int cacheIndex = m_catalogIdToCacheIndex.value(entryId, -1);
+                    if (m_catalogFilters && cacheIndex >= 0)
+                        m_catalogFilters->syncFilterRow(cacheIndex);
                 }
                 if (!metadata.coverUrl.isEmpty())
                     m_catalogCovers->ensureDiskCover(entryId, metadata.coverUrl);
@@ -553,8 +608,6 @@ void CoreController::initializeServices()
                 emit entryMetadataChanged(entryId);
                 if (m_catalogDiscovery)
                     m_catalogDiscovery->onEntryMetadataChanged(entryId);
-                if (!metadata.genres.isEmpty())
-                    rebuildAvailableCatalogGenres();
             });
 
     connect(m_jobOrchestrator, &JobOrchestrator::downloadCompleted, this,

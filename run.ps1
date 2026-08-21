@@ -766,9 +766,34 @@ function Test-LibtorrentNeedsSharedMigration {
     return [bool]$staticLib
 }
 
+function Test-CmakeBuildFilesPresent {
+    $cache = Join-Path $BUILD_DIR "CMakeCache.txt"
+    if (-not (Test-Path -LiteralPath $cache)) { return $false }
+
+    $genLine = Select-String -Path $cache -Pattern '^CMAKE_GENERATOR:INTERNAL=' | Select-Object -First 1
+    if (-not $genLine) { return $false }
+
+    if ($genLine.Line -match 'Ninja') {
+        return (Test-Path -LiteralPath (Join-Path $BUILD_DIR "build.ninja"))
+    }
+    if ($genLine.Line -match 'Visual Studio') {
+        $sln = Get-ChildItem -LiteralPath $BUILD_DIR -Filter "*.sln" -File -ErrorAction SilentlyContinue |
+            Select-Object -First 1
+        return [bool]$sln
+    }
+    if ($genLine.Line -match 'Unix Makefiles') {
+        return (Test-Path -LiteralPath (Join-Path $BUILD_DIR "Makefile"))
+    }
+    return $true
+}
+
 function Test-NeedsCmakeConfigure {
     $cache = Join-Path $BUILD_DIR "CMakeCache.txt"
     if (-not (Test-Path -LiteralPath $cache)) { return $true }
+    if (-not (Test-CmakeBuildFilesPresent)) {
+        Write-Host "Reconfigure: CMake cache exists but build files are missing (incomplete configure)" -ForegroundColor Yellow
+        return $true
+    }
 
     $cacheText = Get-Content -LiteralPath $cache -Raw
     $wantShared = if ($env:ARACHNEL_LIBTORRENT_SHARED -eq '0') { 'OFF' } else { 'ON' }

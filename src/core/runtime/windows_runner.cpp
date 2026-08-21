@@ -6,6 +6,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QProcess>
+#include <QProcessEnvironment>
 
 #if defined(Q_OS_WIN)
 #ifndef NOMINMAX
@@ -22,8 +23,14 @@ namespace {
 bool runProcess(QProcess& process, int timeoutMs, QString* errorOut)
 {
     if (!process.waitForStarted(15000)) {
-        if (errorOut)
-            *errorOut = QCoreApplication::translate("Core", "Failed to start: %1").arg(process.program());
+        if (errorOut) {
+            const QString detail = process.errorString().trimmed();
+            *errorOut = detail.isEmpty()
+                            ? QCoreApplication::translate("Core", "Failed to start: %1")
+                                  .arg(process.program())
+                            : QCoreApplication::translate("Core", "Failed to start: %1")
+                                  .arg(QStringLiteral("%1 (%2)").arg(process.program(), detail));
+        }
         return false;
     }
     if (!process.waitForFinished(timeoutMs)) {
@@ -240,6 +247,10 @@ bool runWindowsProgramAndWait(const QString& program, const QStringList& argumen
     }
 
     QProcessEnvironment qenv = QProcessEnvironment::systemEnvironment();
+    // Steam-runtime on LD_LIBRARY_PATH breaks /usr/bin/env in the Proton script.
+    qenv.remove(QStringLiteral("LD_LIBRARY_PATH"));
+    qenv.remove(QStringLiteral("STEAM_RUNTIME"));
+    qenv.remove(QStringLiteral("STEAM_RUNTIME_LIBRARY_PATH"));
     if (!env.steamCompatClientPath.isEmpty())
         qenv.insert(QStringLiteral("STEAM_COMPAT_CLIENT_INSTALL_PATH"), env.steamCompatClientPath);
     if (!env.compatDataPath.isEmpty())

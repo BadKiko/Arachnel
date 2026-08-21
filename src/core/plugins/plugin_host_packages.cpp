@@ -297,11 +297,13 @@ bool PluginHost::installFromArach(const QString& archivePath)
     // Only reload this plugin - full scan() would unloadAll() and tear down every other
     // source (FreeTP CatalogEntry dtor / UAF; issues #25-27, #29).
     if (!loadPluginDir(targetRoot)) {
-        m_lastError = QCoreApplication::translate(
-            "Core",
-            "Plugin files were copied but the library failed to load. Rebuild the plugin for "
-            "your Arachnel version and this OS, then reinstall.");
-        if (!g_lastPluginLoadError.isEmpty())
+        m_lastError = !m_lastLoadRejectReason.isEmpty()
+                          ? m_lastLoadRejectReason
+                          : QCoreApplication::translate(
+                                "Core",
+                                "Plugin files were copied but the library failed to load. "
+                                "Update Arachnel, or rebuild the plugin for this app version.");
+        if (!g_lastPluginLoadError.isEmpty() && !m_lastError.contains(g_lastPluginLoadError))
             m_lastError += QStringLiteral(" (") + g_lastPluginLoadError + QLatin1Char(')');
         emit pluginsChanged();
         return false;

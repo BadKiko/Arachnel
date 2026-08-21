@@ -11,10 +11,12 @@ Item {
     required property bool hasSelection
     required property bool listViewMode
     property real collapseProgress: 0
+    property var sortOptions: []
 
     signal filterRequested()
     signal viewModeChangeRequested(int mode)
     signal refreshRequested()
+    signal sortModeRequested(int mode)
 
     width: contentWidth
     height: col.implicitHeight
@@ -71,6 +73,11 @@ Item {
                 maximumLineCount: 1
             }
 
+            CatalogSortButton {
+                sortOptions: root.sortOptions
+                onSortModeChosen: function (mode) { root.sortModeRequested(mode) }
+            }
+
             Item {
                 Layout.preferredWidth: filterBtn.implicitWidth
                 Layout.preferredHeight: filterBtn.implicitHeight
@@ -125,17 +132,6 @@ Item {
                 enabled: !Core.catalogLoading && root.hasSelection
                 onClicked: root.refreshRequested()
             }
-        }
-
-        MD.Label {
-            Layout.fillWidth: true
-            visible: Core.catalogStatus.length > 0
-            text: Core.catalogStatus
-            color: MD.Token.color.on_surface_variant
-            typescale: MD.Token.typescale.body_small
-            wrapMode: Text.WordWrap
-            maximumLineCount: 2
-            elide: Text.ElideRight
         }
 
         Item {

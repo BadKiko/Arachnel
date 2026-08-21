@@ -13,6 +13,7 @@ set(ARACHNEL_APP_SOURCES
     src/core/jobs/job_display.cpp
     src/core/jobs/job_kind.cpp
     src/core/catalog/catalog_types.cpp
+    src/core/social/friends_model.cpp
     src/core/library/library_model.cpp
     src/core/plugins/source_plugin_model.cpp
     src/core/catalog/catalog_model.cpp
@@ -38,8 +39,10 @@ set(ARACHNEL_APP_SOURCES
     src/core/catalog/catalog_genre_normalize.cpp
     src/core/catalog/catalog_shelf_model.cpp
     src/core/catalog/catalog_discovery_service.cpp
+    src/core/social/invite_service.cpp
     src/core/catalog/game_metadata_service.cpp
     src/core/catalog/game_metadata_service_network.cpp
+    src/core/social/presence_service.cpp
     src/core/catalog/cover_image_cache.cpp
     src/core/torrent/torrent_session.cpp
     src/core/torrent/torrent_session_poll.cpp
@@ -49,11 +52,13 @@ set(ARACHNEL_APP_SOURCES
     src/core/install/install_analysis.cpp
     src/core/install/install_heuristics.cpp
     src/core/install/online_fix_overlay.cpp
+    src/core/install/steam_api_provision.cpp
     src/core/install/install_marker.cpp
     src/core/install/install_analyzer.cpp
     src/core/install/install_kind_probe_service.cpp
     src/core/install/install_session_service.cpp
     src/core/install/install_session_service_install.cpp
+    src/core/install/steamless_service.cpp
     src/core/jobs/job_orchestrator.cpp
     src/core/jobs/job_orchestrator_progress.cpp
     src/core/jobs/job_orchestrator_completion.cpp
@@ -77,10 +82,14 @@ set(ARACHNEL_APP_SOURCES
     src/core/runtime/proton_manager_download.cpp
     src/core/runtime/windows_runner.cpp
     src/core/launch/process_tracker.cpp
+    src/core/launch/wine_error_probe.cpp
     src/core/launch/launch_controller.cpp
     src/core/platform/game_launch_target.cpp
     src/core/platform/desktop_shortcut_service.cpp
     src/core/platform/steam_shortcut_service.cpp
+    src/core/social/social_controller.cpp
+    src/core/social/social_facade.cpp
+    src/core/social/social_store.cpp
     src/core/settings/app_updater.cpp
     src/core/facade/core_controller.cpp
     src/core/catalog/catalog_facade_presentation.cpp
@@ -106,6 +115,7 @@ set(ARACHNEL_CORE_INCLUDE_DIRS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/core
     ${CMAKE_CURRENT_SOURCE_DIR}/src/core/facade
     ${CMAKE_CURRENT_SOURCE_DIR}/src/core/catalog
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/core/social
     ${CMAKE_CURRENT_SOURCE_DIR}/src/core/library
     ${CMAKE_CURRENT_SOURCE_DIR}/src/core/jobs
     ${CMAKE_CURRENT_SOURCE_DIR}/src/core/install

@@ -1,5 +1,6 @@
 #include "catalog_model.h"
 
+#include "catalog_genre_normalize.h"
 #include "catalog_types.h"
 #include "install_kind.h"
 
@@ -155,8 +156,7 @@ QVariant CatalogModel::data(const QModelIndex& index, int role) const
     case DescriptionRole:
         return entry->description;
     case GenresRole:
-        return entry->genreKeys.isEmpty() ? entry->genres
-                                          : entry->genreKeys.join(QStringLiteral(", "));
+        return genreLabelsFromBits(entry->genreBits);
     case InstallKindRole:
         return static_cast<int>(entry->installKind);
     case InstallKindLabelRole:
@@ -230,12 +230,8 @@ void CatalogModel::setSortMode(int mode)
         return;
 
     m_sortMode = next;
-    if (!m_indices.isEmpty() && m_source) {
-        beginResetModel();
-        sortIndices();
-        rebuildIdMap();
-        endResetModel();
-    }
+    if (!m_indices.isEmpty() && m_source)
+        replaceVisibleIndices(m_indices, false);
     emit sortModeChanged();
     invalidateScrubStops();
 }
@@ -248,15 +244,6 @@ void CatalogModel::bindSource(const QVector<CatalogEntry>* source)
 void CatalogModel::setExtraEntryLookup(std::function<const CatalogEntry*(const QString&)> lookup)
 {
     m_extraEntryLookup = std::move(lookup);
-}
-
-void CatalogModel::sortIndices()
-{
-    if (!m_source)
-        return;
-    std::stable_sort(m_indices.begin(), m_indices.end(), [this](int ai, int bi) {
-        return catalogEntryLess(m_source->at(ai), m_source->at(bi), m_sortMode);
-    });
 }
 
 void CatalogModel::rebuildIdMap()
@@ -275,25 +262,61 @@ void CatalogModel::rebuildIdMap()
 
 void CatalogModel::setVisibleIndices(QVector<int> indices)
 {
-    if (indices == m_indices)
-        return;
-    beginResetModel();
-    m_indices = std::move(indices);
-    sortIndices();
-    rebuildIdMap();
-    endResetModel();
-    emit countChanged();
-    invalidateScrubStops();
+    replaceVisibleIndices(std::move(indices), false);
 }
 
 void CatalogModel::setVisibleIndicesPresorted(QVector<int> indices)
 {
+    replaceVisibleIndices(std::move(indices), true);
+}
+
+void CatalogModel::replaceVisibleIndices(QVector<int> indices, bool alreadySorted)
+{
+    if (!alreadySorted && m_source)
+        std::stable_sort(indices.begin(), indices.end(), [this](int ai, int bi) {
+            if (!m_source || ai < 0 || bi < 0 || ai >= m_source->size() || bi >= m_source->size())
+                return ai < bi;
+            return catalogEntryLess(m_source->at(ai), m_source->at(bi), m_sortMode);
+        });
+
     if (indices == m_indices)
         return;
-    beginResetModel();
+
+    const int oldCount = m_indices.size();
+    const int newCount = indices.size();
+
+    if (newCount == 0) {
+        if (oldCount > 0) {
+            beginRemoveRows({}, 0, oldCount - 1);
+            m_indices.clear();
+            m_idToRow.clear();
+            endRemoveRows();
+            emit countChanged();
+            invalidateScrubStops();
+        }
+        return;
+    }
+
+    if (oldCount == 0) {
+        beginInsertRows({}, 0, newCount - 1);
+        m_indices = std::move(indices);
+        rebuildIdMap();
+        endInsertRows();
+        emit countChanged();
+        invalidateScrubStops();
+        return;
+    }
+
+    // Replace the list. Prefix insert/remove + dataChanged morphs old cards in
+    // place, which looks like the filter is being applied live across the grid.
+    beginRemoveRows({}, 0, oldCount - 1);
+    m_indices.clear();
+    m_idToRow.clear();
+    endRemoveRows();
+    beginInsertRows({}, 0, newCount - 1);
     m_indices = std::move(indices);
     rebuildIdMap();
-    endResetModel();
+    endInsertRows();
     emit countChanged();
     invalidateScrubStops();
 }
@@ -357,7 +380,8 @@ QVariantMap CatalogModel::toMap(const CatalogEntry& entry) const
         {QStringLiteral("version"), entry.version},
         {QStringLiteral("installPath"), QString()},
         {QStringLiteral("description"), entry.description},
-        {QStringLiteral("genres"), entry.genres},
+        {QStringLiteral("genres"), genreLabelsFromBits(entry.genreBits)},
+        {QStringLiteral("hasDrm"), entry.hasDrm},
         {QStringLiteral("sizeLabel"), entry.sizeLabel},
         {QStringLiteral("installKind"), static_cast<int>(entry.installKind)},
         {QStringLiteral("installKindLabel"), installKindLabel(entry.installKind)},
@@ -639,11 +663,11 @@ void CatalogModel::clear()
         invalidateScrubStops();
         return;
     }
-    beginResetModel();
+    beginRemoveRows({}, 0, m_indices.size() - 1);
     m_indices.clear();
     m_idToRow.clear();
     m_source = nullptr;
-    endResetModel();
+    endRemoveRows();
     emit countChanged();
     invalidateScrubStops();
 }

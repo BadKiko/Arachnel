@@ -13,11 +13,50 @@ Flickable {
 
     signal openStoreRequested
 
+    readonly property var catalogPlugins: Core.pluginCatalog ? Core.pluginCatalog.plugins : []
+
+    readonly property var installedPlugins: {
+        const rows = (root.pluginRows || []).slice()
+        const catalog = {}
+        const list = root.catalogPlugins
+        for (let i = 0; i < list.length; ++i)
+            catalog[list[i].id] = list[i]
+
+        rows.sort(function (a, b) {
+            const ca = catalog[a.pluginId]
+            const cb = catalog[b.pluginId]
+            const ra = !!(ca && ca.recommended)
+            const rb = !!(cb && cb.recommended)
+            if (ra !== rb)
+                return ra ? -1 : 1
+            return (a.name || "").localeCompare(b.name || "")
+        })
+
+        return rows.map(function (row) {
+            const cat = catalog[row.pluginId] || {}
+            return {
+                id: row.pluginId,
+                pluginId: row.pluginId,
+                name: cat.name || row.name,
+                description: cat.description || row.description || "",
+                iconName: cat.iconName || row.iconName || "extension",
+                version: row.pluginVersion,
+                pluginVersion: row.pluginVersion,
+                repository: row.repositoryUrl || cat.repository || "",
+                repositoryUrl: row.repositoryUrl || cat.repository || "",
+                loaded: row.loaded !== false
+            }
+        })
+    }
+
     function reloadPlugins() {
         pluginRows = Core.pluginEntries()
     }
 
-    Component.onCompleted: reloadPlugins()
+    Component.onCompleted: {
+        reloadPlugins()
+        Core.refreshOfficialPlugins()
+    }
 
     Connections {
         target: Core
@@ -58,175 +97,92 @@ Flickable {
             onClicked: root.openStoreRequested()
         }
 
-        Rectangle {
+        MD.ElevationRectangle {
             Layout.fillWidth: true
             Layout.leftMargin: contentMargin
             Layout.rightMargin: contentMargin
-            visible: root.pluginRows.length === 0
+            visible: root.installedPlugins.length === 0
+            implicitHeight: emptyCol.implicitHeight + MD.Token.spacing.large * 2
             radius: MD.Token.shape.corner.large
             color: MD.Token.color.surface_container
-            border.width: 1
-            border.color: MD.Token.color.outline_variant
-            implicitHeight: emptyCol.implicitHeight + MD.Token.spacing.medium * 2
+            elevation: MD.Token.elevation.level0
 
             ColumnLayout {
                 id: emptyCol
                 anchors.left: parent.left
                 anchors.right: parent.right
-                anchors.top: parent.top
-                anchors.margins: MD.Token.spacing.medium
-                spacing: MD.Token.spacing.extra_small
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.margins: MD.Token.spacing.large
+                spacing: MD.Token.spacing.small
+
+                MD.ElevationRectangle {
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.preferredWidth: 48
+                    Layout.preferredHeight: 48
+                    radius: MD.Token.shape.corner.full
+                    color: MD.Token.color.primary_container
+                    elevation: MD.Token.elevation.level0
+
+                    MD.Icon {
+                        anchors.centerIn: parent
+                        name: MD.Token.icon.extension
+                        size: 24
+                        color: MD.Token.color.on_primary_container
+                    }
+                }
 
                 MD.Label {
                     Layout.fillWidth: true
+                    horizontalAlignment: Text.AlignHCenter
                     text: qsTr("No plugins installed")
                     typescale: MD.Token.typescale.title_small
                 }
 
                 MD.Label {
                     Layout.fillWidth: true
+                    horizontalAlignment: Text.AlignHCenter
                     wrapMode: Text.WordWrap
-                    text: qsTr("Open the plugin store or install a plugin file you already have.")
+                    text: qsTr("Open the plugin store and install a plugin to browse games.")
                     color: MD.Token.color.on_surface_variant
-                    typescale: MD.Token.typescale.body_small
+                    typescale: MD.Token.typescale.body_medium
                 }
             }
         }
 
-        ColumnLayout {
+        MD.ElevationRectangle {
             Layout.fillWidth: true
             Layout.leftMargin: contentMargin
             Layout.rightMargin: contentMargin
-            spacing: MD.Token.spacing.small
-            visible: root.pluginRows.length > 0
+            visible: root.installedPlugins.length > 0
+            implicitHeight: listCol.implicitHeight + MD.Token.spacing.small * 2
+            radius: MD.Token.shape.corner.large
+            color: MD.Token.color.surface_container
+            elevation: MD.Token.elevation.level0
 
-            MD.Label {
-                Layout.fillWidth: true
-                text: qsTr("Installed plugins")
-                typescale: MD.Token.typescale.title_small
-            }
+            ColumnLayout {
+                id: listCol
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.margins: MD.Token.spacing.small
+                spacing: 0
 
-            Repeater {
-                model: root.pluginRows
+                Repeater {
+                    model: root.installedPlugins
 
-                Rectangle {
-                    required property var modelData
-
-                    Layout.fillWidth: true
-                    radius: MD.Token.shape.corner.large
-                    color: MD.Token.color.surface_container
-                    border.width: 1
-                    border.color: MD.Token.color.outline_variant
-                    implicitHeight: cardCol.implicitHeight + MD.Token.spacing.medium * 2
-
-                    ColumnLayout {
-                        id: cardCol
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.top: parent.top
-                        anchors.margins: MD.Token.spacing.medium
-                        spacing: MD.Token.spacing.extra_small
-
-                        RowLayout {
-                            Layout.fillWidth: true
-                            spacing: MD.Token.spacing.small
-
-                            ColumnLayout {
-                                Layout.fillWidth: true
-                                spacing: 2
-
-                                MD.Label {
-                                    Layout.fillWidth: true
-                                    text: modelData.name
-                                    typescale: MD.Token.typescale.title_small
-                                    elide: Text.ElideRight
-                                }
-
-                                MD.Label {
-                                    Layout.fillWidth: true
-                                    text: modelData.description
-                                    color: MD.Token.color.on_surface_variant
-                                    typescale: MD.Token.typescale.body_small
-                                    wrapMode: Text.WordWrap
-                                    maximumLineCount: 2
-                                    elide: Text.ElideRight
-                                }
-                            }
-
-                            MD.Button {
-                                mdState.type: MD.Enum.BtText
-                                text: qsTr("Delete")
-                                icon.name: MD.Token.icon.delete
-                                onClicked: {
-                                    removeDialog.pluginId = modelData.pluginId
-                                    removeDialog.pluginName = modelData.name
-                                    removeDialog.open()
-                                }
-                            }
-                        }
-
-                        MD.Label {
-                            Layout.fillWidth: true
-                            text: modelData.loaded === false
-                                  ? qsTr("v%1 · %2 - not loaded").arg(modelData.pluginVersion).arg(modelData.pluginId)
-                                  : qsTr("v%1 · %2").arg(modelData.pluginVersion).arg(modelData.pluginId)
-                            color: modelData.loaded === false ? MD.Token.color.error : MD.Token.color.primary
-                            typescale: MD.Token.typescale.label_small
-                        }
-
-                        MD.Label {
-                            Layout.fillWidth: true
-                            visible: !!(modelData.catalogUrl && modelData.catalogUrl.length)
-                            text: qsTr("Game catalog: %1").arg(modelData.catalogUrl)
-                            color: MD.Token.color.on_surface_variant
-                            typescale: MD.Token.typescale.label_small
-                            elide: Text.ElideMiddle
-                            wrapMode: Text.WordWrap
-                            maximumLineCount: 2
-                        }
-
-                        MD.Label {
-                            Layout.fillWidth: true
-                            visible: !!(modelData.repositoryUrl && modelData.repositoryUrl.length)
-                            text: qsTr("Source: %1").arg(modelData.repositoryUrl)
-                            color: MD.Token.color.on_surface_variant
-                            typescale: MD.Token.typescale.label_small
-                            elide: Text.ElideMiddle
-                            wrapMode: Text.WordWrap
-                            maximumLineCount: 2
-                        }
-
-                        MD.Label {
-                            Layout.fillWidth: true
-                            text: modelData.pluginRootPath
-                            color: MD.Token.color.on_surface_variant
-                            typescale: MD.Token.typescale.label_small
-                            elide: Text.ElideMiddle
-                            maximumLineCount: 2
-                            wrapMode: Text.WordWrap
-                        }
-
-                        RowLayout {
-                            Layout.fillWidth: true
-                            spacing: MD.Token.spacing.small
-                            visible: !!(modelData.repositoryUrl && modelData.repositoryUrl.length)
-                                     || !!(modelData.catalogUrl && modelData.catalogUrl.length)
-
-                            MD.Button {
-                                visible: !!(modelData.repositoryUrl && modelData.repositoryUrl.length)
-                                mdState.type: MD.Enum.BtText
-                                text: qsTr("Source code")
-                                icon.name: MD.Token.icon.open_in_new
-                                onClicked: Core.openExternalUrl(modelData.repositoryUrl)
-                            }
-
-                            MD.Button {
-                                visible: !!(modelData.catalogUrl && modelData.catalogUrl.length)
-                                mdState.type: MD.Enum.BtText
-                                text: qsTr("Catalog URL")
-                                icon.name: MD.Token.icon.open_in_new
-                                onClicked: Core.openExternalUrl(modelData.catalogUrl)
-                            }
+                    OfficialPluginCard {
+                        required property var modelData
+                        required property int index
+                        plugin: modelData
+                        installed: true
+                        loaded: modelData.loaded
+                        showSource: false
+                        showVersion: true
+                        showDivider: index < root.installedPlugins.length - 1
+                        onUninstallClicked: {
+                            removeDialog.pluginId = modelData.pluginId
+                            removeDialog.pluginName = modelData.name
+                            removeDialog.open()
                         }
                     }
                 }
@@ -244,7 +200,7 @@ Flickable {
             typescale: MD.Token.typescale.body_small
         }
 
-        ColumnLayout {
+        RowLayout {
             Layout.fillWidth: true
             Layout.leftMargin: contentMargin
             Layout.rightMargin: contentMargin
@@ -253,39 +209,15 @@ Flickable {
 
             MD.Button {
                 Layout.fillWidth: true
-                mdState.type: MD.Enum.BtFilledTonal
+                mdState.type: MD.Enum.BtText
                 text: qsTr("Install from file…")
                 onClicked: Core.browsePluginArach()
             }
 
-            RowLayout {
-                Layout.fillWidth: true
-                spacing: MD.Token.spacing.small
-
-                MD.Button {
-                    Layout.fillWidth: true
-                    mdState.type: MD.Enum.BtText
-                    text: qsTr("Open folder")
-                    onClicked: Core.openPluginsFolder()
-                }
-
-                MD.Button {
-                    Layout.fillWidth: true
-                    mdState.type: MD.Enum.BtText
-                    text: qsTr("Refresh")
-                    onClicked: {
-                        Core.rescanPlugins()
-                        root.reloadPlugins()
-                    }
-                }
-            }
-
-            MD.Label {
-                Layout.fillWidth: true
-                text: qsTr("User-installed: %1").arg(Core.pluginsUserDir)
-                color: MD.Token.color.on_surface_variant
-                typescale: MD.Token.typescale.label_small
-                wrapMode: Text.WordWrap
+            MD.Button {
+                mdState.type: MD.Enum.BtText
+                text: qsTr("Open folder")
+                onClicked: Core.openPluginsFolder()
             }
         }
     }
@@ -340,5 +272,4 @@ Flickable {
             }
         }
     }
-
 }

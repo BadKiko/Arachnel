@@ -7,6 +7,7 @@
 
 #include <QHash>
 #include <QObject>
+#include <QReadWriteLock>
 #include <QSet>
 #include <QString>
 #include <QStringList>
@@ -54,6 +55,8 @@ public:
 
     void rebuildRemoteCoverIndex();
     void clearFailedCoverHints();
+
+    void setCacheLock(QReadWriteLock* lock) { m_cacheLock = lock; }
 
     void requestCatalogCover(const QString& entryId,
                              CoverFetchPriority priority = CoverFetchPriority::Visible);
@@ -131,6 +134,7 @@ private:
     GameMetadataService* m_metadataService = nullptr;
     SettingsStore* m_settings = nullptr;
     CatalogModel* m_catalog = nullptr;
+    QReadWriteLock* m_cacheLock = nullptr;
     EntryLookup m_findEntry;
     EntryList m_entries;
 

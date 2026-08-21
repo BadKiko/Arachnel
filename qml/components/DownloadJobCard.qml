@@ -33,6 +33,78 @@ Item {
                                             ? root.parentEntryId
                                             : root.entryId
 
+    // Bumped when library/catalog cover may have changed - entryDetails() alone
+    // is not a reactive dependency.
+    property int coverRevision: 0
+
+    readonly property string displayCoverUrl: {
+        root.coverRevision
+        const jobCover = (root.coverUrl || "")
+        if (jobCover.startsWith("file:"))
+            return jobCover
+        const id = root.detailsEntryId
+        if (!id.length)
+            return ""
+        const lib = Core.library.gameInfo(id)
+        const libCover = String(lib.coverUrl || "")
+        if (libCover.startsWith("file:"))
+            return libCover
+        const info = Core.entryDetails(id)
+        const live = String(info.coverUrl || "")
+        if (live.startsWith("file:"))
+            return live
+        return ""
+    }
+
+    function requestCover() {
+        if (root.compact || !root.visible || !root.enabled)
+            return
+        const id = root.detailsEntryId
+        if (!id.length || root.displayCoverUrl.length)
+            return
+        Core.requestCatalogCover(id)
+    }
+
+    function bumpCover() {
+        root.coverRevision++
+        if (!root.displayCoverUrl.length)
+            coverTimer.restart()
+    }
+
+    Timer {
+        id: coverTimer
+        interval: 60
+        onTriggered: root.requestCover()
+    }
+
+    Component.onCompleted: coverTimer.start()
+    onDetailsEntryIdChanged: root.bumpCover()
+    onCoverUrlChanged: root.bumpCover()
+    onVisibleChanged: {
+        if (visible)
+            root.bumpCover()
+    }
+    onEnabledChanged: {
+        if (enabled)
+            root.bumpCover()
+    }
+
+    Connections {
+        target: Core
+        function onEntryMetadataChanged(entryId) {
+            if (entryId === root.detailsEntryId)
+                root.bumpCover()
+        }
+    }
+
+    Connections {
+        target: Core.library
+        function onLibraryChanged() {
+            if (root.detailsEntryId.length)
+                root.bumpCover()
+        }
+    }
+
     readonly property bool inProgress: ["starting", "checking", "metadata", "queued", "downloading", "seeding", "paused", "installing", "moving"].includes(status)
     readonly property bool isInstalling: status === "installing"
     readonly property bool isMoving: status === "moving"
@@ -43,7 +115,9 @@ Item {
     readonly property bool canRetry: status === "failed" || status === "cancelled"
     readonly property bool canRetryInstall: root.jobId.length > 0 && Core.canRetryJobInstall(root.jobId)
     readonly property bool canManualInstall: root.jobId.length > 0 && Core.canManualInstallJob(root.jobId)
-    readonly property bool installFailed: root.detail.indexOf("Install failed") >= 0
+    readonly property bool installFailed: root.status === "failed"
+        || root.detail.indexOf("Install failed") >= 0
+        || root.detail.indexOf("Ошибка установки") >= 0
 
     property real _lastBytesSample: 0
     property real _lastBytesAtMs: 0
@@ -301,7 +375,7 @@ Item {
 
                 GamePoster {
                     anchors.fill: parent
-                    source: root.coverUrl
+                    source: root.displayCoverUrl
                     seed: root.displayTitle
                     fallbackText: root.displayTitle.charAt(0)
                     cornerRadius: MD.Token.shape.corner.large
@@ -309,6 +383,10 @@ Item {
                     onClicked: {
                         if (root.detailsEntryId.length)
                             root.openDetails(root.detailsEntryId)
+                    }
+                    onLoadFailed: {
+                        if (root.displayCoverUrl.startsWith("file:") && root.detailsEntryId.length)
+                            Core.invalidateCatalogCover(root.detailsEntryId)
                     }
                 }
             }

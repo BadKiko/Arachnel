@@ -2,8 +2,10 @@
 
 #include <QDebug>
 #include <QFile>
+#include <QFuture>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QMutexLocker>
 #include <QStandardPaths>
 #include <QWriteLocker>
 #include <QtConcurrent>
@@ -427,8 +429,18 @@ bool CoreController::ensureCatalogAddons(const QString& entryId)
         return true;
     }
 
+    if (m_pluginCallsBlocked) {
+        emit catalogAddonsReady(resolved);
+        return true;
+    }
+
     if (m_catalogAddonEnrichInFlight.contains(resolved))
         return false;
+
+    if (!m_pluginHost->pluginCatalogEntryLayoutTrusted(sourceId)) {
+        emit catalogAddonsReady(resolved);
+        return true;
+    }
 
     ISourcePlugin* plugin = m_pluginHost->plugin(sourceId);
     if (!plugin) {
@@ -437,31 +449,40 @@ bool CoreController::ensureCatalogAddons(const QString& entryId)
     }
 
     m_catalogAddonEnrichInFlight.insert(resolved);
-    (void)QtConcurrent::run([this, plugin, resolved, idx]() {
+    // Capture sourceId (not idx / raw plugin*) so cache rebuilds and unload waits stay safe.
+    QFuture<void> future = QtConcurrent::run([this, sourceId, resolved]() {
         QVector<CatalogComponent> addons;
         bool hasWorkshop = false;
-        if (const auto enriched = plugin->entryById(resolved)) {
-            addons = enriched->addons;
-            hasWorkshop = enriched->hasWorkshop;
+        if (ISourcePlugin* plugin = m_pluginHost ? m_pluginHost->plugin(sourceId) : nullptr) {
+            if (m_pluginHost->pluginCatalogEntryLayoutTrusted(sourceId)) {
+                if (const auto enriched = plugin->entryById(resolved)) {
+                    addons = enriched->addons;
+                    hasWorkshop = enriched->hasWorkshop;
+                }
+            }
         }
 
         QMetaObject::invokeMethod(
             this,
-            [this, resolved, idx, addons, hasWorkshop]() {
+            [this, resolved, addons, hasWorkshop]() {
                 m_catalogAddonEnrichInFlight.remove(resolved);
                 {
                     QWriteLocker locker(&m_catalogCacheLock);
-                    if (idx >= 0 && idx < m_catalogCache.size()
-                        && m_catalogCache[idx].id == resolved) {
-                        m_catalogCache[idx].addons = addons;
-                        m_catalogCache[idx].hasWorkshop = hasWorkshop;
-                        int n = 0;
-                        for (const CatalogComponent& c : addons) {
-                            if (isSteamStoreDlcId(c.id))
-                                ++n;
+                    const auto cacheIt = m_catalogIdToCacheIndex.constFind(resolved);
+                    if (cacheIt != m_catalogIdToCacheIndex.cend()) {
+                        const int idx = cacheIt.value();
+                        if (idx >= 0 && idx < m_catalogCache.size()
+                            && m_catalogCache[idx].id == resolved) {
+                            m_catalogCache[idx].addons = addons;
+                            m_catalogCache[idx].hasWorkshop = hasWorkshop;
+                            int n = 0;
+                            for (const CatalogComponent& c : addons) {
+                                if (isSteamStoreDlcId(c.id))
+                                    ++n;
+                            }
+                            if (n > 0)
+                                m_catalogCache[idx].dlcCount = n;
                         }
-                        if (n > 0)
-                            m_catalogCache[idx].dlcCount = n;
                     }
                 }
                 m_catalog.notifyEntryChanged(resolved);
@@ -469,7 +490,52 @@ bool CoreController::ensureCatalogAddons(const QString& entryId)
             },
             Qt::QueuedConnection);
     });
+    {
+        QMutexLocker lock(&m_catalogAddonEnrichMutex);
+        m_catalogAddonEnrichFutures.append(future);
+    }
     return false;
+}
+
+void CoreController::waitForCatalogAddonEnrich()
+{
+    for (;;) {
+        QList<QFuture<void>> futures;
+        {
+            QMutexLocker lock(&m_catalogAddonEnrichMutex);
+            futures.swap(m_catalogAddonEnrichFutures);
+        }
+        if (futures.isEmpty())
+            break;
+        for (QFuture<void>& future : futures)
+            future.waitForFinished();
+    }
+}
+
+bool CoreController::hasInFlightCatalogAddonEnrich() const
+{
+    if (!m_catalogAddonEnrichInFlight.isEmpty())
+        return true;
+    QMutexLocker lock(&m_catalogAddonEnrichMutex);
+    for (const QFuture<void>& future : m_catalogAddonEnrichFutures) {
+        if (!future.isFinished())
+            return true;
+    }
+    return false;
+}
+
+void CoreController::reportIncompatiblePlugins()
+{
+    if (!m_pluginHost)
+        return;
+    const auto bad = m_pluginHost->incompatibleDiskPlugins();
+    if (bad.isEmpty())
+        return;
+    QStringList lines;
+    lines.reserve(bad.size());
+    for (const auto& item : bad)
+        lines.append(item.second);
+    showNotice(lines.join(QStringLiteral("\n")));
 }
 
 bool CoreController::catalogUpdateHasDlcRisk(const QString& entryId) const
@@ -502,6 +568,9 @@ void CoreController::prepareShutdown()
     if (m_prepareShutdownDone)
         return;
     m_prepareShutdownDone = true;
+
+    if (m_socialController)
+        m_socialController->goOffline();
 
     if (m_launchController)
         m_launchController->stopRunningGame();

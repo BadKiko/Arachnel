@@ -21,6 +21,7 @@ class JobStore;
 class PluginHost;
 class ProtonManager;
 class SettingsStore;
+class SteamlessService;
 
 class InstallSessionService : public QObject
 {
@@ -51,7 +52,8 @@ public:
     InstallSessionService(SettingsStore* settings, LibraryStore* libraryStore, JobStore* jobStore,
                           JobModel* jobs, JobOrchestrator* jobOrchestrator,
                           PluginHost* pluginHost, InstallAnalyzer* installAnalyzer,
-                          ProtonManager* protonManager, Hooks hooks, QObject* parent = nullptr);
+                          ProtonManager* protonManager, SteamlessService* steamless,
+                          Hooks hooks, QObject* parent = nullptr);
 
     void startPluginInstall(const CatalogEntry& entry, const QString& sourceId,
                             const QString& savePath, JobKind kind, const QString& libraryId = {},
@@ -95,6 +97,7 @@ private:
     PluginHost* m_pluginHost = nullptr;
     InstallAnalyzer* m_installAnalyzer = nullptr;
     ProtonManager* m_protonManager = nullptr;
+    SteamlessService* m_steamless = nullptr;
     Hooks m_hooks;
     QSet<QString> m_installingEntries;
     QSet<QString> m_installingAddons;

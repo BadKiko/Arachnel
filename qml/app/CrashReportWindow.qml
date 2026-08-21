@@ -42,6 +42,7 @@ MD.ApplicationWindow {
         spacing: 0
 
         AppTitleBar {
+            visible: root.customTitleBar
             Layout.fillWidth: true
             window: root
         }
@@ -67,6 +68,8 @@ MD.ApplicationWindow {
 
     WindowResizeEdges {
         anchors.fill: parent
+        visible: root.customTitleBar
+        enabled: root.customTitleBar
         window: root
         z: 1000
     }

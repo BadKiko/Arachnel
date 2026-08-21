@@ -69,8 +69,14 @@ MD.BottomSheet {
     readonly property bool readyToInstall: !root.playable
         && (Core.jobs.jobForEntry(gameId).status === "completed")
         && Core.entryDownloadFilesExist(gameId)
-    readonly property bool installFailed: ((Core.jobs.jobForEntry(gameId).detail || "")
-                                         .indexOf("Install failed") >= 0)
+    readonly property bool downloadFailed: {
+        const job = Core.jobs.jobForEntry(gameId)
+        return job.status === "failed" || job.status === "cancelled"
+    }
+    readonly property bool installFailed: {
+        const job = Core.jobs.jobForEntry(gameId)
+        return !root.downloadFailed && !!(job.installFailed)
+    }
     readonly property string sourceLabel: {
         const sid = info.sourceId ?? ""
         if (!sid.length)
@@ -308,12 +314,9 @@ MD.BottomSheet {
                     typescale: MD.Token.typescale.title_small
                 }
 
-                // Filled + body_large (M3 text field input). Outlined defaults to title_large in QmlMaterial.
-                MD.TextField {
+                AppTextField {
                     id: launchArgsField
                     Layout.fillWidth: true
-                    type: MD.Enum.TextFieldFilled
-                    mdState.dense: true
                     placeholderText: qsTr("Extra launch arguments for this game")
                     onEditingFinished: Core.setGameLaunchArgs(root.gameId, text)
                 }
@@ -322,11 +325,9 @@ MD.BottomSheet {
                     Layout.fillWidth: true
                     spacing: MD.Token.spacing.small
 
-                    MD.TextField {
+                    AppTextField {
                         id: exeField
                         Layout.fillWidth: true
-                        type: MD.Enum.TextFieldFilled
-                        mdState.dense: true
                         placeholderText: qsTr("Custom executable (optional)")
                         onEditingFinished: Core.setGameExecutableOverride(root.gameId, text)
                     }
@@ -336,7 +337,8 @@ MD.BottomSheet {
                         mdState.type: MD.Enum.IBtStandard
                         icon.name: MD.Token.icon.folder_open
                         onClicked: {
-                            const path = Core.browseGameExecutable(exeField.text)
+                            const path = Core.browseGameExecutable(
+                                exeField.text, root.info.installPath || "")
                             if (path.length) {
                                 exeField.text = path
                                 Core.setGameExecutableOverride(root.gameId, path)
@@ -396,12 +398,19 @@ MD.BottomSheet {
                                    : qsTr("Not needed")
                         },
                         {
+                            label: qsTr("Steamless"),
+                            value: root.info.steamlessRelevant
+                                   ? (root.info.steamlessLabel || qsTr("Not needed"))
+                                   : qsTr("Not needed")
+                        },
+                        {
                             label: qsTr("Install path"),
                             value: root.playable
                                    ? (root.info.installPath || "-")
                                    : (root.isInstalling
                                           ? qsTr("Installing…")
                                           : root.readyToInstall || root.installFailed
+                                            || root.downloadFailed
                                           ? qsTr("Waiting to install")
                                           : qsTr("-"))
                         },

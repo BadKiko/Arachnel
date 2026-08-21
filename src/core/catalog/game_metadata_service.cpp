@@ -8,12 +8,15 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
+#include <QReadLocker>
+#include <QReadWriteLock>
 #include <QRegularExpression>
 #include <QSet>
 #include <QStandardPaths>
 #include <QTimer>
 #include <QUrl>
 #include <QUrlQuery>
+#include <QWriteLocker>
 
 namespace arachnel::core {
 
@@ -48,41 +51,44 @@ void GameMetadataService::loadCache()
     // v1 matched localized Steam names poorly and could pin the wrong appid
     // (e.g. Ghost of Tsushima → Ghost of Kyiv). Drop resolved ids so we re-search.
     const bool scrubWrongAppIds = version < 2;
-    for (auto it = root.constBegin(); it != root.constEnd(); ++it) {
-        if (it.key().startsWith(QLatin1Char('_')))
-            continue;
-        const QJsonObject obj = it.value().toObject();
-        GameMetadata metadata;
-        metadata.coverUrl = obj.value(QStringLiteral("coverUrl")).toString();
-        metadata.description = obj.value(QStringLiteral("description")).toString();
-        metadata.descriptionLanguage = obj.value(QStringLiteral("descriptionLanguage")).toString();
-        metadata.genres = obj.value(QStringLiteral("genres")).toString();
-        metadata.sizeLabel = obj.value(QStringLiteral("sizeLabel")).toString();
-        metadata.steamAppId = obj.value(QStringLiteral("steamAppId")).toString();
-        metadata.trailerUrl = obj.value(QStringLiteral("trailerUrl")).toString();
-        metadata.trailerThumbnailUrl = obj.value(QStringLiteral("trailerThumbnailUrl")).toString();
-        metadata.recommendationsTotal = obj.value(QStringLiteral("recommendationsTotal")).toInt();
-        metadata.metacriticScore = obj.value(QStringLiteral("metacriticScore")).toInt();
-        metadata.releaseDate = obj.value(QStringLiteral("releaseDate")).toString();
-        metadata.currentPlayers = obj.value(QStringLiteral("currentPlayers")).toInt(-1);
-        metadata.playersFetchedAt =
-            static_cast<qint64>(obj.value(QStringLiteral("playersFetchedAt")).toDouble());
-        for (const QJsonValue& shot : obj.value(QStringLiteral("screenshotUrls")).toArray())
-            metadata.screenshotUrls.append(shot.toString());
-        if (!isVerticalLibraryCover(metadata.coverUrl))
-            metadata.coverUrl.clear();
-        if (scrubWrongAppIds) {
-            metadata.steamAppId.clear();
-            metadata.description.clear();
-            metadata.descriptionLanguage.clear();
-            metadata.genres.clear();
-            metadata.screenshotUrls.clear();
-            metadata.trailerUrl.clear();
-            metadata.trailerThumbnailUrl.clear();
-            metadata.coverUrl.clear();
-            metadata.sizeLabel.clear();
+    {
+        QWriteLocker locker(&m_cacheLock);
+        for (auto it = root.constBegin(); it != root.constEnd(); ++it) {
+            if (it.key().startsWith(QLatin1Char('_')))
+                continue;
+            const QJsonObject obj = it.value().toObject();
+            GameMetadata metadata;
+            metadata.coverUrl = obj.value(QStringLiteral("coverUrl")).toString();
+            metadata.description = obj.value(QStringLiteral("description")).toString();
+            metadata.descriptionLanguage = obj.value(QStringLiteral("descriptionLanguage")).toString();
+            metadata.genres = obj.value(QStringLiteral("genres")).toString();
+            metadata.sizeLabel = obj.value(QStringLiteral("sizeLabel")).toString();
+            metadata.steamAppId = obj.value(QStringLiteral("steamAppId")).toString();
+            metadata.trailerUrl = obj.value(QStringLiteral("trailerUrl")).toString();
+            metadata.trailerThumbnailUrl = obj.value(QStringLiteral("trailerThumbnailUrl")).toString();
+            metadata.recommendationsTotal = obj.value(QStringLiteral("recommendationsTotal")).toInt();
+            metadata.metacriticScore = obj.value(QStringLiteral("metacriticScore")).toInt();
+            metadata.releaseDate = obj.value(QStringLiteral("releaseDate")).toString();
+            metadata.currentPlayers = obj.value(QStringLiteral("currentPlayers")).toInt(-1);
+            metadata.playersFetchedAt =
+                static_cast<qint64>(obj.value(QStringLiteral("playersFetchedAt")).toDouble());
+            for (const QJsonValue& shot : obj.value(QStringLiteral("screenshotUrls")).toArray())
+                metadata.screenshotUrls.append(shot.toString());
+            if (!isVerticalLibraryCover(metadata.coverUrl))
+                metadata.coverUrl.clear();
+            if (scrubWrongAppIds) {
+                metadata.steamAppId.clear();
+                metadata.description.clear();
+                metadata.descriptionLanguage.clear();
+                metadata.genres.clear();
+                metadata.screenshotUrls.clear();
+                metadata.trailerUrl.clear();
+                metadata.trailerThumbnailUrl.clear();
+                metadata.coverUrl.clear();
+                metadata.sizeLabel.clear();
+            }
+            m_cache.insert(it.key(), metadata);
         }
-        m_cache.insert(it.key(), metadata);
     }
     if (scrubWrongAppIds)
         m_saveTimer->start();
@@ -92,26 +98,29 @@ void GameMetadataService::saveCache()
 {
     QJsonObject root;
     root.insert(QStringLiteral("_version"), 2);
-    for (auto it = m_cache.constBegin(); it != m_cache.constEnd(); ++it) {
-        QJsonObject obj;
-        obj.insert(QStringLiteral("coverUrl"), it->coverUrl);
-        obj.insert(QStringLiteral("description"), it->description);
-        obj.insert(QStringLiteral("descriptionLanguage"), it->descriptionLanguage);
-        obj.insert(QStringLiteral("genres"), it->genres);
-        obj.insert(QStringLiteral("sizeLabel"), it->sizeLabel);
-        obj.insert(QStringLiteral("steamAppId"), it->steamAppId);
-        obj.insert(QStringLiteral("trailerUrl"), it->trailerUrl);
-        obj.insert(QStringLiteral("trailerThumbnailUrl"), it->trailerThumbnailUrl);
-        obj.insert(QStringLiteral("recommendationsTotal"), it->recommendationsTotal);
-        obj.insert(QStringLiteral("metacriticScore"), it->metacriticScore);
-        obj.insert(QStringLiteral("releaseDate"), it->releaseDate);
-        obj.insert(QStringLiteral("currentPlayers"), it->currentPlayers);
-        obj.insert(QStringLiteral("playersFetchedAt"), static_cast<double>(it->playersFetchedAt));
-        QJsonArray screenshots;
-        for (const QString& url : it->screenshotUrls)
-            screenshots.append(url);
-        obj.insert(QStringLiteral("screenshotUrls"), screenshots);
-        root.insert(it.key(), obj);
+    {
+        QReadLocker locker(&m_cacheLock);
+        for (auto it = m_cache.constBegin(); it != m_cache.constEnd(); ++it) {
+            QJsonObject obj;
+            obj.insert(QStringLiteral("coverUrl"), it->coverUrl);
+            obj.insert(QStringLiteral("description"), it->description);
+            obj.insert(QStringLiteral("descriptionLanguage"), it->descriptionLanguage);
+            obj.insert(QStringLiteral("genres"), it->genres);
+            obj.insert(QStringLiteral("sizeLabel"), it->sizeLabel);
+            obj.insert(QStringLiteral("steamAppId"), it->steamAppId);
+            obj.insert(QStringLiteral("trailerUrl"), it->trailerUrl);
+            obj.insert(QStringLiteral("trailerThumbnailUrl"), it->trailerThumbnailUrl);
+            obj.insert(QStringLiteral("recommendationsTotal"), it->recommendationsTotal);
+            obj.insert(QStringLiteral("metacriticScore"), it->metacriticScore);
+            obj.insert(QStringLiteral("releaseDate"), it->releaseDate);
+            obj.insert(QStringLiteral("currentPlayers"), it->currentPlayers);
+            obj.insert(QStringLiteral("playersFetchedAt"), static_cast<double>(it->playersFetchedAt));
+            QJsonArray screenshots;
+            for (const QString& url : it->screenshotUrls)
+                screenshots.append(url);
+            obj.insert(QStringLiteral("screenshotUrls"), screenshots);
+            root.insert(it.key(), obj);
+        }
     }
     QFile file(cacheFilePath());
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate))
@@ -121,15 +130,19 @@ void GameMetadataService::saveCache()
 
 GameMetadata GameMetadataService::metadataForTitle(const QString& title) const
 {
+    QReadLocker locker(&m_cacheLock);
     return m_cache.value(title);
 }
 
 void GameMetadataService::clearCachedCover(const QString& title)
 {
-    auto it = m_cache.find(title);
-    if (it == m_cache.end())
-        return;
-    it->coverUrl.clear();
+    {
+        QWriteLocker locker(&m_cacheLock);
+        auto it = m_cache.find(title);
+        if (it == m_cache.end())
+            return;
+        it->coverUrl.clear();
+    }
     m_saveTimer->start();
 }
 
@@ -227,11 +240,15 @@ void GameMetadataService::queueFetch(const QString& entryId, const QString& titl
 
     const QString uiLanguage = languageCode.trimmed().isEmpty() ? QStringLiteral("en")
                                                                   : languageCode.trimmed();
-    GameMetadata cached = m_cache.value(title);
     const QString catalogAppId = knownSteamAppId.trimmed();
-    if (!catalogAppId.isEmpty() && cached.steamAppId != catalogAppId) {
-        cached.steamAppId = catalogAppId;
-        m_cache.insert(title, cached);
+    GameMetadata cached;
+    {
+        QWriteLocker locker(&m_cacheLock);
+        cached = m_cache.value(title);
+        if (!catalogAppId.isEmpty() && cached.steamAppId != catalogAppId) {
+            cached.steamAppId = catalogAppId;
+            m_cache.insert(title, cached);
+        }
     }
     // Only catalog-provided ids skip store search. Cached search hits can be wrong
     // and must not permanently short-circuit resolution.
@@ -326,9 +343,12 @@ void GameMetadataService::queuePlayersRefresh(const QString& entryId, const QStr
     if (entryId.isEmpty() || title.isEmpty() || steamAppId.trimmed().isEmpty())
         return;
 
-    GameMetadata cached = m_cache.value(title);
-    cached.steamAppId = steamAppId.trimmed();
-    m_cache.insert(title, cached);
+    {
+        QWriteLocker locker(&m_cacheLock);
+        GameMetadata cached = m_cache.value(title);
+        cached.steamAppId = steamAppId.trimmed();
+        m_cache.insert(title, cached);
+    }
 
     if (m_inFlight.contains(entryId))
         return;
@@ -360,8 +380,13 @@ void GameMetadataService::requestNext()
             continue;
         }
         if (!request.knownSteamAppId.isEmpty()) {
+            GameMetadata cached;
+            {
+                QReadLocker locker(&m_cacheLock);
+                cached = m_cache.value(request.title);
+            }
             startKnownAppFetch(request.entryId, request.title, request.knownSteamAppId,
-                               request.mode, request.languageCode, m_cache.value(request.title));
+                               request.mode, request.languageCode, cached);
             continue;
         }
 
@@ -396,7 +421,10 @@ void GameMetadataService::requestNext()
 void GameMetadataService::finishCover(const QString& entryId, const QString& title,
                                       const GameMetadata& metadata)
 {
-    m_cache.insert(title, metadata);
+    {
+        QWriteLocker locker(&m_cacheLock);
+        m_cache.insert(title, metadata);
+    }
     m_saveTimer->start();
     m_inFlight.remove(entryId);
     emit coverReady(entryId, metadata.coverUrl);

@@ -104,9 +104,46 @@ QHash<int, QByteArray> LibraryModel::roleNames() const
 
 void LibraryModel::setGames(QVector<LibraryGame> games)
 {
-    beginResetModel();
-    m_games = std::move(games);
-    endResetModel();
+    const int oldCount = m_games.size();
+    const int newCount = games.size();
+
+    if (newCount == 0) {
+        if (oldCount > 0) {
+            beginRemoveRows({}, 0, oldCount - 1);
+            m_games.clear();
+            endRemoveRows();
+            emit countChanged();
+            emit libraryChanged();
+        } else {
+            emit libraryChanged();
+        }
+        return;
+    }
+
+    if (oldCount == 0) {
+        beginInsertRows({}, 0, newCount - 1);
+        m_games = std::move(games);
+        endInsertRows();
+        emit countChanged();
+        emit libraryChanged();
+        return;
+    }
+
+    if (newCount > oldCount) {
+        beginInsertRows({}, oldCount, newCount - 1);
+        m_games = std::move(games);
+        endInsertRows();
+        emit dataChanged(index(0), index(oldCount - 1));
+    } else if (newCount < oldCount) {
+        beginRemoveRows({}, newCount, oldCount - 1);
+        m_games = std::move(games);
+        endRemoveRows();
+        if (newCount > 0)
+            emit dataChanged(index(0), index(newCount - 1));
+    } else {
+        m_games = std::move(games);
+        emit dataChanged(index(0), index(newCount - 1));
+    }
     emit countChanged();
     emit libraryChanged();
 }

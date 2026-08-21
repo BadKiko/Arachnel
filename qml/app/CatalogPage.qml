@@ -82,8 +82,7 @@ Item {
     readonly property var playModeFilterLabels: ({
         "0": qsTr("Any players"),
         "1": qsTr("Single-player"),
-        "2": qsTr("Co-op"),
-        "3": qsTr("Multiplayer")
+        "2": qsTr("Multiplayer")
     })
 
     property string searchQuery: ""
@@ -299,8 +298,6 @@ Item {
 
     CatalogFilterSheet {
         id: catalogFilterSheet
-        sortOptions: root.sortOptions
-        onSortApplied: function (mode) { catalogPrefs.sortMode = mode }
     }
 
 

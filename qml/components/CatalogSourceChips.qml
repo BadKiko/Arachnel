@@ -8,6 +8,9 @@ Flow {
     id: root
 
     property int countsRevision: 0
+    property var hiddenIds: []
+
+    signal sourceToggled(string sourceId)
 
     width: parent ? parent.width : implicitWidth
     spacing: MD.Token.spacing.small
@@ -39,8 +42,7 @@ Flow {
             width: chip.implicitWidth
             height: chip.implicitHeight
 
-            readonly property bool selected:
-                    Core.activeCatalogSourceIds.indexOf(pluginId) >= 0
+            readonly property bool selected: root.hiddenIds.indexOf(pluginId) < 0
 
             MD.FilterChip {
                 id: chip
@@ -55,7 +57,7 @@ Flow {
                 anchors.fill: parent
                 z: 1
                 cursorShape: Qt.PointingHandCursor
-                onClicked: Core.toggleCatalogSource(pluginId)
+                onClicked: root.sourceToggled(pluginId)
             }
         }
     }

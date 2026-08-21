@@ -8,6 +8,31 @@ import Qcm.Material as MD
 Item {
     required property var page
 
+    readonly property bool hasLaunchLog: {
+        const _rev = page.detailsRevision
+        return Core.hasGameLaunchLog(page.gameId)
+    }
+
+    function openLaunchLog() {
+        launchLogTextArea.text = Core.gameLaunchLog(page.gameId)
+        launchLogDialog.open()
+    }
+
+    Connections {
+        target: Core
+        function onLaunchSessionEnded(gameId, elapsedMs, suppressQuickExitLog) {
+            if (gameId !== page.gameId)
+                return
+            page.detailsRevision++
+            // Quick exit usually means crash / bad launch - show the log.
+            // Skip when Online Fix auto-retries without the fix.
+            if (suppressQuickExitLog)
+                return
+            if (elapsedMs >= 0 && elapsedMs < 20000)
+                openLaunchLog()
+        }
+    }
+
     ColumnLayout {
         anchors.fill: parent
         spacing: 0
@@ -16,7 +41,8 @@ Item {
             Layout.fillWidth: true
             Layout.leftMargin: MD.Token.spacing.large
             Layout.rightMargin: MD.Token.spacing.large
-            Layout.topMargin: MD.Token.spacing.medium
+            Layout.topMargin: MD.Token.spacing.large
+            Layout.bottomMargin: MD.Token.spacing.medium
             spacing: MD.Token.spacing.small
 
             MD.IconButton {
@@ -179,10 +205,7 @@ Item {
                             icon.name: MD.Token.icon.hard_drive
                         }
                         MD.AssistChip {
-                            visible: {
-                                const g = (page.info.genres ?? "").toString().toLowerCase()
-                                return g.split(",").some(t => t.trim() === "drm")
-                            }
+                            visible: !!(page.info.hasDrm)
                             text: qsTr("DRM")
                             icon.name: MD.Token.icon.shield
                             elevated: true
@@ -255,7 +278,7 @@ Item {
                             text: qsTr("Share")
                             icon.name: MD.Token.icon.share
                             mdState.type: MD.Enum.BtText
-                            onClicked: Core.shareGameLink(page.gameId)
+                            onClicked: shareDialog.open()
                         }
 
                         MD.Button {
@@ -321,8 +344,10 @@ Item {
 
                     MD.Label {
                         Layout.fillWidth: true
-                        visible: page.installFailed
-                        text: page.downloadJob.detail || qsTr("Install failed")
+                        visible: page.downloadFailed || page.installFailed
+                        text: page.downloadJob.detail
+                              || (page.downloadFailed ? qsTr("Download failed")
+                                                      : qsTr("Install failed"))
                         wrapMode: Text.WordWrap
                         color: MD.Token.color.error
                         typescale: MD.Token.typescale.body_medium
@@ -374,10 +399,13 @@ Item {
                                 paused: page.downloadPaused
                                 completed: false
                                 readyToInstall: page.readyToInstall
+                                downloadFailed: page.downloadFailed
                                 installFailed: page.installFailed
                                 installing: page.isInstalling
                                 onActivated: {
-                                    if (page.installFailed || page.readyToInstall)
+                                    if (page.downloadFailed)
+                                        Core.retryJob(page.downloadJob.jobId)
+                                    else if (page.installFailed || page.readyToInstall)
                                         Core.retryInstall(page.downloadJob.jobId)
                                     else
                                         page.beginInstall()
@@ -399,6 +427,15 @@ Item {
                                                  ? qsTr("Remove from favorites")
                                                  : qsTr("Add to favorites")
                                 onClicked: Core.toggleBookmark(page.gameId)
+                            }
+
+                            MD.IconButton {
+                                Layout.alignment: Qt.AlignVCenter
+                                visible: hasLaunchLog
+                                mdState.type: MD.Enum.IBtOutlined
+                                icon.name: MD.Token.icon.receipt_long
+                                Accessible.name: qsTr("Launch log")
+                                onClicked: openLaunchLog()
                             }
 
                             MD.Button {
@@ -513,6 +550,154 @@ Item {
     GameSettingsSheet {
         id: gameSettingsSheet
         anchors.fill: parent
+    }
+
+    MD.Dialog {
+        id: launchLogDialog
+        title: qsTr("Launch log")
+        modal: true
+        width: Math.min(720, page.width > 0 ? page.width - 48 : 720)
+        height: Math.min(560, page.height > 0 ? page.height - 48 : 560)
+
+        ColumnLayout {
+            width: launchLogDialog.width - launchLogDialog.horizontalPadding * 2
+            height: launchLogDialog.height - launchLogDialog.topPadding
+                    - launchLogDialog.bottomPadding
+                    - (launchLogFooter.implicitHeight > 0 ? launchLogFooter.implicitHeight
+                                                         : 0)
+                    - MD.Token.spacing.medium
+            spacing: MD.Token.spacing.small
+
+            MD.Label {
+                Layout.fillWidth: true
+                text: qsTr("Why the game may not boot, including the game's own output.")
+                color: MD.Token.color.on_surface_variant
+                typescale: MD.Token.typescale.body_medium
+                wrapMode: Text.WordWrap
+            }
+
+            ScrollView {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                clip: true
+
+                TextArea {
+                    id: launchLogTextArea
+                    readOnly: true
+                    wrapMode: TextEdit.Wrap
+                    selectByMouse: true
+                    persistentSelection: true
+                    text: qsTr("No launch has been attempted yet.")
+                    padding: 12
+                    color: MD.Token.color.on_surface
+                    background: Rectangle {
+                        color: MD.Token.color.surface_container
+                        radius: MD.Token.shape.corner.medium
+                    }
+                }
+            }
+        }
+
+        footer: Item {
+            id: launchLogFooter
+            implicitHeight: launchLogFooterRow.implicitHeight + MD.Token.spacing.medium
+
+            RowLayout {
+                id: launchLogFooterRow
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                spacing: MD.Token.spacing.small
+
+                MD.Button {
+                    mdState.type: MD.Enum.BtText
+                    text: qsTr("Close")
+                    onClicked: launchLogDialog.close()
+                }
+
+                Item { Layout.fillWidth: true }
+
+                MD.Button {
+                    mdState.type: MD.Enum.BtOutlined
+                    text: qsTr("Copy")
+                    icon.name: MD.Token.icon.content_copy
+                    onClicked: Core.copyGameLaunchLog(page.gameId)
+                }
+                MD.Button {
+                    mdState.type: MD.Enum.BtFilled
+                    text: qsTr("Save log.txt")
+                    icon.name: MD.Token.icon.save
+                    onClicked: Core.saveGameLaunchLog(page.gameId)
+                }
+            }
+        }
+    }
+
+    MD.Dialog {
+        id: shareDialog
+        title: qsTr("Share")
+        modal: true
+        width: Math.min(420, page.width > 0 ? page.width - 48 : 420)
+
+        ColumnLayout {
+            width: shareDialog.width - shareDialog.horizontalPadding * 2
+            spacing: MD.Token.spacing.medium
+
+            MD.Button {
+                Layout.fillWidth: true
+                text: qsTr("Copy link")
+                icon.name: MD.Token.icon.link
+                mdState.type: MD.Enum.BtFilledTonal
+                onClicked: {
+                    Core.shareGameLink(page.gameId)
+                    shareDialog.close()
+                }
+            }
+
+            MD.Label {
+                Layout.fillWidth: true
+                visible: Core.social.friends.count > 0
+                text: qsTr("Suggest to a friend")
+                typescale: MD.Token.typescale.title_small
+            }
+
+            Repeater {
+                model: Core.social.friends
+
+                MD.Button {
+                    required property string friendId
+                    required property string nickname
+                    required property bool online
+
+                    Layout.fillWidth: true
+                    text: nickname
+                    icon.name: online ? MD.Token.icon.groups : MD.Token.icon.person
+                    mdState.type: MD.Enum.BtText
+                    onClicked: {
+                        Core.suggestGameToFriend(friendId, page.gameId)
+                        shareDialog.close()
+                    }
+                }
+            }
+        }
+
+        footer: Item {
+            implicitHeight: shareFooterRow.implicitHeight + MD.Token.spacing.medium
+
+            MD.DialogButtonBox {
+                id: shareFooterRow
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+
+                MD.Button {
+                    mdState.type: MD.Enum.BtText
+                    text: qsTr("Close")
+                    DialogButtonBox.buttonRole: DialogButtonBox.RejectRole
+                    onClicked: shareDialog.close()
+                }
+            }
+        }
     }
 
     MD.Dialog {

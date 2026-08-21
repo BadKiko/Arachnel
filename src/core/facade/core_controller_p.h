@@ -101,6 +101,8 @@
     LaunchController* m_launchController = nullptr;
     RuntimeDependencyService* m_runtimeDependencyService = nullptr;
     ProtonManager* m_protonManager = nullptr;
+    SteamlessService* m_steamlessService = nullptr;
+    SocialController* m_socialController = nullptr;
     AppUpdater* m_appUpdater = nullptr;
     PluginCatalogService* m_pluginCatalog = nullptr;
     bool m_autoUpdatingOfficialPlugins = false;
@@ -124,3 +126,10 @@
     bool m_prepareShutdownDone = false;
     bool m_startupLibraryUpdatesHandled = false;
     QSet<QString> m_catalogAddonEnrichInFlight;
+    QList<QFuture<void>> m_catalogAddonEnrichFutures;
+    mutable QMutex m_catalogAddonEnrichMutex;
+    bool m_pluginCallsBlocked = false;
+
+    void waitForCatalogAddonEnrich();
+    bool hasInFlightCatalogAddonEnrich() const;
+    void reportIncompatiblePlugins();

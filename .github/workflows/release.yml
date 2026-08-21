@@ -243,8 +243,11 @@ jobs:
           mkdir -p release
           cp "artifacts/windows-installer/Arachnel-${{ inputs.version }}-Setup.exe" release/
           cp "artifacts/linux-appimage/Arachnel-${{ inputs.version }}-x86_64.AppImage" release/
+          cp "release/Arachnel-${{ inputs.version }}-Setup.exe" release/Arachnel-Setup.exe
+          cp "release/Arachnel-${{ inputs.version }}-x86_64.AppImage" release/Arachnel-x86_64.AppImage
           cd release
-          sha256sum * > checksums.sha256
+          sha256sum Arachnel-${{ inputs.version }}-Setup.exe \
+            Arachnel-${{ inputs.version }}-x86_64.AppImage > checksums.sha256
 
       - name: Generate changelog
         run: bash scripts/ci/generate-changelog.sh "${{ inputs.version }}" RELEASE_NOTES.md
@@ -259,4 +262,6 @@ jobs:
           files: |
             release/Arachnel-${{ inputs.version }}-Setup.exe
             release/Arachnel-${{ inputs.version }}-x86_64.AppImage
+            release/Arachnel-Setup.exe
+            release/Arachnel-x86_64.AppImage
             release/checksums.sha256

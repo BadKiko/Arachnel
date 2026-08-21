@@ -49,6 +49,7 @@ public:
     Q_INVOKABLE void refresh();
     void onEntryMetadataChanged(const QString& entryId);
     void onCatalogCacheRebuilt();
+    void setFriendEntryIds(QStringList entryIds);
 
 signals:
     void loadingChanged();
@@ -70,6 +71,7 @@ private:
     QVector<CatalogEntry>* m_cache = nullptr;
     const QHash<QString, int>* m_idIndex = nullptr;
     QJsonObject m_feed;
+    QStringList m_friendEntryIds;
     bool m_loading = false;
     bool m_feedLoaded = false;
     quint64 m_requestSerial = 0;

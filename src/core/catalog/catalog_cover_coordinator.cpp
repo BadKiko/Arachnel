@@ -10,8 +10,10 @@
 
 #include <QDateTime>
 #include <QFileInfo>
+#include <QReadLocker>
 #include <QUrl>
 #include <QVariantMap>
+#include <QWriteLocker>
 
 namespace arachnel::core {
 
@@ -116,6 +118,16 @@ void CatalogCoverCoordinator::rebuildRemoteCoverIndex()
     m_remoteBySteamAppId.clear();
     if (!m_entries)
         return;
+    if (m_cacheLock) {
+        QReadLocker locker(m_cacheLock);
+        for (const CatalogEntry& entry : std::as_const(m_entries())) {
+            if (entry.steamAppId.isEmpty() || !isHttpUrl(entry.remoteCoverUrl))
+                continue;
+            if (!m_remoteBySteamAppId.contains(entry.steamAppId))
+                m_remoteBySteamAppId.insert(entry.steamAppId, entry.remoteCoverUrl);
+        }
+        return;
+    }
     for (const CatalogEntry& entry : std::as_const(m_entries())) {
         if (entry.steamAppId.isEmpty() || !isHttpUrl(entry.remoteCoverUrl))
             continue;
@@ -134,16 +146,28 @@ void CatalogCoverCoordinator::clearFailedCoverHints()
 void CatalogCoverCoordinator::applyCoverToEntry(const QString& entryId, const QString& coverUrl,
                                                 bool pending)
 {
-    CatalogEntry* entry = m_findEntry ? m_findEntry(entryId) : nullptr;
-    if (!entry)
-        return;
-    if (!coverUrl.isEmpty() && !coverUrl.startsWith(QStringLiteral("file:")))
-        return;
-    if (entry->coverUrl == coverUrl && entry->metadataPending == pending)
-        return;
+    bool notify = false;
+    auto mutate = [&]() {
+        CatalogEntry* entry = m_findEntry ? m_findEntry(entryId) : nullptr;
+        if (!entry)
+            return;
+        if (!coverUrl.isEmpty() && !coverUrl.startsWith(QStringLiteral("file:")))
+            return;
+        if (entry->coverUrl == coverUrl && entry->metadataPending == pending)
+            return;
 
-    entry->coverUrl = coverUrl;
-    entry->metadataPending = pending;
+        entry->coverUrl = coverUrl;
+        entry->metadataPending = pending;
+        notify = true;
+    };
+    if (m_cacheLock) {
+        QWriteLocker locker(m_cacheLock);
+        mutate();
+    } else {
+        mutate();
+    }
+    if (!notify)
+        return;
     m_catalog->notifyEntryChanged(entryId);
     if (!coverUrl.isEmpty()) {
         m_plans[entryId].appliedLocal = coverUrl;
@@ -163,16 +187,44 @@ void CatalogCoverCoordinator::markPending(CatalogEntry* entry)
 {
     if (!entry || entry->metadataPending)
         return;
-    entry->metadataPending = true;
-    m_catalog->notifyEntryChanged(entry->id);
+    const QString entryId = entry->id;
+    bool changed = false;
+    auto mutate = [&]() {
+        if (!entry || entry->metadataPending)
+            return;
+        entry->metadataPending = true;
+        changed = true;
+    };
+    if (m_cacheLock) {
+        QWriteLocker locker(m_cacheLock);
+        mutate();
+    } else {
+        mutate();
+    }
+    if (changed)
+        m_catalog->notifyEntryChanged(entryId);
 }
 
 void CatalogCoverCoordinator::clearPendingFlag(CatalogEntry* entry)
 {
     if (!entry || !entry->metadataPending)
         return;
-    entry->metadataPending = false;
-    m_catalog->notifyEntryChanged(entry->id);
+    const QString entryId = entry->id;
+    bool changed = false;
+    auto mutate = [&]() {
+        if (!entry || !entry->metadataPending)
+            return;
+        entry->metadataPending = false;
+        changed = true;
+    };
+    if (m_cacheLock) {
+        QWriteLocker locker(m_cacheLock);
+        mutate();
+    } else {
+        mutate();
+    }
+    if (changed)
+        m_catalog->notifyEntryChanged(entryId);
 }
 
 void CatalogCoverCoordinator::noteApplySample(qint64 ms)
@@ -572,18 +624,30 @@ void CatalogCoverCoordinator::requestCatalogCover(const QString& entryId,
         plan.priority = priority;
 
     // Strip stale non-file display URLs without spamming QML (http was never shown).
-    if (!entry->coverUrl.isEmpty()) {
-        const bool okLocal = entry->coverUrl.startsWith(QStringLiteral("file:"))
-            && !m_coverCache->localUrlFor(entry->coverUrl).isEmpty();
-        if (!okLocal) {
-            if (isHttpUrl(entry->coverUrl) && entry->remoteCoverUrl.isEmpty())
-                entry->remoteCoverUrl = entry->coverUrl;
-            const bool wasFile = entry->coverUrl.startsWith(QStringLiteral("file:"));
-            entry->coverUrl.clear();
-            if (wasFile)
-                m_catalog->notifyEntryChanged(entryId);
+    bool clearedFileCover = false;
+    {
+        auto scrub = [&]() {
+            if (entry->coverUrl.isEmpty())
+                return;
+            const bool okLocal = entry->coverUrl.startsWith(QStringLiteral("file:"))
+                && !m_coverCache->localUrlFor(entry->coverUrl).isEmpty();
+            if (!okLocal) {
+                if (isHttpUrl(entry->coverUrl) && entry->remoteCoverUrl.isEmpty())
+                    entry->remoteCoverUrl = entry->coverUrl;
+                const bool wasFile = entry->coverUrl.startsWith(QStringLiteral("file:"));
+                entry->coverUrl.clear();
+                clearedFileCover = wasFile;
+            }
+        };
+        if (m_cacheLock) {
+            QWriteLocker locker(m_cacheLock);
+            scrub();
+        } else {
+            scrub();
         }
     }
+    if (clearedFileCover)
+        m_catalog->notifyEntryChanged(entryId);
 
     if (entry->coverUrl.startsWith(QStringLiteral("file:"))) {
         plan.appliedLocal = entry->coverUrl;
@@ -666,7 +730,15 @@ void CatalogCoverCoordinator::invalidateCatalogCover(const QString& entryId)
         const QString path = QUrl(entry->coverUrl).toLocalFile();
         if (!path.isEmpty() && QFileInfo::exists(path) && QFileInfo(path).size() > 0) {
             const QString keep = entry->coverUrl;
-            entry->coverUrl.clear();
+            {
+                auto clear = [&]() { entry->coverUrl.clear(); };
+                if (m_cacheLock) {
+                    QWriteLocker locker(m_cacheLock);
+                    clear();
+                } else {
+                    clear();
+                }
+            }
             m_catalog->notifyEntryChanged(entryId, {CatalogModel::CoverUrlRole});
             applyCoverToEntry(entryId, keep, false);
             return;
@@ -698,8 +770,18 @@ void CatalogCoverCoordinator::invalidateCatalogCover(const QString& entryId)
     m_metadataService->clearCachedCover(entry->title);
     m_heroLocal.remove(entryId);
     plan = CoverPlan{};
-    entry->coverUrl.clear();
-    entry->metadataPending = true;
+    {
+        auto reset = [&]() {
+            entry->coverUrl.clear();
+            entry->metadataPending = true;
+        };
+        if (m_cacheLock) {
+            QWriteLocker locker(m_cacheLock);
+            reset();
+        } else {
+            reset();
+        }
+    }
     m_catalog->notifyEntryChanged(entryId);
     requestCatalogCover(entryId, CoverFetchPriority::Visible);
 }

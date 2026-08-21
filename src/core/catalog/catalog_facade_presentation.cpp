@@ -1,5 +1,7 @@
 #include "core_controller_impl.h"
 
+#include "catalog_genre_normalize.h"
+
 #include <QDate>
 #include <QWriteLocker>
 
@@ -175,7 +177,7 @@ void CoreController::applyMetadataToEntry(CatalogEntry& entry,
         entry.description = metadata.description;
     if (!metadata.genres.isEmpty()) {
         // Keep Ryuu DRM token when Steam store genres replace the catalog string.
-        const bool hadDrm = entry.genreKeys.contains(QStringLiteral("DRM"))
+        const bool hadDrm = entry.hasDrm
                             || entry.genres.contains(QStringLiteral("DRM"), Qt::CaseInsensitive);
         entry.genres = metadata.genres;
         if (hadDrm && !entry.genres.contains(QStringLiteral("DRM"), Qt::CaseInsensitive)) {
@@ -213,7 +215,11 @@ void CoreController::applyMetadataToEntry(CatalogEntry& entry,
         entry.currentPlayers = metadata.currentPlayers;
         entry.playersFetchedAt = metadata.playersFetchedAt;
     }
+    const quint32 existingGenreBits = entry.genreBits;
+    const quint8 existingPlay = entry.playModeMask;
     prepareCatalogEntry(entry);
+    entry.genreBits |= existingGenreBits;
+    entry.playModeMask |= existingPlay;
     if (!metadata.description.isEmpty())
         entry.description = metadata.description;
     if (!metadata.screenshotUrls.isEmpty())
@@ -426,7 +432,31 @@ int CoreController::catalogActiveFilterCount() const
 
 QStringList CoreController::availableCatalogGenres() const
 {
-    return m_catalogFilters ? m_catalogFilters->availableGenres() : QStringList();
+    if (m_catalogFilters)
+        return m_catalogFilters->availableGenres();
+    return {};
+}
+
+QString CoreController::catalogGenreLabel(const QString& canonicalKey) const
+{
+    return genreDisplayLabel(canonicalKey);
+}
+
+QStringList CoreController::hiddenCatalogSourceIds() const
+{
+    return m_catalogFilters ? m_catalogFilters->hiddenSourceIds() : QStringList();
+}
+
+void CoreController::setHiddenCatalogSourceIds(const QStringList& ids)
+{
+    if (m_catalogFilters)
+        m_catalogFilters->setHiddenSourceIds(ids);
+}
+
+void CoreController::setCatalogSourceHidden(const QString& sourceId, bool hidden)
+{
+    if (m_catalogFilters)
+        m_catalogFilters->setSourceHidden(sourceId, hidden);
 }
 
 void CoreController::clearCatalogFilters()
@@ -470,7 +500,7 @@ void CoreController::scheduleCatalogRefilter()
 void CoreController::rebuildAvailableCatalogGenres()
 {
     if (m_catalogFilters)
-        m_catalogFilters->rebuildAvailableGenres();
+        m_catalogFilters->rebuildFilterTable();
 }
 
 void CoreController::warmActiveCatalogCovers()

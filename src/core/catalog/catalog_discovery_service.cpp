@@ -75,6 +75,14 @@ void CatalogDiscoveryService::onCatalogCacheRebuilt()
     reapplyFeed();
 }
 
+void CatalogDiscoveryService::setFriendEntryIds(QStringList entryIds)
+{
+    if (entryIds == m_friendEntryIds)
+        return;
+    m_friendEntryIds = std::move(entryIds);
+    reapplyFeed();
+}
+
 void CatalogDiscoveryService::onEntryMetadataChanged(const QString& entryId)
 {
     // Update card fields only. Never reshuffle shelf membership.
@@ -170,7 +178,12 @@ void CatalogDiscoveryService::reapplyFeed()
 
     m_onFire->setVisibleIndices(indicesForEntryIds(entryIdsForShelf(QStringLiteral("hits"))));
     m_new->setVisibleIndices(indicesForEntryIds(entryIdsForShelf(QStringLiteral("new"))));
-    m_friends->setVisibleIndices(indicesForEntryIds(entryIdsForShelf(QStringLiteral("friends"))));
+    QStringList friendIds = entryIdsForShelf(QStringLiteral("friends"));
+    for (const QString& id : m_friendEntryIds) {
+        if (!friendIds.contains(id))
+            friendIds.append(id);
+    }
+    m_friends->setVisibleIndices(indicesForEntryIds(friendIds));
     m_solo->setVisibleIndices(indicesForEntryIds(entryIdsForShelf(QStringLiteral("solo"))));
     m_onlineFix->setVisibleIndices({});
 

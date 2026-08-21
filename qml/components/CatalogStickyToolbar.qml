@@ -115,7 +115,7 @@ Item {
 
             MD.FilterChip {
                 visible: Core.catalogGenreFilter.length > 0
-                text: Core.catalogGenreFilter + " ×"
+                text: Core.catalogGenreLabel(Core.catalogGenreFilter) + " ×"
                 checked: true
                 onClicked: Core.catalogGenreFilter = ""
             }
@@ -126,6 +126,17 @@ Item {
                       + " ×"
                 checked: true
                 onClicked: Core.catalogPlayModeFilter = 0
+            }
+
+            Repeater {
+                model: Core.hiddenCatalogSourceIds
+
+                MD.FilterChip {
+                    required property string modelData
+                    text: (Core.sources.nameForId(modelData) || modelData) + " ×"
+                    checked: true
+                    onClicked: Core.setCatalogSourceHidden(modelData, false)
+                }
             }
         }
     }

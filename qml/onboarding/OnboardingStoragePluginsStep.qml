@@ -114,136 +114,99 @@ ColumnLayout {
         spacing: MD.Token.spacing.small
         MD.Label {
             Layout.fillWidth: true
-            text: qsTr("Source plugins")
+            text: qsTr("Install a plugin")
             typescale: MD.Token.typescale.headline_small
         }
         MD.Label {
             Layout.fillWidth: true
-            text: qsTr("Plugins enable automatic install and Play (e.g. FreeTP). Without one, you can still browse catalogs and install manually.")
+            text: Messages.settingsPluginsDesc
             wrapMode: Text.WordWrap
             color: MD.Token.color.on_surface_variant
             typescale: MD.Token.typescale.body_medium
         }
-        Rectangle {
+        RowLayout {
             Layout.fillWidth: true
+            MD.Label {
+                Layout.fillWidth: true
+                text: qsTr("Official plugins")
+                typescale: MD.Token.typescale.title_small
+            }
+            MD.Button {
+                mdState.type: MD.Enum.BtText
+                text: qsTr("Refresh list")
+                enabled: !(Core.pluginCatalog && Core.pluginCatalog.loading)
+                onClicked: Core.refreshOfficialPlugins()
+            }
+        }
+        MD.Label {
+            Layout.fillWidth: true
+            visible: Core.pluginCatalog && Core.pluginCatalog.loading
+            text: qsTr("Loading official plugins…")
+            color: MD.Token.color.on_surface_variant
+            typescale: MD.Token.typescale.body_small
+        }
+        MD.Label {
+            Layout.fillWidth: true
+            visible: Core.pluginCatalog && Core.pluginCatalog.error.length > 0
+            text: Core.pluginCatalog ? Core.pluginCatalog.error : ""
+            color: MD.Token.color.error
+            wrapMode: Text.WordWrap
+            typescale: MD.Token.typescale.body_small
+        }
+        MD.Label {
+            Layout.fillWidth: true
+            visible: Core.pluginCatalog && !Core.pluginCatalog.loading
+                     && Core.pluginCatalog.error.length === 0
+                     && Core.pluginCatalog.plugins.length === 0
+            text: qsTr("No official plugins available for this platform.")
+            color: MD.Token.color.on_surface_variant
+            wrapMode: Text.WordWrap
+            typescale: MD.Token.typescale.body_small
+        }
+        MD.ElevationRectangle {
+            Layout.fillWidth: true
+            visible: Core.pluginCatalog && Core.pluginCatalog.plugins.length > 0
+            implicitHeight: onboardingStoreCol.implicitHeight + MD.Token.spacing.small * 2
             radius: MD.Token.shape.corner.large
             color: MD.Token.color.surface_container
-            border.width: 1
-            border.color: MD.Token.color.outline_variant
-            implicitHeight: officialColumn.implicitHeight + MD.Token.spacing.medium * 2
+            elevation: MD.Token.elevation.level0
+
             ColumnLayout {
-                id: officialColumn
+                id: onboardingStoreCol
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.top: parent.top
-                anchors.margins: MD.Token.spacing.medium
-                spacing: MD.Token.spacing.small
-                RowLayout {
-                    Layout.fillWidth: true
-                    MD.Label {
-                        Layout.fillWidth: true
-                        text: qsTr("Official plugins")
-                        typescale: MD.Token.typescale.title_small
-                    }
-                    MD.Button {
-                        mdState.type: MD.Enum.BtText
-                        text: qsTr("Refresh list")
-                        enabled: !(Core.pluginCatalog && Core.pluginCatalog.loading)
-                        onClicked: Core.refreshOfficialPlugins()
-                    }
-                }
-                MD.Label {
-                    Layout.fillWidth: true
-                    visible: Core.pluginCatalog && Core.pluginCatalog.loading
-                    text: qsTr("Loading official plugins…")
-                    color: MD.Token.color.on_surface_variant
-                    typescale: MD.Token.typescale.body_small
-                }
-                MD.Label {
-                    Layout.fillWidth: true
-                    visible: Core.pluginCatalog && Core.pluginCatalog.error.length > 0
-                    text: Core.pluginCatalog ? Core.pluginCatalog.error : ""
-                    color: MD.Token.color.error
-                    wrapMode: Text.WordWrap
-                    typescale: MD.Token.typescale.body_small
-                }
-                MD.Label {
-                    Layout.fillWidth: true
-                    visible: Core.pluginCatalog && !Core.pluginCatalog.loading
-                             && Core.pluginCatalog.error.length === 0
-                             && Core.pluginCatalog.plugins.length === 0
-                    text: qsTr("No official plugins available for this platform.")
-                    color: MD.Token.color.on_surface_variant
-                    wrapMode: Text.WordWrap
-                    typescale: MD.Token.typescale.body_small
-                }
+                anchors.margins: MD.Token.spacing.small
+                spacing: 0
+
                 Repeater {
                     model: Core.pluginCatalog ? Core.pluginCatalog.plugins : []
-                    RowLayout {
+                    OfficialPluginCard {
                         required property var modelData
-                        Layout.fillWidth: true
-                        readonly property bool installed: root.isPluginInstalled(modelData.id)
-                        readonly property bool thisInstalling: Core.pluginCatalog
-                                                              && Core.pluginCatalog.installing
-                                                              && Core.pluginCatalog.installingPluginId === modelData.id
-                        ColumnLayout {
-                            Layout.fillWidth: true
-                            MD.Label {
-                                Layout.fillWidth: true
-                                text: modelData.name
-                                typescale: MD.Token.typescale.title_small
-                                elide: Text.ElideRight
-                            }
-                            MD.Label {
-                                Layout.fillWidth: true
-                                visible: !!(modelData.recommended)
-                                text: qsTr("Recommended")
-                                color: MD.Token.color.primary
-                                typescale: MD.Token.typescale.label_small
-                            }
-                            MD.Label {
-                                Layout.fillWidth: true
-                                text: modelData.description
-                                color: MD.Token.color.on_surface_variant
-                                typescale: MD.Token.typescale.body_small
-                                wrapMode: Text.WordWrap
-                                maximumLineCount: 2
-                                elide: Text.ElideRight
-                            }
-                            MD.Label {
-                                Layout.fillWidth: true
-                                text: qsTr("v%1").arg(modelData.version)
-                                color: MD.Token.color.primary
-                                typescale: MD.Token.typescale.label_small
-                            }
+                        required property int index
+                        plugin: modelData
+                        installed: root.isPluginInstalled(modelData.id)
+                        installing: Core.pluginCatalog && Core.pluginCatalog.installing
+                                    && Core.pluginCatalog.installingPluginId === modelData.id
+                        catalogBusy: !!(Core.pluginCatalog && Core.pluginCatalog.installing)
+                        showDivider: index < (Core.pluginCatalog ? Core.pluginCatalog.plugins.length : 0) - 1
+                        onInstallClicked: Core.installOfficialPlugin(modelData.id)
+                        onUninstallClicked: {
+                            removeDialog.pluginId = modelData.id
+                            removeDialog.pluginName = modelData.name
+                            removeDialog.open()
                         }
-                        MD.Button {
-                            mdState.type: installed ? MD.Enum.BtText : MD.Enum.BtFilledTonal
-                            text: installed ? qsTr("Delete")
-                                  : (thisInstalling ? qsTr("Installing…") : qsTr("Install"))
-                            icon.name: installed ? MD.Token.icon.delete : MD.Token.icon.download
-                            enabled: installed
-                                     || !(Core.pluginCatalog && Core.pluginCatalog.installing)
-                            onClicked: {
-                                if (installed) {
-                                    removeDialog.pluginId = modelData.id
-                                    removeDialog.pluginName = modelData.name
-                                    removeDialog.open()
-                                } else {
-                                    Core.installOfficialPlugin(modelData.id)
-                                }
-                            }
-                        }
+                        onSourceClicked: function (url) { Core.openExternalUrl(url) }
                     }
                 }
-                MD.Label {
-                    Layout.fillWidth: true
-                    text: qsTr("Or install a plugin file you already have.")
-                    wrapMode: Text.WordWrap
-                    color: MD.Token.color.on_surface_variant
-                    typescale: MD.Token.typescale.body_small
-                }
             }
+        }
+        MD.Label {
+            Layout.fillWidth: true
+            text: qsTr("Or install a plugin file you already have.")
+            wrapMode: Text.WordWrap
+            color: MD.Token.color.on_surface_variant
+            typescale: MD.Token.typescale.body_small
         }
         Repeater {
             model: {

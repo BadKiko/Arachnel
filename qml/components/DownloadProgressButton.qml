@@ -14,6 +14,7 @@ Item {
     property bool downloading: false
     property bool completed: false
     property bool readyToInstall: false
+    property bool downloadFailed: false
     property bool installFailed: false
     property bool installing: false
     property string idleText: qsTr("Download")
@@ -173,7 +174,7 @@ Item {
 
     readonly property string actionIconName: root.installing
         ? MD.Token.icon.install_desktop
-        : root.installFailed
+        : root.downloadFailed || root.installFailed
         ? MD.Token.icon.refresh
         : root.readyToInstall
           ? MD.Token.icon.install_desktop
@@ -187,6 +188,8 @@ Item {
 
     readonly property string actionText: root.installing
         ? qsTr("Installing…")
+        : root.downloadFailed
+        ? qsTr("Retry download")
         : root.installFailed
         ? qsTr("Retry install")
         : root.readyToInstall
@@ -205,7 +208,7 @@ Item {
         ? MD.Token.color.primary_container
         : root.completed || root.readyToInstall
         ? MD.Token.color.secondary_container
-        : root.installFailed
+        : root.downloadFailed || root.installFailed
           ? MD.Util.transparent(MD.Token.color.error, 0.18)
           : root.showProgressFill
             ? MD.Token.color.primary_container
@@ -213,7 +216,7 @@ Item {
 
     readonly property color labelColor: root.installing
         ? MD.Token.color.on_primary_container
-        : root.installFailed
+        : root.downloadFailed || root.installFailed
         ? MD.Token.color.error
         : root.completed || root.readyToInstall
           ? MD.Token.color.on_secondary_container

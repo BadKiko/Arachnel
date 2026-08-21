@@ -1,0 +1,114 @@
+name: VirusTotal
+
+# Scans release binaries (Setup.exe + AppImage), not the whole source tree.
+# Free VT API is rate-limited; binary scans are what users actually download.
+
+on:
+  release:
+    types: [published]
+  schedule:
+    # Re-check latest release hashes weekly (engines update over time).
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to scan (empty = latest)"
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: virustotal
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    name: Scan release binaries
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require VT_API_KEY
+        env:
+          VT_API_KEY: ${{ secrets.VT_API_KEY }}
+        run: |
+          if [ -z "$VT_API_KEY" ]; then
+            echo "::error::Add repository secret VT_API_KEY (VirusTotal API key from https://www.virustotal.com/gui/my-apikey)"
+            exit 1
+          fi
+
+      - name: Checkout default branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Resolve release tag
+        id: tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "release" ]; then
+            TAG="${{ github.event.release.tag_name }}"
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.tag }}" ]; then
+            TAG="${{ inputs.tag }}"
+          else
+            TAG="$(gh release view --json tagName -q .tagName)"
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Scanning tag: $TAG"
+
+      - name: Download release assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          mkdir -p release
+          gh release download "${{ steps.tag.outputs.tag }}" \
+            --dir release \
+            --pattern "Arachnel-*-Setup.exe" \
+            --pattern "Arachnel-*-x86_64.AppImage" \
+            --clobber
+          setup="$(ls release/Arachnel-*-Setup.exe | head -n1)"
+          appimage="$(ls release/Arachnel-*-x86_64.AppImage | head -n1)"
+          cp -f "$setup" release/Arachnel-Setup.exe
+          cp -f "$appimage" release/Arachnel-x86_64.AppImage
+          ls -lah release/
+
+      - name: Upload stable aliases to the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh release upload "${{ steps.tag.outputs.tag }}" \
+            release/Arachnel-Setup.exe \
+            release/Arachnel-x86_64.AppImage \
+            --clobber
+
+      - name: VirusTotal scan + badge
+        env:
+          VT_API_KEY: ${{ secrets.VT_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          VT_SCAN_DIR: release
+          VT_RELEASE_TAG: ${{ steps.tag.outputs.tag }}
+          VT_BADGE_PATH: docs/badges/virustotal.json
+          VT_FAIL_MALICIOUS_AT: "5"
+        run: python3 scripts/ci/virustotal_scan.py
+
+      - name: Commit badge
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/badges/virustotal.json docs/badges/virustotal-latest.json
+          if git diff --cached --quiet; then
+            echo "Badge unchanged"
+            exit 0
+          fi
+          git commit -m "chore: update VirusTotal badge for ${{ steps.tag.outputs.tag }}"
+          DEFAULT_BRANCH="${{ github.event.repository.default_branch }}"
+          git pull --rebase origin "$DEFAULT_BRANCH" || true
+          git push origin "HEAD:$DEFAULT_BRANCH"

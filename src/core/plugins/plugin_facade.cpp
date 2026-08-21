@@ -92,6 +92,7 @@ QVariantList CoreController::pluginEntries() const
         row.insert(QStringLiteral("pluginId"), source.id);
         row.insert(QStringLiteral("name"), source.name);
         row.insert(QStringLiteral("description"), source.description);
+        row.insert(QStringLiteral("iconName"), source.iconName);
         row.insert(QStringLiteral("pluginVersion"), source.pluginVersion);
         row.insert(QStringLiteral("pluginRootPath"), source.pluginRootPath);
         row.insert(QStringLiteral("catalogUrl"), source.catalogUrl);
@@ -111,6 +112,7 @@ QVariantList CoreController::pluginEntries() const
             row.insert(QStringLiteral("pluginId"), disk.id);
             row.insert(QStringLiteral("name"), disk.name);
             row.insert(QStringLiteral("description"), disk.description);
+            row.insert(QStringLiteral("iconName"), disk.iconName);
             row.insert(QStringLiteral("pluginVersion"), disk.pluginVersion);
             row.insert(QStringLiteral("pluginRootPath"), disk.pluginRootPath);
             row.insert(QStringLiteral("catalogUrl"), disk.catalogUrl);
@@ -220,10 +222,12 @@ void CoreController::runOfficialPluginAutoUpdate()
     if (!m_pluginCatalog || !m_pluginHost || m_autoUpdatingOfficialPlugins)
         return;
 
-    // Don't unload plugin DLLs while QtConcurrent is still inside plugin->catalog().
-    if (m_catalogController
-        && (m_catalogController->catalogLoading()
-            || m_catalogController->hasInFlightPluginCatalogLoads())) {
+    // Don't unload plugin DLLs while QtConcurrent is still inside plugin code.
+    if ((m_catalogController
+         && (m_catalogController->catalogLoading()
+             || m_catalogController->hasInFlightPluginCatalogLoads()))
+        || hasInFlightCatalogAddonEnrich()
+        || (m_pluginHost && m_pluginHost->hasInFlightPluginWorkers())) {
         QTimer::singleShot(1500, this, &CoreController::runOfficialPluginAutoUpdate);
         return;
     }

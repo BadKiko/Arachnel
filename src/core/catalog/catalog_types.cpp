@@ -37,25 +37,26 @@ void prepareCatalogEntry(CatalogEntry& entry)
     const QDate day = QDate::fromString(entry.uploadDate.left(10), Qt::ISODate);
     entry.uploadDay = day.isValid() ? day.toJulianDay() : 0;
 
-    entry.genreTokens.clear();
+    QStringList tokens;
     const QStringList raw = entry.genres.split(QLatin1Char(','), Qt::SkipEmptyParts);
-    entry.genreTokens.reserve(raw.size());
+    tokens.reserve(raw.size());
+    bool hasDrm = entry.hasDrm;
     for (QString token : raw) {
         token = token.trimmed();
-        if (!token.isEmpty())
-            entry.genreTokens.append(token);
+        if (token.isEmpty())
+            continue;
+        if (token.compare(QLatin1String("DRM"), Qt::CaseInsensitive) == 0)
+            hasDrm = true;
+        tokens.append(token);
     }
-    entry.genreKeys = canonicalizeGenreTokens(entry.genreTokens);
-    entry.playModeMask = playModeMaskFromEntry(entry.genreTokens, entry.installKind);
-    for (const QString& key : entry.genreKeys) {
-        if (key.compare(QLatin1String("Massively Multiplayer"), Qt::CaseInsensitive) == 0)
-            entry.playModeMask |= kPlayModeMulti;
-    }
+    entry.genreBits = genreBitsFromTokens(tokens);
+    entry.playModeMask = playModeMaskFromEntry(tokens, entry.installKind);
+    if (entry.genreBits & curatedGenreBit(QStringLiteral("Massively Multiplayer")))
+        entry.playModeMask |= kPlayModeMulti;
+    entry.hasDrm = hasDrm;
     entry.hypeScore = computeHypeScore(entry);
 
     // List-resident row: drop cold fields (enriched again on open).
-    entry.genreTokens.clear();
-    entry.genreTokens.squeeze();
     entry.genres.clear();
     entry.description.clear();
     entry.screenshotUrls.clear();
@@ -81,7 +82,6 @@ void prepareCatalogEntry(CatalogEntry& entry)
             entry.sourcePageUrl.clear();
         }
     }
-    entry.genreKeys.squeeze();
 }
 
 quint8 playModeMaskFromEntry(const QStringList& genreTokens, InstallKind installKind)

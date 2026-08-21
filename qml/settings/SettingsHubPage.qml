@@ -16,12 +16,17 @@ Flickable {
             {
                 id: "plugins",
                 title: qsTr("Plugins"),
-                subtitle: qsTr("FreeTP and others - install, launch, and add-ons")
+                subtitle: qsTr("Install plugins to browse and play games.")
             },
             {
                 id: "sources",
                 title: qsTr("Hydra catalogs"),
-                subtitle: qsTr("Catalog links - import from Hydra or elsewhere")
+                subtitle: qsTr("JSON catalog URLs")
+            },
+            {
+                id: "friends",
+                title: qsTr("Friends"),
+                subtitle: qsTr("Invite codes and relay presence")
             },
             {
                 id: "storage",

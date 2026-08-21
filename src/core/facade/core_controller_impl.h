@@ -31,6 +31,7 @@
 #include "process_tracker.h"
 #include "runtime_dependency_service.h"
 #include "proton_manager.h"
+#include "steamless_service.h"
 #include "windows_runner.h"
 #include "storage_library_model.h"
 #include "torrent_session.h"

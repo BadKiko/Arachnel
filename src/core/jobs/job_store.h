@@ -14,7 +14,8 @@ class JobStore : public QObject
 public:
     explicit JobStore(QObject* parent = nullptr);
 
-    QVector<JobEntry> jobs() const { return m_jobs; }
+    /** Stable view of store entries. Do not keep pointers across upsert/remove/setJobs. */
+    const QVector<JobEntry>& jobs() const { return m_jobs; }
     void setJobs(QVector<JobEntry> jobs);
 
     const JobEntry* jobById(const QString& id) const;

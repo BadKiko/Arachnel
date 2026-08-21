@@ -17,7 +17,7 @@ namespace arachnel::core {
 InstallSessionService::InstallSessionService(
     SettingsStore* settings, LibraryStore* libraryStore, JobStore* jobStore, JobModel* jobs,
     JobOrchestrator* jobOrchestrator, PluginHost* pluginHost, InstallAnalyzer* installAnalyzer,
-    ProtonManager* protonManager, Hooks hooks, QObject* parent)
+    ProtonManager* protonManager, SteamlessService* steamless, Hooks hooks, QObject* parent)
     : QObject(parent)
     , m_settings(settings)
     , m_libraryStore(libraryStore)
@@ -27,6 +27,7 @@ InstallSessionService::InstallSessionService(
     , m_pluginHost(pluginHost)
     , m_installAnalyzer(installAnalyzer)
     , m_protonManager(protonManager)
+    , m_steamless(steamless)
     , m_hooks(std::move(hooks))
 {
 }
@@ -97,7 +98,7 @@ void InstallSessionService::startPluginInstall(const CatalogEntry& entry, const 
                                            ? QStringLiteral("Install failed")
                                            : QStringLiteral("Install failed: %1").arg(result.error);
                 if (!jobId.isEmpty())
-                    m_jobOrchestrator->setJobPhase(jobId, QStringLiteral("completed"), detail);
+                    m_jobOrchestrator->setJobPhase(jobId, QStringLiteral("failed"), detail);
                 clearSession(entry.id);
                 m_hooks.showNotice(QCoreApplication::translate("Core", "Install failed for %1: %2")
                                        .arg(entry.title, result.error),

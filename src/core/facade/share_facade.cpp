@@ -56,12 +56,15 @@ void CoreController::requestDeepLink(const QString& rawOrUrl)
     const QString gameId = arachnel::parseDeepLinkGameId(rawOrUrl);
     if (gameId.isEmpty()) {
         // Empty payload from a secondary instance: just raise the window.
-        if (rawOrUrl.trimmed().isEmpty())
+        if (rawOrUrl.trimmed().isEmpty()) {
             emit activationRequested();
+            arachnel::forceActivateApplicationWindows();
+        }
         return;
     }
 
     emit activationRequested();
+    arachnel::forceActivateApplicationWindows();
     if (m_pendingDeepLinkGameId != gameId) {
         m_pendingDeepLinkGameId = gameId;
         emit pendingDeepLinkChanged();
@@ -75,6 +78,11 @@ void CoreController::consumePendingDeepLink()
         return;
     m_pendingDeepLinkGameId.clear();
     emit pendingDeepLinkChanged();
+}
+
+void CoreController::forceActivateMainWindow()
+{
+    arachnel::forceActivateApplicationWindows();
 }
 
 } // namespace arachnel::core

@@ -93,19 +93,61 @@ void CatalogShelfModel::setVisibleIndices(QVector<int> indices)
 {
     if (indices == m_indices)
         return;
-    beginResetModel();
-    m_indices = std::move(indices);
-    m_idToRow.clear();
-    m_idToRow.reserve(m_indices.size());
-    if (m_source) {
+
+    const int oldCount = m_indices.size();
+    const int newCount = indices.size();
+
+    auto rebuildMap = [this]() {
+        m_idToRow.clear();
+        m_idToRow.reserve(m_indices.size());
+        if (!m_source)
+            return;
         for (int row = 0; row < m_indices.size(); ++row) {
             const int cacheIndex = m_indices.at(row);
             if (cacheIndex < 0 || cacheIndex >= m_source->size())
                 continue;
             m_idToRow.insert(m_source->at(cacheIndex).id, row);
         }
+    };
+
+    if (newCount == 0) {
+        if (oldCount > 0) {
+            beginRemoveRows({}, 0, oldCount - 1);
+            m_indices.clear();
+            m_idToRow.clear();
+            endRemoveRows();
+            emit countChanged();
+        }
+        return;
     }
-    endResetModel();
+
+    if (oldCount == 0) {
+        beginInsertRows({}, 0, newCount - 1);
+        m_indices = std::move(indices);
+        rebuildMap();
+        endInsertRows();
+        emit countChanged();
+        return;
+    }
+
+    if (newCount > oldCount) {
+        beginInsertRows({}, oldCount, newCount - 1);
+        m_indices = std::move(indices);
+        rebuildMap();
+        endInsertRows();
+        emit dataChanged(index(0), index(oldCount - 1));
+    } else if (newCount < oldCount) {
+        beginRemoveRows({}, newCount, oldCount - 1);
+        m_indices = std::move(indices);
+        rebuildMap();
+        endRemoveRows();
+        if (newCount > 0)
+            emit dataChanged(index(0), index(newCount - 1));
+    } else {
+        m_indices = std::move(indices);
+        rebuildMap();
+        emit dataChanged(index(0), index(newCount - 1));
+    }
     emit countChanged();
 }
 
@@ -127,11 +169,11 @@ void CatalogShelfModel::clear()
         m_source = nullptr;
         return;
     }
-    beginResetModel();
+    beginRemoveRows({}, 0, m_indices.size() - 1);
     m_indices.clear();
     m_idToRow.clear();
     m_source = nullptr;
-    endResetModel();
+    endRemoveRows();
     emit countChanged();
 }
 

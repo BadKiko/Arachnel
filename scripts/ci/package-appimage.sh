@@ -11,6 +11,11 @@ export BUILD_DIR="${BUILD}"
 export QT_QML_MATERIAL_IMPORT_PATH="${BUILD}/qml_modules"
 export QML2_IMPORT_PATH="${BUILD}/qml_modules"
 
+# The container's libs carry `.relr.dyn` sections that linuxdeploy's bundled
+# strip does not understand ("unknown type [0x13] section .relr.dyn"), which
+# aborts the qt plugin. Stripping is only a size optimization - skip it.
+export NO_STRIP="${NO_STRIP:-1}"
+
 echo "==> Configure (Release)"
 FETCH_DIR="${FETCHCONTENT_BASE_DIR:-${ROOT}/.cache/fetchcontent}"
 mkdir -p "${FETCH_DIR}"
@@ -205,15 +210,38 @@ ensure_apprun_not_sed_patched() {
 echo "==> Install AppRun hooks"
 install_apprun_hooks
 
+# Never bundle these system libraries. linuxdeploy copies them from the build
+# machine (e.g. a Fedora distrobox) and those copies can be incompatible with
+# the host distro the AppImage runs on - observed crashes at dlopen time for
+# container-built libxcb-*, libxkbcommon and libmpg123 on a Bazzite host. The
+# host always provides its own consistent X11/audio/TLS/glib stack, so exclude
+# them and let them resolve at runtime. ICU is the exception: Qt 6.11.1 links
+# ICU 73, which hosts do not ship, so it must stay bundled.
+EXCLUDE_LIBS=(
+  libX* libxcb* libxkbcommon* libxshmfence* libICE* libSM*
+  libmpg123* libmp3lame* libFLAC* libsndfile* libvorbis* libogg* libopus* libgsm*
+  libasyncns* libpulse*
+  libglib-2.0* libgio-2.0* libgmodule-2.0* libgobject-2.0* libgthread-2.0*
+  libffi* libpcre2-8* libselinux* libmount* libblkid* libsystemd* libcap*
+  libdbus-1* libssl* libcrypto* libgnutls* libnettle* libhogweed* libp11-kit*
+  libtasn1* libidn2* libunistring* libkrb5* libk5crypto* libgssapi_krb5* libkeyutils*
+  libxml2* libzstd* liblzma* libbz2* libpng16* libgraphite2* libbrotli*
+)
+EXCLUDE_ARGS=()
+for pat in "${EXCLUDE_LIBS[@]}"; do
+  EXCLUDE_ARGS+=(--exclude-library="${pat}")
+done
+
 echo "==> linuxdeploy (Qt plugin)"
 cd "${ROOT}"
 # Explicit --plugin path; do not leave LINUXDEPLOY_PLUGIN_QT exported for the
-# second pass — it would re-run qt deploy and may pick the wrong qmake.
+# second pass - it would re-run qt deploy and may pick the wrong qmake.
 "${LINUXDEPLOY}" --appdir "${APPDIR}" \
   --plugin qt \
   --executable "${APPDIR}/usr/bin/arachnel_app" \
   --desktop-file "${APPDIR}/arachnel.desktop" \
-  --icon-file "${APPDIR}/arachnel.png"
+  --icon-file "${APPDIR}/arachnel.png" \
+  "${EXCLUDE_ARGS[@]}"
 
 deploy_qml_modules
 ensure_apprun_not_sed_patched
@@ -230,10 +258,33 @@ for f in libssl.so.3 libcrypto.so.3 libssl.so libcrypto.so; do
   fi
 done
 
+# linuxdeploy-plugin-qt ignores --exclude-library, so the --plugin qt pass above
+# still copies the container-built system libs into usr/lib. Remove them now
+# (the host provides its own consistent set). The second pass below DOES respect
+# --exclude-library, so it will not re-add them.
+echo "==> Remove container-built system libs (host provides its own)"
+cd "${APPDIR}/usr/lib"
+for pat in "${EXCLUDE_LIBS[@]}"; do
+  for f in ${pat}; do
+    if [[ -e "${f}" || -L "${f}" ]]; then
+      rm -f "${f}"
+    fi
+  done
+done
+cd "${ROOT}"
+
 echo "==> AppImage"
-# Package only — Qt libs/QML already deployed above.
+# linuxdeploy writes the AppImage to the CWD (project root); remove any stale
+# AppImage first so the find below picks the one just produced and never an
+# older build from a previous run.
+rm -f "${DIST}"/*.AppImage "${ROOT}"/*.AppImage 2>/dev/null || true
+# Package only - Qt libs/QML already deployed above. Pass the excludes again:
+# the second pass re-deploys the executable's dependency closure, which would
+# otherwise pull the system libs (e.g. libmpg123 via Qt Multimedia) right back
+# in after the OpenSSL move above.
 env -u LINUXDEPLOY_PLUGIN_QT \
-  "${LINUXDEPLOY}" --appdir "${APPDIR}" --output appimage
+  "${LINUXDEPLOY}" --appdir "${APPDIR}" --output appimage \
+  "${EXCLUDE_ARGS[@]}"
 
 APPIMAGE="$(find "${DIST}" -maxdepth 1 -name '*.AppImage' -type f | head -n1)"
 if [[ -z "${APPIMAGE}" ]]; then

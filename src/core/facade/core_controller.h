@@ -7,12 +7,15 @@
 #include "library_model.h"
 #include "notification_model.h"
 #include "settings_store.h"
+#include "social_controller.h"
 #include "source_plugin_model.h"
 #include "app_updater.h"
 #include "plugin_catalog_service.h"
 
 #include <QObject>
+#include <QFuture>
 #include <QHash>
+#include <QMutex>
 #include <QReadWriteLock>
 #include <QSet>
 #include <QUrl>
@@ -36,6 +39,7 @@ class CatalogController;
 class CatalogCoverCoordinator;
 class CatalogFeedLoader;
 class CoverImageCache;
+class FriendsModel;
 class GameMetadataService;
 class HttpDownloadSession;
 class JobOrchestrator;
@@ -49,6 +53,7 @@ class LaunchController;
 class PluginHost;
 class ProtonManager;
 class RuntimeDependencyService;
+class SteamlessService;
 class TorrentSession;
 
 /** QML singleton façade (`Arachnel.Core`). Bodies live in domain TUs. */
@@ -77,6 +82,7 @@ class CoreController : public QObject
     Q_PROPERTY(QString runningGameId READ runningGameId NOTIFY runningGameChanged)
     Q_PROPERTY(QString runningGameTitle READ runningGameTitle NOTIFY runningGameChanged)
     Q_PROPERTY(QString runningGameCoverUrl READ runningGameCoverUrl NOTIFY runningGameChanged)
+    Q_PROPERTY(bool gamingMode READ gamingMode CONSTANT)
     Q_PROPERTY(bool runtimeSetupInProgress READ runtimeSetupInProgress NOTIFY runtimeSetupChanged)
     Q_PROPERTY(QString runtimeSetupGameId READ runtimeSetupGameId NOTIFY runtimeSetupChanged)
     Q_PROPERTY(QString runtimeSetupTitle READ runtimeSetupTitle NOTIFY runtimeSetupChanged)
@@ -99,7 +105,9 @@ class CoreController : public QObject
     Q_PROPERTY(int catalogPlayModeFilter READ catalogPlayModeFilter WRITE setCatalogPlayModeFilter NOTIFY catalogFiltersChanged)
     Q_PROPERTY(int catalogActiveFilterCount READ catalogActiveFilterCount NOTIFY catalogFiltersChanged)
     Q_PROPERTY(QStringList availableCatalogGenres READ availableCatalogGenres NOTIFY availableCatalogGenresChanged)
+    Q_PROPERTY(QStringList hiddenCatalogSourceIds READ hiddenCatalogSourceIds NOTIFY catalogFiltersChanged)
     Q_PROPERTY(CatalogDiscoveryService* catalogDiscovery READ catalogDiscovery CONSTANT)
+    Q_PROPERTY(QObject* social READ social CONSTANT)
     Q_PROPERTY(QString pendingDeepLinkGameId READ pendingDeepLinkGameId NOTIFY pendingDeepLinkChanged)
 
 public:
@@ -116,6 +124,7 @@ public:
     AppUpdater* appUpdater() { return m_appUpdater; }
     PluginCatalogService* pluginCatalog() { return m_pluginCatalog; }
     CatalogDiscoveryService* catalogDiscovery() { return m_catalogDiscovery; }
+    QObject* social() { return m_socialController; }
 
     QString userNotice() const { return m_userNotice; }
     int userNoticeSerial() const { return m_userNoticeSerial; }
@@ -133,6 +142,7 @@ public:
     QString runningGameId() const;
     QString runningGameTitle() const;
     QString runningGameCoverUrl() const;
+    bool gamingMode() const;
     bool runtimeSetupInProgress() const { return m_runtimeSetupInProgress; }
     QString runtimeSetupGameId() const { return m_runtimeSetupGameId; }
     QString runtimeSetupTitle() const { return m_runtimeSetupTitle; }
@@ -161,6 +171,7 @@ public:
     int catalogActiveFilterCount() const;
     QStringList availableCatalogGenres() const;
     QString pendingDeepLinkGameId() const;
+    QStringList hiddenCatalogSourceIds() const;
 
 #include "core_controller_api.h"
 
@@ -180,6 +191,7 @@ signals:
     void pluginInstallBusyChanged();
     void pluginAutoUpdatingChanged();
     void runningGameChanged();
+    void launchSessionEnded(const QString& gameId, qint64 elapsedMs, bool suppressQuickExitLog);
     void runtimeSetupChanged();
     void protonDownloadChanged();
     void protonLatestReleaseChanged();
