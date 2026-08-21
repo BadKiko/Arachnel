@@ -232,7 +232,7 @@ CoreController::CoreController(QObject* parent)
         reconcileJobInstallState();
         emit pluginsChanged();
         reportIncompatiblePlugins();
-    });
+    }, Qt::QueuedConnection);
     syncSourcesFromPlugins();
     emit pluginsChanged();
     m_libraryMaintenance->migratePollutedEntryIds();

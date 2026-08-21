@@ -22,4 +22,7 @@ bool rewritePathPrefixInFile(const QString& filePath, const QString& oldRoot,
 /** Turn `Bin\Win64\foo.exe` filenames into real directories. Linux-only; 0 on Windows. */
 int healWindowsInstallLayout(const QString& installPath);
 
+/** Windows PE image bitness: 64, 32, or 0 when the file is not a PE image. */
+int peImageBits(const QString& path);
+
 } // namespace arachnel::core

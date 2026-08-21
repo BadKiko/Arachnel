@@ -97,44 +97,11 @@ QHash<int, QByteArray> SourcePluginModel::roleNames() const
 
 void SourcePluginModel::setPlugins(QVector<SourcePluginInfo> plugins)
 {
-    const int oldCount = m_plugins.size();
-    const int newCount = plugins.size();
-
-    if (newCount == 0) {
-        if (oldCount > 0) {
-            beginRemoveRows({}, 0, oldCount - 1);
-            m_plugins.clear();
-            endRemoveRows();
-            emit sourcesChanged();
-        } else {
-            emit sourcesChanged();
-        }
-        return;
-    }
-
-    if (oldCount == 0) {
-        beginInsertRows({}, 0, newCount - 1);
-        m_plugins = std::move(plugins);
-        endInsertRows();
-        emit sourcesChanged();
-        return;
-    }
-
-    if (newCount > oldCount) {
-        beginInsertRows({}, oldCount, newCount - 1);
-        m_plugins = std::move(plugins);
-        endInsertRows();
-        emit dataChanged(index(0), index(oldCount - 1));
-    } else if (newCount < oldCount) {
-        beginRemoveRows({}, newCount, oldCount - 1);
-        m_plugins = std::move(plugins);
-        endRemoveRows();
-        if (newCount > 0)
-            emit dataChanged(index(0), index(newCount - 1));
-    } else {
-        m_plugins = std::move(plugins);
-        emit dataChanged(index(0), index(newCount - 1));
-    }
+    // Full replace: insert/remove + dataChanged while swapping the vector confuses
+    // QQmlDelegateModel (crash in equalStrings on chip/list bindings during plugin install).
+    beginResetModel();
+    m_plugins = std::move(plugins);
+    endResetModel();
     emit sourcesChanged();
 }
 

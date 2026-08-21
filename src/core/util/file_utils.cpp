@@ -231,6 +231,39 @@ bool rewritePathPrefixInFile(const QString& filePath, const QString& oldRoot, co
     return true;
 }
 
+int peImageBits(const QString& path)
+{
+    QFile file(path);
+    if (!file.open(QIODevice::ReadOnly) || file.size() < 0x40)
+        return 0;
+
+    if (!file.seek(0x3C))
+        return 0;
+    const QByteArray lfanew = file.read(4);
+    if (lfanew.size() < 4)
+        return 0;
+    const quint32 peOffset = quint32(static_cast<uchar>(lfanew.at(0)))
+                             | (quint32(static_cast<uchar>(lfanew.at(1))) << 8)
+                             | (quint32(static_cast<uchar>(lfanew.at(2))) << 16)
+                             | (quint32(static_cast<uchar>(lfanew.at(3))) << 24);
+
+    if (peOffset < 0x40 || peOffset + 6 > quint32(file.size()) || !file.seek(peOffset))
+        return 0;
+    if (file.read(4) != QByteArray("PE\0\0", 4))
+        return 0;
+
+    const QByteArray machine = file.read(2);
+    if (machine.size() < 2)
+        return 0;
+    const quint16 machineType = quint16(static_cast<uchar>(machine.at(0)))
+                                | (quint16(static_cast<uchar>(machine.at(1))) << 8);
+    if (machineType == 0x8664) // IMAGE_FILE_MACHINE_AMD64
+        return 64;
+    if (machineType == 0x14c) // IMAGE_FILE_MACHINE_I386
+        return 32;
+    return 0;
+}
+
 int healWindowsInstallLayout(const QString& installPath)
 {
 #if defined(Q_OS_WIN)

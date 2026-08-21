@@ -60,6 +60,9 @@ public:
     void invalidateScanCache();
     /** Fix prefix dirs that became files (Proton then refuses to start). Returns count repaired. */
     int repairCorruptPrefixForGame(const QString& gameId) const;
+    /** Normalize known CachyOS- prefix version marker before switching Proton builds. */
+    QString repairLegacyPrefixVersionForGame(const QString& gameId,
+                                             const QString& protonVersion) const;
 
 signals:
     void downloadStateChanged();

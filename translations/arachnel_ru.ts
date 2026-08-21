@@ -810,7 +810,7 @@
         <location filename="../src/core/library/library_controller.cpp" line="+298"/>
         <location line="+42"/>
         <location line="+58"/>
-        <location filename="../src/core/launch/launch_controller.cpp" line="+307"/>
+        <location filename="../src/core/launch/launch_controller.cpp" line="+341"/>
         <source>Couldn&apos;t update DLC unlocks.</source>
         <translation>Не удалось обновить разблокировку DLC.</translation>
     </message>
@@ -1252,7 +1252,7 @@
         <translation>Установка runtime не зарегистрировалась в префиксе Proton: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/launch/launch_controller.cpp" line="-246"/>
+        <location filename="../src/core/launch/launch_controller.cpp" line="-277"/>
         <source>Game process started (PID %1)</source>
         <translation>Процесс игры запущен (PID %1)</translation>
     </message>
@@ -1262,17 +1262,18 @@
         <translation>н/д</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+20"/>
         <source>Game process exited</source>
         <translation>Процесс игры завершился</translation>
     </message>
     <message>
-        <location line="+21"/>
+        <location line="+24"/>
+        <location line="+120"/>
         <source>Online Fix quit right after launch</source>
         <translation>Online Fix сразу завершился после запуска</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="-109"/>
         <source>Disabling Online Fix and launching without it</source>
         <translation>Отключаю Online Fix и запускаю без него</translation>
     </message>
@@ -1282,23 +1283,23 @@
         <translation>Online Fix не смог запустить эту игру - запустил без него. Включить снова можно в настройках игры.</translation>
     </message>
     <message>
-        <location line="+60"/>
+        <location line="+58"/>
         <source>--- Game output (%1) ---</source>
         <translation>--- Вывод игры (%1) ---</translation>
     </message>
     <message>
         <location line="+8"/>
-        <location filename="../src/core/launch/launch_facade.cpp" line="+80"/>
+        <location filename="../src/core/launch/launch_facade.cpp" line="+83"/>
         <source>No launch has been attempted for this game yet.</source>
         <translation>Запуск этой игры ещё не пытались выполнить.</translation>
     </message>
     <message>
-        <location line="+25"/>
+        <location line="+24"/>
         <source>Online Fix showed an error dialog</source>
         <translation>Online Fix показал окно ошибки</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="+32"/>
         <source>Game is not installed yet</source>
         <translation>Игра ещё не установлена</translation>
     </message>
@@ -1323,7 +1324,7 @@
         <translation>Перед запуском восстановлено повреждённых каталогов префикса Proton: %1</translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location line="+19"/>
         <source>Executable override: %1</source>
         <translation>Переопределение исполняемого файла: %1</translation>
     </message>
@@ -1348,7 +1349,7 @@
         <translation>Файлы игры отсутствуют или неполные - переустанови из каталога. Запуск через Steam Store не используется.</translation>
     </message>
     <message>
-        <location line="+22"/>
+        <location line="+57"/>
         <source>Online Fix overlay detected</source>
         <translation>Обнаружен оверлей Online Fix</translation>
     </message>
@@ -1358,7 +1359,7 @@
         <translation>Steam не запущен - Online Fix нужен для SpaceWar/overlay. Запускаем Steam…</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+20"/>
         <source>Could not resolve a launch command (missing Proton or game executable).</source>
         <translation>Не удалось собрать команду запуска (нет Proton или исполняемого файла игры).</translation>
     </message>
@@ -1396,11 +1397,6 @@
         <location filename="../src/core/runtime/proton_facade.cpp" line="-188"/>
         <source>Failed to launch game</source>
         <translation>Не удалось запустить игру</translation>
-    </message>
-    <message>
-        <location line="+20"/>
-        <source>Failed to stop game</source>
-        <translation>Не удалось остановить игру</translation>
     </message>
     <message>
         <location filename="../src/core/catalog/catalog_facade_query.cpp" line="+8"/>
@@ -1611,9 +1607,9 @@
     <message>
         <location line="+190"/>
         <location line="+17"/>
-        <location filename="../src/core/launch/launch_controller.cpp" line="-123"/>
+        <location filename="../src/core/launch/launch_controller.cpp" line="-149"/>
         <location line="+6"/>
-        <location line="+93"/>
+        <location line="+139"/>
         <source>unknown error</source>
         <translation>неизвестная ошибка</translation>
     </message>
@@ -1675,7 +1671,7 @@
     </message>
     <message>
         <location line="+17"/>
-        <location filename="../src/core/launch/launch_controller.cpp" line="-101"/>
+        <location filename="../src/core/launch/launch_controller.cpp" line="-147"/>
         <source>Steamless: %1</source>
         <translation>Steamless: %1</translation>
     </message>
@@ -2339,7 +2335,8 @@
         <translation>Лог запуска скопирован</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+32"/>
+        <location line="+33"/>
         <source>Save launch log</source>
         <translation>Сохранить лог запуска</translation>
     </message>
@@ -2349,7 +2346,7 @@
         <translation>Текстовые файлы (*.txt);;Все файлы (*)</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+7"/>
         <source>Could not save log: %1</source>
         <translation>Не удалось сохранить лог: %1</translation>
     </message>
@@ -2357,6 +2354,16 @@
         <location line="+6"/>
         <source>Launch log saved to %1</source>
         <translation>Лог запуска сохранён в %1</translation>
+    </message>
+    <message>
+        <location filename="../src/core/install/steam_api_provision.cpp" line="+91"/>
+        <source>steam_api repair: provided %1 next to the game executable (source: %2)</source>
+        <translation>steam_api: рядом с exe добавлен %1 (источник: %2)</translation>
+    </message>
+    <message>
+        <location filename="../src/core/runtime/proton_manager.cpp" line="+511"/>
+        <source>Normalized legacy Proton prefix marker %1 -&gt; %2 (backup: %3)</source>
+        <translation>Нормализован маркер Proton prefix %1 -&gt; %2 (бэкап: %3)</translation>
     </message>
 </context>
 <context>
@@ -2677,7 +2684,7 @@
 <context>
     <name>GameDetailsContent</name>
     <message>
-        <location filename="../qml/app/GameDetailsContent.qml" line="+53"/>
+        <location filename="../qml/app/GameDetailsContent.qml" line="+56"/>
         <source>Game details</source>
         <translation>Детали игры</translation>
     </message>
@@ -4857,7 +4864,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <name>arachnel::core::PresenceService</name>
     <message>
         <location filename="../src/core/social/presence_service.cpp" line="+76"/>
-        <location line="+25"/>
+        <location line="+31"/>
         <source>Set a relay URL in Friends settings</source>
         <translation>Укажите URL релея в настройках друзей</translation>
     </message>

@@ -11,6 +11,7 @@
 #include "process_tracker.h"
 #include "proton_manager.h"
 #include "settings_store.h"
+#include "steam_api_provision.h"
 #include "steamless_service.h"
 #include "wine_error_probe.h"
 
@@ -282,6 +283,13 @@ void LaunchController::launchGame(const QString& gameId)
                             "Repaired %1 corrupted Proton prefix director%2 before launch")
                             .arg(repairedPrefixes)
                             .arg(repairedPrefixes == 1 ? QStringLiteral("y") : QStringLiteral("ies")));
+
+            const QString protonId = m_settings->resolvedProtonId(gameCopy.protonId, *m_protons);
+            const QString protonName = m_protons->activeVersionName(protonId);
+            const QString versionRepair =
+                m_protons->repairLegacyPrefixVersionForGame(gameCopy.id, protonName);
+            if (!versionRepair.isEmpty())
+                logLine(versionRepair);
         }
         if (gameCopy.executableOverride.contains(QLatin1Char('\\'))) {
             QString override = gameCopy.executableOverride;
@@ -420,6 +428,17 @@ void LaunchController::launchGame(const QString& gameId)
             }
         }
 #endif
+        {
+            QString provisionExe = gameCopy.executableOverride;
+            if (provisionExe.isEmpty())
+                provisionExe = info.executable;
+            if (!provisionExe.isEmpty()) {
+                const QString provisionSummary =
+                    ensureSteamApiDllForExecutable(gameCopy.installPath, provisionExe);
+                if (!provisionSummary.isEmpty())
+                    logLine(provisionSummary);
+            }
+        }
         const ResolvedLaunch resolved = resolveLaunch(info, gameCopy, *m_settings, m_protons);
         if (resolved.program.isEmpty()) {
             const QString reason = QCoreApplication::translate(

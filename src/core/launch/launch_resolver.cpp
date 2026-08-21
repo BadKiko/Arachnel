@@ -1,5 +1,6 @@
 #include "launch_resolver.h"
 
+#include "file_utils.h"
 #include "install_heuristics.h"
 #include "proton_manager.h"
 
@@ -91,15 +92,18 @@ bool hostBreaksWithLegacySteamRuntime()
     return false;
 }
 
-QString filterOverlayPreloadForHost(const QString& preload)
+QString filterOverlayPreloadForHost(const QString& preload, int gameBits)
 {
-    // 32-bit gameoverlayrenderer cannot be preloaded into 64-bit Proton; keep 64-bit only.
+    // Overlay .so must match the game PE bitness; wrong ELF class is skipped by ld.so.
+    // Unknown bitness: keep both.
     QStringList kept;
     for (const QString& part : preload.split(QLatin1Char(':'), Qt::SkipEmptyParts)) {
         const QString p = part.trimmed();
         if (p.isEmpty())
             continue;
-        if (p.contains(QStringLiteral("ubuntu12_32/")))
+        if (gameBits == 32 && !p.contains(QStringLiteral("ubuntu12_32/")))
+            continue;
+        if (gameBits == 64 && !p.contains(QStringLiteral("ubuntu12_64/")))
             continue;
         kept.append(p);
     }
@@ -132,8 +136,10 @@ ResolvedLaunch resolveLaunch(const LaunchInfo& pluginInfo, const LibraryGame& ga
     if (executable.isEmpty())
         executable = pluginExe;
 
+    const int gameBits = peImageBits(executable);
+
     QString workDir = pluginInfo.workingDirectory;
-    if (workDir.isEmpty())
+    if (workDir.isEmpty() || !overrideExe.isEmpty())
         workDir = QFileInfo(executable).absolutePath();
 
     QStringList arguments = pluginInfo.arguments;
@@ -207,7 +213,7 @@ ResolvedLaunch resolveLaunch(const LaunchInfo& pluginInfo, const LibraryGame& ga
                 continue;
             if (it.key() == QStringLiteral("LD_PRELOAD")) {
                 const QString existing = resolved.environment.value(QStringLiteral("LD_PRELOAD"));
-                QString added = filterOverlayPreloadForHost(it.value().trimmed());
+                QString added = filterOverlayPreloadForHost(it.value().trimmed(), gameBits);
                 while (added.startsWith(QLatin1Char(':')))
                     added.remove(0, 1);
                 if (added.isEmpty()) {

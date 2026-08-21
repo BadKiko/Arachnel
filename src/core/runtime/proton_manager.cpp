@@ -1,5 +1,6 @@
 #include "proton_manager.h"
 
+#include <QCoreApplication>
 #include <QCryptographicHash>
 #include <QDir>
 #include <QDirIterator>
@@ -13,6 +14,7 @@
 #include <QNetworkRequest>
 #include <QProcess>
 #include <QRegularExpression>
+#include <QSaveFile>
 #include <QSet>
 #include <QStandardPaths>
 #include <QSysInfo>
@@ -458,6 +460,57 @@ int ProtonManager::repairCorruptPrefixForGame(const QString& gameId) const
             ++repaired;
     }
     return repaired;
+#endif
+}
+
+QString ProtonManager::repairLegacyPrefixVersionForGame(const QString& gameId,
+                                                         const QString& protonVersion) const
+{
+#if !defined(Q_OS_LINUX)
+    Q_UNUSED(gameId);
+    Q_UNUSED(protonVersion);
+    return {};
+#else
+    const QString targetVersion = protonVersion.trimmed();
+    if (targetVersion.isEmpty())
+        return {};
+
+    const QString safeId = gameId.trimmed().isEmpty() ? QStringLiteral("default") : gameId;
+    const QString root = compatDataRoot() + QLatin1Char('/') + safeId;
+    const QString versionPath = root + QStringLiteral("/version");
+    QFile versionFile(versionPath);
+    if (!versionFile.open(QIODevice::ReadOnly | QIODevice::Text))
+        return {};
+
+    const QString oldVersion = QString::fromUtf8(versionFile.readAll()).trimmed();
+    versionFile.close();
+    if (oldVersion.isEmpty() || oldVersion == targetVersion
+        || !oldVersion.startsWith(QStringLiteral("CachyOS-"), Qt::CaseInsensitive))
+        return {};
+
+    // GE-Proton expects major.minor-...; older CachyOS wrote CachyOS-11.0-100.
+    QString backupPath = versionPath + QStringLiteral(".arachnel-backup");
+    if (QFileInfo::exists(backupPath)) {
+        int suffix = 2;
+        do {
+            backupPath = versionPath + QStringLiteral(".arachnel-backup.%1").arg(suffix++);
+        } while (QFileInfo::exists(backupPath));
+    }
+    if (!QFile::copy(versionPath, backupPath))
+        return {};
+
+    QSaveFile replacement(versionPath);
+    if (!replacement.open(QIODevice::WriteOnly | QIODevice::Text)
+        || replacement.write((targetVersion + QLatin1Char('\n')).toUtf8()) < 0
+        || !replacement.commit()) {
+        QFile::remove(versionPath);
+        QFile::copy(backupPath, versionPath);
+        return {};
+    }
+
+    return QCoreApplication::translate("Core",
+                                       "Normalized legacy Proton prefix marker %1 -> %2 (backup: %3)")
+        .arg(oldVersion, targetVersion, QFileInfo(backupPath).fileName());
 #endif
 }
 
