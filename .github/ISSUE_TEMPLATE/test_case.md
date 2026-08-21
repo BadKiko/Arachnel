@@ -1,26 +1,26 @@
 ---
-name: Тест-кейс
-about: Шаблон для создания нового тест-кейса
+name: Test Case
+about: Template for creating a new test case
 title: '[Test Case]: '
 labels: ''
 assignees: ''
 ---
 
-### Описание
-*Кратко опишите, какую функциональность проверяем.*
+### Description
+*Briefly describe the feature or functionality being tested.*
 
-**Предусловия:**
-- [ ] Установлена последняя версия приложения
-- [ ] ...
+**Preconditions:**
+- [ ] Latest version of the application is installed
+- [ ] Environment configured (e.g., Development / Staging)
 
-**Шаги воспроизведения:**
-1. 
-2. 
-3. 
+**Steps to Reproduce:**
+1. Open the application.
+2. Navigate to ...
+3. Perform action ...
 
-**Ожидаемый результат:**
-- 
+**Expected Result:**
+- What should happen when the test passes successfully.
 
-**Фактический результат / Статус:**
-- [ ] Passed (Пройден)
-- [ ] Failed ( Упал)
+**Actual Result / Status:**
+- [ ] Passed
+- [ ] Failed (Found a bug)
