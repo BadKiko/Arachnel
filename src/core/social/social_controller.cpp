@@ -42,8 +42,14 @@ SocialController::SocialController(QObject* parent)
             [this](const QString& message) { emit noticeRequested(message); });
     connect(m_presenceService, &PresenceService::friendsPresenceReceived, this,
             &SocialController::applyRemotePresence);
-    connect(m_inviteService, &InviteService::requestFailed, this,
-            [this](const QString& message) { emit noticeRequested(message); });
+    connect(m_inviteService, &InviteService::requestFailed, this, [this](const QString& message) {
+        if (m_suggestBatchRemaining > 0) {
+            --m_suggestBatchRemaining;
+            if (m_suggestBatchRemaining == 0)
+                m_suggestBatchTitle.clear();
+        }
+        emit noticeRequested(message);
+    });
     connect(m_inviteService, &InviteService::inviteCodeReady, this, [this](const PendingInvite& invite) {
         m_pendingInviteCode = invite.code;
         m_pendingInviteExpiry = invite.expiresAt;
@@ -68,6 +74,16 @@ SocialController::SocialController(QObject* parent)
     });
     connect(m_inviteService, &InviteService::suggestionSent, this,
             [this](const QString&, const QString& title) {
+                if (m_suggestBatchRemaining > 0) {
+                    --m_suggestBatchRemaining;
+                    if (m_suggestBatchRemaining == 0) {
+                        const QString batchTitle =
+                            m_suggestBatchTitle.isEmpty() ? title : m_suggestBatchTitle;
+                        m_suggestBatchTitle.clear();
+                        emit noticeRequested(tr("Suggestion sent: %1").arg(batchTitle));
+                    }
+                    return;
+                }
                 emit noticeRequested(tr("Suggestion sent: %1").arg(title));
             });
 }
@@ -200,6 +216,26 @@ void SocialController::suggestGame(const QString& friendId, const QString& gameI
     if (friendId.trimmed().isEmpty() || gameId.trimmed().isEmpty())
         return;
     m_inviteService->suggestGame(friendId.trimmed(), gameId.trimmed(), title.trimmed(), coverUrl);
+}
+
+void SocialController::suggestGameBatch(const QStringList& friendIds, const QString& gameId,
+                                        const QString& title, const QString& coverUrl)
+{
+    if (gameId.trimmed().isEmpty())
+        return;
+    QStringList ids;
+    ids.reserve(friendIds.size());
+    for (const QString& raw : friendIds) {
+        const QString id = raw.trimmed();
+        if (!id.isEmpty() && !ids.contains(id))
+            ids.append(id);
+    }
+    if (ids.isEmpty())
+        return;
+    m_suggestBatchRemaining = ids.size();
+    m_suggestBatchTitle = title.trimmed();
+    for (const QString& id : ids)
+        m_inviteService->suggestGame(id, gameId.trimmed(), title.trimmed(), coverUrl);
 }
 
 QVariantMap SocialController::friendSummary(const QString& friendId) const

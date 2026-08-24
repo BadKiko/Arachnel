@@ -1,5 +1,7 @@
 #include "friends_model.h"
 
+#include <algorithm>
+
 namespace arachnel::core {
 
 FriendsModel::FriendsModel(QObject* parent)
@@ -72,6 +74,11 @@ QHash<int, QByteArray> FriendsModel::roleNames() const
 
 void FriendsModel::setFriends(QVector<FriendEntry> friends)
 {
+    std::sort(friends.begin(), friends.end(), [](const FriendEntry& a, const FriendEntry& b) {
+        if (a.online != b.online)
+            return a.online && !b.online;
+        return QString::localeAwareCompare(a.nickname, b.nickname) < 0;
+    });
     beginResetModel();
     m_friends = std::move(friends);
     endResetModel();

@@ -560,6 +560,27 @@ Item {
         modal: true
         width: Math.min(420, page.width > 0 ? page.width - 48 : 420)
 
+        property var selectedFriendIds: []
+
+        function toggleFriend(friendId) {
+            const next = selectedFriendIds.slice()
+            const i = next.indexOf(friendId)
+            if (i >= 0)
+                next.splice(i, 1)
+            else
+                next.push(friendId)
+            selectedFriendIds = next
+        }
+
+        function sendSuggestions() {
+            if (selectedFriendIds.length === 0)
+                return
+            Core.suggestGameToFriends(selectedFriendIds, page.gameId)
+            close()
+        }
+
+        onAboutToShow: selectedFriendIds = []
+
         ColumnLayout {
             width: shareDialog.width - shareDialog.horizontalPadding * 2
             spacing: MD.Token.spacing.medium
@@ -578,25 +599,150 @@ Item {
             MD.Label {
                 Layout.fillWidth: true
                 visible: Core.social.friends.count > 0
-                text: qsTr("Suggest to a friend")
+                text: qsTr("Suggest to friends")
                 typescale: MD.Token.typescale.title_small
             }
 
-            Repeater {
-                model: Core.social.friends
+            Flow {
+                Layout.fillWidth: true
+                visible: Core.social.friends.count > 0
+                spacing: MD.Token.spacing.small
 
-                MD.Button {
-                    required property string friendId
-                    required property string nickname
-                    required property bool online
+                Repeater {
+                    model: Core.social.friends
 
-                    Layout.fillWidth: true
-                    text: nickname
-                    icon.name: online ? MD.Token.icon.groups : MD.Token.icon.person
-                    mdState.type: MD.Enum.BtText
-                    onClicked: {
-                        Core.suggestGameToFriend(friendId, page.gameId)
-                        shareDialog.close()
+                    Column {
+                        id: friendChip
+                        required property string friendId
+                        required property string nickname
+                        required property bool online
+
+                        readonly property bool selected: shareDialog.selectedFriendIds.indexOf(friendId) >= 0
+                        readonly property real avatarSize: MD.Token.spacing.extra_large
+                                                           + MD.Token.spacing.small
+                        readonly property real ringPad: 3
+                        readonly property real ringWidth: 2
+                        readonly property real chipWidth: avatarSize + (ringPad + ringWidth) * 2
+
+                        width: chipWidth
+                        spacing: MD.Token.spacing.extra_small
+
+                        Item {
+                            id: avatarArea
+                            width: friendChip.chipWidth
+                            height: width
+
+                            // Border-only fill must match dialog; transparent + border paints black.
+                            Rectangle {
+                                anchors.fill: parent
+                                visible: friendChip.online || friendChip.selected
+                                radius: width / 2
+                                color: MD.Token.color.surface_container_high
+                                border.width: friendChip.ringWidth
+                                border.color: MD.Token.color.primary
+                            }
+
+                            Rectangle {
+                                anchors.centerIn: parent
+                                width: friendChip.avatarSize
+                                height: friendChip.avatarSize
+                                radius: width / 2
+                                color: friendChip.selected
+                                       ? MD.Token.color.primary_container
+                                       : MD.Token.color.surface_container_highest
+
+                                MD.Label {
+                                    anchors.centerIn: parent
+                                    text: friendChip.nickname.length
+                                          ? friendChip.nickname.charAt(0).toUpperCase()
+                                          : "?"
+                                    typescale: MD.Token.typescale.title_small
+                                    color: friendChip.selected
+                                           ? MD.Token.color.on_primary_container
+                                           : MD.Token.color.on_surface
+                                }
+                            }
+
+                            Rectangle {
+                                visible: friendChip.selected
+                                anchors.right: parent.right
+                                anchors.bottom: parent.bottom
+                                width: MD.Token.spacing.medium + 2
+                                height: width
+                                radius: width / 2
+                                color: MD.Token.color.primary
+
+                                MD.Icon {
+                                    anchors.centerIn: parent
+                                    name: MD.Token.icon.check
+                                    size: MD.Token.spacing.medium - 2
+                                    color: MD.Token.color.on_primary
+                                }
+                            }
+                        }
+
+                        Item {
+                            id: nameClip
+                            width: friendChip.chipWidth
+                            height: nameLabel.implicitHeight
+                            clip: true
+
+                            readonly property real overflow: Math.max(0, nameLabel.implicitWidth - width)
+                            readonly property bool needsScroll: overflow > 1
+
+                            MD.Label {
+                                id: nameLabel
+                                y: 0
+                                text: friendChip.nickname
+                                typescale: MD.Token.typescale.label_small
+                                color: MD.Token.color.on_surface_variant
+                                maximumLineCount: 1
+                            }
+
+                            Binding {
+                                target: nameLabel
+                                property: "x"
+                                value: Math.max(0, (nameClip.width - nameLabel.implicitWidth) / 2)
+                                when: !nameClip.needsScroll
+                                restoreMode: Binding.RestoreNone
+                            }
+
+                            SequentialAnimation {
+                                running: nameClip.needsScroll && shareDialog.visible
+                                loops: Animation.Infinite
+
+                                PauseAnimation {
+                                    duration: 900
+                                }
+                                NumberAnimation {
+                                    target: nameLabel
+                                    property: "x"
+                                    from: 0
+                                    to: -nameClip.overflow
+                                    duration: Math.max(1200, nameClip.overflow * 35)
+                                    easing.type: Easing.InOutSine
+                                }
+                                PauseAnimation {
+                                    duration: 700
+                                }
+                                NumberAnimation {
+                                    target: nameLabel
+                                    property: "x"
+                                    from: -nameClip.overflow
+                                    to: 0
+                                    duration: Math.max(1200, nameClip.overflow * 35)
+                                    easing.type: Easing.InOutSine
+                                }
+                            }
+                        }
+
+                        HoverHandler {
+                            cursorShape: Qt.PointingHandCursor
+                        }
+
+                        TapHandler {
+                            onTapped: shareDialog.toggleFriend(friendChip.friendId)
+                        }
                     }
                 }
             }
@@ -616,6 +762,17 @@ Item {
                     text: qsTr("Close")
                     DialogButtonBox.buttonRole: DialogButtonBox.RejectRole
                     onClicked: shareDialog.close()
+                }
+
+                MD.Button {
+                    visible: Core.social.friends.count > 0
+                    enabled: shareDialog.selectedFriendIds.length > 0
+                    mdState.type: MD.Enum.BtFilled
+                    text: shareDialog.selectedFriendIds.length > 1
+                          ? qsTr("Send (%1)").arg(shareDialog.selectedFriendIds.length)
+                          : qsTr("Send")
+                    DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole
+                    onClicked: shareDialog.sendSuggestions()
                 }
             }
         }

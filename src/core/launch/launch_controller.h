@@ -38,6 +38,7 @@ public:
 
     QString launchLogText() const;
     QString launchLogText(const QString& gameId) const;
+    QString launchLogHeadline(const QString& gameId) const;
     QString launchLogFilePath() const;
     QString launchLogFilePath(const QString& gameId) const;
     bool hasLaunchLog(const QString& gameId) const;
@@ -74,6 +75,8 @@ private:
     QString m_logGameId;
     QStringList m_launchLogLines;
     QDateTime m_launchStartedAt;
+    QString m_lastSessionGameId;
+    qint64 m_lastSessionElapsedMs = -1;
     bool m_watchingOnlineFix = false;
     bool m_onlineFixFallbackUsed = false;
     bool m_relaunchWithoutOnlineFix = false;

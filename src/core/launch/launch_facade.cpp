@@ -51,6 +51,11 @@ QString CoreController::gameLaunchLog(const QString& gameId) const
     return m_launchController ? m_launchController->launchLogText(gameId) : QString();
 }
 
+QString CoreController::gameLaunchLogHeadline(const QString& gameId) const
+{
+    return m_launchController ? m_launchController->launchLogHeadline(gameId) : QString();
+}
+
 bool CoreController::hasGameLaunchLog(const QString& gameId) const
 {
     return m_launchController && m_launchController->hasLaunchLog(gameId);
@@ -69,6 +74,27 @@ void CoreController::copyGameLaunchLog(const QString& gameId)
             clipboard->setText(text);
     }
     showNotice(QCoreApplication::translate("Core", "Launch log copied"));
+}
+
+void CoreController::copyGameLaunchLogForIssue(const QString& gameId)
+{
+    const QString text = gameLaunchLog(gameId);
+    if (text.isEmpty())
+        return;
+    QString title = gameId;
+    QString id = gameId;
+    if (const LibraryGame* game = m_libraryStore.gameById(gameId)) {
+        title = game->title;
+        id = game->id;
+    }
+    const QString body =
+        QStringLiteral("### Launch log - %1 (`%2`)\n\n```text\n%3\n```\n")
+            .arg(title, id, text);
+    if (QGuiApplication* gui = qobject_cast<QGuiApplication*>(QCoreApplication::instance())) {
+        if (QClipboard* clipboard = gui->clipboard())
+            clipboard->setText(body);
+    }
+    showNotice(QCoreApplication::translate("Core", "Copied for a GitHub issue"));
 }
 
 void CoreController::saveGameLaunchLog()

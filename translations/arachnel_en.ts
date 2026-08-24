@@ -810,7 +810,7 @@
         <location filename="../src/core/library/library_controller.cpp" line="+298"/>
         <location line="+42"/>
         <location line="+58"/>
-        <location filename="../src/core/launch/launch_controller.cpp" line="+341"/>
+        <location filename="../src/core/launch/launch_controller.cpp" line="+569"/>
         <source>Couldn&apos;t update DLC unlocks.</source>
         <translation></translation>
     </message>
@@ -1252,7 +1252,7 @@
         <translation>Runtime install did not register in the Proton prefix: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/launch/launch_controller.cpp" line="-277"/>
+        <location filename="../src/core/launch/launch_controller.cpp" line="-424"/>
         <source>Game process started (PID %1)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1276,13 +1276,13 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+24"/>
-        <location line="+120"/>
+        <location line="+26"/>
+        <location line="+256"/>
         <source>Online Fix quit right after launch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-109"/>
+        <location line="-245"/>
         <source>Disabling Online Fix and launching without it</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1300,13 +1300,13 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+58"/>
+        <location line="+112"/>
         <source>--- Game output (%1) ---</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+8"/>
-        <location filename="../src/core/launch/launch_facade.cpp" line="+83"/>
+        <location line="+90"/>
+        <location filename="../src/core/launch/launch_facade.cpp" line="+109"/>
         <source>No launch has been attempted for this game yet.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1326,12 +1326,14 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="-142"/>
+        <location line="+143"/>
         <source>Install path: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="-144"/>
+        <location line="+145"/>
         <source>Source: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1356,7 +1358,97 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-416"/>
+        <source>not installed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>enabled</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>disabled</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+59"/>
+        <source>Session lasted %1 s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Exited quickly. If game output is empty, check Player.log in the diagnostics below.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+91"/>
+        <source>Running</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Exited after %1 s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Last session %1 s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <location line="+78"/>
+        <location line="+335"/>
+        <source>Online Fix: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-390"/>
+        <source>Player.log has a crash</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Player.log found</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+35"/>
+        <source>--- Diagnostics ---</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Game: %1 (%2)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <location line="+335"/>
+        <source>Online Fix dir: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-315"/>
+        <location line="+305"/>
+        <source>Proton: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-296"/>
+        <location line="+17"/>
+        <source>--- Player.log (%1) ---</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-12"/>
+        <source>Player.log: not found under Proton prefix yet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+134"/>
         <source>Failed to prepare runtime (Proton/Wine)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1400,7 +1492,7 @@
         <translation></translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+34"/>
         <source>Program: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1415,7 +1507,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+22"/>
         <source>Failed to start process: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1639,9 +1731,9 @@
     <message>
         <location line="+190"/>
         <location line="+17"/>
-        <location filename="../src/core/launch/launch_controller.cpp" line="-149"/>
+        <location filename="../src/core/launch/launch_controller.cpp" line="-195"/>
         <location line="+6"/>
-        <location line="+139"/>
+        <location line="+185"/>
         <source>unknown error</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1703,7 +1795,10 @@
     </message>
     <message>
         <location line="+17"/>
-        <location filename="../src/core/launch/launch_controller.cpp" line="-147"/>
+        <location filename="../src/core/launch/launch_controller.cpp" line="-451"/>
+        <location line="+82"/>
+        <location line="+176"/>
+        <location line="+159"/>
         <source>Steamless: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2357,8 +2452,13 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/launch/launch_facade.cpp" line="-12"/>
+        <location filename="../src/core/launch/launch_facade.cpp" line="-33"/>
         <source>Launch log copied</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+21"/>
+        <source>Copied for a GitHub issue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2711,7 +2811,7 @@
 <context>
     <name>GameDetailsContent</name>
     <message>
-        <location filename="../qml/app/GameDetailsContent.qml" line="+56"/>
+        <location filename="../qml/app/GameDetailsContent.qml" line="+55"/>
         <source>Game details</source>
         <translation></translation>
     </message>
@@ -2756,12 +2856,12 @@
     </message>
     <message>
         <location line="+22"/>
-        <location line="+360"/>
+        <location line="+284"/>
         <source>Share</source>
         <translation></translation>
     </message>
     <message>
-        <location line="-350"/>
+        <location line="-274"/>
         <source>Source page</source>
         <translation></translation>
     </message>
@@ -2792,42 +2892,16 @@
     </message>
     <message>
         <location line="+88"/>
-        <location line="+120"/>
         <source>Launch log</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+16"/>
-        <source>Why the game may not boot, including the game&apos;s own output.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+17"/>
-        <source>No launch has been attempted yet.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+32"/>
-        <source>Copy</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Save log.txt</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+20"/>
+        <location line="+156"/>
         <source>Copy link</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+12"/>
-        <source>Suggest to a friend</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-310"/>
+        <location line="-243"/>
         <source>Install failed</source>
         <translation></translation>
     </message>
@@ -2858,12 +2932,12 @@
     </message>
     <message>
         <location line="+18"/>
-        <location line="+287"/>
+        <location line="+368"/>
         <source>Delete</source>
         <translation></translation>
     </message>
     <message>
-        <location line="-268"/>
+        <location line="-349"/>
         <source>Update</source>
         <translation></translation>
     </message>
@@ -2878,7 +2952,22 @@
         <translation></translation>
     </message>
     <message>
-        <location line="+166"/>
+        <location line="+66"/>
+        <source>Suggest to friends</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+170"/>
+        <source>Send (%1)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Send</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
         <source>Remove game?</source>
         <translation></translation>
     </message>
@@ -2888,13 +2977,12 @@
         <translation></translation>
     </message>
     <message>
-        <location line="-113"/>
-        <location line="+81"/>
+        <location line="-43"/>
         <source>Close</source>
         <translation></translation>
     </message>
     <message>
-        <location line="-356"/>
+        <location line="-426"/>
         <source>Ready to download from Steam CDN. Online Fix can be included when needed.</source>
         <translation></translation>
     </message>
@@ -3292,6 +3380,49 @@
     <message>
         <location line="+29"/>
         <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>LaunchLogDialog</name>
+    <message>
+        <location filename="../qml/components/LaunchLogDialog.qml" line="+16"/>
+        <source>Launch log - %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Launch log</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>Session details and game output for bug reports.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+47"/>
+        <source>No launch has been attempted yet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Copy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Copy for issue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Save log.txt</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4920,7 +5051,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
 <context>
     <name>arachnel::core::SocialController</name>
     <message>
-        <location filename="../src/core/social/social_controller.cpp" line="+52"/>
+        <location filename="../src/core/social/social_controller.cpp" line="+58"/>
         <source>Friend code ready</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4940,6 +5071,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+10"/>
         <location line="+4"/>
         <source>Suggestion sent: %1</source>
         <translation type="unfinished"></translation>
@@ -4962,7 +5094,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+100"/>
+        <location line="+120"/>
         <source>Friend</source>
         <translation type="unfinished"></translation>
     </message>

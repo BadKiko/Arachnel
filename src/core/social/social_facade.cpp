@@ -43,4 +43,14 @@ void CoreController::suggestGameToFriend(const QString& friendId, const QString&
                                     info.value(QStringLiteral("coverUrl")).toString());
 }
 
+void CoreController::suggestGameToFriends(const QStringList& friendIds, const QString& entryId)
+{
+    if (!m_socialController || friendIds.isEmpty() || entryId.trimmed().isEmpty())
+        return;
+    const QVariantMap info = entryDetails(entryId);
+    const QString title = info.value(QStringLiteral("title")).toString();
+    const QString cover = info.value(QStringLiteral("coverUrl")).toString();
+    m_socialController->suggestGameBatch(friendIds, entryId, title, cover);
+}
+
 } // namespace arachnel::core

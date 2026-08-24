@@ -58,6 +58,8 @@ public:
     Q_INVOKABLE void renameFriend(const QString& friendId, const QString& nickname);
     Q_INVOKABLE void suggestGame(const QString& friendId, const QString& gameId, const QString& title,
                                  const QString& coverUrl);
+    Q_INVOKABLE void suggestGameBatch(const QStringList& friendIds, const QString& gameId,
+                                      const QString& title, const QString& coverUrl);
     Q_INVOKABLE void consumeSuggestionNotification();
     Q_INVOKABLE QVariantMap friendSummary(const QString& friendId) const;
     Q_INVOKABLE int onlineCount() const;
@@ -89,6 +91,8 @@ private:
     QString m_suggestionFriend;
     QString m_suggestionGameId;
     QString m_suggestionGameTitle;
+    int m_suggestBatchRemaining = 0;
+    QString m_suggestBatchTitle;
 };
 
 } // namespace arachnel::core

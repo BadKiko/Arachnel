@@ -18,11 +18,14 @@
 #include <QCoreApplication>
 #include <QDateTime>
 #include <QDir>
+#include <QDirIterator>
 #include <QFile>
 #include <QFileInfo>
 #include <QStandardPaths>
 #include <QStringView>
+#include <QSysInfo>
 #include <QTimer>
+#include <QVariantMap>
 
 #include <algorithm>
 
@@ -113,6 +116,84 @@ bool installUsesSteamFix(const QString& installPath)
         || has(QStringLiteral("SteamFix32.dll"));
 }
 
+constexpr int kPlayerLogMaxBytes = 16384;
+constexpr int kPlayerLogMaxLines = 100;
+
+QString readSteamAppId(const QString& installPath)
+{
+    if (installPath.isEmpty())
+        return {};
+    const QString path = QDir(installPath).filePath(QStringLiteral("steam_appid.txt"));
+    QFile file(path);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        return {};
+    return QString::fromUtf8(file.readAll()).trimmed();
+}
+
+QString findNewestNamedFile(const QString& root, const QStringList& names)
+{
+    if (root.isEmpty() || !QFileInfo::exists(root))
+        return {};
+    QString bestPath;
+    QDateTime bestTime;
+    QDirIterator it(root, names, QDir::Files, QDirIterator::Subdirectories);
+    while (it.hasNext()) {
+        it.next();
+        const QFileInfo info = it.fileInfo();
+        if (!bestTime.isValid() || info.lastModified() > bestTime) {
+            bestTime = info.lastModified();
+            bestPath = info.absoluteFilePath();
+        }
+    }
+    return bestPath;
+}
+
+QString smartLogTail(const QString& text)
+{
+    QStringList lines = text.split(QLatin1Char('\n'));
+    while (!lines.isEmpty() && lines.last().trimmed().isEmpty())
+        lines.removeLast();
+    if (lines.isEmpty())
+        return {};
+
+    int crashIdx = -1;
+    for (int i = lines.size() - 1; i >= 0; --i) {
+        const QString& line = lines.at(i);
+        if (line.contains(QLatin1String("Crash!!!"), Qt::CaseInsensitive)
+            || line.contains(QLatin1String("Fatal error"), Qt::CaseInsensitive)
+            || line.contains(QLatin1String("EXCEPTION_"), Qt::CaseInsensitive)
+            || line.contains(QLatin1String("Unable to find type"), Qt::CaseInsensitive)) {
+            crashIdx = i;
+            break;
+        }
+    }
+    if (crashIdx >= 0) {
+        const int start = qMax(0, crashIdx - 45);
+        return lines.mid(start).join(QLatin1Char('\n'));
+    }
+    if (lines.size() <= kPlayerLogMaxLines)
+        return lines.join(QLatin1Char('\n'));
+    return lines.mid(lines.size() - kPlayerLogMaxLines).join(QLatin1Char('\n'));
+}
+
+QString readFileTailUtf8(const QString& path, int maxBytes)
+{
+    QFile file(path);
+    if (!file.open(QIODevice::ReadOnly))
+        return {};
+    const qint64 size = file.size();
+    if (size > maxBytes)
+        file.seek(size - maxBytes);
+    return QString::fromUtf8(file.readAll());
+}
+
+QString onlineFixStatusLabel(const OnlineFixOverlayState& state)
+{
+    if (!state.present)
+        return QCoreApplication::translate("Core", "not installed");
+    return state.enabled ? QCoreApplication::translate("Core", "enabled")
+                         : QCoreApplication::translate("Core", "disabled");
+}
 } // namespace
 
 LaunchController::LaunchController(LibraryModel* library, SettingsStore* settings,
@@ -192,6 +273,17 @@ void LaunchController::clearRunning(bool allowOnlineFixFallback, bool suppressQu
     const QString endedId = m_gameId;
     const qint64 elapsedMs =
         m_launchStartedAt.isValid() ? m_launchStartedAt.msecsTo(QDateTime::currentDateTime()) : 0;
+    m_lastSessionGameId = endedId;
+    m_lastSessionElapsedMs = elapsedMs;
+    if (elapsedMs > 0) {
+        logLine(QCoreApplication::translate("Core", "Session lasted %1 s")
+                    .arg(QString::number(elapsedMs / 1000.0, 'f', 1)));
+    }
+    if (!cleanQuit && elapsedMs >= 0 && elapsedMs < 20000) {
+        logLine(QCoreApplication::translate(
+            "Core",
+            "Exited quickly. If game output is empty, check Player.log in the diagnostics below."));
+    }
     const bool earlyOfExit = allowOnlineFixFallback && m_watchingOnlineFix
         && !m_onlineFixFallbackUsed && elapsedMs >= 0 && elapsedMs < kOnlineFixEarlyExitMs
         && !cleanQuit;
@@ -301,6 +393,60 @@ QString LaunchController::launchLogText() const
     return launchLogText(m_logGameId.isEmpty() ? m_gameId : m_logGameId);
 }
 
+QString LaunchController::launchLogHeadline(const QString& gameId) const
+{
+    if (gameId.isEmpty())
+        return {};
+
+    QStringList parts;
+    if (!m_gameId.isEmpty() && m_gameId == gameId) {
+        parts.append(QCoreApplication::translate("Core", "Running"));
+    } else if (m_lastSessionGameId == gameId && m_lastSessionElapsedMs >= 0) {
+        const QString secs = QString::number(m_lastSessionElapsedMs / 1000.0, 'f', 1);
+        if (m_lastSessionElapsedMs < 20000) {
+            parts.append(QCoreApplication::translate("Core", "Exited after %1 s").arg(secs));
+        } else {
+            parts.append(QCoreApplication::translate("Core", "Last session %1 s").arg(secs));
+        }
+    }
+
+    const LibraryGame* game = m_library ? m_library->gameById(gameId) : nullptr;
+    if (game && !game->installPath.isEmpty()) {
+        const OnlineFixOverlayState of = detectOnlineFixOverlay(game->installPath);
+        parts.append(QCoreApplication::translate("Core", "Online Fix: %1")
+                         .arg(onlineFixStatusLabel(of)));
+        if (m_steamless) {
+            const QVariantMap steamless = SteamlessService::installInfo(game->installPath);
+            parts.append(QCoreApplication::translate("Core", "Steamless: %1")
+                             .arg(steamless.value(QStringLiteral("steamlessLabel")).toString()));
+        }
+    }
+
+#if defined(Q_OS_LINUX)
+    if (m_protons && m_settings) {
+        const QString protonId =
+            game ? m_settings->resolvedProtonId(game->protonId, *m_protons) : QString();
+        const QString protonName = m_protons->activeVersionName(protonId);
+        if (!protonName.isEmpty())
+            parts.append(protonName);
+        const QString compat = m_protons->compatDataPathForGame(gameId);
+        const QString playerLog = findNewestNamedFile(
+            compat, {QStringLiteral("Player.log"), QStringLiteral("output_log.txt")});
+        if (!playerLog.isEmpty()) {
+            const QString sample = readFileTailUtf8(playerLog, kPlayerLogMaxBytes);
+            if (sample.contains(QLatin1String("Crash!!!"), Qt::CaseInsensitive)
+                || sample.contains(QLatin1String("Fatal error"), Qt::CaseInsensitive)) {
+                parts.append(QCoreApplication::translate("Core", "Player.log has a crash"));
+            } else {
+                parts.append(QCoreApplication::translate("Core", "Player.log found"));
+            }
+        }
+    }
+#endif
+
+    return parts.join(QStringLiteral(" · "));
+}
+
 QString LaunchController::launchLogText(const QString& gameId) const
 {
     QString text;
@@ -324,7 +470,89 @@ QString LaunchController::launchLogText(const QString& gameId) const
             }
         }
     }
-    if (text.isEmpty())
+
+    const LibraryGame* game = (!gameId.isEmpty() && m_library) ? m_library->gameById(gameId) : nullptr;
+    QStringList extras;
+    extras.append(QCoreApplication::translate("Core", "--- Diagnostics ---"));
+    extras.append(QStringLiteral("Arachnel %1").arg(QCoreApplication::applicationVersion()));
+    extras.append(QStringLiteral("Qt %1").arg(QString::fromLatin1(qVersion())));
+    extras.append(QStringLiteral("OS: %1 (%2)")
+                      .arg(QSysInfo::prettyProductName(), QSysInfo::currentCpuArchitecture()));
+    extras.append(QStringLiteral("Time: %1")
+                      .arg(QDateTime::currentDateTime().toString(Qt::ISODate)));
+    if (game) {
+        extras.append(QCoreApplication::translate("Core", "Game: %1 (%2)")
+                          .arg(game->title, game->id));
+        extras.append(QCoreApplication::translate("Core", "Source: %1").arg(game->sourceId));
+        extras.append(QCoreApplication::translate("Core", "Install path: %1")
+                          .arg(game->installPath));
+        if (!game->executableOverride.isEmpty()) {
+            extras.append(QCoreApplication::translate("Core", "Executable override: %1")
+                              .arg(game->executableOverride));
+        }
+        const OnlineFixOverlayState of = detectOnlineFixOverlay(game->installPath);
+        extras.append(QCoreApplication::translate("Core", "Online Fix: %1")
+                          .arg(onlineFixStatusLabel(of)));
+        if (of.present && !of.overlayDir.isEmpty()) {
+            extras.append(QCoreApplication::translate("Core", "Online Fix dir: %1")
+                              .arg(of.overlayDir));
+        }
+        if (m_steamless) {
+            const QVariantMap steamless = SteamlessService::installInfo(game->installPath);
+            extras.append(QCoreApplication::translate("Core", "Steamless: %1")
+                              .arg(steamless.value(QStringLiteral("steamlessLabel")).toString()));
+        }
+        const QString appId = readSteamAppId(game->installPath);
+        if (!appId.isEmpty())
+            extras.append(QStringLiteral("steam_appid.txt: %1").arg(appId));
+    }
+
+#if defined(Q_OS_LINUX)
+    if (m_protons) {
+        const QString protonId =
+            (game && m_settings) ? m_settings->resolvedProtonId(game->protonId, *m_protons)
+                                 : QString();
+        const QString protonName = m_protons->activeVersionName(protonId);
+        if (!protonName.isEmpty())
+            extras.append(QCoreApplication::translate("Core", "Proton: %1").arg(protonName));
+        const QString compat = m_protons->compatDataPathForGame(gameId);
+        if (!compat.isEmpty()) {
+            extras.append(QStringLiteral("STEAM_COMPAT_DATA_PATH: %1").arg(compat));
+            const QString playerLog = findNewestNamedFile(
+                compat, {QStringLiteral("Player.log"), QStringLiteral("output_log.txt")});
+            if (!playerLog.isEmpty()) {
+                const QString raw = readFileTailUtf8(playerLog, kPlayerLogMaxBytes);
+                const QString snippet = smartLogTail(raw.trimmed());
+                extras.append(QCoreApplication::translate("Core", "--- Player.log (%1) ---")
+                                  .arg(playerLog));
+                if (!snippet.isEmpty())
+                    extras.append(snippet);
+            } else {
+                extras.append(QCoreApplication::translate(
+                    "Core", "Player.log: not found under Proton prefix yet"));
+            }
+        }
+    }
+#else
+    if (game && !game->installPath.isEmpty()) {
+        const QString playerLog = findNewestNamedFile(
+            game->installPath, {QStringLiteral("Player.log"), QStringLiteral("output_log.txt")});
+        if (!playerLog.isEmpty()) {
+            const QString raw = readFileTailUtf8(playerLog, kPlayerLogMaxBytes);
+            const QString snippet = smartLogTail(raw.trimmed());
+            extras.append(QCoreApplication::translate("Core", "--- Player.log (%1) ---")
+                              .arg(playerLog));
+            if (!snippet.isEmpty())
+                extras.append(snippet);
+        }
+    }
+#endif
+
+    if (!text.isEmpty())
+        text += QLatin1String("\n\n");
+    text += extras.join(QLatin1Char('\n'));
+
+    if (text.trimmed().isEmpty())
         text = QCoreApplication::translate("Core", "No launch has been attempted for this game yet.");
     return text;
 }
@@ -626,10 +854,56 @@ void LaunchController::launchGame(const QString& gameId)
                                    .arg(gameCopy.title));
             return;
         }
+        logLine(QStringLiteral("Arachnel %1 · %2 (%3)")
+                    .arg(QCoreApplication::applicationVersion(), QSysInfo::prettyProductName(),
+                         QSysInfo::currentCpuArchitecture()));
+        if (m_protons) {
+            const QString protonId = m_settings->resolvedProtonId(gameCopy.protonId, *m_protons);
+            const QString protonName = m_protons->activeVersionName(protonId);
+            if (!protonName.isEmpty())
+                logLine(QCoreApplication::translate("Core", "Proton: %1").arg(protonName));
+            const QString compat = m_protons->compatDataPathForGame(gameCopy.id);
+            if (!compat.isEmpty())
+                logLine(QStringLiteral("STEAM_COMPAT_DATA_PATH: %1").arg(compat));
+        }
+        {
+            const OnlineFixOverlayState of = detectOnlineFixOverlay(gameCopy.installPath);
+            logLine(QCoreApplication::translate("Core", "Online Fix: %1")
+                        .arg(onlineFixStatusLabel(of)));
+            if (of.present && !of.overlayDir.isEmpty())
+                logLine(QCoreApplication::translate("Core", "Online Fix dir: %1")
+                            .arg(of.overlayDir));
+        }
+        if (m_steamless) {
+            const QVariantMap steamless = SteamlessService::installInfo(gameCopy.installPath);
+            logLine(QCoreApplication::translate("Core", "Steamless: %1")
+                        .arg(steamless.value(QStringLiteral("steamlessLabel")).toString()));
+        }
+        {
+            const QString appId = readSteamAppId(gameCopy.installPath);
+            if (!appId.isEmpty())
+                logLine(QStringLiteral("steam_appid.txt: %1").arg(appId));
+        }
         logLine(QCoreApplication::translate("Core", "Program: %1").arg(resolved.program));
         logLine(QCoreApplication::translate("Core", "Working dir: %1").arg(resolved.workingDirectory));
         logLine(QCoreApplication::translate("Core", "Args: %1")
                     .arg(resolved.arguments.join(QLatin1Char(' '))));
+        {
+            const QString wineDll =
+                resolved.environment.value(QStringLiteral("WINEDLLOVERRIDES"));
+            if (!wineDll.isEmpty())
+                logLine(QStringLiteral("WINEDLLOVERRIDES: %1").arg(wineDll));
+            const QString preload = resolved.environment.value(QStringLiteral("LD_PRELOAD"));
+            if (!preload.isEmpty())
+                logLine(QStringLiteral("LD_PRELOAD: %1").arg(preload));
+            const QString steamAppId = resolved.environment.value(QStringLiteral("SteamAppId"));
+            const QString steamGameId = resolved.environment.value(QStringLiteral("SteamGameId"));
+            if (!steamAppId.isEmpty() || !steamGameId.isEmpty()) {
+                logLine(QStringLiteral("SteamAppId=%1 SteamGameId=%2")
+                            .arg(steamAppId.isEmpty() ? QStringLiteral("-") : steamAppId,
+                                 steamGameId.isEmpty() ? QStringLiteral("-") : steamGameId));
+            }
+        }
 
         QString error;
         qint64 processId = 0;

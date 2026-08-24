@@ -19,9 +19,11 @@
     Q_INVOKABLE void stopRunningGame();
     Q_INVOKABLE QString gameLaunchLog() const;
     Q_INVOKABLE QString gameLaunchLog(const QString& gameId) const;
+    Q_INVOKABLE QString gameLaunchLogHeadline(const QString& gameId) const;
     Q_INVOKABLE bool hasGameLaunchLog(const QString& gameId) const;
     Q_INVOKABLE void copyGameLaunchLog();
     Q_INVOKABLE void copyGameLaunchLog(const QString& gameId);
+    Q_INVOKABLE void copyGameLaunchLogForIssue(const QString& gameId);
     Q_INVOKABLE void saveGameLaunchLog();
     Q_INVOKABLE void saveGameLaunchLog(const QString& gameId);
     Q_INVOKABLE void searchCatalog(const QString&, const QString&);
@@ -119,6 +121,7 @@
     Q_INVOKABLE void removeFriendById(const QString& friendId);
     Q_INVOKABLE void renameFriendById(const QString& friendId, const QString& nickname);
     Q_INVOKABLE void suggestGameToFriend(const QString& friendId, const QString& entryId);
+    Q_INVOKABLE void suggestGameToFriends(const QStringList& friendIds, const QString& entryId);
     Q_INVOKABLE void toggleBookmark(const QString& entryId);
     Q_INVOKABLE void requestDeepLink(const QString& rawOrUrl);
     Q_INVOKABLE void consumePendingDeepLink();
