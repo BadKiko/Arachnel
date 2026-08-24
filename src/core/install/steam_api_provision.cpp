@@ -69,14 +69,9 @@ QString ensureSteamApiDllForExecutable(const QString& installPath, const QString
         if (QFileInfo::exists(targetPath))
             continue;
 
-        // Stay inside this install (and its immediate parent library folder). No Steam
-        // common crawl - slow and can borrow the wrong game's DLL.
-        QString source = findSteamApiDll(installPath, bits, 8000);
-        if (source.isEmpty()) {
-            const QString parent = QFileInfo(installPath).absolutePath();
-            if (!parent.isEmpty() && parent != installPath)
-                source = findSteamApiDll(parent, bits, 4000);
-        }
+        // Stay inside this install. Sibling games in the library folder often ship a
+        // different Steamworks SDK - copying that steam_api.dll crashes (0xC0000005).
+        const QString source = findSteamApiDll(installPath, bits, 8000);
         if (source.isEmpty() || QFileInfo(source).absoluteFilePath() == targetPath)
             continue;
         if (!QFile::copy(source, targetPath))

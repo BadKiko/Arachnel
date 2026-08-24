@@ -9,6 +9,8 @@ bool isCrashDialogMode(int argc, char* argv[]);
 void markApplicationShuttingDown();
 void installCrashLogging();
 void logRunStarted(int argc, char* argv[]);
+/** Start after the event loop is running. No-op if already started. */
+void startHangWatchdog();
 void logRunFinished(int exitCode);
 void logDiagnostic(const QString& line);
 /** Short trail for crash reports (catalog load, launch, …). */

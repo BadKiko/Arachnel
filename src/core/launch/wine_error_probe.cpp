@@ -30,6 +30,11 @@ bool titleLooksLikeError(const QString& title)
     if (t.isEmpty())
         return false;
     const QString lower = t.toLower();
+    if (lower.contains(QLatin1String("crash")))
+        return false;
+    // SteamFix splash / injector is not a crash dialog.
+    if (lower == QLatin1String("injector"))
+        return false;
     return lower == QLatin1String("error")
         || lower.contains(QLatin1String("error code"))
         || lower.contains(QLatin1String("fatal error"))
@@ -190,6 +195,9 @@ BOOL CALLBACK enumDialogWindows(HWND hwnd, LPARAM lparam)
 
     DWORD pid = 0;
     GetWindowThreadProcessId(hwnd, &pid);
+    const QByteArray image = winProcessImagePath(pid).toLower();
+    if (image.contains("unitycrashhandler"))
+        return TRUE;
     const bool pidHit = ctx->pids->contains(static_cast<qint64>(pid));
 
     wchar_t cls[128] = {};
@@ -201,11 +209,8 @@ BOOL CALLBACK enumDialogWindows(HWND hwnd, LPARAM lparam)
     const bool errorTitle = titleLooksLikeError(titleStr);
     const bool classHit = ctx->hints && classMatchesHints(classStr, *ctx->hints);
 
-    // MessageBox class, or error-titled window owned by related pid / steam_app class.
-    if (wcscmp(cls, L"#32770") == 0 && (pidHit || classHit || errorTitle)) {
-        ctx->found = true;
-        return FALSE;
-    }
+    // Only treat error UI from this launch. A random desktop MessageBox with
+    // "error" in the title used to kill Super Meat Boy right after Play.
     if (errorTitle && (pidHit || classHit)) {
         ctx->found = true;
         return FALSE;

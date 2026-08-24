@@ -6,8 +6,10 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QIODevice>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QJsonParseError>
 #include <QThread>
 
 #include <algorithm>
@@ -262,6 +264,111 @@ int peImageBits(const QString& path)
     if (machineType == 0x14c) // IMAGE_FILE_MACHINE_I386
         return 32;
     return 0;
+}
+
+QByteArray firstJsonObject(const QByteArray& data)
+{
+    const int start = data.indexOf('{');
+    if (start < 0)
+        return {};
+    int depth = 0;
+    bool inString = false;
+    bool escape = false;
+    for (int i = start; i < data.size(); ++i) {
+        const char c = data.at(i);
+        if (inString) {
+            if (escape)
+                escape = false;
+            else if (c == '\\')
+                escape = true;
+            else if (c == '"')
+                inString = false;
+            continue;
+        }
+        if (c == '"')
+            inString = true;
+        else if (c == '{')
+            ++depth;
+        else if (c == '}') {
+            --depth;
+            if (depth == 0)
+                return data.mid(start, i - start + 1);
+        }
+    }
+    return {};
+}
+
+bool healUnityScriptingAssembliesFile(const QString& jsonPath)
+{
+    QFile file(jsonPath);
+    if (!file.open(QIODevice::ReadOnly))
+        return false;
+    const QByteArray raw = file.readAll();
+    file.close();
+    if (raw.trimmed().isEmpty())
+        return false;
+
+    QJsonParseError parseError;
+    QJsonDocument doc = QJsonDocument::fromJson(raw, &parseError);
+    const bool leftoverBytes = parseError.error != QJsonParseError::NoError || !doc.isObject();
+    if (leftoverBytes) {
+        const QByteArray first = firstJsonObject(raw);
+        if (first.isEmpty())
+            return false;
+        doc = QJsonDocument::fromJson(first, &parseError);
+        if (parseError.error != QJsonParseError::NoError || !doc.isObject())
+            return false;
+    }
+
+    QJsonObject root = doc.object();
+    QJsonArray names = root.value(QStringLiteral("names")).toArray();
+    const QJsonArray types = root.value(QStringLiteral("types")).toArray();
+    if (names.isEmpty() || names.size() != types.size())
+        return false;
+
+    const QDir managed(QFileInfo(jsonPath).absolutePath());
+    const bool hasWin64 =
+        QFileInfo::exists(managed.filePath(QStringLiteral("Facepunch.Steamworks.Win64.dll")));
+    bool swappedSteamworks = false;
+    if (hasWin64) {
+        for (int i = 0; i < names.size(); ++i) {
+            if (names.at(i).toString() == QLatin1String("Facepunch.Steamworks.Posix.dll")) {
+                names[i] = QStringLiteral("Facepunch.Steamworks.Win64.dll");
+                swappedSteamworks = true;
+            }
+        }
+        if (swappedSteamworks)
+            root.insert(QStringLiteral("names"), names);
+    }
+
+    if (!leftoverBytes && !swappedSteamworks)
+        return false;
+
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate))
+        return false;
+    file.write(QJsonDocument(root).toJson(QJsonDocument::Compact));
+    return true;
+}
+
+int healUnityScriptingAssemblies(const QString& installPath)
+{
+    if (installPath.isEmpty() || !QFileInfo::exists(installPath))
+        return 0;
+
+    int repaired = 0;
+    QDirIterator it(installPath, {QStringLiteral("ScriptingAssemblies.json")}, QDir::Files,
+                    QDirIterator::Subdirectories);
+    int seen = 0;
+    while (it.hasNext() && seen < 32) {
+        it.next();
+        ++seen;
+        const QString rel = QDir(installPath).relativeFilePath(it.filePath());
+        if (rel.count(QLatin1Char('/')) + rel.count(QLatin1Char('\\')) > 4)
+            continue;
+        if (healUnityScriptingAssembliesFile(it.filePath()))
+            ++repaired;
+    }
+    return repaired;
 }
 
 int healWindowsInstallLayout(const QString& installPath)

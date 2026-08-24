@@ -59,8 +59,18 @@ QByteArray httpGetBlocking(QNetworkAccessManager* /*network*/, const QUrl& url, 
     thread->start();
     {
         QMutexLocker lock(&result->mutex);
-        while (!result->finished)
-            result->done.wait(&result->mutex);
+        QCoreApplication* app = QCoreApplication::instance();
+        const bool onGui = app && QThread::currentThread() == app->thread();
+        while (!result->finished) {
+            if (onGui) {
+                lock.unlock();
+                QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 50);
+                lock.relock();
+                if (result->finished)
+                    break;
+            }
+            result->done.wait(&result->mutex, 50);
+        }
     }
     thread->wait();
     delete thread;

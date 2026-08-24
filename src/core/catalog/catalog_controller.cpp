@@ -15,6 +15,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QReadLocker>
+#include <QSet>
 #include <QTimer>
 #include <QUrl>
 #include <QWriteLocker>
@@ -265,6 +266,42 @@ void CatalogController::storeCatalogForSource(const QString& sourceId, QVector<C
 void CatalogController::commitCatalogLoad(const QString& sourceId, QVector<CatalogEntry> entries)
 {
     storeCatalogForSource(sourceId, std::move(entries));
+}
+
+void CatalogController::ensureActiveSourceCatalogs()
+{
+    QStringList enabledActiveIds;
+    enabledActiveIds.reserve(m_activeSourceIds.size());
+    for (const QString& sourceId : m_activeSourceIds) {
+        const SourcePluginInfo* source = m_sources->pluginById(sourceId);
+        if (source && source->enabled)
+            enabledActiveIds.append(sourceId);
+    }
+
+    if (enabledActiveIds.isEmpty()) {
+        if (m_catalog && m_catalog->count() > 0)
+            rebuildMergedCatalog();
+        return;
+    }
+
+    const bool multiSource = enabledActiveIds.size() > 1;
+    for (const QString& sourceId : enabledActiveIds) {
+        const bool inBySource = m_catalogBySource.contains(sourceId);
+        const bool bySourceEmpty = inBySource && m_catalogBySource.value(sourceId).isEmpty();
+        // Single-source catalogs evacuate into m_mergedCache and leave an empty
+        // bySource row. That's loaded, not missing.
+        if (!inBySource) {
+            if (!multiSource && m_mergedCache && !m_mergedCache->isEmpty()
+                && m_sourceLoadedAtMs.contains(sourceId))
+                continue;
+            rebuildMergedCatalog();
+            return;
+        }
+        if (multiSource && bySourceEmpty) {
+            rebuildMergedCatalog();
+            return;
+        }
+    }
 }
 
 void CatalogController::rebuildMergedCatalog()
@@ -1024,8 +1061,12 @@ void CatalogController::selectAllEnabledSources()
         if (source.enabled)
             enabled.append(source.id);
     }
-    if (enabled == m_activeSourceIds)
-        return;
+    if (enabled.size() == m_activeSourceIds.size()) {
+        const QSet<QString> next(enabled.begin(), enabled.end());
+        const QSet<QString> cur(m_activeSourceIds.begin(), m_activeSourceIds.end());
+        if (next == cur)
+            return;
+    }
     m_activeSourceIds = enabled;
     emit activeCatalogSourcesChanged();
     rebuildMergedCatalog();

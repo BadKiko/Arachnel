@@ -92,6 +92,9 @@ Item {
     /** When true (Catalog tab), always show the full game list - never discovery shelves. */
     property bool browseOnly: false
     property bool browseAllMode: false
+    // Defaults false so GridView can't bind 100k rows while Loader properties
+    // (enabled / browseOnly) are still at Item defaults.
+    property bool catalogModelReady: false
 
     readonly property bool discoveryMode: !root.browseOnly
                                          && !root.browseAllMode
@@ -256,9 +259,11 @@ Item {
         if (root.browseOnly || Core.catalogActiveFilterCount > 0)
             root.browseAllMode = true
         Core.prefetchCatalogCounts()
-        root.ensureValidSource()
+        if (Core.activeCatalogSourceIds.length === 0)
+            root.ensureValidSource()
         if (Core.catalogDiscovery && !root.browseOnly)
             Core.catalogDiscovery.refresh()
+        Qt.callLater(function () { root.catalogModelReady = true })
     }
 
     Connections {

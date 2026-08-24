@@ -1,5 +1,6 @@
 #include "online_fix_overlay.h"
 
+#include "file_utils.h"
 #include "steam_shortcut_service.h"
 
 #include <QCoreApplication>
@@ -130,6 +131,41 @@ QString readIniAppId(const QString& iniPath, const QString& key)
                                 QRegularExpression::CaseInsensitiveOption);
     const QRegularExpressionMatch match = re.match(QString::fromUtf8(file.readAll()));
     return match.hasMatch() ? match.captured(1) : QString();
+}
+
+void ensureSteamFixWinmmTxt(const QString& dir, int bits)
+{
+    if (dir.isEmpty() || !QDir(dir).exists())
+        return;
+    const QDir overlay(dir);
+    const bool has32 = overlay.exists(QStringLiteral("SteamFix32.dll"));
+    const bool has64 = overlay.exists(QStringLiteral("SteamFix64.dll"));
+    if (!has32 && !has64)
+        return;
+
+    QString wanted;
+    if (bits == 32 && has32)
+        wanted = QStringLiteral("SteamFix32.dll");
+    else if (bits == 64 && has64)
+        wanted = QStringLiteral("SteamFix64.dll");
+    else if (has32)
+        wanted = QStringLiteral("SteamFix32.dll");
+    else
+        wanted = QStringLiteral("SteamFix64.dll");
+
+    const QString path = overlay.filePath(QStringLiteral("winmm.txt"));
+    QFile in(path);
+    if (in.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        const QString current = QString::fromUtf8(in.readAll()).trimmed();
+        in.close();
+        if (current.compare(wanted, Qt::CaseInsensitive) == 0)
+            return;
+    }
+    QFile out(path);
+    if (!out.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text))
+        return;
+    out.write(wanted.toUtf8());
+    out.write("\n");
 }
 
 QString buildOverlayWineDllOverrides(const QString& overlayDir)
@@ -701,6 +737,15 @@ void applyOnlineFixLaunchInfo(const QString& installPath, LaunchInfo* info)
     QString overlayDir = state.overlayDir;
     if (overlayDir.isEmpty())
         overlayDir = info->workingDirectory.isEmpty() ? installPath : info->workingDirectory;
+
+    // winmm.dll reads winmm.txt for the SteamFix DLL name. The kit default is
+    // SteamFix64.dll; 32-bit games then fail with "failed to load SteamFix64.dll".
+    const int bits = peImageBits(info->executable);
+    ensureSteamFixWinmmTxt(overlayDir, bits);
+    if (!info->workingDirectory.isEmpty())
+        ensureSteamFixWinmmTxt(info->workingDirectory, bits);
+    if (!info->executable.isEmpty())
+        ensureSteamFixWinmmTxt(QFileInfo(info->executable).absolutePath(), bits);
 
     QString overrides = buildOverlayWineDllOverrides(overlayDir);
     if (overrides.isEmpty()) {

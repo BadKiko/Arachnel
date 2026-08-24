@@ -62,6 +62,8 @@ public:
     void storeCatalogForSource(const QString& sourceId, QVector<CatalogEntry> entries,
                                bool prepareEntries = true);
     void rebuildMergedCatalog();
+    /** Kick loads for active sources that never landed. No rematch if already merged. */
+    void ensureActiveSourceCatalogs();
     void refreshCatalog(const QString& sourceId);
     void refreshSelectedCatalogs();
     void setActiveCatalogSource(const QString& sourceId);

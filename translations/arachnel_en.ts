@@ -1263,7 +1263,16 @@
     </message>
     <message>
         <location line="+20"/>
-        <source>Game process exited</source>
+        <source>Game process exited (code %1)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Stopped by the user</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Online Fix is off, and the game quit right after start. Turn it back on in game settings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1275,6 +1284,14 @@
     <message>
         <location line="-109"/>
         <source>Disabling Online Fix and launching without it</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>This game needs Online Fix - not launching without it</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>This game needs Online Fix. It quit right after start.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1321,6 +1338,16 @@
     <message>
         <location line="+12"/>
         <source>Repaired %1 corrupted Proton prefix director%2 before launch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/core/launch/launch_controller.cpp"/>
+        <source>Repaired mixed Unity data files (Windows/Linux/Mac depots overlapped)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/core/launch/launch_controller.cpp"/>
+        <source>Repaired mixed Unity files. Turn Online Fix back on in game settings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3941,6 +3968,39 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <location line="+1"/>
         <source>Installing plugins…</source>
         <translation></translation>
+    </message>
+</context>
+<context>
+    <name>LaunchLogDialog</name>
+    <message>
+        <location filename="../qml/components/LaunchLogDialog.qml"/>
+        <source>Launch log</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/components/LaunchLogDialog.qml"/>
+        <source>Arachnel steps and the game&apos;s own output.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/components/LaunchLogDialog.qml"/>
+        <source>The game reported an error.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/components/LaunchLogDialog.qml"/>
+        <source>Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/components/LaunchLogDialog.qml"/>
+        <source>Copy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/components/LaunchLogDialog.qml"/>
+        <source>Save</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

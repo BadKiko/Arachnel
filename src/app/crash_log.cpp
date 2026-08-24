@@ -50,14 +50,21 @@ void cppTerminateHandler()
     std::abort();
 }
 
+} // namespace
+
 void startHangWatchdog()
 {
+    if (g_isCrashDialogProcess)
+        return;
     if (g_watchdogStarted.exchange(true))
         return;
 
     std::thread([]() {
         using namespace std::chrono_literals;
         constexpr int kHangSeconds = 25;
+        // First QML/DirectWrite layout and plugin/SSL setup can exceed 25s on a
+        // cold disk. Killing that looks like a crash (#39, #50, #51).
+        constexpr qint64 kStartupGraceMs = 120 * 1000;
         while (!g_shuttingDown) {
             std::this_thread::sleep_for(3s);
             if (g_shuttingDown || g_isCrashDialogProcess)
@@ -82,6 +89,10 @@ void startHangWatchdog()
             if (g_mainPingAck.load(std::memory_order_acquire) == ping)
                 continue;
 
+            const qint64 now = QDateTime::currentMSecsSinceEpoch();
+            if (g_appStartMs > 0 && (now - g_appStartMs) < kStartupGraceMs)
+                continue;
+
             reportUiHang(kHangSeconds);
 
             // reportUiHang should kill this process after spawning the crash
@@ -90,8 +101,6 @@ void startHangWatchdog()
         }
     }).detach();
 }
-
-} // namespace
 
 void markApplicationShuttingDown()
 {
@@ -159,8 +168,6 @@ void logRunStarted(int argc, char* argv[])
     writeLine(header);
     if (!args.isEmpty())
         writeLine(QStringLiteral("Args: %1").arg(args.join(QLatin1Char(' '))));
-
-    startHangWatchdog();
 }
 
 void logRunFinished(int exitCode)

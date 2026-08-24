@@ -48,13 +48,14 @@ public:
 signals:
     void runningGameChanged();
     /** Emitted when a tracked session ends. elapsedMs is wall time since markRunning.
-     *  suppressQuickExitLog: OF auto-retry - UI should not pop the launch log. */
+     *  suppressQuickExitLog: OF auto-retry or the user closed the game - don't pop the log. */
     void launchSessionEnded(const QString& gameId, qint64 elapsedMs, bool suppressQuickExitLog);
 
 private:
     void markRunning(const LibraryGame& game, qint64 processId, bool watchingOnlineFix,
                      const WineErrorWatchHints& watchHints);
-    void clearRunning(bool allowOnlineFixFallback, bool suppressQuickExitLog = false);
+    void clearRunning(bool allowOnlineFixFallback, bool suppressQuickExitLog = false,
+                     int exitCode = -1);
     void pollRunningGame();
     void handleOnlineFixLaunchFailure(const QString& gameId, const QString& reason);
     void terminateTrackedLaunch();
@@ -77,6 +78,7 @@ private:
     bool m_onlineFixFallbackUsed = false;
     bool m_relaunchWithoutOnlineFix = false;
     bool m_sawGameExecutable = false;
+    bool m_userStopped = false;
     QDateTime m_onlineFixWatchUntil;
     WineErrorWatchHints m_watchHints;
 };

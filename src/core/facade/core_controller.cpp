@@ -225,10 +225,9 @@ CoreController::CoreController(QObject* parent)
         m_pluginCallsBlocked = false;
         syncSourcesFromPlugins();
         pruneDisabledCatalogSources();
-        // Install/uninstall aborts in-flight catalog workers; kick loads for any
-        // active source that never made it into m_catalogBySource.
+        // Don't rematch ~100k rows into a live GridView on every plugin list tweak.
         if (m_catalogController)
-            m_catalogController->rebuildMergedCatalog();
+            m_catalogController->ensureActiveSourceCatalogs();
         reconcileJobInstallState();
         emit pluginsChanged();
         reportIncompatiblePlugins();

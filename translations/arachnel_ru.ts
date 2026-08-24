@@ -1263,8 +1263,17 @@
     </message>
     <message>
         <location line="+20"/>
-        <source>Game process exited</source>
-        <translation>Процесс игры завершился</translation>
+        <source>Game process exited (code %1)</source>
+        <translation>Процесс игры завершился (код %1)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Stopped by the user</source>
+        <translation>Остановлено пользователем</translation>
+    </message>
+    <message>
+        <source>Online Fix is off, and the game quit right after start. Turn it back on in game settings.</source>
+        <translation>Online Fix выключен, и игра сразу закрылась. Включи его обратно в настройках игры.</translation>
     </message>
     <message>
         <location line="+24"/>
@@ -1276,6 +1285,14 @@
         <location line="-109"/>
         <source>Disabling Online Fix and launching without it</source>
         <translation>Отключаю Online Fix и запускаю без него</translation>
+    </message>
+    <message>
+        <source>This game needs Online Fix - not launching without it</source>
+        <translation>Этой игре нужен Online Fix - без него не запускаю</translation>
+    </message>
+    <message>
+        <source>This game needs Online Fix. It quit right after start.</source>
+        <translation>Этой игре нужен Online Fix. Она сразу закрылась.</translation>
     </message>
     <message>
         <location line="+7"/>
@@ -1322,6 +1339,16 @@
         <location line="+12"/>
         <source>Repaired %1 corrupted Proton prefix director%2 before launch</source>
         <translation>Перед запуском восстановлено повреждённых каталогов префикса Proton: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/core/launch/launch_controller.cpp"/>
+        <source>Repaired mixed Unity data files (Windows/Linux/Mac depots overlapped)</source>
+        <translation>Починены смешанные файлы Unity (пересеклись Windows/Linux/Mac депо)</translation>
+    </message>
+    <message>
+        <location filename="../src/core/launch/launch_controller.cpp"/>
+        <source>Repaired mixed Unity files. Turn Online Fix back on in game settings.</source>
+        <translation>Починены смешанные файлы Unity. Включи Online Fix обратно в настройках игры.</translation>
     </message>
     <message>
         <location line="+19"/>
@@ -3959,6 +3986,39 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <location line="+1"/>
         <source>Installing plugins…</source>
         <translation>Установка плагинов…</translation>
+    </message>
+</context>
+<context>
+    <name>LaunchLogDialog</name>
+    <message>
+        <location filename="../qml/components/LaunchLogDialog.qml"/>
+        <source>Launch log</source>
+        <translation>Лог запуска</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/LaunchLogDialog.qml"/>
+        <source>Arachnel steps and the game&apos;s own output.</source>
+        <translation>Шаги Arachnel и вывод самой игры.</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/LaunchLogDialog.qml"/>
+        <source>The game reported an error.</source>
+        <translation>Игра сообщила об ошибке.</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/LaunchLogDialog.qml"/>
+        <source>Close</source>
+        <translation>Закрыть</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/LaunchLogDialog.qml"/>
+        <source>Copy</source>
+        <translation>Копировать</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/LaunchLogDialog.qml"/>
+        <source>Save</source>
+        <translation>Сохранить</translation>
     </message>
 </context>
 <context>

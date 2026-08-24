@@ -7,6 +7,7 @@ import Qcm.Material as MD
 Item {
     id: root
 
+    required property int index
     required property string entryId
     required property string title
     required property string coverUrl

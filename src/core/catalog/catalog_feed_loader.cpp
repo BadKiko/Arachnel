@@ -29,7 +29,7 @@ void CatalogFeedLoader::cancelActive()
         return;
     reply->disconnect(this);
     reply->abort();
-    delete reply;
+    reply->deleteLater();
 }
 
 void CatalogFeedLoader::loadFeed(const QUrl& url, const QString& sourceId, const QByteArray& etag)

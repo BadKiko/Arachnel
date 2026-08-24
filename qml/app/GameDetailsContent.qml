@@ -14,8 +14,7 @@ Item {
     }
 
     function openLaunchLog() {
-        launchLogTextArea.text = Core.gameLaunchLog(page.gameId)
-        launchLogDialog.open()
+        launchLogDialog.openForGame(page.gameId)
     }
 
     Connections {
@@ -24,8 +23,7 @@ Item {
             if (gameId !== page.gameId)
                 return
             page.detailsRevision++
-            // Quick exit usually means crash / bad launch - show the log.
-            // Skip when Online Fix auto-retries without the fix.
+            // Core suppresses this for OF auto-retry and a clean user quit.
             if (suppressQuickExitLog)
                 return
             if (elapsedMs >= 0 && elapsedMs < 20000)
@@ -552,85 +550,8 @@ Item {
         anchors.fill: parent
     }
 
-    MD.Dialog {
+    LaunchLogDialog {
         id: launchLogDialog
-        title: qsTr("Launch log")
-        modal: true
-        width: Math.min(720, page.width > 0 ? page.width - 48 : 720)
-        height: Math.min(560, page.height > 0 ? page.height - 48 : 560)
-
-        ColumnLayout {
-            width: launchLogDialog.width - launchLogDialog.horizontalPadding * 2
-            height: launchLogDialog.height - launchLogDialog.topPadding
-                    - launchLogDialog.bottomPadding
-                    - (launchLogFooter.implicitHeight > 0 ? launchLogFooter.implicitHeight
-                                                         : 0)
-                    - MD.Token.spacing.medium
-            spacing: MD.Token.spacing.small
-
-            MD.Label {
-                Layout.fillWidth: true
-                text: qsTr("Why the game may not boot, including the game's own output.")
-                color: MD.Token.color.on_surface_variant
-                typescale: MD.Token.typescale.body_medium
-                wrapMode: Text.WordWrap
-            }
-
-            ScrollView {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                clip: true
-
-                TextArea {
-                    id: launchLogTextArea
-                    readOnly: true
-                    wrapMode: TextEdit.Wrap
-                    selectByMouse: true
-                    persistentSelection: true
-                    text: qsTr("No launch has been attempted yet.")
-                    padding: 12
-                    color: MD.Token.color.on_surface
-                    background: Rectangle {
-                        color: MD.Token.color.surface_container
-                        radius: MD.Token.shape.corner.medium
-                    }
-                }
-            }
-        }
-
-        footer: Item {
-            id: launchLogFooter
-            implicitHeight: launchLogFooterRow.implicitHeight + MD.Token.spacing.medium
-
-            RowLayout {
-                id: launchLogFooterRow
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.top: parent.top
-                spacing: MD.Token.spacing.small
-
-                MD.Button {
-                    mdState.type: MD.Enum.BtText
-                    text: qsTr("Close")
-                    onClicked: launchLogDialog.close()
-                }
-
-                Item { Layout.fillWidth: true }
-
-                MD.Button {
-                    mdState.type: MD.Enum.BtOutlined
-                    text: qsTr("Copy")
-                    icon.name: MD.Token.icon.content_copy
-                    onClicked: Core.copyGameLaunchLog(page.gameId)
-                }
-                MD.Button {
-                    mdState.type: MD.Enum.BtFilled
-                    text: qsTr("Save log.txt")
-                    icon.name: MD.Token.icon.save
-                    onClicked: Core.saveGameLaunchLog(page.gameId)
-                }
-            }
-        }
     }
 
     MD.Dialog {

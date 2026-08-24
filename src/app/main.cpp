@@ -6,6 +6,7 @@
 #include <QQmlError>
 #include <QStyleHints>
 #include <QString>
+#include <QTimer>
 #include <cstdio>
 
 #if !defined(Q_OS_WIN)
@@ -159,8 +160,18 @@ int main(int argc, char* argv[])
         else
             engine.loadFromModule(QStringLiteral("arachnel"), QStringLiteral("Main"));
 
-        if (!crashDialogMode)
+        if (!crashDialogMode) {
             applyTranslations(engine, app);
+            QTimer::singleShot(0, &app, []() { arachnel::startHangWatchdog(); });
+            const QStringList args = app.arguments();
+            const int updateAt = args.indexOf(QStringLiteral("--update"));
+            if (updateAt >= 0 && updateAt + 1 < args.size()) {
+                const QString entryId = args.at(updateAt + 1);
+                QTimer::singleShot(12000, [entryId]() {
+                    arachnel::core::CoreController::instance().updateCatalogEntry(entryId);
+                });
+            }
+        }
 
         exitCode = app.exec();
 

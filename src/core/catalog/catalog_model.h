@@ -21,6 +21,8 @@ class CatalogModel : public QAbstractListModel
     Q_PROPERTY(int sortMode READ sortMode WRITE setSortMode NOTIFY sortModeChanged)
     /** Index rail stops for the current sort: [{label, row}, ...]. */
     Q_PROPERTY(QVariantList scrubStops READ scrubStops NOTIFY scrubStopsChanged)
+    /** True while a huge visible-row swap is in progress. QML must unbind GridView/ListView. */
+    Q_PROPERTY(bool bulkUpdating READ bulkUpdating NOTIFY bulkUpdatingChanged)
 
 public:
     enum SortMode {
@@ -66,6 +68,9 @@ public:
 
     int count() const { return m_indices.size(); }
     int sortMode() const { return static_cast<int>(m_sortMode); }
+    bool bulkUpdating() const { return m_bulkUpdating; }
+    void beginBulkUpdate();
+    void endBulkUpdate();
     void setSortMode(int mode);
     /** Update sort mode without resorting (caller will setVisibleIndices next). */
     void setSortModeQuiet(int mode);
@@ -100,6 +105,7 @@ signals:
     void countChanged();
     void sortModeChanged();
     void scrubStopsChanged();
+    void bulkUpdatingChanged();
 
 private:
     void rebuildIdMap();
@@ -115,6 +121,8 @@ private:
     SortMode m_sortMode = SortNewest;
     mutable QVariantList m_scrubStops;
     mutable bool m_scrubStopsDirty = true;
+    bool m_bulkUpdating = false;
+    int m_bulkDepth = 0;
 };
 
 /** Shared by CatalogModel sort and async CatalogFilterService. */

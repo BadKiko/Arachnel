@@ -20,6 +20,8 @@ Item {
 
     readonly property int scrubberWidth: catalogNavigator.visible ? catalogNavigator.width : 0
     readonly property real compactBarHeight: 56
+    readonly property bool catalogBound: page.catalogModelReady && page.enabled
+                                         && !page.discoveryMode && !Core.catalog.bulkUpdating
 
     // Discrete chrome mode with hysteresis - avoids per-pixel bounce while flicking.
     property bool scrubberExpanded: true
@@ -230,7 +232,7 @@ Item {
         // Unbind off-tab / discovery only. Do NOT key off root.visible - StackView
         // covering the page must not drop the 132k model (that zeros contentY and
         // cancels every visible cover).
-        model: (page.enabled && !page.discoveryMode) ? Core.catalog : null
+        model: (root.catalogBound && !page.listViewMode) ? Core.catalog : null
         cellWidth: page.cellWidth
         cellHeight: page.cellHeight
         cacheBuffer: page.cellHeight * 2
@@ -297,7 +299,7 @@ Item {
         anchors.bottomMargin: MD.Token.spacing.medium
         visible: page.listViewMode
         clip: true
-        model: (page.enabled && !page.discoveryMode) ? Core.catalog : null
+        model: (root.catalogBound && page.listViewMode) ? Core.catalog : null
         spacing: MD.Token.spacing.extra_small
         cacheBuffer: page.listRowHeight * 3
         reuseItems: true

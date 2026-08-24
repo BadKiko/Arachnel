@@ -13,6 +13,7 @@
 #include <QDesktopServices>
 #include <QDir>
 #include <QDirIterator>
+#include <QEventLoop>
 #include <QFile>
 #include <QFileInfo>
 #include <QJsonDocument>
@@ -22,6 +23,7 @@
 #include <QStandardPaths>
 #include <QTemporaryDir>
 #include <QTimer>
+#include <QThread>
 #include <QUrl>
 #include <QtConcurrent>
 #include <QStringList>
@@ -228,6 +230,11 @@ void PluginHost::scan()
                 continue;
             const QString pluginDir = rootDir.absoluteFilePath(entry);
             loadPluginDir(pluginDir);
+            if (QCoreApplication::instance()
+                && QThread::currentThread() == QCoreApplication::instance()->thread()
+                && QCoreApplication::instance()->thread()->loopLevel() > 0) {
+                QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 50);
+            }
         }
     }
 

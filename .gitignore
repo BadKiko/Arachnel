@@ -60,3 +60,7 @@ System.Drawing.*
 
 __pycache__/
 *.py[cod]
+
+# local debug scratch (depot tools, sdks)
+.tmp-smb/
+

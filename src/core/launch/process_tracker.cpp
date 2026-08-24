@@ -2,6 +2,7 @@
 
 #include <QDir>
 #include <QFile>
+#include <QHash>
 #include <QProcess>
 #include <QSet>
 #include <QStringList>
@@ -17,6 +18,7 @@
 #include <errno.h>
 #include <signal.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
 #endif
 
@@ -25,6 +27,17 @@ namespace arachnel::core {
 namespace {
 
 #if defined(Q_OS_WIN)
+QHash<qint64, HANDLE> g_watchedHandles;
+
+void closeWatched(qint64 processId)
+{
+    const auto it = g_watchedHandles.find(processId);
+    if (it == g_watchedHandles.end())
+        return;
+    CloseHandle(it.value());
+    g_watchedHandles.erase(it);
+}
+
 void collectDescendants(DWORD rootPid, QList<DWORD>* out)
 {
     HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
@@ -174,26 +187,56 @@ QList<qint64> ProcessTracker::processTreePids(const qint64 processId)
     return out;
 }
 
-bool ProcessTracker::isProcessRunning(const qint64 processId)
+bool ProcessTracker::isProcessRunning(const qint64 processId, int* exitCodeOut)
 {
+    if (exitCodeOut)
+        *exitCodeOut = -1;
     if (processId <= 0)
         return false;
 
 #if defined(Q_OS_WIN)
-    HANDLE handle = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE,
-                                static_cast<DWORD>(processId));
+    HANDLE handle = g_watchedHandles.value(processId, nullptr);
+    bool owned = handle != nullptr;
+    if (!handle) {
+        handle = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE,
+                             static_cast<DWORD>(processId));
+        owned = false;
+    }
     if (!handle)
         return false;
 
     DWORD exitCode = 0;
-    const bool alive =
-        GetExitCodeProcess(handle, &exitCode) != 0 && exitCode == STILL_ACTIVE;
-    CloseHandle(handle);
-    return alive;
+    if (GetExitCodeProcess(handle, &exitCode) == 0) {
+        if (!owned)
+            CloseHandle(handle);
+        return false;
+    }
+    if (exitCode == STILL_ACTIVE) {
+        if (!owned)
+            CloseHandle(handle);
+        return true;
+    }
+    if (exitCodeOut)
+        *exitCodeOut = static_cast<int>(exitCode);
+    if (owned)
+        closeWatched(processId);
+    else
+        CloseHandle(handle);
+    return false;
 #else
     if (pidAlive(processId))
         return true;
-    return !collectTreePids(processId).isEmpty();
+    if (!collectTreePids(processId).isEmpty())
+        return true;
+    int status = 0;
+    const pid_t waited = ::waitpid(static_cast<pid_t>(processId), &status, WNOHANG);
+    if (waited == processId && exitCodeOut) {
+        if (WIFEXITED(status))
+            *exitCodeOut = WEXITSTATUS(status);
+        else if (WIFSIGNALED(status))
+            *exitCodeOut = 128 + WTERMSIG(status);
+    }
+    return false;
 #endif
 }
 
@@ -235,6 +278,34 @@ bool ProcessTracker::terminateProcess(const qint64 processId)
         ::kill(static_cast<pid_t>(tree.at(i)), SIGKILL);
 
     return any || !isProcessRunning(processId);
+#endif
+}
+
+void ProcessTracker::adoptNativeHandle(qint64 processId, quintptr nativeHandle)
+{
+#if defined(Q_OS_WIN)
+    if (processId <= 0)
+        return;
+    closeWatched(processId);
+    HANDLE handle = reinterpret_cast<HANDLE>(nativeHandle);
+    if (!handle || handle == INVALID_HANDLE_VALUE) {
+        handle = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION | SYNCHRONIZE, FALSE,
+                             static_cast<DWORD>(processId));
+    }
+    if (handle && handle != INVALID_HANDLE_VALUE)
+        g_watchedHandles.insert(processId, handle);
+#else
+    Q_UNUSED(processId);
+    Q_UNUSED(nativeHandle);
+#endif
+}
+
+void ProcessTracker::release(qint64 processId)
+{
+#if defined(Q_OS_WIN)
+    closeWatched(processId);
+#else
+    Q_UNUSED(processId);
 #endif
 }
 

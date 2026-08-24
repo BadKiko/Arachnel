@@ -22,6 +22,9 @@ bool rewritePathPrefixInFile(const QString& filePath, const QString& oldRoot,
 /** Turn `Bin\Win64\foo.exe` filenames into real directories. Linux-only; 0 on Windows. */
 int healWindowsInstallLayout(const QString& installPath);
 
+/** Fix Unity `ScriptingAssemblies.json` leftover bytes when several OS depots share `_Data`. */
+int healUnityScriptingAssemblies(const QString& installPath);
+
 /** Windows PE image bitness: 64, 32, or 0 when the file is not a PE image. */
 int peImageBits(const QString& path);
 
