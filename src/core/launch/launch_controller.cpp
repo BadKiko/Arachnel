@@ -13,6 +13,7 @@
 #include "settings_store.h"
 #include "steam_api_provision.h"
 #include "steamless_service.h"
+#include "vr_service.h"
 #include "wine_error_probe.h"
 
 #include <QCoreApplication>
@@ -21,6 +22,9 @@
 #include <QDirIterator>
 #include <QFile>
 #include <QFileInfo>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QStandardPaths>
 #include <QStringView>
 #include <QSysInfo>
@@ -632,7 +636,63 @@ void LaunchController::pollRunningGame()
     }
 }
 
-void LaunchController::launchGame(const QString& gameId)
+QVector<GameLaunchOption> LaunchController::availableLaunchOptions(const QString& gameId) const
+{
+    const LibraryGame* game = m_library ? m_library->gameById(gameId) : nullptr;
+    if (!game || game->installPath.isEmpty())
+        return {};
+
+    if (m_plugins) {
+        if (ISourcePlugin* plugin = m_plugins->plugin(game->sourceId)) {
+            const auto opts = plugin->launchOptions(*game);
+            if (!opts.isEmpty())
+                return opts;
+        }
+    }
+
+    if (!game->launchOptions.isEmpty())
+        return game->launchOptions;
+
+    const QString markerPath = game->installPath + QStringLiteral("/.arachnel-steamidra");
+    if (QFileInfo::exists(markerPath)) {
+        QFile f(markerPath);
+        if (f.open(QIODevice::ReadOnly)) {
+            const QJsonObject rootObj = QJsonDocument::fromJson(f.readAll()).object();
+            const QJsonArray arr = rootObj.value(QStringLiteral("launchOptions")).toArray();
+            QVector<GameLaunchOption> markerOpts;
+            for (const auto& v : arr) {
+                if (!v.isObject())
+                    continue;
+                const QJsonObject o = v.toObject();
+                GameLaunchOption opt;
+                opt.id = o.value(QStringLiteral("id")).toString();
+                opt.title = o.value(QStringLiteral("title")).toString();
+                opt.executable = o.value(QStringLiteral("path")).toString();
+                if (opt.executable.isEmpty())
+                    opt.executable = o.value(QStringLiteral("executable")).toString();
+                opt.workingDirectory = o.value(QStringLiteral("workingDirectory")).toString();
+                for (const auto& a : o.value(QStringLiteral("arguments")).toArray())
+                    opt.arguments.append(a.toString());
+                opt.type = o.value(QStringLiteral("type")).toString();
+                opt.isDefault = o.value(QStringLiteral("isDefault")).toBool(false);
+                if (!opt.executable.isEmpty() && QFileInfo::exists(opt.executable))
+                    markerOpts.append(opt);
+            }
+            if (!markerOpts.isEmpty())
+                return markerOpts;
+        }
+    }
+
+    return {};
+}
+
+void LaunchController::setGameSelectedLaunchOption(const QString& gameId, const QString& optionId)
+{
+    if (m_hooks.setSelectedLaunchOption)
+        m_hooks.setSelectedLaunchOption(gameId, optionId);
+}
+
+void LaunchController::launchGame(const QString& gameId, const QString& optionId)
 {
     const LibraryGame* game = m_library->gameById(gameId);
     if (!game || game->installPath.isEmpty()) {
@@ -642,6 +702,15 @@ void LaunchController::launchGame(const QString& gameId)
     }
     if (gameRunning() && m_gameId == gameId)
         return;
+
+    // When no optionId is passed and no preferred launch option is saved, ask user if multiple options exist
+    if (optionId.isEmpty() && game->selectedLaunchOptionId.isEmpty()) {
+        const QVector<GameLaunchOption> options = availableLaunchOptions(gameId);
+        if (options.size() > 1) {
+            emit launchOptionSelectionRequested(gameId, options);
+            return;
+        }
+    }
 
     arachnel::logBreadcrumb(QStringLiteral("launch"), gameId);
 
@@ -658,7 +727,9 @@ void LaunchController::launchGame(const QString& gameId)
     logLine(QCoreApplication::translate("Core", "Install path: %1").arg(game->installPath));
     logLine(QCoreApplication::translate("Core", "Source: %1").arg(game->sourceId));
 
-    const LibraryGame gameCopyBase = *game;
+    LibraryGame gameCopyBase = *game;
+    if (!optionId.isEmpty())
+        gameCopyBase.selectedLaunchOptionId = optionId;
     QTimer::singleShot(0, this, [this, gameId, gameCopyBase]() {
         if (m_library->gameById(gameId) == nullptr)
             return;
@@ -743,6 +814,20 @@ void LaunchController::launchGame(const QString& gameId)
                 m_hooks.notice(QCoreApplication::translate("Core", "Couldn't update DLC unlocks."));
             }
             info = plugin->launchInfo(gameCopy);
+        }
+        if (!gameCopy.selectedLaunchOptionId.isEmpty() && (info.executable.isEmpty() || !QFileInfo::exists(info.executable))) {
+            const auto opts = availableLaunchOptions(gameCopy.id);
+            for (const auto& opt : opts) {
+                if (opt.id == gameCopy.selectedLaunchOptionId && !opt.executable.isEmpty()
+                    && QFileInfo::exists(opt.executable)) {
+                    info.executable = opt.executable;
+                    info.workingDirectory = opt.workingDirectory.isEmpty()
+                                                ? QFileInfo(opt.executable).absolutePath()
+                                                : opt.workingDirectory;
+                    info.arguments = opt.arguments;
+                    break;
+                }
+            }
         }
         if (info.executable.isEmpty() && gameCopy.executableOverride.isEmpty())
             info.executable = findGameExecutableInTree(gameCopy.installPath);
@@ -841,6 +926,44 @@ void LaunchController::launchGame(const QString& gameId)
                     ensureSteamApiDllForExecutable(gameCopy.installPath, provisionExe);
                 if (!provisionSummary.isEmpty())
                     logLine(provisionSummary);
+            }
+        }
+        {
+            const QVector<GameLaunchOption> launchOpts = availableLaunchOptions(gameCopy.id);
+            const VrGameDetection vrDetection =
+                detectVrGame(gameCopy.installPath, info.executable, gameCopy.genres, gameCopy.title,
+                             launchOpts, gameCopy.selectedLaunchOptionId,
+                             info.arguments + splitLaunchArguments(gameCopy.launchArgs));
+            if (vrDetection.isCurrentLaunchVr) {
+                logLine(QCoreApplication::translate("Core", "VR launch mode active (runtime: %1, engine: %2)")
+                            .arg(vrRuntimeName(vrDetection.runtime),
+                                 vrDetection.isUnreal ? QStringLiteral("Unreal Engine")
+                                                      : (vrDetection.isUnity ? QStringLiteral("Unity")
+                                                                             : QStringLiteral("Standard"))));
+                if (!isSteamVrRunning()) {
+                    logLine(QCoreApplication::translate("Core", "SteamVR is not running. Starting SteamVR…"));
+                    if (tryStartSteamVr()) {
+                        logLine(QCoreApplication::translate("Core", "SteamVR start requested"));
+                    } else {
+                        logLine(QCoreApplication::translate(
+                            "Core",
+                            "Could not start SteamVR automatically. Make sure SteamVR is installed and running."));
+                    }
+                }
+
+                const bool hasVrArg =
+                    gameCopy.launchArgs.contains(QStringLiteral("-vr"), Qt::CaseInsensitive)
+                    || gameCopy.launchArgs.contains(QStringLiteral("-vrmode"), Qt::CaseInsensitive)
+                    || info.arguments.contains(QStringLiteral("-vr"), Qt::CaseInsensitive)
+                    || info.arguments.contains(QStringLiteral("-vrmode"), Qt::CaseInsensitive);
+
+                if (!hasVrArg && !vrDetection.suggestedArgs.isEmpty()) {
+                    info.arguments += vrDetection.suggestedArgs;
+                    logLine(QCoreApplication::translate("Core", "Applied VR launch arguments: %1")
+                                .arg(vrDetection.suggestedArgs.join(QLatin1Char(' '))));
+                }
+            } else if (vrDetection.vrMode == VrMode::VrOptional) {
+                logLine(QCoreApplication::translate("Core", "Hybrid VR/Desktop game detected - launching in 2D Desktop mode"));
             }
         }
         const ResolvedLaunch resolved = resolveLaunch(info, gameCopy, *m_settings, m_protons);

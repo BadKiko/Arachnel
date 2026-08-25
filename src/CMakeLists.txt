@@ -37,6 +37,7 @@ set(ARACHNEL_APP_SOURCES
     src/core/catalog/catalog_cover_coordinator.cpp
     src/core/catalog/catalog_filter_service.cpp
     src/core/catalog/catalog_genre_normalize.cpp
+    src/core/catalog/catalog_search_utils.cpp
     src/core/catalog/catalog_shelf_model.cpp
     src/core/catalog/catalog_discovery_service.cpp
     src/core/social/invite_service.cpp
@@ -87,6 +88,7 @@ set(ARACHNEL_APP_SOURCES
     src/core/platform/game_launch_target.cpp
     src/core/platform/desktop_shortcut_service.cpp
     src/core/platform/steam_shortcut_service.cpp
+    src/core/platform/vr_service.cpp
     src/core/social/social_controller.cpp
     src/core/social/social_facade.cpp
     src/core/social/social_store.cpp

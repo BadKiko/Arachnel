@@ -107,17 +107,6 @@ public:
     virtual std::optional<QString> detectUpdate(const LibraryGame& local,
                                                 const CatalogEntry& remote) const = 0;
 
-    /**
-     * True when applying the remote update may drop DLC content (new build on source
-     * without matching DLC manifests). Default: false.
-     */
-    virtual bool updateMayBreakDlc(const LibraryGame& local, const CatalogEntry& remote) const
-    {
-        (void)local;
-        (void)remote;
-        return false;
-    }
-
     virtual LaunchInfo launchInfo(const LibraryGame& local) const = 0;
 
     virtual void resetCatalogCache() {}
@@ -161,6 +150,27 @@ public:
         (void)local;
         (void)enabledAddonIds;
         return true;
+    }
+
+    /**
+     * True when applying the remote update may drop DLC content (new build on source
+     * without matching DLC manifests). Default: false.
+     */
+    virtual bool updateMayBreakDlc(const LibraryGame& local, const CatalogEntry& remote) const
+    {
+        (void)local;
+        (void)remote;
+        return false;
+    }
+
+    /**
+     * Launch options registered for this game (e.g. DX11, Vulkan, VR).
+     * Append-only virtual - keep at end for ABI stability with existing plugins.
+     */
+    virtual QVector<GameLaunchOption> launchOptions(const LibraryGame& local) const
+    {
+        (void)local;
+        return {};
     }
 };
 

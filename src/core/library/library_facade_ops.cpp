@@ -3,6 +3,7 @@
 #include "desktop_shortcut_service.h"
 #include "game_launch_target.h"
 #include "steam_shortcut_service.h"
+#include "vr_service.h"
 
 namespace arachnel::core {
 
@@ -301,6 +302,9 @@ void CoreController::addGameToSteam(const QString& gameId)
     SteamShortcutRequest req;
     req.target = target;
     req.steamAppId = game->steamAppId;
+    const auto options = m_launchController ? m_launchController->availableLaunchOptions(game->id) : QVector<GameLaunchOption>{};
+    const auto vrDetection = detectVrGame(game->installPath, target.executable, game->genres, game->title, options, game->selectedLaunchOptionId, target.arguments);
+    req.openVr = vrDetection.isCurrentLaunchVr || (vrDetection.vrMode == VrMode::VrOnly);
     if (game->coverUrl.startsWith(QStringLiteral("file:")))
         req.coverFileUrl = game->coverUrl;
 

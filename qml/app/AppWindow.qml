@@ -222,6 +222,9 @@ MD.ApplicationWindow {
             else if (!Core.gameRunning)
                 root.raiseMainWindow()
         }
+        function onLaunchOptionSelectionRequested(gameId, options) {
+            selectLaunchOptionDialog.openForGame(gameId, options)
+        }
     }
 
     Connections {
@@ -656,6 +659,10 @@ MD.ApplicationWindow {
     ProtonRequiredDialog {
         id: protonRequiredDialog
         onOpenLaunchSettings: settingsSheet.openLaunch()
+    }
+
+    SelectLaunchOptionDialog {
+        id: selectLaunchOptionDialog
     }
 
     CrashReportDialog {

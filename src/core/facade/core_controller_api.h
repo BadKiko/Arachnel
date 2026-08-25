@@ -15,7 +15,10 @@
     Q_INVOKABLE void installOfficialPlugin(const QString&);
     Q_INVOKABLE void openPluginsFolder();
     Q_INVOKABLE void rescanPlugins();
-    Q_INVOKABLE void launchGame(const QString&);
+    Q_INVOKABLE void launchGame(const QString&, const QString& = {});
+    Q_INVOKABLE void launchGameWithOption(const QString& gameId, const QString& optionId, bool rememberChoice = false);
+    Q_INVOKABLE QVariantList gameLaunchOptions(const QString& gameId) const;
+    Q_INVOKABLE void setGameSelectedLaunchOption(const QString& gameId, const QString& optionId);
     Q_INVOKABLE void stopRunningGame();
     Q_INVOKABLE QString gameLaunchLog() const;
     Q_INVOKABLE QString gameLaunchLog(const QString& gameId) const;

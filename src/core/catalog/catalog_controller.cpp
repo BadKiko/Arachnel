@@ -4,6 +4,7 @@
 #include "catalog_feed_loader.h"
 #include "catalog_model.h"
 #include "catalog_parser.h"
+#include "catalog_search_utils.h"
 #include "crash_log.h"
 #include "plugin_catalog_json.h"
 #include "plugin_host.h"
@@ -164,14 +165,7 @@ const QHash<QString, QVector<CatalogEntry>>& CatalogController::catalogsBySource
 
 QString CatalogController::normalizeTitleKey(const QString& title)
 {
-    QString key = title.trimmed().toLower();
-    key.remove(QLatin1Char(' '));
-    key.remove(QLatin1Char('-'));
-    key.remove(QLatin1Char('_'));
-    key.remove(QLatin1Char(':'));
-    key.remove(QLatin1Char('\''));
-    key.remove(QLatin1Char('"'));
-    return key;
+    return compactSearchText(title);
 }
 
 QString CatalogController::offerGroupKey(const CatalogEntry& entry)

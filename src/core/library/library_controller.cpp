@@ -219,6 +219,82 @@ QVariantMap LibraryController::entryDetails(const QString& entryId) const
     for (auto it = steamlessInfo.constBegin(); it != steamlessInfo.constEnd(); ++it)
         info.insert(it.key(), it.value());
 
+    if (const LibraryGame* game = m_store ? m_store->gameById(entryId) : nullptr) {
+        if (!game->installPath.isEmpty() && QFileInfo::exists(game->installPath)) {
+            QString defaultExe;
+            if (m_plugins) {
+                if (ISourcePlugin* plugin = m_plugins->plugin(game->sourceId)) {
+                    if (!game->selectedLaunchOptionId.isEmpty()) {
+                        for (const auto& opt : plugin->launchOptions(*game)) {
+                            if (opt.id == game->selectedLaunchOptionId && !opt.executable.isEmpty()
+                                && QFileInfo::exists(opt.executable)) {
+                                defaultExe = opt.executable;
+                                break;
+                            }
+                        }
+                    }
+                    if (defaultExe.isEmpty()) {
+                        const auto opts = plugin->launchOptions(*game);
+                        for (const auto& opt : opts) {
+                            if (opt.isDefault && !opt.executable.isEmpty() && QFileInfo::exists(opt.executable)) {
+                                defaultExe = opt.executable;
+                                break;
+                            }
+                        }
+                        if (defaultExe.isEmpty() && !opts.isEmpty() && !opts.first().executable.isEmpty()
+                            && QFileInfo::exists(opts.first().executable)) {
+                            defaultExe = opts.first().executable;
+                        }
+                    }
+                    if (defaultExe.isEmpty()) {
+                        const LaunchInfo li = plugin->launchInfo(*game);
+                        if (!li.executable.isEmpty() && QFileInfo::exists(li.executable)
+                            && !isExcludedGameExecutable(QFileInfo(li.executable).fileName())) {
+                            defaultExe = li.executable;
+                        }
+                    }
+                }
+            }
+            if (defaultExe.isEmpty()) {
+                const QString markerPath = game->installPath + QStringLiteral("/.arachnel-steamidra");
+                if (QFileInfo::exists(markerPath)) {
+                    QFile f(markerPath);
+                    if (f.open(QIODevice::ReadOnly)) {
+                        const QJsonObject rootObj = QJsonDocument::fromJson(f.readAll()).object();
+                        const QJsonArray arr = rootObj.value(QStringLiteral("launchOptions")).toArray();
+                        for (const auto& v : arr) {
+                            if (!v.isObject())
+                                continue;
+                            const QJsonObject o = v.toObject();
+                            QString optExe = o.value(QStringLiteral("path")).toString();
+                            if (optExe.isEmpty())
+                                optExe = o.value(QStringLiteral("executable")).toString();
+                            if (!optExe.isEmpty() && QFileInfo::exists(optExe)
+                                && !isExcludedGameExecutable(QFileInfo(optExe).fileName())) {
+                                const QString optId = o.value(QStringLiteral("id")).toString();
+                                if (!game->selectedLaunchOptionId.isEmpty() && optId == game->selectedLaunchOptionId) {
+                                    defaultExe = optExe;
+                                    break;
+                                }
+                                if (defaultExe.isEmpty() || o.value(QStringLiteral("isDefault")).toBool(false)) {
+                                    defaultExe = optExe;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (defaultExe.isEmpty()) {
+                defaultExe = findGameExecutableInTree(game->installPath, game->title);
+            }
+
+            if (!defaultExe.isEmpty()) {
+                info.insert(QStringLiteral("defaultExecutable"), defaultExe);
+                info.insert(QStringLiteral("defaultExecutableName"), QFileInfo(defaultExe).fileName());
+            }
+        }
+    }
+
     return info;
 }
 

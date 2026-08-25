@@ -13,6 +13,8 @@
 #include <atomic>
 #include <cstdint>
 
+#include "catalog_search_utils.h"
+
 namespace arachnel::core {
 
 /** Catalog filter + presentation state (type/size/recency/genre/play-mode). */
@@ -67,7 +69,7 @@ signals:
 
 private:
     struct FilterSnapshot {
-        QString needle;
+        ParsedSearchQuery query;
         qint64 cutoffDay = 0;
         int typeFilter = -1;
         int sizeFilter = 0;
@@ -94,11 +96,11 @@ private:
     QVector<CatalogEntry>* m_cache = nullptr;
     QReadWriteLock* m_cacheLock = nullptr;
     QVector<CatalogFilterRow> m_rows;
+    QVector<CatalogSearchEntry> m_searchEntries;
     QVector<QString> m_titleLowers;
     QStringList m_sourceIdsBySlot;
     quint32 m_presentGenreBits = 0;
     QString m_activeQuery;
-    QString m_filterNeedle;
     qint64 m_filterCutoffDay = 0;
     QStringList m_availableGenres;
     QTimer* m_refilterTimer = nullptr;

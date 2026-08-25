@@ -29,10 +29,45 @@ void CoreController::touchLastPlayed(const QString& gameId)
         syncLibraryFromStore();
 }
 
-void CoreController::launchGame(const QString& gameId)
+void CoreController::launchGame(const QString& gameId, const QString& optionId)
 {
     if (m_launchController)
-        m_launchController->launchGame(gameId);
+        m_launchController->launchGame(gameId, optionId);
+}
+
+void CoreController::launchGameWithOption(const QString& gameId, const QString& optionId, bool rememberChoice)
+{
+    if (rememberChoice && m_launchController)
+        m_launchController->setGameSelectedLaunchOption(gameId, optionId);
+    if (m_launchController)
+        m_launchController->launchGame(gameId, optionId);
+}
+
+QVariantList CoreController::gameLaunchOptions(const QString& gameId) const
+{
+    if (!m_launchController)
+        return {};
+    const auto opts = m_launchController->availableLaunchOptions(gameId);
+    QVariantList out;
+    out.reserve(opts.size());
+    for (const auto& opt : opts) {
+        out.append(QVariantMap{
+            {QStringLiteral("id"), opt.id},
+            {QStringLiteral("title"), opt.title},
+            {QStringLiteral("executable"), opt.executable},
+            {QStringLiteral("workingDirectory"), opt.workingDirectory},
+            {QStringLiteral("arguments"), opt.arguments},
+            {QStringLiteral("type"), opt.type},
+            {QStringLiteral("isDefault"), opt.isDefault},
+        });
+    }
+    return out;
+}
+
+void CoreController::setGameSelectedLaunchOption(const QString& gameId, const QString& optionId)
+{
+    if (m_launchController)
+        m_launchController->setGameSelectedLaunchOption(gameId, optionId);
 }
 
 void CoreController::stopRunningGame()

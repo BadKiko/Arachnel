@@ -32,14 +32,37 @@ bool pathHasArchive(const QString& rootDir)
 bool isExcludedGameExecutable(const QString& fileName)
 {
     const QString lower = fileName.toLower();
-    // FreeTP/SteamFix promo stub planted next to the game - never a launch target.
-    if (lower == QStringLiteral("cmd.exe"))
+    // Shell stubs / scripts / helpers
+    if (lower == QStringLiteral("cmd.exe") || lower == QStringLiteral("powershell.exe")
+        || lower == QStringLiteral("cmd_stub.exe") || lower == QStringLiteral("conhost.exe"))
         return true;
+
+    // Uninstaller, setup, redistributables, crash handlers
     if (lower == QStringLiteral("unins000.exe") || lower == QStringLiteral("uninstall.exe")
+        || lower.contains(QStringLiteral("unins"))
         || lower.contains(QStringLiteral("setup")) || lower.contains(QStringLiteral("redist"))
         || lower.contains(QStringLiteral("vcredist")) || lower.contains(QStringLiteral("dxsetup"))
+        || lower.contains(QStringLiteral("dxwebsetup")) || lower.contains(QStringLiteral("oalinst"))
         || lower.contains(QStringLiteral("unitycrashhandler"))
-        || lower.contains(QStringLiteral("crashpad")) || lower.contains(QStringLiteral("crashreport")))
+        || lower.contains(QStringLiteral("crashpad")) || lower.contains(QStringLiteral("crashreport"))
+        || lower.contains(QStringLiteral("crashhandler")) || lower.contains(QStringLiteral("prereq")))
+        return true;
+
+    // Common tools, media utilities, streaming helpers, archives, downloaders
+    if (lower == QStringLiteral("ffmpeg.exe") || lower == QStringLiteral("ffprobe.exe")
+        || lower == QStringLiteral("ffplay.exe") || lower == QStringLiteral("yt-dlp.exe")
+        || lower == QStringLiteral("youtube-dl.exe") || lower == QStringLiteral("texconv.exe")
+        || lower.startsWith(QStringLiteral("easyhook")) || lower.contains(QStringLiteral("easyhook"))
+        || lower == QStringLiteral("7z.exe") || lower == QStringLiteral("7za.exe")
+        || lower == QStringLiteral("7zr.exe") || lower == QStringLiteral("rar.exe")
+        || lower == QStringLiteral("unrar.exe") || lower == QStringLiteral("curl.exe")
+        || lower == QStringLiteral("wget.exe") || lower == QStringLiteral("quickhash.exe")
+        || lower == QStringLiteral("openvr_api.exe") || lower == QStringLiteral("steam.exe")
+        || lower.startsWith(QStringLiteral("steamless")) || lower.startsWith(QStringLiteral("steamstub"))
+        || lower == QStringLiteral("gdb.exe") || lower == QStringLiteral("gdbserver.exe")
+        || lower == QStringLiteral("lldb.exe") || lower == QStringLiteral("elevate.exe")
+        || lower == QStringLiteral("launcher_helper.exe") || lower == QStringLiteral("register.exe")
+        || lower == QStringLiteral("dotnet.exe") || lower.startsWith(QStringLiteral("windowsdesktop-runtime")))
         return true;
 
     // Tools Steam ships next to the game (Craft The World Editor.exe, dedicated servers, …).
@@ -49,17 +72,25 @@ bool isExcludedGameExecutable(const QString& fileName)
     if (stem == QStringLiteral("editor") || stem.endsWith(QStringLiteral("editor"))
         || stem == QStringLiteral("dedicated") || stem.contains(QStringLiteral("dedicatedserver"))
         || stem == QStringLiteral("server") || stem.endsWith(QStringLiteral("server"))
-        || stem == QStringLiteral("unrealversionselector"))
+        || stem == QStringLiteral("unrealversionselector") || stem.endsWith(QStringLiteral("config"))
+        || stem.endsWith(QStringLiteral("configuration")) || stem.endsWith(QStringLiteral("settings")))
         return true;
 
     return false;
 }
 
-QString findGameExecutableInTree(const QString& rootDir)
+QString findGameExecutableInTree(const QString& rootDir, const QString& gameTitle)
 {
     QString bestPath;
-    int bestDepth = 9999;
-    qint64 bestSize = 0;
+    qint64 bestScore = -1;
+
+    QString cleanTitleCompact;
+    if (!gameTitle.isEmpty()) {
+        for (const QChar& c : gameTitle) {
+            if (c.isLetterOrNumber())
+                cleanTitleCompact.append(c.toLower());
+        }
+    }
 
     QDirIterator it(rootDir, {QStringLiteral("*.exe")}, QDir::Files,
                     QDirIterator::Subdirectories);
@@ -72,10 +103,61 @@ QString findGameExecutableInTree(const QString& rootDir)
         const QString relative = QDir(rootDir).relativeFilePath(path);
         const int depth = relative.count(QLatin1Char('/')) + relative.count(QLatin1Char('\\'));
         const qint64 size = info.size();
+        const QString stem = info.completeBaseName().toLower();
 
-        if (depth < bestDepth || (depth == bestDepth && size > bestSize)) {
-            bestDepth = depth;
-            bestSize = size;
+        // Base score from size (capped to prevent oversized utility tools from overpowering)
+        qint64 score = qMin(size, 200LL * 1024 * 1024);
+
+        // Depth penalty (prefer executables located close to root directory)
+        score -= static_cast<qint64>(depth) * (20LL * 1024 * 1024);
+
+        // Game title match bonus
+        if (!cleanTitleCompact.isEmpty()) {
+            QString cleanStem;
+            for (const QChar& c : stem) {
+                if (c.isLetterOrNumber())
+                    cleanStem.append(c);
+            }
+            if (!cleanStem.isEmpty()) {
+                if (cleanStem == cleanTitleCompact) {
+                    score += 600LL * 1024 * 1024;
+                } else if (cleanTitleCompact.startsWith(cleanStem) && cleanStem.length() >= 4) {
+                    score += 500LL * 1024 * 1024;
+                } else if (cleanStem.startsWith(cleanTitleCompact) && cleanTitleCompact.length() >= 4) {
+                    score += 500LL * 1024 * 1024;
+                } else if (cleanTitleCompact.contains(cleanStem) && cleanStem.length() >= 4) {
+                    score += 350LL * 1024 * 1024;
+                }
+            }
+        }
+
+        // Unreal Engine / Unity / Steam API heuristics
+        if (stem.contains(QStringLiteral("shipping")) || stem.contains(QStringLiteral("-win64-shipping")))
+            score += 400LL * 1024 * 1024;
+        if (QFileInfo::exists(info.absolutePath() + QLatin1Char('/') + info.completeBaseName() + QStringLiteral("_Data")))
+            score += 400LL * 1024 * 1024;
+        if (QFileInfo::exists(info.absolutePath() + QStringLiteral("/steam_api64.dll"))
+            || QFileInfo::exists(info.absolutePath() + QStringLiteral("/steam_api.dll")))
+            score += 200LL * 1024 * 1024;
+        if (QFileInfo::exists(info.absolutePath() + QStringLiteral("/SteamFix64.dll"))
+            || QFileInfo::exists(info.absolutePath() + QStringLiteral("/winmm.dll"))
+            || QFileInfo::exists(info.absolutePath() + QStringLiteral("/OnlineFix64.dll")))
+            score += 300LL * 1024 * 1024;
+        const bool titleMentionsVr = cleanTitleCompact.contains(QStringLiteral("vr"));
+        if (titleMentionsVr) {
+            if (stem.endsWith(QStringLiteral("_vr")) || stem.endsWith(QStringLiteral("-vr"))
+                || stem == QStringLiteral("vr") || stem.contains(QStringLiteral("_vr_"))
+                || stem.endsWith(QStringLiteral("vr"))) {
+                score += 250LL * 1024 * 1024;
+            }
+        }
+
+        if (stem.contains(QStringLiteral("launcher")) || stem.contains(QStringLiteral("bootstrap"))
+            || stem.contains(QStringLiteral("patcher")))
+            score -= 50LL * 1024 * 1024;
+
+        if (score > bestScore) {
+            bestScore = score;
             bestPath = path;
         }
     }

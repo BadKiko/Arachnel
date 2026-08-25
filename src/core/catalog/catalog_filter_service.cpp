@@ -143,11 +143,13 @@ void CatalogFilterService::rebuildFilterTable()
         m_presentGenreBits = 0;
         if (!cachePtr) {
             m_rows.clear();
+            m_searchEntries.clear();
             m_titleLowers.clear();
             return;
         }
         const int n = cachePtr->size();
         m_rows.resize(n);
+        m_searchEntries.resize(n);
         m_titleLowers.resize(n);
         m_sourceIdsBySlot.reserve(8);
         QHash<QString, quint8> intern;
@@ -166,6 +168,7 @@ void CatalogFilterService::rebuildFilterTable()
                 slot = 31;
             }
             m_rows[i] = catalogFilterRowFromEntry(entry, slot);
+            m_searchEntries[i] = CatalogSearchEntry::fromEntry(entry);
             m_titleLowers[i] = entry.titleLower;
             m_presentGenreBits |= entry.genreBits;
         }
@@ -185,6 +188,7 @@ void CatalogFilterService::syncFilterRow(int cacheIndex)
     if (!m_cache || cacheIndex < 0)
         return;
     CatalogFilterRow row;
+    CatalogSearchEntry searchEntry;
     QString titleLower;
     quint32 bits = 0;
     bool inRange = false;
@@ -192,7 +196,7 @@ void CatalogFilterService::syncFilterRow(int cacheIndex)
         QWriteLocker locker(m_cacheLock);
         if (cacheIndex >= m_cache->size())
             return;
-        if (m_rows.size() != m_cache->size()) {
+        if (m_rows.size() != m_cache->size() || m_searchEntries.size() != m_cache->size()) {
             locker.unlock();
             rebuildFilterTable();
             return;
@@ -200,22 +204,26 @@ void CatalogFilterService::syncFilterRow(int cacheIndex)
         const CatalogEntry& entry = m_cache->at(cacheIndex);
         const quint8 slot = internSourceSlot(entry.sourceId);
         row = catalogFilterRowFromEntry(entry, slot);
+        searchEntry = CatalogSearchEntry::fromEntry(entry);
         titleLower = entry.titleLower;
         bits = entry.genreBits;
         m_rows[cacheIndex] = row;
+        m_searchEntries[cacheIndex] = std::move(searchEntry);
         m_titleLowers[cacheIndex] = titleLower;
         inRange = true;
     } else {
         if (cacheIndex >= m_cache->size())
             return;
-        if (m_rows.size() != m_cache->size()) {
+        if (m_rows.size() != m_cache->size() || m_searchEntries.size() != m_cache->size()) {
             rebuildFilterTable();
             return;
         }
         const CatalogEntry& entry = m_cache->at(cacheIndex);
         const quint8 slot = internSourceSlot(entry.sourceId);
         row = catalogFilterRowFromEntry(entry, slot);
+        searchEntry = CatalogSearchEntry::fromEntry(entry);
         m_rows[cacheIndex] = row;
+        m_searchEntries[cacheIndex] = std::move(searchEntry);
         m_titleLowers[cacheIndex] = entry.titleLower;
         bits = entry.genreBits;
         inRange = true;
@@ -253,16 +261,14 @@ void CatalogFilterService::applyFilter(const QString& query)
     bool needRebuild = false;
     if (m_cacheLock) {
         QReadLocker locker(m_cacheLock);
-        needRebuild = m_rows.size() != m_cache->size();
+        needRebuild = m_rows.size() != m_cache->size() || m_searchEntries.size() != m_cache->size();
     } else {
-        needRebuild = m_rows.size() != m_cache->size();
+        needRebuild = m_rows.size() != m_cache->size() || m_searchEntries.size() != m_cache->size();
     }
     if (needRebuild)
         rebuildFilterTable();
 
-    m_filterNeedle = query.trimmed().toLower();
-    m_filterNeedle.remove(QChar(0x200B));
-    m_filterNeedle.remove(QChar(0xFEFF));
+    m_activeQuery = query;
     m_filterCutoffDay = 0;
     if (m_recencyFilter > 0) {
         const int days = m_recencyFilter == 1   ? 7
@@ -294,7 +300,7 @@ void CatalogFilterService::applyFilter(const QString& query)
     }
 
     FilterSnapshot snap;
-    snap.needle = m_filterNeedle;
+    snap.query = ParsedSearchQuery::parse(query);
     snap.cutoffDay = m_filterCutoffDay;
     snap.typeFilter = m_typeFilter;
     snap.sizeFilter = m_sizeFilter;
@@ -311,121 +317,128 @@ void CatalogFilterService::applyFilter(const QString& query)
     QVector<CatalogEntry>* cachePtr = m_cache;
     QReadWriteLock* lock = m_cacheLock;
     const QVector<CatalogFilterRow>* rowsPtr = &m_rows;
-    const QVector<QString>* titlesPtr = &m_titleLowers;
+    const QVector<CatalogSearchEntry>* searchPtr = &m_searchEntries;
 
     QThreadPool::globalInstance()->start(
-        [this, generation, snap, cachePtr, lock, rowsPtr, titlesPtr]() {
+        [this, generation, snap, cachePtr, lock, rowsPtr, searchPtr]() {
             QElapsedTimer timer;
             timer.start();
 
+            struct ScoredIndex {
+                int index = 0;
+                int score = 0;
+            };
+            QVector<ScoredIndex> scoredMatches;
             QVector<int> indices;
             int cacheSize = 0;
             CatalogModel::SortMode mode = CatalogModel::SortNewest;
-            {
-                if (lock) {
-                    QReadLocker locker(lock);
-                    if (!cachePtr || !rowsPtr)
-                        return;
-                    cacheSize = cachePtr->size();
-                    if (rowsPtr->size() != cacheSize)
-                        return;
+            const bool hasSearch = !snap.query.isEmpty;
+
+            auto scanCache = [&]() -> bool {
+                if (!cachePtr || !rowsPtr || !searchPtr)
+                    return false;
+                cacheSize = cachePtr->size();
+                if (rowsPtr->size() != cacheSize || searchPtr->size() != cacheSize)
+                    return false;
+
+                if (!hasSearch && !snap.anySideFilter) {
+                    indices.resize(cacheSize);
+                    std::iota(indices.begin(), indices.end(), 0);
+                } else if (!hasSearch) {
                     indices.reserve(cacheSize);
-                    if (snap.needle.isEmpty() && !snap.anySideFilter) {
-                        indices.resize(cacheSize);
-                        std::iota(indices.begin(), indices.end(), 0);
-                    } else {
-                        for (int i = 0; i < cacheSize; ++i) {
-                            if ((i & 0x3FF) == 0
-                                && generation != m_filterGeneration.load(std::memory_order_relaxed)) {
-                                return;
-                            }
-                            if (!snap.needle.isEmpty()) {
-                                const QString& titleLower = titlesPtr->at(i);
-                                bool hit = !titleLower.isEmpty() && titleLower.contains(snap.needle);
-                                if (!hit) {
-                                    const CatalogEntry& entry = cachePtr->at(i);
-                                    if (titleLower.isEmpty())
-                                        hit = entry.title.contains(snap.needle, Qt::CaseInsensitive);
-                                    if (!hit)
-                                        hit = entry.id.contains(snap.needle, Qt::CaseInsensitive)
-                                            || entry.steamAppId.contains(snap.needle,
-                                                                         Qt::CaseInsensitive);
-                                }
-                                if (!hit)
-                                    continue;
-                            }
-                            if (!rowMatches(rowsPtr->at(i), snap))
-                                continue;
-                            indices.append(i);
+                    for (int i = 0; i < cacheSize; ++i) {
+                        if ((i & 0x3FF) == 0
+                            && generation != m_filterGeneration.load(std::memory_order_relaxed)) {
+                            return false;
                         }
+                        if (!rowMatches(rowsPtr->at(i), snap))
+                            continue;
+                        indices.append(i);
                     }
-                    mode = static_cast<CatalogModel::SortMode>(snap.sortMode);
-                } else if (cachePtr && rowsPtr) {
-                    cacheSize = cachePtr->size();
-                    if (rowsPtr->size() != cacheSize)
-                        return;
-                    indices.reserve(cacheSize);
-                    if (snap.needle.isEmpty() && !snap.anySideFilter) {
-                        indices.resize(cacheSize);
-                        std::iota(indices.begin(), indices.end(), 0);
-                    } else {
-                        for (int i = 0; i < cacheSize; ++i) {
-                            if (!snap.needle.isEmpty()) {
-                                const QString& titleLower = titlesPtr->at(i);
-                                bool hit = !titleLower.isEmpty() && titleLower.contains(snap.needle);
-                                if (!hit) {
-                                    const CatalogEntry& entry = cachePtr->at(i);
-                                    if (titleLower.isEmpty())
-                                        hit = entry.title.contains(snap.needle, Qt::CaseInsensitive);
-                                    if (!hit)
-                                        hit = entry.id.contains(snap.needle, Qt::CaseInsensitive)
-                                            || entry.steamAppId.contains(snap.needle,
-                                                                         Qt::CaseInsensitive);
-                                }
-                                if (!hit)
-                                    continue;
-                            }
-                            if (!rowMatches(rowsPtr->at(i), snap))
-                                continue;
-                            indices.append(i);
-                        }
-                    }
-                    mode = static_cast<CatalogModel::SortMode>(snap.sortMode);
                 } else {
+                    scoredMatches.reserve(qMin(cacheSize, 1024));
+                    for (int i = 0; i < cacheSize; ++i) {
+                        if ((i & 0x3FF) == 0
+                            && generation != m_filterGeneration.load(std::memory_order_relaxed)) {
+                            return false;
+                        }
+                        if (!rowMatches(rowsPtr->at(i), snap))
+                            continue;
+
+                        const int score =
+                            scoreCatalogMatch(searchPtr->at(i), cachePtr->at(i), snap.query);
+                        if (score <= 0)
+                            continue;
+
+                        scoredMatches.append({i, score});
+                    }
+                }
+                mode = static_cast<CatalogModel::SortMode>(snap.sortMode);
+                return true;
+            };
+
+            if (lock) {
+                QReadLocker locker(lock);
+                if (!scanCache())
                     return;
+            } else {
+                if (!scanCache())
+                    return;
+            }
+
+            if (generation != m_filterGeneration.load(std::memory_order_relaxed))
+                return;
+
+            if (hasSearch) {
+                auto sortScored = [&](const ScoredIndex& a, const ScoredIndex& b) {
+                    if (a.score != b.score)
+                        return a.score > b.score;
+                    if (cachePtr)
+                        return catalogEntryLess(cachePtr->at(a.index), cachePtr->at(b.index), mode);
+                    return a.index < b.index;
+                };
+
+                if (lock && cachePtr) {
+                    QReadLocker locker(lock);
+                    if (cacheSize != cachePtr->size())
+                        return;
+                    std::stable_sort(scoredMatches.begin(), scoredMatches.end(), sortScored);
+                } else {
+                    std::stable_sort(scoredMatches.begin(), scoredMatches.end(), sortScored);
+                }
+
+                indices.reserve(scoredMatches.size());
+                for (const ScoredIndex& sm : scoredMatches)
+                    indices.append(sm.index);
+            } else {
+                if (lock && cachePtr) {
+                    QReadLocker locker(lock);
+                    if (cacheSize != cachePtr->size())
+                        return;
+                    std::stable_sort(indices.begin(), indices.end(),
+                                     [cachePtr, mode](int ai, int bi) {
+                                         return catalogEntryLess(cachePtr->at(ai), cachePtr->at(bi),
+                                                                 mode);
+                                     });
+                } else if (cachePtr) {
+                    std::stable_sort(indices.begin(), indices.end(),
+                                     [cachePtr, mode](int ai, int bi) {
+                                         return catalogEntryLess(cachePtr->at(ai), cachePtr->at(bi),
+                                                                 mode);
+                                     });
                 }
             }
 
             if (generation != m_filterGeneration.load(std::memory_order_relaxed))
                 return;
 
-            if (lock && cachePtr) {
-                QReadLocker locker(lock);
-                if (cacheSize != cachePtr->size())
-                    return;
-                std::stable_sort(indices.begin(), indices.end(),
-                                 [cachePtr, mode](int ai, int bi) {
-                                     return catalogEntryLess(cachePtr->at(ai), cachePtr->at(bi),
-                                                             mode);
-                                 });
-            } else if (cachePtr) {
-                std::stable_sort(indices.begin(), indices.end(),
-                                 [cachePtr, mode](int ai, int bi) {
-                                     return catalogEntryLess(cachePtr->at(ai), cachePtr->at(bi),
-                                                             mode);
-                                 });
-            }
-
-            if (generation != m_filterGeneration.load(std::memory_order_relaxed))
-                return;
-
             const qint64 ms = timer.elapsed();
-            const QString needle = snap.needle;
+            const QString queryStr = snap.query.rawQuery;
             QTimer::singleShot(0, this,
                                [this, generation, indices = std::move(indices), ms, cacheSize,
-                                needle]() mutable {
+                                queryStr]() mutable {
                                    applyFilterResult(generation, std::move(indices), ms, cacheSize,
-                                                     needle);
+                                                     queryStr);
                                });
         });
 }

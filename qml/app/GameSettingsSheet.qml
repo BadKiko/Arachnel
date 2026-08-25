@@ -34,6 +34,8 @@ MD.BottomSheet {
         return (lib.gameId ?? "").length > 0
     }
     readonly property bool onLinux: Qt.platform.os === "linux"
+    readonly property var availableLaunchOptions: root.gameId.length ? Core.gameLaunchOptions(root.gameId) : []
+    readonly property string currentSelectedLaunchOption: root.info.selectedLaunchOptionId ?? ""
     readonly property var installedComponents: {
         const _rev = root.detailsRevision
         const raw = root.info.components
@@ -328,7 +330,9 @@ MD.BottomSheet {
                     AppTextField {
                         id: exeField
                         Layout.fillWidth: true
-                        placeholderText: qsTr("Custom executable (optional)")
+                        placeholderText: (root.info.defaultExecutableName ?? "").length > 0
+                                         ? qsTr("Default: %1").arg(root.info.defaultExecutableName)
+                                         : qsTr("Custom executable (optional)")
                         onEditingFinished: Core.setGameExecutableOverride(root.gameId, text)
                     }
 
@@ -342,6 +346,225 @@ MD.BottomSheet {
                             if (path.length) {
                                 exeField.text = path
                                 Core.setGameExecutableOverride(root.gameId, path)
+                            }
+                        }
+                    }
+                }
+
+                MD.Label {
+                    Layout.fillWidth: true
+                    visible: (root.info.defaultExecutable ?? "").length > 0 && !exeField.text.length
+                    text: qsTr("Default executable: %1").arg(root.info.defaultExecutable)
+                    color: MD.Token.color.on_surface_variant
+                    typescale: MD.Token.typescale.body_small
+                    elide: Text.ElideMiddle
+                }
+
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: MD.Token.spacing.extra_small
+                    visible: root.availableLaunchOptions.length === 1
+
+                    MD.Label {
+                        Layout.fillWidth: true
+                        text: qsTr("Launch mode")
+                        typescale: MD.Token.typescale.label_large
+                        color: MD.Token.color.on_surface_variant
+                    }
+
+                    Rectangle {
+                        Layout.fillWidth: true
+                        implicitHeight: singleOptRow.implicitHeight + MD.Token.spacing.small * 2
+                        radius: MD.Token.shape.corner.small
+                        color: MD.Token.color.surface_container
+                        border.width: 1
+                        border.color: MD.Token.color.outline_variant
+
+                        RowLayout {
+                            id: singleOptRow
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.verticalCenter: parent.verticalCenter
+                            anchors.margins: MD.Token.spacing.small
+                            spacing: MD.Token.spacing.small
+
+                            MD.Icon {
+                                name: MD.Token.icon.play_circle
+                                size: 20
+                                color: MD.Token.color.primary
+                                Layout.alignment: Qt.AlignVCenter
+                            }
+
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: 2
+
+                                MD.Label {
+                                    Layout.fillWidth: true
+                                    text: root.availableLaunchOptions[0].title || qsTr("Default")
+                                    typescale: MD.Token.typescale.body_medium
+                                    color: MD.Token.color.on_surface
+                                }
+
+                                MD.Label {
+                                    Layout.fillWidth: true
+                                    text: {
+                                        const opt = root.availableLaunchOptions[0]
+                                        let desc = opt.executable || ""
+                                        if (opt.arguments && opt.arguments.length > 0)
+                                            desc += " " + (Array.isArray(opt.arguments) ? opt.arguments.join(" ") : opt.arguments)
+                                        return desc
+                                    }
+                                    typescale: MD.Token.typescale.body_small
+                                    color: MD.Token.color.on_surface_variant
+                                    elide: Text.ElideMiddle
+                                    visible: text.length > 0
+                                }
+                            }
+                        }
+                    }
+                }
+
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: MD.Token.spacing.small
+                    visible: root.availableLaunchOptions.length > 1
+
+                    MD.Label {
+                        Layout.fillWidth: true
+                        text: qsTr("Default launch mode")
+                        typescale: MD.Token.typescale.label_large
+                        color: MD.Token.color.on_surface_variant
+                    }
+
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: MD.Token.spacing.extra_small
+
+                        Rectangle {
+                            Layout.fillWidth: true
+                            implicitHeight: askRow.implicitHeight + MD.Token.spacing.small * 2
+                            radius: MD.Token.shape.corner.small
+                            readonly property bool isSelected: root.currentSelectedLaunchOption === ""
+                            color: isSelected ? MD.Token.color.secondary_container : (askMouse.containsMouse ? MD.Token.color.surface_container_high : MD.Token.color.surface_container)
+                            border.width: isSelected ? 2 : 1
+                            border.color: isSelected ? MD.Token.color.primary : MD.Token.color.outline_variant
+
+                            MouseArea {
+                                id: askMouse
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: Core.setGameSelectedLaunchOption(root.gameId, "")
+                            }
+
+                            RowLayout {
+                                id: askRow
+                                anchors.left: parent.left
+                                anchors.right: parent.right
+                                anchors.verticalCenter: parent.verticalCenter
+                                anchors.margins: MD.Token.spacing.small
+                                spacing: MD.Token.spacing.small
+
+                                Rectangle {
+                                    width: 16
+                                    height: 16
+                                    radius: 8
+                                    border.width: 2
+                                    border.color: parent.parent.isSelected ? MD.Token.color.primary : MD.Token.color.outline
+                                    color: "transparent"
+                                    Layout.alignment: Qt.AlignVCenter
+                                    Rectangle {
+                                        anchors.centerIn: parent
+                                        width: 8
+                                        height: 8
+                                        radius: 4
+                                        color: MD.Token.color.primary
+                                        visible: parent.parent.parent.isSelected
+                                    }
+                                }
+
+                                MD.Label {
+                                    Layout.fillWidth: true
+                                    text: qsTr("Always ask before launch")
+                                    typescale: MD.Token.typescale.body_medium
+                                    color: parent.parent.isSelected ? MD.Token.color.on_secondary_container : MD.Token.color.on_surface
+                                }
+                            }
+                        }
+
+                        Repeater {
+                            model: root.availableLaunchOptions
+
+                            delegate: Rectangle {
+                                Layout.fillWidth: true
+                                implicitHeight: optSetRow.implicitHeight + MD.Token.spacing.small * 2
+                                radius: MD.Token.shape.corner.small
+                                readonly property bool isSelected: root.currentSelectedLaunchOption === modelData.id
+                                color: isSelected ? MD.Token.color.secondary_container : (optSetMouse.containsMouse ? MD.Token.color.surface_container_high : MD.Token.color.surface_container)
+                                border.width: isSelected ? 2 : 1
+                                border.color: isSelected ? MD.Token.color.primary : MD.Token.color.outline_variant
+
+                                MouseArea {
+                                    id: optSetMouse
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: Core.setGameSelectedLaunchOption(root.gameId, modelData.id)
+                                }
+
+                                RowLayout {
+                                    id: optSetRow
+                                    anchors.left: parent.left
+                                    anchors.right: parent.right
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    anchors.margins: MD.Token.spacing.small
+                                    spacing: MD.Token.spacing.small
+
+                                    Rectangle {
+                                        width: 16
+                                        height: 16
+                                        radius: 8
+                                        border.width: 2
+                                        border.color: parent.parent.isSelected ? MD.Token.color.primary : MD.Token.color.outline
+                                        color: "transparent"
+                                        Layout.alignment: Qt.AlignVCenter
+                                        Rectangle {
+                                            anchors.centerIn: parent
+                                            width: 8
+                                            height: 8
+                                            radius: 4
+                                            color: MD.Token.color.primary
+                                            visible: parent.parent.parent.isSelected
+                                        }
+                                    }
+
+                                    ColumnLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 1
+
+                                        MD.Label {
+                                            Layout.fillWidth: true
+                                            text: modelData.title || qsTr("Option %1").arg(modelData.id)
+                                            typescale: MD.Token.typescale.body_medium
+                                            color: parent.parent.parent.isSelected ? MD.Token.color.on_secondary_container : MD.Token.color.on_surface
+                                            font.bold: parent.parent.parent.isSelected
+                                        }
+
+                                        MD.Label {
+                                            Layout.fillWidth: true
+                                            text: {
+                                                const args = (modelData.arguments && modelData.arguments.length)
+                                                    ? " " + modelData.arguments.join(" ") : ""
+                                                const exeName = (modelData.executable || "").split("/").pop().split("\\").pop()
+                                                return exeName + args
+                                            }
+                                            typescale: MD.Token.typescale.body_small
+                                            color: MD.Token.color.on_surface_variant
+                                            visible: text.length > 0
+                                        }
+                                    }
+                                }
                             }
                         }
                     }

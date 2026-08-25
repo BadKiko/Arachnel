@@ -18,6 +18,16 @@ struct InstalledComponent {
     bool enabled = true;
 };
 
+struct GameLaunchOption {
+    QString id;
+    QString title;
+    QString executable;
+    QString workingDirectory;
+    QStringList arguments;
+    QString type;
+    bool isDefault = false;
+};
+
 struct LibraryGame {
     QString id;
     QString title;
@@ -42,6 +52,8 @@ struct LibraryGame {
     QString protonId;
     QString steamAppId;
     QVector<InstalledComponent> components;
+    QString selectedLaunchOptionId;
+    QVector<GameLaunchOption> launchOptions;
 };
 
 class LibraryModel : public QAbstractListModel

@@ -10,6 +10,7 @@ struct SteamShortcutRequest {
     GameLaunchTarget target;
     QString steamAppId;
     QString coverFileUrl;
+    bool openVr = false;
 };
 
 struct SteamShortcutResult {

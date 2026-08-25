@@ -8,7 +8,7 @@
 namespace arachnel::core {
 
 bool isExcludedGameExecutable(const QString& fileName);
-QString findGameExecutableInTree(const QString& rootDir);
+QString findGameExecutableInTree(const QString& rootDir, const QString& gameTitle = {});
 QString findSetupExecutableInTree(const QString& rootDir);
 bool isInnoSetupExecutable(const QString& setupPath);
 QString findDownloadContentRoot(const QString& downloadPath);

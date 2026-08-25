@@ -58,6 +58,44 @@ QVector<InstalledComponent> componentsFromJson(const QJsonArray& array)
     return components;
 }
 
+QJsonArray launchOptionsToJson(const QVector<GameLaunchOption>& options)
+{
+    QJsonArray array;
+    for (const auto& opt : options) {
+        QJsonObject obj;
+        obj.insert(QStringLiteral("id"), opt.id);
+        obj.insert(QStringLiteral("title"), opt.title);
+        obj.insert(QStringLiteral("executable"), opt.executable);
+        obj.insert(QStringLiteral("workingDirectory"), opt.workingDirectory);
+        obj.insert(QStringLiteral("arguments"), QJsonArray::fromStringList(opt.arguments));
+        obj.insert(QStringLiteral("type"), opt.type);
+        obj.insert(QStringLiteral("isDefault"), opt.isDefault);
+        array.append(obj);
+    }
+    return array;
+}
+
+QVector<GameLaunchOption> launchOptionsFromJson(const QJsonArray& array)
+{
+    QVector<GameLaunchOption> options;
+    options.reserve(array.size());
+    for (const QJsonValue& value : array) {
+        const QJsonObject obj = value.toObject();
+        GameLaunchOption opt;
+        opt.id = obj.value(QStringLiteral("id")).toString();
+        opt.title = obj.value(QStringLiteral("title")).toString();
+        opt.executable = obj.value(QStringLiteral("executable")).toString();
+        opt.workingDirectory = obj.value(QStringLiteral("workingDirectory")).toString();
+        const QJsonArray argsArr = obj.value(QStringLiteral("arguments")).toArray();
+        for (const QJsonValue& a : argsArr)
+            opt.arguments.append(a.toString());
+        opt.type = obj.value(QStringLiteral("type")).toString();
+        opt.isDefault = obj.value(QStringLiteral("isDefault")).toBool();
+        options.append(opt);
+    }
+    return options;
+}
+
 } // namespace
 
 LibraryStore::LibraryStore(QObject* parent)
@@ -111,13 +149,19 @@ void LibraryStore::removeGame(const QString& id)
 void LibraryStore::load()
 {
     QFile file(libraryFilePath());
-    if (!file.open(QIODevice::ReadOnly))
+    if (!file.exists() || !file.open(QIODevice::ReadOnly))
         return;
 
-    const QJsonArray array = QJsonDocument::fromJson(file.readAll()).array();
+    const QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+    if (!doc.isArray())
+        return;
+
     QVector<LibraryGame> games;
+    const QJsonArray array = doc.array();
     games.reserve(array.size());
-    for (const QJsonValue& value : array) {
+    for (const auto& value : array) {
+        if (!value.isObject())
+            continue;
         const QJsonObject obj = value.toObject();
         LibraryGame game;
         game.id = obj.value(QStringLiteral("id")).toString();
@@ -143,6 +187,8 @@ void LibraryStore::load()
         game.executableOverride = obj.value(QStringLiteral("executableOverride")).toString();
         game.protonId = obj.value(QStringLiteral("protonId")).toString();
         game.steamAppId = obj.value(QStringLiteral("steamAppId")).toString();
+        game.selectedLaunchOptionId = obj.value(QStringLiteral("selectedLaunchOptionId")).toString();
+        game.launchOptions = launchOptionsFromJson(obj.value(QStringLiteral("launchOptions")).toArray());
         game.components = componentsFromJson(obj.value(QStringLiteral("components")).toArray());
         games.append(game);
     }
@@ -177,6 +223,10 @@ void LibraryStore::save()
         obj.insert(QStringLiteral("executableOverride"), game.executableOverride);
         obj.insert(QStringLiteral("protonId"), game.protonId);
         obj.insert(QStringLiteral("steamAppId"), game.steamAppId);
+        if (!game.selectedLaunchOptionId.isEmpty())
+            obj.insert(QStringLiteral("selectedLaunchOptionId"), game.selectedLaunchOptionId);
+        if (!game.launchOptions.isEmpty())
+            obj.insert(QStringLiteral("launchOptions"), launchOptionsToJson(game.launchOptions));
         obj.insert(QStringLiteral("components"), componentsToJson(game.components));
         array.append(obj);
     }

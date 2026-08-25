@@ -1,6 +1,7 @@
 #include "install_session_service.h"
 
 #include "file_utils.h"
+#include "install_heuristics.h"
 #include "install_marker.h"
 #include "job_model.h"
 #include "job_orchestrator.h"
@@ -241,6 +242,10 @@ void InstallSessionService::commitInstalledCatalogGame(const CatalogEntry& entry
             game.executableOverride = QFileInfo::exists(override) ? override : QString();
             override = game.executableOverride;
         }
+        if (!override.isEmpty() && isExcludedGameExecutable(QFileInfo(override).fileName())) {
+            game.executableOverride.clear();
+            override.clear();
+        }
         const QString cleanInstall = QDir::cleanPath(installPath);
         const QString cleanOverride = QDir::cleanPath(override);
         const bool overrideInsideInstall =
@@ -252,11 +257,25 @@ void InstallSessionService::commitInstalledCatalogGame(const CatalogEntry& entry
             previousInstall.isEmpty()
             || QDir::cleanPath(previousInstall).compare(cleanInstall, Qt::CaseInsensitive) != 0;
         if (override.isEmpty() || !overrideInsideInstall || installChanged) {
-            const QString executable = m_hooks.findGameExecutable(installPath);
-            if (!executable.isEmpty())
-                game.executableOverride = executable;
-            else if (!overrideInsideInstall)
+            // Check if source plugin provides launch executable (e.g. steamidra / steam manifest)
+            QString pluginExe;
+            if (m_pluginHost) {
+                if (ISourcePlugin* plugin = m_pluginHost->plugin(game.sourceId)) {
+                    pluginExe = plugin->launchInfo(game).executable;
+                }
+            }
+            if (!pluginExe.isEmpty() && QFileInfo::exists(pluginExe)
+                && !isExcludedGameExecutable(QFileInfo(pluginExe).fileName())) {
+                // If plugin cleanly resolves the launch executable, keep executableOverride empty
+                // so launching uses plugin launchInfo directly (including working directory and arguments)
                 game.executableOverride.clear();
+            } else {
+                const QString executable = m_hooks.findGameExecutable(installPath, game.title);
+                if (!executable.isEmpty() && !isExcludedGameExecutable(QFileInfo(executable).fileName()))
+                    game.executableOverride = executable;
+                else
+                    game.executableOverride.clear();
+            }
         }
     }
 

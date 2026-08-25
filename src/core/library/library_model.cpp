@@ -206,6 +206,19 @@ QVariantMap LibraryModel::toMap(const LibraryGame& game) const
             {QStringLiteral("enabled"), c.enabled},
         });
     }
+    QVariantList options;
+    options.reserve(game.launchOptions.size());
+    for (const GameLaunchOption& opt : game.launchOptions) {
+        options.append(QVariantMap{
+            {QStringLiteral("id"), opt.id},
+            {QStringLiteral("title"), opt.title},
+            {QStringLiteral("executable"), opt.executable},
+            {QStringLiteral("workingDirectory"), opt.workingDirectory},
+            {QStringLiteral("arguments"), opt.arguments},
+            {QStringLiteral("type"), opt.type},
+            {QStringLiteral("isDefault"), opt.isDefault},
+        });
+    }
     return {
         {QStringLiteral("gameId"), game.id},
         {QStringLiteral("entryId"), game.id},
@@ -230,6 +243,8 @@ QVariantMap LibraryModel::toMap(const LibraryGame& game) const
         {QStringLiteral("executableOverride"), game.executableOverride},
         {QStringLiteral("protonId"), game.protonId},
         {QStringLiteral("steamAppId"), game.steamAppId},
+        {QStringLiteral("selectedLaunchOptionId"), game.selectedLaunchOptionId},
+        {QStringLiteral("launchOptions"), options},
         {QStringLiteral("componentCount"), game.components.size()},
         {QStringLiteral("installedComponentCount"), installedComponentCount(game.components)},
         {QStringLiteral("components"), components},

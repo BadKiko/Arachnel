@@ -509,6 +509,7 @@ SteamShortcutResult addOrUpdateSteamShortcut(const SteamShortcutRequest& request
     entry.launchOptions = joinLaunchArguments(request.target.arguments);
     entry.allowDesktopConfig = 1;
     entry.allowOverlay = 1;
+    entry.openVr = request.openVr ? 1 : 0;
     if (!entry.tags.contains(QStringLiteral("Arachnel")))
         entry.tags.append(QStringLiteral("Arachnel"));
     if (found >= 0)

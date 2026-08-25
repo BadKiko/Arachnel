@@ -192,6 +192,7 @@ signals:
     void pluginAutoUpdatingChanged();
     void runningGameChanged();
     void launchSessionEnded(const QString& gameId, qint64 elapsedMs, bool suppressQuickExitLog);
+    void launchOptionSelectionRequested(const QString& gameId, const QVariantList& options);
     void runtimeSetupChanged();
     void protonDownloadChanged();
     void protonLatestReleaseChanged();

@@ -43,7 +43,7 @@ public:
         std::function<void()> recalculateLibraryUpdates;
         std::function<QString(const QString&)> sourceNameForId;
         std::function<QString(const QString&)> metadataSteamAppIdForTitle;
-        std::function<QString(const QString&)> findGameExecutable;
+        std::function<QString(const QString&, const QString&)> findGameExecutable;
         std::function<void(const QString&, const QString&, QString*, QString*, QString*)>
             fillProtonInstallFields;
         std::function<void(const LibraryGame&)> gameCommitted;

@@ -26,6 +26,7 @@ public:
         std::function<bool(const LibraryGame&)> ensureRuntime;
         std::function<void(const QString&)> touchLastPlayed;
         std::function<void(const QString& gameId, bool enabled)> setOnlineFixEnabled;
+        std::function<void(const QString& gameId, const QString& optionId)> setSelectedLaunchOption;
     };
 
     LaunchController(LibraryModel* library, SettingsStore* settings, PluginHost* plugins,
@@ -43,7 +44,9 @@ public:
     QString launchLogFilePath(const QString& gameId) const;
     bool hasLaunchLog(const QString& gameId) const;
 
-    void launchGame(const QString& gameId);
+    QVector<GameLaunchOption> availableLaunchOptions(const QString& gameId) const;
+    void launchGame(const QString& gameId, const QString& optionId = {});
+    void setGameSelectedLaunchOption(const QString& gameId, const QString& optionId);
     void stopRunningGame();
 
 signals:
@@ -51,6 +54,8 @@ signals:
     /** Emitted when a tracked session ends. elapsedMs is wall time since markRunning.
      *  suppressQuickExitLog: OF auto-retry or the user closed the game - don't pop the log. */
     void launchSessionEnded(const QString& gameId, qint64 elapsedMs, bool suppressQuickExitLog);
+    void launchOptionSelectionRequested(const QString& gameId,
+                                        const QVector<arachnel::core::GameLaunchOption>& options);
 
 private:
     void markRunning(const LibraryGame& game, qint64 processId, bool watchingOnlineFix,

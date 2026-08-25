@@ -199,8 +199,8 @@ void CoreController::initializeServices()
     installHooks.metadataSteamAppIdForTitle = [this](const QString& title) {
         return m_metadataService ? m_metadataService->metadataForTitle(title).steamAppId : QString();
     };
-    installHooks.findGameExecutable = [](const QString& path) {
-        return findGameExecutableInTree(path);
+    installHooks.findGameExecutable = [](const QString& path, const QString& title) {
+        return findGameExecutableInTree(path, title);
     };
     installHooks.fillProtonInstallFields = [](const QString& entryId, const QString& protonId,
                                               QString* executable, QString* compatData,
@@ -436,6 +436,16 @@ void CoreController::initializeServices()
         if (m_libraryController)
             m_libraryController->setGameOnlineFixEnabled(gameId, enabled);
     };
+    launchHooks.setSelectedLaunchOption = [this](const QString& gameId, const QString& optionId) {
+        const LibraryGame* existing = m_libraryStore.gameById(gameId);
+        if (existing) {
+            LibraryGame updated = *existing;
+            updated.selectedLaunchOptionId = optionId;
+            m_libraryStore.upsertGame(updated);
+            m_libraryStore.save();
+            m_library.replaceGame(updated);
+        }
+    };
     m_launchController =
         new LaunchController(&m_library, &m_settings, m_pluginHost, m_protonManager,
                              m_steamlessService, std::move(launchHooks), this);
@@ -443,6 +453,22 @@ void CoreController::initializeServices()
             &CoreController::runningGameChanged);
     connect(m_launchController, &LaunchController::launchSessionEnded, this,
             &CoreController::launchSessionEnded);
+    connect(m_launchController, &LaunchController::launchOptionSelectionRequested, this,
+            [this](const QString& gameId, const QVector<GameLaunchOption>& options) {
+                QVariantList list;
+                for (const auto& opt : options) {
+                    list.append(QVariantMap{
+                        {QStringLiteral("id"), opt.id},
+                        {QStringLiteral("title"), opt.title},
+                        {QStringLiteral("executable"), opt.executable},
+                        {QStringLiteral("workingDirectory"), opt.workingDirectory},
+                        {QStringLiteral("arguments"), opt.arguments},
+                        {QStringLiteral("type"), opt.type},
+                        {QStringLiteral("isDefault"), opt.isDefault},
+                    });
+                }
+                emit launchOptionSelectionRequested(gameId, list);
+            });
     m_socialController = new SocialController(this);
     connect(m_socialController, &SocialController::noticeRequested, this,
             [this](const QString& message) { showNotice(message); });
