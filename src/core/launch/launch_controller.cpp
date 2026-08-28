@@ -15,6 +15,7 @@
 #include "steamless_service.h"
 #include "vr_service.h"
 #include "wine_error_probe.h"
+#include "runtime/installscript_vdf.h"
 
 #include <QCoreApplication>
 #include <QDateTime>
@@ -847,6 +848,22 @@ void LaunchController::launchGame(const QString& gameId, const QString& optionId
             if (m_hooks.notice)
                 m_hooks.notice(reason);
             return;
+        }
+
+        // Apply installscript.vdf registry entries for Ubisoft, EA, and Steam titles before launch.
+        if (!gameCopy.installPath.isEmpty()) {
+            QString protonPrefix;
+#if defined(Q_OS_LINUX)
+            if (m_protons)
+                protonPrefix = m_protons->compatDataPathForGame(gameCopy.id);
+#endif
+            applyInstallScriptForGame(gameCopy.installPath, protonPrefix);
+        }
+
+        if (isUbisoftGame(gameCopy.installPath)) {
+            if (!info.arguments.contains(QStringLiteral("-uplay_steam_mode")))
+                info.arguments.append(QStringLiteral("-uplay_steam_mode"));
+            logLine(QCoreApplication::translate("Core", "Ubisoft game detected - applied launcher-less Steam mode"));
         }
 
         const OnlineFixOverlayState overlayBefore = detectOnlineFixOverlay(gameCopy.installPath);

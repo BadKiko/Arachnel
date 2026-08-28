@@ -10,6 +10,7 @@
 #include "proton_manager.h"
 #include "settings_store.h"
 #include "steamless_service.h"
+#include "runtime/installscript_vdf.h"
 
 #include <QCoreApplication>
 #include <QDate>
@@ -360,6 +361,10 @@ void InstallSessionService::commitInstalledCatalogGame(const CatalogEntry& entry
     // Apply Steamless to the freshly installed game (SteamStub DRM removal).
     if (m_steamless && !game.installPath.isEmpty())
         m_steamless->processInstall(game.installPath, game.title);
+
+    // Apply installscript.vdf registry entries for Ubisoft, EA, and Steam titles.
+    if (!game.installPath.isEmpty())
+        applyInstallScriptForGame(game.installPath);
 }
 
 } // namespace arachnel::core

@@ -806,7 +806,7 @@
     </message>
     <message>
         <location line="-165" />
-        <location filename="../src/core/launch/launch_controller.cpp" line="+814" />
+        <location filename="../src/core/launch/launch_controller.cpp" line="+815" />
         <location filename="../src/core/library/library_controller.cpp" line="+374" />
         <location line="+42" />
         <location line="+58" />
@@ -991,7 +991,7 @@
         <translation>Installed: %1</translation>
     </message>
     <message>
-        <location filename="../src/core/install/install_session_service_install.cpp" line="+100" />
+        <location filename="../src/core/install/install_session_service_install.cpp" line="+101" />
         <source>Add-on installation is already in progress</source>
         <translation>Add-on installation is already in progress</translation>
     </message>
@@ -1404,12 +1404,12 @@
     <message>
         <location line="+7" />
         <location line="+78" />
-        <location line="+496" />
+        <location line="+512" />
         <source>Online Fix: %1</source>
         <translation>Online Fix: %1</translation>
     </message>
     <message>
-        <location line="-551" />
+        <location line="-567" />
         <source>Player.log has a crash</source>
         <translation>Player.log has a crash</translation>
     </message>
@@ -1430,18 +1430,18 @@
     </message>
     <message>
         <location line="+13" />
-        <location line="+496" />
+        <location line="+512" />
         <source>Online Fix dir: %1</source>
         <translation>Online Fix dir: %1</translation>
     </message>
     <message>
-        <location line="-476" />
-        <location line="+466" />
+        <location line="-492" />
+        <location line="+482" />
         <source>Proton: %1</source>
         <translation>Proton: %1</translation>
     </message>
     <message>
-        <location line="-457" />
+        <location line="-473" />
         <location line="+17" />
         <source>--- Player.log (%1) ---</source>
         <translation>--- Player.log (%1) ---</translation>
@@ -1472,7 +1472,12 @@
         <translation>Game files are missing or incomplete - reinstall from the catalog. Steam Store launch is not used.</translation>
     </message>
     <message>
-        <location line="+59" />
+        <location line="+23" />
+        <source>Ubisoft game detected - applied launcher-less Steam mode</source>
+        <translation>Ubisoft game detected - applied launcher-less Steam mode</translation>
+    </message>
+    <message>
+        <location line="+52" />
         <source>Online Fix overlay detected</source>
         <translation>Online Fix overlay detected</translation>
     </message>
@@ -1765,9 +1770,9 @@
     <message>
         <location line="+190" />
         <location line="+17" />
-        <location filename="../src/core/launch/launch_controller.cpp" line="-249" />
+        <location filename="../src/core/launch/launch_controller.cpp" line="-265" />
         <location line="+6" />
-        <location line="+239" />
+        <location line="+255" />
         <source>unknown error</source>
         <translation>unknown error</translation>
     </message>
@@ -1829,10 +1834,10 @@
     </message>
     <message>
         <location line="+17" />
-        <location filename="../src/core/launch/launch_controller.cpp" line="-612" />
+        <location filename="../src/core/launch/launch_controller.cpp" line="-628" />
         <location line="+82" />
         <location line="+283" />
-        <location line="+213" />
+        <location line="+229" />
         <source>Steamless: %1</source>
         <translation>Steamless: %1</translation>
     </message>
