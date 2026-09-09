@@ -133,7 +133,7 @@ Item {
                         {
                             icon: MD.Token.icon.extension,
                             step: qsTr("Step 1"),
-                            title: qsTr("Plugin"),
+                            title: qsTr("Source"),
                             body: Messages.libraryStep1Body
                         },
                         {

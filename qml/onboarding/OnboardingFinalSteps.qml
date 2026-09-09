@@ -137,5 +137,12 @@ ColumnLayout {
             color: MD.Token.color.on_surface_variant
             typescale: MD.Token.typescale.body_small
         }
+        MD.Label {
+            Layout.fillWidth: true
+            text: Messages.gamePlayabilityNote
+            wrapMode: Text.WordWrap
+            color: MD.Token.color.on_surface_variant
+            typescale: MD.Token.typescale.body_small
+        }
     }
 }
