@@ -261,6 +261,15 @@ Item {
                         }
                     }
 
+                    MD.Label {
+                        Layout.fillWidth: true
+                        visible: !page.playable
+                        text: Messages.gamePlayabilityNote
+                        wrapMode: Text.WordWrap
+                        color: MD.Token.color.on_surface_variant
+                        typescale: MD.Token.typescale.body_small
+                    }
+
                     RowLayout {
                         Layout.fillWidth: true
                         spacing: MD.Token.spacing.small
