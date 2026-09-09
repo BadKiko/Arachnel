@@ -114,7 +114,7 @@ ColumnLayout {
         spacing: MD.Token.spacing.small
         MD.Label {
             Layout.fillWidth: true
-            text: qsTr("Install a plugin")
+            text: qsTr("Add a game source")
             typescale: MD.Token.typescale.headline_small
         }
         MD.Label {

@@ -17,7 +17,7 @@ MD.Dialog {
         {
             icon: MD.Token.icon.extension,
             step: qsTr("Step 1"),
-            title: qsTr("Plugin"),
+            title: qsTr("Source"),
             body: Messages.settingsPluginsDesc
         },
         {

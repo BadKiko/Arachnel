@@ -3672,8 +3672,8 @@
     </message>
     <message>
         <location line="+1" />
-        <source>Plugin</source>
-        <translation>Plugin</translation>
+        <source>Source</source>
+        <translation>Source</translation>
     </message>
     <message>
         <location line="+5" />
@@ -3936,6 +3936,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <location line="+2" />
         <source>Install a plugin in Settings → Plugins, or add a catalog.</source>
         <translation>Install a plugin in Settings → Plugins, or add a catalog.</translation>
+    </message>
+    <message>
+        <location line="+0" />
+        <source>You can download any game here. Ones with DRM or anti-cheat may not launch.</source>
+        <translation>You can download any game here. Ones with DRM or anti-cheat may not launch.</translation>
     </message>
     <message>
         <location line="+14" />
@@ -4220,8 +4225,8 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
     <message>
         <location line="-89" />
-        <source>Install a plugin</source>
-        <translation>Install a plugin</translation>
+        <source>Add a game source</source>
+        <translation>Add a game source</translation>
     </message>
     <message>
         <location line="+126" />
@@ -4594,8 +4599,8 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
     <message>
         <location line="-24" />
-        <source>Install plugins to browse and play games.</source>
-        <translation>Install plugins to browse and play games.</translation>
+        <source>Game sources - install one to browse and play games.</source>
+        <translation>Game sources - install one to browse and play games.</translation>
     </message>
     <message>
         <location line="+5" />
@@ -5118,8 +5123,8 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
     <message>
         <location line="+1" />
-        <source>Plugin</source>
-        <translation>Plugin</translation>
+        <source>Source</source>
+        <translation>Source</translation>
     </message>
     <message>
         <location line="+5" />

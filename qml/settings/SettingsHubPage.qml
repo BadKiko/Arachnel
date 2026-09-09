@@ -16,7 +16,7 @@ Flickable {
             {
                 id: "plugins",
                 title: qsTr("Plugins"),
-                subtitle: qsTr("Install plugins to browse and play games.")
+                subtitle: qsTr("Game sources - install one to browse and play games.")
             },
             {
                 id: "sources",

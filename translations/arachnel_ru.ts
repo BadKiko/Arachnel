@@ -3677,8 +3677,8 @@
     </message>
     <message>
         <location line="+1" />
-        <source>Plugin</source>
-        <translation>Плагин</translation>
+        <source>Source</source>
+        <translation>Источник</translation>
     </message>
     <message>
         <location line="+5" />
@@ -3942,6 +3942,11 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <location line="+2" />
         <source>Install a plugin in Settings → Plugins, or add a catalog.</source>
         <translation>Поставьте плагин в Настройки → Плагины или добавьте каталог.</translation>
+    </message>
+    <message>
+        <location line="+0" />
+        <source>You can download any game here. Ones with DRM or anti-cheat may not launch.</source>
+        <translation>Скачать можно любую игру. Но с DRM или античитом может не запуститься.</translation>
     </message>
     <message>
         <location line="+14" />
@@ -4226,8 +4231,8 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
     <message>
         <location line="-89" />
-        <source>Install a plugin</source>
-        <translation>Установить плагин</translation>
+        <source>Add a game source</source>
+        <translation>Добавьте источник игр</translation>
     </message>
     <message>
         <location line="+126" />
@@ -4600,8 +4605,8 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
     <message>
         <location line="-24" />
-        <source>Install plugins to browse and play games.</source>
-        <translation>Плагины, чтобы смотреть каталог и запускать игры.</translation>
+        <source>Game sources - install one to browse and play games.</source>
+        <translation>Источники игр - поставьте, чтобы смотреть каталог и играть.</translation>
     </message>
     <message>
         <location line="+5" />
@@ -5124,8 +5129,8 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
     <message>
         <location line="+1" />
-        <source>Plugin</source>
-        <translation>Плагин</translation>
+        <source>Source</source>
+        <translation>Источник</translation>
     </message>
     <message>
         <location line="+5" />
