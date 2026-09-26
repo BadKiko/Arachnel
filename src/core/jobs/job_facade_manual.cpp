@@ -2,6 +2,23 @@
 
 namespace arachnel::core {
 
+namespace {
+
+// Retry-install and manual-install both act on files that are already on disk.
+// A download that finished leaves the job "completed"; if the install step then
+// failed the job is "failed" with an install-failure detail - the downloaded
+// files are still there either way. Gating these on "completed" alone is what
+// made the folder button impossible to reach after a failed install, which is
+// exactly when offerManualInstallForJob() tells the user to press it (#77).
+bool jobHasInstallableFiles(const JobEntry& job)
+{
+    if (job.status == QStringLiteral("completed"))
+        return true;
+    return job.status == QStringLiteral("failed") && isJobInstallFailed(job.detail);
+}
+
+} // namespace
+
 void CoreController::retryInstall(const QString& jobId)
 {
     if (jobId.isEmpty())
@@ -12,7 +29,7 @@ void CoreController::retryInstall(const QString& jobId)
         showNotice(QCoreApplication::translate("Core", "Download not found"));
         return;
     }
-    if (job->status != QStringLiteral("completed")) {
+    if (!jobHasInstallableFiles(*job)) {
         showNotice(QCoreApplication::translate("Core", "Installation is only available for completed downloads"));
         return;
     }
@@ -86,7 +103,7 @@ void CoreController::retryInstall(const QString& jobId)
 bool CoreController::canRetryJobInstall(const QString& jobId) const
 {
     const JobEntry* job = m_jobStore.jobById(jobId);
-    if (!job || job->status != QStringLiteral("completed"))
+    if (!job || !jobHasInstallableFiles(*job))
         return false;
 
     if (isJobInstallFailed(job->detail)) {
@@ -132,13 +149,29 @@ bool CoreController::canRetryJobInstall(const QString& jobId) const
 bool CoreController::canManualInstallJob(const QString& jobId) const
 {
     const JobEntry* job = m_jobStore.jobById(jobId);
-    if (!job || job->status != QStringLiteral("completed"))
+    if (!job || !jobHasInstallableFiles(*job))
         return false;
     if (!job->parentEntryId.isEmpty())
         return false;
     if (!gameNeedsInstall(job->entryId))
         return false;
     return !job->savePath.isEmpty() && QDir(job->savePath).exists();
+}
+
+// canManualInstallJob() stays a permanent escape hatch on the downloads list, but
+// the game page should only push the user towards it when Arachnel genuinely has
+// no way to install the download itself: no installer plugin claims the files, or
+// the plugin that did claim them failed.
+bool CoreController::jobNeedsManualInstall(const QString& jobId) const
+{
+    if (!canManualInstallJob(jobId))
+        return false;
+    const JobEntry* job = m_jobStore.jobById(jobId);
+    if (!job)
+        return false;
+    if (isJobInstallFailed(job->detail) || job->status == QStringLiteral("failed"))
+        return true;
+    return !hasInstallHandlerForPath(job->sourceId, job->savePath);
 }
 
 void CoreController::openJobDownloadFolder(const QString& jobId)
@@ -206,7 +239,9 @@ void CoreController::offerManualInstallForJob(const JobEntry& job)
     openJobDownloadFolder(job.id);
     showNotice(QCoreApplication::translate(
         "Core",
-        "Automatic install is unavailable. Run setup.exe from the download folder, then use the folder button to point to the game."));
+        "Automatic install is unavailable. Run the installer from the download folder that just "
+        "opened, then press the folder button on this download (in Downloads, or on the game's "
+        "page) and pick the folder you installed it into."));
 }
 
 void CoreController::confirmManualInstall(const QString& jobId)

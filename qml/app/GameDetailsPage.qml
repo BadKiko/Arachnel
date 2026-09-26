@@ -116,6 +116,17 @@ Item {
 
     property var downloadJob: ({})
 
+    // True when the download's files are on disk but Arachnel could not install
+    // them itself (no installer plugin, or the install step failed) - the user
+    // runs the installer and then points us at the result. Mirrors the folder
+    // button on the download card so the offer in the notice is reachable from
+    // the page people actually land on (#77).
+    readonly property bool canManualInstall: {
+        const _rev = root.detailsRevision
+        const id = root.downloadJob.jobId ?? ""
+        return id.length > 0 && !root.playable && Core.jobNeedsManualInstall(id)
+    }
+
     readonly property bool downloadPaused: downloadJob.status === "paused" || !!downloadJob.paused
     readonly property bool downloadActive: !!(downloadJob.inProgress) && !downloadPaused
     readonly property bool downloadCompleted: downloadJob.status === "completed"

@@ -351,6 +351,15 @@ Item {
                         typescale: MD.Token.typescale.body_medium
                     }
 
+                    MD.Label {
+                        Layout.fillWidth: true
+                        visible: page.canManualInstall
+                        text: qsTr("Arachnel can't install this one for you. Run the installer from the download folder, then press the folder button below and pick the folder you installed it into.")
+                        wrapMode: Text.WordWrap
+                        color: MD.Token.color.on_surface_variant
+                        typescale: MD.Token.typescale.body_medium
+                    }
+
                     ColumnLayout {
                         spacing: MD.Token.spacing.extra_small
 
@@ -410,6 +419,19 @@ Item {
                                 }
                                 onPauseToggleRequested: Core.toggleJobPause(page.downloadJob.jobId)
                                 onCancelRequested: Core.cancelJob(page.downloadJob.jobId)
+                            }
+
+                            MD.IconButton {
+                                Layout.alignment: Qt.AlignVCenter
+                                visible: page.canManualInstall
+                                mdState.type: MD.Enum.IBtStandard
+                                icon.name: MD.Token.icon.folder_open
+                                onClicked: Core.confirmManualInstall(page.downloadJob.jobId)
+
+                                MD.ToolTip {
+                                    visible: parent.hovered
+                                    text: qsTr("Already installed it yourself? Pick the folder.")
+                                }
                             }
 
                             MD.IconButton {

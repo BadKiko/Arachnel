@@ -12,6 +12,8 @@
 #include <QTimer>
 #include <QVector>
 
+#include <functional>
+
 namespace arachnel::core {
 
 class HttpDownloadSession;
@@ -46,6 +48,13 @@ public:
     void retryJob(const QString& jobId);
     void clearFinishedJobs();
     void pruneFinishedJobs();
+    /**
+     * Terminal jobs normally expire from the list after kFinishedJobTtlMs. A job that
+     * still offers an install action is the user's only handle on those files, so Core
+     * installs a predicate here to keep it listed until it is dealt with. The explicit
+     * "clear finished" action ignores this - that one is the user asking.
+     */
+    void setFinishedJobKeepPredicate(std::function<bool(const JobEntry&)> keep);
     void setJobPhase(const QString& jobId, const QString& status, const QString& detail);
 
 signals:
@@ -102,6 +111,7 @@ private:
     QHash<QString, qint64> m_pluginEstimatedTotal;
     QTimer m_persistTimer;
     QTimer m_pruneTimer;
+    std::function<bool(const JobEntry&)> m_keepFinishedJob;
     bool m_dirty = false;
 
     static constexpr int kFinishedJobTtlMs = 7 * 60 * 1000;

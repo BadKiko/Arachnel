@@ -86,6 +86,8 @@
     Q_INVOKABLE void retryInstall(const QString&);
     Q_INVOKABLE bool canRetryJobInstall(const QString&) const;
     Q_INVOKABLE bool canManualInstallJob(const QString&) const;
+    /** canManualInstallJob(), narrowed to jobs Arachnel cannot install by itself. */
+    Q_INVOKABLE bool jobNeedsManualInstall(const QString&) const;
     Q_INVOKABLE void openJobDownloadFolder(const QString&);
     Q_INVOKABLE void confirmManualInstall(const QString&);
     Q_INVOKABLE QString browseInstallFolder(const QString& = {});

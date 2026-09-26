@@ -100,6 +100,7 @@ Item {
     Connections {
         target: Core.library
         function onLibraryChanged() {
+            root.installActionRevision++
             if (root.detailsEntryId.length)
                 root.bumpCover()
         }
@@ -113,8 +114,27 @@ Item {
     readonly property bool isCompleted: status === "completed" && !root.installFailed
     readonly property bool isTerminal: status === "completed" || status === "failed" || status === "cancelled"
     readonly property bool canRetry: status === "failed" || status === "cancelled"
-    readonly property bool canRetryInstall: root.jobId.length > 0 && Core.canRetryJobInstall(root.jobId)
-    readonly property bool canManualInstall: root.jobId.length > 0 && Core.canManualInstallJob(root.jobId)
+    // Core.canRetryJobInstall()/canManualInstallJob() are plain invokables, so
+    // reading them registers no binding dependency. DownloadsPage updates its rows
+    // in place, so jobId - the only property these used to read - never changes
+    // after the delegate is built while the job is still downloading, and the
+    // bindings stayed at their first answer (false). That is why the install and
+    // folder buttons never appeared (#77). Name the inputs that can flip the
+    // answer by hand: the job's own status/detail, plus a revision bumped when
+    // the library changes (both helpers ask whether the game is installed).
+    property int installActionRevision: 0
+    readonly property bool canRetryInstall: {
+        root.status
+        root.detail
+        root.installActionRevision
+        return root.jobId.length > 0 && Core.canRetryJobInstall(root.jobId)
+    }
+    readonly property bool canManualInstall: {
+        root.status
+        root.detail
+        root.installActionRevision
+        return root.jobId.length > 0 && Core.canManualInstallJob(root.jobId)
+    }
     readonly property bool installFailed: root.status === "failed"
         || root.detail.indexOf("Install failed") >= 0
         || root.detail.indexOf("Ошибка установки") >= 0
