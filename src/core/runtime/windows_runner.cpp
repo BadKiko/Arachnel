@@ -22,6 +22,7 @@ namespace {
 
 bool runProcess(QProcess& process, int timeoutMs, QString* errorOut)
 {
+    process.start();
     if (!process.waitForStarted(15000)) {
         if (errorOut) {
             const QString detail = process.errorString().trimmed();
