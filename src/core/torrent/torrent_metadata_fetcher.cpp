@@ -73,7 +73,7 @@ std::optional<QStringList> fetchMagnetFileNames(const QString& magnetUri, int ti
         return std::nullopt;
 
     handle.resume();
-    handle.force_reannounce(0, lt::torrent_handle::ignore_min_interval);
+    handle.force_reannounce(0, -1, lt::torrent_handle::ignore_min_interval);
 
     const qint64 deadline = QDateTime::currentMSecsSinceEpoch() + timeoutMs;
     bool hasMetadata = false;

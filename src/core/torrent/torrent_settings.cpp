@@ -136,7 +136,7 @@ void tuneActiveDownloadHandle(lt::torrent_handle handle)
     handle.set_download_limit(-1);
     addMissingTrackersToHandle(handle);
     handle.resume();
-    handle.force_reannounce(0, lt::torrent_handle::ignore_min_interval);
+    handle.force_reannounce(0, -1, lt::torrent_handle::ignore_min_interval);
     handle.force_dht_announce();
 }
 

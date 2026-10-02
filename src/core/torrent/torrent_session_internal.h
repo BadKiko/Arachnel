@@ -101,7 +101,7 @@ void kickStalledMetadata(const QString& jobId, lt::torrent_handle handle,
         return;
 
     handle.resume();
-    handle.force_reannounce(0, lt::torrent_handle::ignore_min_interval);
+    handle.force_reannounce(0, -1, lt::torrent_handle::ignore_min_interval);
     handle.force_dht_announce();
     metadataStallSinceMs.insert(jobId, now);
 }
