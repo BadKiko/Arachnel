@@ -1118,6 +1118,22 @@
         <translation>Proton-GE download failed: %1</translation>
     </message>
     <message>
+        <location filename="../src/core/runtime/proton_manager_download.cpp" line="190" />
+        <source>GitHub API rate limit reached. Try again later.</source>
+        <translation>GitHub API rate limit reached. Try again later.</translation>
+    </message>
+    <message>
+        <location line="193" />
+        <source>No Proton-GE archive found in latest release</source>
+        <translation>No Proton-GE archive found in latest release</translation>
+    </message>
+    <message>
+        <location line="198" />
+        <location line="429" />
+        <source>GitHub API request failed.</source>
+        <translation>GitHub API request failed.</translation>
+    </message>
+    <message>
         <location filename="../src/core/library/library_facade_ops.cpp" line="-44" />
         <source>Choose game executable</source>
         <translation>Choose game executable</translation>

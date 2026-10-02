@@ -77,7 +77,9 @@ private:
     void finishDownload(bool success, const QString& error = {});
     bool extractTarGz(const QString& archivePath, const QString& destDir, QString* errorOut);
     QString findProtonScriptInDir(const QString& dir) const;
-    bool fetchLatestGeReleaseInfo(QString* versionNameOut, QString* downloadUrlOut);
+    bool fetchLatestGeReleaseInfo(QString* versionNameOut, QString* downloadUrlOut,
+                                   QString* errorOut);
+    void adoptLatestGeReleaseName(const QString& versionName);
     QString makeEntryId(const QString& source, const QString& installDir) const;
     void appendEntry(QVector<ProtonEntry>* out, const QString& source,
                      const QString& sourceLabel, const QString& installDir,
