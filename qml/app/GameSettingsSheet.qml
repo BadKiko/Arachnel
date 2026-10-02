@@ -16,7 +16,10 @@ MD.BottomSheet {
 
     readonly property var info: {
         const _rev = root.detailsRevision
-        return gameId.length ? Core.entryDetails(gameId) : ({})
+        if (!gameId.length)
+            return ({})
+        const details = Core.entryDetails(gameId)
+        return details || ({})
     }
     readonly property bool playable: Core.isEntryPlayable(gameId)
     readonly property bool installed: {
@@ -34,11 +37,31 @@ MD.BottomSheet {
         return (lib.gameId ?? "").length > 0
     }
     readonly property bool onLinux: Qt.platform.os === "linux"
-    readonly property var availableLaunchOptions: root.gameId.length ? Core.gameLaunchOptions(root.gameId) : []
-    readonly property string currentSelectedLaunchOption: root.info.selectedLaunchOptionId ?? ""
+    // Hidden rows still bind, and a list can report length with a missing [0].
+    readonly property var availableLaunchOptions: {
+        if (!root.gameId.length)
+            return []
+        const raw = Core.gameLaunchOptions(root.gameId)
+        if (!raw || raw.length === undefined)
+            return []
+        const out = []
+        for (let i = 0; i < raw.length; ++i) {
+            const opt = raw[i]
+            if (opt)
+                out.push(opt)
+        }
+        return out
+    }
+    readonly property var soleLaunchOption: {
+        const opts = root.availableLaunchOptions
+        if (!opts || opts.length !== 1)
+            return null
+        return opts[0] || null
+    }
+    readonly property string currentSelectedLaunchOption: root.info?.selectedLaunchOptionId ?? ""
     readonly property var installedComponents: {
         const _rev = root.detailsRevision
-        const raw = root.info.components
+        const raw = root.info?.components
         if (raw === undefined || raw === null)
             return []
         const len = raw.length !== undefined ? raw.length : 0
@@ -54,7 +77,7 @@ MD.BottomSheet {
     /** Installed Steam/plugin DLC components for this game. */
     readonly property int installedDlcCount: {
         const _rev = root.detailsRevision
-        const raw = root.info.components
+        const raw = root.info?.components
         const len = raw && raw.length !== undefined ? raw.length : 0
         let n = 0
         for (let i = 0; i < len; ++i) {
@@ -109,8 +132,8 @@ MD.BottomSheet {
     onOpened: {
         if (root.onLinux)
             Core.refreshAvailableProtons()
-        launchArgsField.text = root.info.launchArgs ?? ""
-        exeField.text = root.info.executableOverride ?? ""
+        launchArgsField.text = root.info?.launchArgs ?? ""
+        exeField.text = root.info?.executableOverride ?? ""
     }
 
     ColumnLayout {
@@ -363,7 +386,7 @@ MD.BottomSheet {
                 ColumnLayout {
                     Layout.fillWidth: true
                     spacing: MD.Token.spacing.extra_small
-                    visible: root.availableLaunchOptions.length === 1
+                    visible: !!root.soleLaunchOption
 
                     MD.Label {
                         Layout.fillWidth: true
@@ -401,7 +424,7 @@ MD.BottomSheet {
 
                                 MD.Label {
                                     Layout.fillWidth: true
-                                    text: root.availableLaunchOptions[0].title || qsTr("Default")
+                                    text: root.soleLaunchOption?.title || qsTr("Default")
                                     typescale: MD.Token.typescale.body_medium
                                     color: MD.Token.color.on_surface
                                 }
@@ -409,10 +432,13 @@ MD.BottomSheet {
                                 MD.Label {
                                     Layout.fillWidth: true
                                     text: {
-                                        const opt = root.availableLaunchOptions[0]
+                                        const opt = root.soleLaunchOption
+                                        if (!opt)
+                                            return ""
                                         let desc = opt.executable || ""
-                                        if (opt.arguments && opt.arguments.length > 0)
-                                            desc += " " + (Array.isArray(opt.arguments) ? opt.arguments.join(" ") : opt.arguments)
+                                        const args = opt.arguments
+                                        if (args && args.length > 0)
+                                            desc += " " + (Array.isArray(args) ? args.join(" ") : args)
                                         return desc
                                     }
                                     typescale: MD.Token.typescale.body_small
@@ -428,7 +454,7 @@ MD.BottomSheet {
                 ColumnLayout {
                     Layout.fillWidth: true
                     spacing: MD.Token.spacing.small
-                    visible: root.availableLaunchOptions.length > 1
+                    visible: (root.availableLaunchOptions?.length ?? 0) > 1
 
                     MD.Label {
                         Layout.fillWidth: true
@@ -500,7 +526,7 @@ MD.BottomSheet {
                                 Layout.fillWidth: true
                                 implicitHeight: optSetRow.implicitHeight + MD.Token.spacing.small * 2
                                 radius: MD.Token.shape.corner.small
-                                readonly property bool isSelected: root.currentSelectedLaunchOption === modelData.id
+                                readonly property bool isSelected: root.currentSelectedLaunchOption === (modelData?.id ?? "")
                                 color: isSelected ? MD.Token.color.secondary_container : (optSetMouse.containsMouse ? MD.Token.color.surface_container_high : MD.Token.color.surface_container)
                                 border.width: isSelected ? 2 : 1
                                 border.color: isSelected ? MD.Token.color.primary : MD.Token.color.outline_variant
@@ -510,7 +536,10 @@ MD.BottomSheet {
                                     anchors.fill: parent
                                     hoverEnabled: true
                                     cursorShape: Qt.PointingHandCursor
-                                    onClicked: Core.setGameSelectedLaunchOption(root.gameId, modelData.id)
+                                    onClicked: {
+                                        if (modelData)
+                                            Core.setGameSelectedLaunchOption(root.gameId, modelData.id || "")
+                                    }
                                 }
 
                                 RowLayout {
@@ -545,7 +574,7 @@ MD.BottomSheet {
 
                                         MD.Label {
                                             Layout.fillWidth: true
-                                            text: modelData.title || qsTr("Option %1").arg(modelData.id)
+                                            text: modelData?.title || qsTr("Option %1").arg(modelData?.id ?? "")
                                             typescale: MD.Token.typescale.body_medium
                                             color: parent.parent.parent.isSelected ? MD.Token.color.on_secondary_container : MD.Token.color.on_surface
                                             font.bold: parent.parent.parent.isSelected
@@ -554,10 +583,15 @@ MD.BottomSheet {
                                         MD.Label {
                                             Layout.fillWidth: true
                                             text: {
-                                                const args = (modelData.arguments && modelData.arguments.length)
-                                                    ? " " + modelData.arguments.join(" ") : ""
-                                                const exeName = (modelData.executable || "").split("/").pop().split("\\").pop()
-                                                return exeName + args
+                                                const opt = modelData
+                                                if (!opt)
+                                                    return ""
+                                                const args = opt.arguments
+                                                const argText = (args && args.length > 0)
+                                                    ? " " + (Array.isArray(args) ? args.join(" ") : args)
+                                                    : ""
+                                                const exeName = String(opt.executable || "").split("/").pop().split("\\").pop()
+                                                return exeName + argText
                                             }
                                             typescale: MD.Token.typescale.body_small
                                             color: MD.Token.color.on_surface_variant
