@@ -2,6 +2,18 @@
 
 namespace arachnel::core {
 
+namespace {
+
+// Completed downloads, or failed installs that still have files on disk (#77).
+bool jobHasInstallableFiles(const JobEntry& job)
+{
+    if (job.status == QStringLiteral("completed"))
+        return true;
+    return job.status == QStringLiteral("failed") && isJobInstallFailed(job.detail);
+}
+
+} // namespace
+
 void CoreController::retryInstall(const QString& jobId)
 {
     if (jobId.isEmpty())
@@ -12,7 +24,7 @@ void CoreController::retryInstall(const QString& jobId)
         showNotice(QCoreApplication::translate("Core", "Download not found"));
         return;
     }
-    if (job->status != QStringLiteral("completed")) {
+    if (!jobHasInstallableFiles(*job)) {
         showNotice(QCoreApplication::translate("Core", "Installation is only available for completed downloads"));
         return;
     }
@@ -86,7 +98,7 @@ void CoreController::retryInstall(const QString& jobId)
 bool CoreController::canRetryJobInstall(const QString& jobId) const
 {
     const JobEntry* job = m_jobStore.jobById(jobId);
-    if (!job || job->status != QStringLiteral("completed"))
+    if (!job || !jobHasInstallableFiles(*job))
         return false;
 
     if (isJobInstallFailed(job->detail)) {
@@ -132,13 +144,26 @@ bool CoreController::canRetryJobInstall(const QString& jobId) const
 bool CoreController::canManualInstallJob(const QString& jobId) const
 {
     const JobEntry* job = m_jobStore.jobById(jobId);
-    if (!job || job->status != QStringLiteral("completed"))
+    if (!job || !jobHasInstallableFiles(*job))
         return false;
     if (!job->parentEntryId.isEmpty())
         return false;
     if (!gameNeedsInstall(job->entryId))
         return false;
     return !job->savePath.isEmpty() && QDir(job->savePath).exists();
+}
+
+// Narrower than canManualInstallJob: only when Core cannot install the files itself.
+bool CoreController::jobNeedsManualInstall(const QString& jobId) const
+{
+    if (!canManualInstallJob(jobId))
+        return false;
+    const JobEntry* job = m_jobStore.jobById(jobId);
+    if (!job)
+        return false;
+    if (isJobInstallFailed(job->detail) || job->status == QStringLiteral("failed"))
+        return true;
+    return !hasInstallHandlerForPath(job->sourceId, job->savePath);
 }
 
 void CoreController::openJobDownloadFolder(const QString& jobId)
@@ -206,7 +231,7 @@ void CoreController::offerManualInstallForJob(const JobEntry& job)
     openJobDownloadFolder(job.id);
     showNotice(QCoreApplication::translate(
         "Core",
-        "Automatic install is unavailable. Run setup.exe from the download folder, then use the folder button to point to the game."));
+        "Automatic install unavailable. Run the installer, then use the folder button to pick the game folder."));
 }
 
 void CoreController::confirmManualInstall(const QString& jobId)

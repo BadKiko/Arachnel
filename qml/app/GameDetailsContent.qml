@@ -351,6 +351,15 @@ Item {
                         typescale: MD.Token.typescale.body_medium
                     }
 
+                    MD.Label {
+                        Layout.fillWidth: true
+                        visible: page.canManualInstall
+                        text: qsTr("Couldn't install automatically. Run the installer, then pick the folder with the folder button.")
+                        wrapMode: Text.WordWrap
+                        color: MD.Token.color.on_surface_variant
+                        typescale: MD.Token.typescale.body_medium
+                    }
+
                     ColumnLayout {
                         spacing: MD.Token.spacing.extra_small
 
@@ -401,15 +410,29 @@ Item {
                                 installFailed: page.installFailed
                                 installing: page.isInstalling
                                 onActivated: {
-                                    if (page.downloadFailed)
-                                        Core.retryJob(page.downloadJob.jobId)
-                                    else if (page.installFailed || page.readyToInstall)
+                                    // Prefer retryInstall when files are already on disk.
+                                    if (page.installFailed || page.readyToInstall)
                                         Core.retryInstall(page.downloadJob.jobId)
+                                    else if (page.downloadFailed)
+                                        Core.retryJob(page.downloadJob.jobId)
                                     else
                                         page.beginInstall()
                                 }
                                 onPauseToggleRequested: Core.toggleJobPause(page.downloadJob.jobId)
                                 onCancelRequested: Core.cancelJob(page.downloadJob.jobId)
+                            }
+
+                            MD.IconButton {
+                                Layout.alignment: Qt.AlignVCenter
+                                visible: page.canManualInstall
+                                mdState.type: MD.Enum.IBtStandard
+                                icon.name: MD.Token.icon.folder_open
+                                onClicked: Core.confirmManualInstall(page.downloadJob.jobId)
+
+                                MD.ToolTip {
+                                    visible: parent.hovered
+                                    text: qsTr("Pick the folder you installed into.")
+                                }
                             }
 
                             MD.IconButton {

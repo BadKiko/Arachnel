@@ -12,6 +12,8 @@
 #include <QTimer>
 #include <QVector>
 
+#include <functional>
+
 namespace arachnel::core {
 
 class HttpDownloadSession;
@@ -46,6 +48,8 @@ public:
     void retryJob(const QString& jobId);
     void clearFinishedJobs();
     void pruneFinishedJobs();
+    // Keep terminal jobs that still offer an install action (folder/retry).
+    void setFinishedJobKeepPredicate(std::function<bool(const JobEntry&)> keep);
     void setJobPhase(const QString& jobId, const QString& status, const QString& detail);
 
 signals:
@@ -102,6 +106,7 @@ private:
     QHash<QString, qint64> m_pluginEstimatedTotal;
     QTimer m_persistTimer;
     QTimer m_pruneTimer;
+    std::function<bool(const JobEntry&)> m_keepFinishedJob;
     bool m_dirty = false;
 
     static constexpr int kFinishedJobTtlMs = 7 * 60 * 1000;

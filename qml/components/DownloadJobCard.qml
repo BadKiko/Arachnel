@@ -100,6 +100,7 @@ Item {
     Connections {
         target: Core.library
         function onLibraryChanged() {
+            root.installActionRevision++
             if (root.detailsEntryId.length)
                 root.bumpCover()
         }
@@ -113,8 +114,20 @@ Item {
     readonly property bool isCompleted: status === "completed" && !root.installFailed
     readonly property bool isTerminal: status === "completed" || status === "failed" || status === "cancelled"
     readonly property bool canRetry: status === "failed" || status === "cancelled"
-    readonly property bool canRetryInstall: root.jobId.length > 0 && Core.canRetryJobInstall(root.jobId)
-    readonly property bool canManualInstall: root.jobId.length > 0 && Core.canManualInstallJob(root.jobId)
+    // Invokables alone do not register QML deps; name status/detail/revision (#77).
+    property int installActionRevision: 0
+    readonly property bool canRetryInstall: {
+        root.status
+        root.detail
+        root.installActionRevision
+        return root.jobId.length > 0 && Core.canRetryJobInstall(root.jobId)
+    }
+    readonly property bool canManualInstall: {
+        root.status
+        root.detail
+        root.installActionRevision
+        return root.jobId.length > 0 && Core.canManualInstallJob(root.jobId)
+    }
     readonly property bool installFailed: root.status === "failed"
         || root.detail.indexOf("Install failed") >= 0
         || root.detail.indexOf("Ошибка установки") >= 0

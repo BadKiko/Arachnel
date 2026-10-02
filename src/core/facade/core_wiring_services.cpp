@@ -154,6 +154,9 @@ void CoreController::initializeServices()
                                             m_httpSession, &m_jobs, this);
     connect(m_jobOrchestrator, &JobOrchestrator::pluginDownloadResumeRequested, this,
             [this](const QString& jobId) { restartPluginOwnedDownload(jobId); });
+    m_jobOrchestrator->setFinishedJobKeepPredicate([this](const JobEntry& job) {
+        return canManualInstallJob(job.id) || canRetryJobInstall(job.id);
+    });
     m_jobOrchestrator->restoreJobs();
     resumePluginOwnedDownloads();
     connect(&m_jobs, &JobModel::jobsChanged, this, &CoreController::syncInstallKindProbeSuspension);
