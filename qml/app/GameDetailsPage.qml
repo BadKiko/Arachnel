@@ -94,11 +94,16 @@ Item {
         const _rev = root.detailsRevision
         return Core.isEntryDownloadComplete(gameId)
     }
-    readonly property bool downloadFailed: downloadJob.status === "failed"
-        || downloadJob.status === "cancelled"
-    // Install-phase failure only (completed download with bad install, not a network drop).
-    readonly property bool installFailed: !root.downloadFailed
-        && !!(downloadJob.installFailed)
+    // Install-phase failures keep status "failed" with an install detail; treat those
+    // as installFailed so retry uses retryInstall instead of re-downloading (#77).
+    readonly property bool installFailed: {
+        const detail = String(downloadJob.detail ?? "")
+        if (detail.indexOf("Install failed") >= 0 || detail.indexOf("Ошибка установки") >= 0)
+            return true
+        return downloadJob.status === "completed" && !!(downloadJob.installFailed)
+    }
+    readonly property bool downloadFailed: (downloadJob.status === "failed"
+        || downloadJob.status === "cancelled") && !root.installFailed
     readonly property bool isInstalling: downloadJob.status === "installing"
     readonly property bool readyToInstall: !root.playable
         && !root.installed
@@ -115,6 +120,12 @@ Item {
     )
 
     property var downloadJob: ({})
+
+    readonly property bool canManualInstall: {
+        const _rev = root.detailsRevision
+        const id = root.downloadJob.jobId ?? ""
+        return id.length > 0 && !root.playable && Core.jobNeedsManualInstall(id)
+    }
 
     readonly property bool downloadPaused: downloadJob.status === "paused" || !!downloadJob.paused
     readonly property bool downloadActive: !!(downloadJob.inProgress) && !downloadPaused
