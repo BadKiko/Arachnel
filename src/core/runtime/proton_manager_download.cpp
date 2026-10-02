@@ -1,8 +1,10 @@
 #include "proton_manager.h"
 
+#include <QCoreApplication>
 #include <QCryptographicHash>
 #include <QDir>
 #include <QDirIterator>
+#include <QEventLoop>
 #include <QFile>
 #include <QFileInfo>
 #include <QJsonArray>
@@ -17,11 +19,32 @@
 #include <QStandardPaths>
 #include <QSysInfo>
 #include <QUrl>
-#include <QEventLoop>
+#include <QVariant>
 
 namespace arachnel::core {
 
 namespace {
+
+enum class GeLookupFailure {
+    None,
+    RateLimit,
+    ApiFailed,
+    NoArchive,
+};
+
+struct GeReleaseLookup {
+    QString versionName;
+    QString downloadUrl;
+    GeLookupFailure failure = GeLookupFailure::ApiFailed;
+};
+
+struct HttpGetResult {
+    int status = 0;
+    QByteArray body;
+    QByteArray rateRemaining;
+    QUrl url;
+    QUrl redirectTarget;
+};
 
 // GE-Proton releases ship both x86_64 and aarch64 archives. Pick the one
 // matching the host CPU - downloading the foreign arch is silently broken.
@@ -46,6 +69,8 @@ bool pickGeProtonAsset(const QJsonArray& assets, QString* urlOut, QString* nameO
             || name.contains(QStringLiteral("sha512"), Qt::CaseInsensitive))
             continue;
         const QString url = asset.value(QStringLiteral("browser_download_url")).toString();
+        if (url.isEmpty())
+            continue;
         const QString versionName =
             name.left(name.size() - QStringLiteral(".tar.gz").size());
         if (name.contains(arch, Qt::CaseInsensitive)) {
@@ -66,35 +91,242 @@ bool pickGeProtonAsset(const QJsonArray& assets, QString* urlOut, QString* nameO
     return false;
 }
 
+bool isGeProtonTag(const QString& tag)
+{
+    static const QRegularExpression re(QStringLiteral("^GE-Proton[0-9A-Za-z._+-]+$"));
+    return re.match(tag).hasMatch();
+}
+
+bool fillGeReleaseFromTag(const QString& tag, QString* versionNameOut, QString* downloadUrlOut)
+{
+    const QString trimmed = tag.trimmed();
+    if (!isGeProtonTag(trimmed) || !versionNameOut || !downloadUrlOut)
+        return false;
+
+    const QString archiveName =
+        trimmed + QLatin1Char('-') + geProtonArchSuffix() + QStringLiteral(".tar.gz");
+    *versionNameOut = archiveName.left(archiveName.size() - QStringLiteral(".tar.gz").size());
+    *downloadUrlOut = QStringLiteral(
+                          "https://github.com/GloriousEggroll/proton-ge-custom/releases/download/%1/%2")
+                          .arg(trimmed, archiveName);
+    return true;
+}
+
+QString geProtonTagFromUrl(const QUrl& url)
+{
+    if (!url.isValid())
+        return {};
+
+    static const QRegularExpression re(QStringLiteral("/releases/tag/([^/?#]+)"));
+    const QRegularExpressionMatch match = re.match(url.toString());
+    if (!match.hasMatch())
+        return {};
+    return QUrl::fromPercentEncoding(match.captured(1).toUtf8());
+}
+
+QString geProtonTagFromHttp(const HttpGetResult& page)
+{
+    const QString fromRedirect = geProtonTagFromUrl(page.redirectTarget);
+    if (!fromRedirect.isEmpty())
+        return fromRedirect;
+    return geProtonTagFromUrl(page.url);
+}
+
+bool isGitHubRateLimit(int httpStatus, const QByteArray& rateRemaining, const QJsonObject& payload)
+{
+    if (httpStatus == 429)
+        return true;
+
+    const QString message = payload.value(QStringLiteral("message")).toString();
+    if (message.contains(QStringLiteral("rate limit"), Qt::CaseInsensitive))
+        return true;
+
+    const QString docs = payload.value(QStringLiteral("documentation_url")).toString();
+    if (docs.contains(QStringLiteral("rate-limit"), Qt::CaseInsensitive))
+        return true;
+
+    return (httpStatus == 403 || httpStatus == 401) && rateRemaining == QByteArrayLiteral("0");
+}
+
+GeReleaseLookup interpretGeReleaseBody(const QByteArray& body, int httpStatus,
+                                       const QByteArray& rateRemaining)
+{
+    GeReleaseLookup result;
+    QJsonParseError parseError;
+    const QJsonDocument doc = QJsonDocument::fromJson(body, &parseError);
+    const bool parsed = parseError.error == QJsonParseError::NoError && doc.isObject();
+    const QJsonObject release = parsed ? doc.object() : QJsonObject();
+    const bool looksLikeRelease = parsed && (release.contains(QStringLiteral("tag_name"))
+                                              || release.contains(QStringLiteral("assets")));
+
+    if (httpStatus < 200 || httpStatus >= 300 || !looksLikeRelease) {
+        result.failure = isGitHubRateLimit(httpStatus, rateRemaining, release)
+                             ? GeLookupFailure::RateLimit
+                             : GeLookupFailure::ApiFailed;
+        return result;
+    }
+
+    if (pickGeProtonAsset(release.value(QStringLiteral("assets")).toArray(), &result.downloadUrl,
+                          &result.versionName)) {
+        result.failure = GeLookupFailure::None;
+        return result;
+    }
+
+    if (fillGeReleaseFromTag(release.value(QStringLiteral("tag_name")).toString(),
+                             &result.versionName, &result.downloadUrl)) {
+        result.failure = GeLookupFailure::None;
+        return result;
+    }
+
+    result.failure = GeLookupFailure::NoArchive;
+    return result;
+}
+
+QString geLookupErrorText(GeLookupFailure failure)
+{
+    switch (failure) {
+    case GeLookupFailure::RateLimit:
+        return QCoreApplication::translate("Core",
+                                            "GitHub API rate limit reached. Try again later.");
+    case GeLookupFailure::NoArchive:
+        return QCoreApplication::translate("Core",
+                                            "No Proton-GE archive found in latest release");
+    case GeLookupFailure::None:
+    case GeLookupFailure::ApiFailed:
+        break;
+    }
+    return QCoreApplication::translate("Core", "GitHub API request failed.");
+}
+
+QUrl geLatestApiUrl()
+{
+    return QUrl(QStringLiteral(
+        "https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest"));
+}
+
+QUrl geLatestPageUrl()
+{
+    return QUrl(QStringLiteral(
+        "https://github.com/GloriousEggroll/proton-ge-custom/releases/latest"));
+}
+
+void applyArachnelUserAgent(QNetworkRequest* request)
+{
+    request->setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("Arachnel"));
+}
+
+void applyOptionalGitHubToken(QNetworkRequest* request)
+{
+    QString token = qEnvironmentVariable("GITHUB_TOKEN").trimmed();
+    if (token.isEmpty())
+        token = qEnvironmentVariable("GH_TOKEN").trimmed();
+    if (token.isEmpty())
+        return;
+    request->setRawHeader("Authorization", ("Bearer " + token).toUtf8());
+}
+
+QNetworkRequest geApiRequest()
+{
+    QNetworkRequest request{geLatestApiUrl()};
+    applyArachnelUserAgent(&request);
+    applyOptionalGitHubToken(&request);
+    return request;
+}
+
+QNetworkRequest geLatestPageRequest()
+{
+    QNetworkRequest request{geLatestPageUrl()};
+    applyArachnelUserAgent(&request);
+    request.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
+                         QVariant::fromValue(QNetworkRequest::ManualRedirectPolicy));
+    return request;
+}
+
+QUrl redirectTargetFromReply(QNetworkReply* reply)
+{
+    QUrl target = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toUrl();
+    if (!target.isValid()) {
+        const QByteArray location = reply->rawHeader("Location");
+        if (!location.isEmpty())
+            target = QUrl::fromEncoded(location);
+    }
+    if (!target.isValid())
+        return {};
+    if (target.isRelative())
+        target = reply->url().resolved(target);
+    return target;
+}
+
+HttpGetResult httpResultFromReply(QNetworkReply* reply)
+{
+    HttpGetResult result;
+    result.status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    result.body = reply->readAll();
+    result.rateRemaining = reply->rawHeader("X-RateLimit-Remaining");
+    result.url = reply->url();
+    result.redirectTarget = redirectTargetFromReply(reply);
+    return result;
+}
+
+HttpGetResult blockingGet(QNetworkAccessManager* network, const QNetworkRequest& request)
+{
+    QEventLoop loop;
+    QNetworkReply* reply = network->get(request);
+    QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+    loop.exec();
+    const HttpGetResult result = httpResultFromReply(reply);
+    reply->deleteLater();
+    return result;
+}
+
+GeReleaseLookup lookupFromLatestPage(const HttpGetResult& page)
+{
+    GeReleaseLookup result;
+    if (fillGeReleaseFromTag(geProtonTagFromHttp(page), &result.versionName, &result.downloadUrl))
+        result.failure = GeLookupFailure::None;
+    return result;
+}
+
 } // namespace
 
 #include "proton_manager_helpers.h"
 
-bool ProtonManager::fetchLatestGeReleaseInfo(QString* versionNameOut, QString* downloadUrlOut)
+void ProtonManager::adoptLatestGeReleaseName(const QString& versionName)
+{
+    if (versionName.isEmpty() || m_latestGeReleaseName == versionName)
+        return;
+    m_latestGeReleaseName = versionName;
+    emit latestGeReleaseChanged();
+}
+
+bool ProtonManager::fetchLatestGeReleaseInfo(QString* versionNameOut, QString* downloadUrlOut,
+                                              QString* errorOut)
 {
     if (!versionNameOut || !downloadUrlOut)
         return false;
 
     auto* network = new QNetworkAccessManager(this);
-    QNetworkRequest request(QUrl(QStringLiteral(
-        "https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest")));
-    request.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("Arachnel"));
+    const HttpGetResult api = blockingGet(network, geApiRequest());
+    GeReleaseLookup lookup = interpretGeReleaseBody(api.body, api.status, api.rateRemaining);
 
-    QEventLoop loop;
-    bool ok = false;
-    QNetworkReply* reply = network->get(request);
-    connect(reply, &QNetworkReply::finished, this, [&]() {
-        if (reply->error() == QNetworkReply::NoError) {
-            const QJsonObject release = QJsonDocument::fromJson(reply->readAll()).object();
-            ok = pickGeProtonAsset(release.value(QStringLiteral("assets")).toArray(),
-                                   downloadUrlOut, versionNameOut);
-        }
-        loop.quit();
-    });
-    loop.exec();
-    reply->deleteLater();
+    // 403 rate-limit bodies have no assets. The releases page redirect still has the tag.
+    if (lookup.failure == GeLookupFailure::RateLimit
+        || lookup.failure == GeLookupFailure::ApiFailed) {
+        const GeReleaseLookup fromPage =
+            lookupFromLatestPage(blockingGet(network, geLatestPageRequest()));
+        if (fromPage.failure == GeLookupFailure::None)
+            lookup = fromPage;
+    }
+
     network->deleteLater();
-    return ok;
+    if (lookup.failure == GeLookupFailure::None) {
+        *versionNameOut = lookup.versionName;
+        *downloadUrlOut = lookup.downloadUrl;
+        return true;
+    }
+    if (errorOut)
+        *errorOut = geLookupErrorText(lookup.failure);
+    return false;
 }
 
 void ProtonManager::refreshLatestGeRelease()
@@ -103,26 +335,31 @@ void ProtonManager::refreshLatestGeRelease()
     return;
 #else
     auto* network = new QNetworkAccessManager(this);
-    QNetworkRequest request(QUrl(QStringLiteral(
-        "https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest")));
-    request.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("Arachnel"));
-    QNetworkReply* reply = network->get(request);
-
+    QNetworkReply* reply = network->get(geApiRequest());
     connect(reply, &QNetworkReply::finished, this, [this, network, reply]() {
+        const HttpGetResult api = httpResultFromReply(reply);
         reply->deleteLater();
-        network->deleteLater();
 
-        if (reply->error() != QNetworkReply::NoError)
+        const GeReleaseLookup lookup =
+            interpretGeReleaseBody(api.body, api.status, api.rateRemaining);
+        if (lookup.failure == GeLookupFailure::None) {
+            network->deleteLater();
+            adoptLatestGeReleaseName(lookup.versionName);
             return;
-
-        const QJsonObject release = QJsonDocument::fromJson(reply->readAll()).object();
-        QString url;
-        QString versionName;
-        if (pickGeProtonAsset(release.value(QStringLiteral("assets")).toArray(), &url, &versionName)
-            && m_latestGeReleaseName != versionName) {
-            m_latestGeReleaseName = versionName;
-            emit latestGeReleaseChanged();
         }
+        if (lookup.failure == GeLookupFailure::NoArchive) {
+            network->deleteLater();
+            return;
+        }
+
+        QNetworkReply* pageReply = network->get(geLatestPageRequest());
+        connect(pageReply, &QNetworkReply::finished, this, [this, network, pageReply]() {
+            const GeReleaseLookup fromPage = lookupFromLatestPage(httpResultFromReply(pageReply));
+            pageReply->deleteLater();
+            network->deleteLater();
+            if (fromPage.failure == GeLookupFailure::None)
+                adoptLatestGeReleaseName(fromPage.versionName);
+        });
     });
 #endif
 }
@@ -186,18 +423,15 @@ void ProtonManager::downloadLatestGe()
 
     QString versionName;
     QString downloadUrl;
-    if (!fetchLatestGeReleaseInfo(&versionName, &downloadUrl)) {
-        finishDownload(false, QStringLiteral("No Proton-GE archive found in latest release"));
+    QString lookupError;
+    if (!fetchLatestGeReleaseInfo(&versionName, &downloadUrl, &lookupError)) {
+        if (lookupError.isEmpty())
+            lookupError = QCoreApplication::translate("Core", "GitHub API request failed.");
+        finishDownload(false, lookupError);
         return;
     }
 
-    if (!m_latestGeReleaseName.isEmpty() && m_latestGeReleaseName != versionName) {
-        m_latestGeReleaseName = versionName;
-        emit latestGeReleaseChanged();
-    } else if (m_latestGeReleaseName.isEmpty()) {
-        m_latestGeReleaseName = versionName;
-        emit latestGeReleaseChanged();
-    }
+    adoptLatestGeReleaseName(versionName);
 
     const QString assetName = versionName + QStringLiteral(".tar.gz");
     const QString tempDir = appDataDir() + QStringLiteral("/proton-download");
