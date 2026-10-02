@@ -377,9 +377,11 @@ void CatalogController::rebuildMergedCatalog()
                 if (m_hooks.applyFilter)
                     m_hooks.applyFilter(m_activeQuery);
                 const SourcePluginInfo* source = m_sources->pluginById(sourceId);
+                const int catalogTotal =
+                    m_mergedCache ? m_mergedCache->size() : (m_catalog ? m_catalog->count() : 0);
                 setCatalogStatus(QCoreApplication::translate("Core", "%1 · %2 games")
                                      .arg(source ? source->name : sourceId)
-                                     .arg(m_catalog->count()));
+                                     .arg(catalogTotal));
                 updateCatalogLoadingState();
             }
             return;
@@ -589,15 +591,16 @@ void CatalogController::applyMergedCatalogResult(
     if (m_hooks.warmCovers)
         m_hooks.warmCovers();
 
+    const int catalogTotal = m_mergedCache ? m_mergedCache->size() : (m_catalog ? m_catalog->count() : 0);
     if (enabledActiveCount == 1) {
         const SourcePluginInfo* source = m_sources->pluginById(singleEnabledId);
         setCatalogStatus(QCoreApplication::translate("Core", "%1 · %2 games")
                              .arg(source ? source->name : singleEnabledId)
-                             .arg(m_catalog->count()));
+                             .arg(catalogTotal));
     } else {
         setCatalogStatus(QCoreApplication::translate("Core", "%1 sources · %2 games")
                              .arg(enabledActiveCount)
-                             .arg(m_catalog->count()));
+                             .arg(catalogTotal));
     }
     updateCatalogLoadingState();
     if (m_hooks.catalogReady)

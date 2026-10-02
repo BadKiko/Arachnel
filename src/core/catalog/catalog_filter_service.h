@@ -57,8 +57,10 @@ public:
                            int playModeFilter = 0);
 
     void applyFilter(const QString& query);
-    /** Rebuild SoA + present-genre bits from the merged cache (once per merge). */
+    /** Rebuild SoA + present-genre bits from the merged cache (sync; prefer applyFilter). */
     void rebuildFilterTable();
+    /** Cheap genre chips only - no search SoA (merge path). */
+    void rebuildPresentGenresOnly();
     /** Patch one SoA row after metadata enrich (no 100k rescan). */
     void syncFilterRow(int cacheIndex);
     void scheduleRefilter();
@@ -97,7 +99,6 @@ private:
     QReadWriteLock* m_cacheLock = nullptr;
     QVector<CatalogFilterRow> m_rows;
     QVector<CatalogSearchEntry> m_searchEntries;
-    QVector<QString> m_titleLowers;
     QStringList m_sourceIdsBySlot;
     quint32 m_presentGenreBits = 0;
     QString m_activeQuery;

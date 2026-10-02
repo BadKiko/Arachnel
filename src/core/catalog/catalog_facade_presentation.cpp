@@ -499,8 +499,9 @@ void CoreController::scheduleCatalogRefilter()
 
 void CoreController::rebuildAvailableCatalogGenres()
 {
+    // Genre chips only. Full search SoA rebuilds off-thread inside applyFilter.
     if (m_catalogFilters)
-        m_catalogFilters->rebuildFilterTable();
+        m_catalogFilters->rebuildPresentGenresOnly();
 }
 
 void CoreController::warmActiveCatalogCovers()
