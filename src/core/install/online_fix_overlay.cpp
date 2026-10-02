@@ -719,7 +719,50 @@ QVariantMap onlineFixOverlayInfo(const QString& installPath)
     };
 }
 
-void applyOnlineFixLaunchInfo(const QString& installPath, LaunchInfo* info)
+
+void ensureOnlineFixIniRealAppId(const QString& overlayDir, const QString& realAppId)
+{
+    if (overlayDir.isEmpty() || realAppId.isEmpty() || realAppId == QLatin1String("0")
+        || realAppId == QLatin1String("480"))
+        return;
+    for (const QChar ch : realAppId) {
+        if (!ch.isDigit())
+            return;
+    }
+    const QString path = QDir(overlayDir).filePath(QStringLiteral("OnlineFix.ini"));
+    if (!QFileInfo::exists(path))
+        return;
+    const QString existing = readIniAppId(path, QStringLiteral("RealAppId"));
+    if (existing == realAppId)
+        return;
+    QString fake = readIniAppId(path, QStringLiteral("FakeAppId"));
+    if (fake.isEmpty())
+        fake = QStringLiteral("480");
+    bool unlockAll = true;
+    {
+        QFile in(path);
+        if (in.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            const QString body = QString::fromUtf8(in.readAll());
+            if (body.contains(QStringLiteral("UnlockAllDLC=false"), Qt::CaseInsensitive))
+                unlockAll = false;
+        }
+    }
+    QFile out(path);
+    if (!out.open(QIODevice::WriteOnly | QIODevice::Truncate))
+        return;
+    QByteArray body = "[Main]\r\n";
+    body += "RealAppId=";
+    body += realAppId.toUtf8();
+    body += "\r\nFakeAppId=";
+    body += fake.toUtf8();
+    body += "\r\nUnlockAllDLC=";
+    body += unlockAll ? "true" : "false";
+    body += "\r\n\r\n[Misc]\r\nExtraProtection=false\r\n";
+    out.write(body);
+}
+
+void applyOnlineFixLaunchInfo(const QString& installPath, LaunchInfo* info,
+                              const QString& realSteamAppId)
 {
     if (!info || installPath.isEmpty())
         return;
@@ -737,6 +780,13 @@ void applyOnlineFixLaunchInfo(const QString& installPath, LaunchInfo* info)
     QString overlayDir = state.overlayDir;
     if (overlayDir.isEmpty())
         overlayDir = info->workingDirectory.isEmpty() ? installPath : info->workingDirectory;
+
+    // OF.me without RealAppId reports Spacewar (480) to the game - heal from library AppId.
+    ensureOnlineFixIniRealAppId(overlayDir, realSteamAppId);
+    if (!info->workingDirectory.isEmpty())
+        ensureOnlineFixIniRealAppId(info->workingDirectory, realSteamAppId);
+    if (!info->executable.isEmpty())
+        ensureOnlineFixIniRealAppId(QFileInfo(info->executable).absolutePath(), realSteamAppId);
 
     // winmm.dll reads winmm.txt for the SteamFix DLL name. The kit default is
     // SteamFix64.dll; 32-bit games then fail with "failed to load SteamFix64.dll".
