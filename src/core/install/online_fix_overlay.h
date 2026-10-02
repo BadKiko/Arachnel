@@ -25,7 +25,8 @@ QVariantMap onlineFixOverlayInfo(const QString& installPath);
  * Sets WINEDLLOVERRIDES, optional legacy steam-runtime/run.sh, and LD_PRELOAD
  * gameoverlayrenderer (+ SteamAppId/SteamGameId). Safe no-op when overlay is missing/disabled.
  */
-void applyOnlineFixLaunchInfo(const QString& installPath, LaunchInfo* info);
+void applyOnlineFixLaunchInfo(const QString& installPath, LaunchInfo* info,
+                              const QString& realSteamAppId = {});
 
 bool isSteamClientRunning();
 /** Best-effort: spawn Steam detached. Returns true if the process was started. */

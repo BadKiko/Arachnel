@@ -107,7 +107,7 @@ bool textLooksLikeGameCrash(const QString& text)
     return false;
 }
 
-bool installUsesSteamFix(const QString& installPath)
+bool installRequiresOnlineFix(const QString& installPath)
 {
     if (installPath.isEmpty())
         return false;
@@ -117,8 +117,12 @@ bool installUsesSteamFix(const QString& installPath)
     auto has = [&](const QString& name) {
         return dir.exists(name) || dir.exists(name + QStringLiteral(".arachnel-off"));
     };
+    // FreeTP SteamFix and OF.me both need the overlay; disabling on early quit leaves
+    // DRM/SteamAPI broken and matches the false "launched without OF" path in #62/#73.
     return has(QStringLiteral("SteamFix.ini")) || has(QStringLiteral("SteamFix64.dll"))
-        || has(QStringLiteral("SteamFix32.dll"));
+        || has(QStringLiteral("SteamFix32.dll")) || has(QStringLiteral("OnlineFix.ini"))
+        || has(QStringLiteral("OnlineFix64.dll")) || has(QStringLiteral("OnlineFix.dll"))
+        || has(QStringLiteral("OnlineFix32.dll"));
 }
 
 constexpr int kPlayerLogMaxBytes = 16384;
@@ -338,7 +342,7 @@ void LaunchController::handleOnlineFixLaunchFailure(const QString& gameId, const
 
     if (m_library) {
         const LibraryGame* game = m_library->gameById(gameId);
-        if (game && installUsesSteamFix(game->installPath)) {
+        if (game && installRequiresOnlineFix(game->installPath)) {
             logLine(QCoreApplication::translate(
                 "Core", "This game needs Online Fix - not launching without it"));
             if (m_hooks.notice) {
@@ -905,7 +909,12 @@ void LaunchController::launchGame(const QString& gameId, const QString& optionId
                     watchHints.fakeSteamAppId = id;
             }
         }
-        applyOnlineFixLaunchInfo(gameCopy.installPath, &info);
+        {
+            QString realAppId = gameCopy.steamAppId.trimmed();
+            if (realAppId.isEmpty() && gameCopy.id.startsWith(QStringLiteral("steam-")))
+                realAppId = gameCopy.id.mid(6);
+            applyOnlineFixLaunchInfo(gameCopy.installPath, &info, realAppId);
+        }
         {
             const OnlineFixOverlayState overlay = detectOnlineFixOverlay(gameCopy.installPath);
 #if defined(Q_OS_LINUX)
