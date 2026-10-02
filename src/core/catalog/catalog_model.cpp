@@ -303,10 +303,21 @@ void CatalogModel::replaceVisibleIndices(QVector<int> indices, bool alreadySorte
     const int oldCount = m_indices.size();
     const int newCount = indices.size();
     // GridView/ListView + required-property delegates crash in Qt6QmlMeta on a
-    // 100k-row insert/remove. Unbind first (see CatalogScrollViews).
+    // 100k-row insert/remove. Unbind first (see CatalogScrollViews), then swap
+    // indices without beginInsertRows while the view model is null.
     const bool bulky = std::max(oldCount, newCount) >= 4096;
-    if (bulky)
+    if (bulky) {
         beginBulkUpdate();
+        m_indices = std::move(indices);
+        if (m_indices.isEmpty())
+            m_idToRow.clear();
+        else
+            rebuildIdMap();
+        emit countChanged();
+        invalidateScrubStops();
+        endBulkUpdate();
+        return;
+    }
 
     if (newCount == 0) {
         if (oldCount > 0) {
@@ -317,8 +328,6 @@ void CatalogModel::replaceVisibleIndices(QVector<int> indices, bool alreadySorte
             emit countChanged();
             invalidateScrubStops();
         }
-        if (bulky)
-            endBulkUpdate();
         return;
     }
 
@@ -329,8 +338,6 @@ void CatalogModel::replaceVisibleIndices(QVector<int> indices, bool alreadySorte
         endInsertRows();
         emit countChanged();
         invalidateScrubStops();
-        if (bulky)
-            endBulkUpdate();
         return;
     }
 
@@ -346,8 +353,6 @@ void CatalogModel::replaceVisibleIndices(QVector<int> indices, bool alreadySorte
     endInsertRows();
     emit countChanged();
     invalidateScrubStops();
-    if (bulky)
-        endBulkUpdate();
 }
 
 bool CatalogModel::notifyEntryChanged(const QString& id, const QList<int>& roles)
@@ -693,8 +698,16 @@ void CatalogModel::clear()
         return;
     }
     const bool bulky = m_indices.size() >= 4096;
-    if (bulky)
+    if (bulky) {
         beginBulkUpdate();
+        m_indices.clear();
+        m_idToRow.clear();
+        m_source = nullptr;
+        emit countChanged();
+        invalidateScrubStops();
+        endBulkUpdate();
+        return;
+    }
     beginRemoveRows({}, 0, m_indices.size() - 1);
     m_indices.clear();
     m_idToRow.clear();
@@ -702,8 +715,6 @@ void CatalogModel::clear()
     endRemoveRows();
     emit countChanged();
     invalidateScrubStops();
-    if (bulky)
-        endBulkUpdate();
 }
 
 } // namespace arachnel::core
