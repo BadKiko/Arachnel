@@ -280,6 +280,11 @@ void JobOrchestrator::clearFinishedJobs()
     m_jobStore->setJobs(remaining);
 }
 
+void JobOrchestrator::setFinishedJobKeepPredicate(std::function<bool(const JobEntry&)> keep)
+{
+    m_keepFinishedJob = std::move(keep);
+}
+
 void JobOrchestrator::pruneFinishedJobs()
 {
     const QDateTime cutoff = QDateTime::currentDateTimeUtc().addMSecs(-kFinishedJobTtlMs);
@@ -287,6 +292,9 @@ void JobOrchestrator::pruneFinishedJobs()
     for (int i = 0; i < m_jobs->rowCount(); ++i) {
         const JobEntry job = jobFromModelRow(i);
         if (!isJobTerminal(job.status))
+            continue;
+        // Do not expire jobs that still offer install/folder actions (#77).
+        if (m_keepFinishedJob && m_keepFinishedJob(job))
             continue;
 
         QDateTime done = QDateTime::fromString(job.completedAt, Qt::ISODate);
