@@ -22,9 +22,13 @@ QtObject {
 
     readonly property string settingsPluginsInstallHint: qsTr("Use Install plugin below and pick a .arach file.")
 
-    readonly property string settingsPluginsDesc: qsTr("Arachnel has no games until you install a plugin. Each plugin is a source: it fills Catalog and handles download, install, and Play.")
+    readonly property string settingsPluginsDesc: qsTr("A plugin is a game source: it fills Catalog and handles download, install, and Play. Install at least one to see games.")
 
     readonly property string libraryEmptySubtitle: qsTr("Your library is empty. Add a game source, pick a game in Catalog, and it will appear here.")
+
+    readonly property string libraryEmptySubtitleReady: qsTr("Your library is empty. Open Catalog, pick a game and press Download - it will appear here when it is ready.")
+
+    readonly property string libraryStep1DoneBody: qsTr("Source added. See Settings → Plugins.")
 
     readonly property string libraryStep1Body: qsTr("Add a game source in Settings → Plugins.")
 
@@ -49,6 +53,12 @@ QtObject {
     readonly property string downloadsEmptyHint: qsTr("Start installing from the catalog - progress will appear here.")
 
     readonly property string favoritesEmptyHint: qsTr("Save games from the catalog - download them here later.")
+
+    readonly property string onboardingNextCatalog: qsTr("Open Catalog and pick a game.")
+
+    readonly property string onboardingNextDownload: qsTr("Press Download. Progress shows in the Downloads tab.")
+
+    readonly property string onboardingNextPlay: qsTr("When it is done, press Play in your Library.")
 
     readonly property string gamePlayabilityNote: qsTr("You can download any game here. Ones with DRM or anti-cheat may not launch.")
 

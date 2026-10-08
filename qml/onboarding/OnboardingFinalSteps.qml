@@ -9,6 +9,7 @@ ColumnLayout {
 
     required property string stepId
     property bool hasSource: false
+    property string sourceNames: ""
     signal nextRequested()
 
     Layout.fillWidth: true
@@ -124,17 +125,92 @@ ColumnLayout {
         visible: root.stepId === "done"
         spacing: MD.Token.spacing.small
         MD.Label { text: qsTr("You're all set"); typescale: MD.Token.typescale.headline_small }
+
+        // What the user picked, so the last step confirms it instead of being an empty page.
+        Rectangle {
+            Layout.fillWidth: true
+            implicitHeight: summaryCol.implicitHeight + MD.Token.spacing.medium * 2
+            radius: MD.Token.shape.corner.medium
+            color: MD.Token.color.surface_container
+            ColumnLayout {
+                id: summaryCol
+                anchors.fill: parent
+                anchors.margins: MD.Token.spacing.medium
+                spacing: MD.Token.spacing.extra_small
+                Repeater {
+                    model: [
+                        { label: qsTr("Language"), value: Core.settings.uiLanguage === "ru" ? "Русский" : "English" },
+                        { label: qsTr("Games folder"), value: Core.settings.libraryRoot },
+                        { label: qsTr("Game source"), value: root.hasSource ? root.sourceNames : qsTr("None yet") }
+                    ]
+                    RowLayout {
+                        required property var modelData
+                        Layout.fillWidth: true
+                        spacing: MD.Token.spacing.medium
+                        MD.Label {
+                            Layout.preferredWidth: 110
+                            text: modelData.label
+                            color: MD.Token.color.on_surface_variant
+                            typescale: MD.Token.typescale.body_medium
+                        }
+                        MD.Label {
+                            Layout.fillWidth: true
+                            text: modelData.value
+                            elide: Text.ElideMiddle
+                            typescale: MD.Token.typescale.body_medium
+                        }
+                    }
+                }
+            }
+        }
+
         MD.Label {
             Layout.fillWidth: true
-            text: root.hasSource
-                  ? qsTr("Open Catalog to browse games. Change language, storage, and game sources anytime in Settings.")
-                  : qsTr("You have no game source yet, so Catalog will be empty. Add one in Settings → Plugins to see games.")
+            Layout.topMargin: MD.Token.spacing.small
+            visible: root.hasSource
+            text: qsTr("How to get your first game")
+            typescale: MD.Token.typescale.title_small
+        }
+        Repeater {
+            model: root.hasSource
+                   ? [Messages.onboardingNextCatalog, Messages.onboardingNextDownload, Messages.onboardingNextPlay]
+                   : []
+            RowLayout {
+                required property int index
+                required property string modelData
+                Layout.fillWidth: true
+                spacing: MD.Token.spacing.small
+                Rectangle {
+                    Layout.preferredWidth: 24
+                    Layout.preferredHeight: 24
+                    radius: 12
+                    color: MD.Token.color.primary_container
+                    MD.Label {
+                        anchors.centerIn: parent
+                        text: String(index + 1)
+                        color: MD.Token.color.on_primary_container
+                        typescale: MD.Token.typescale.label_medium
+                    }
+                }
+                MD.Label {
+                    Layout.fillWidth: true
+                    text: modelData
+                    wrapMode: Text.WordWrap
+                    typescale: MD.Token.typescale.body_medium
+                }
+            }
+        }
+        MD.Label {
+            Layout.fillWidth: true
+            visible: !root.hasSource
+            text: qsTr("You have no game source yet, so Catalog will be empty. Add one in Settings → Plugins to see games.")
             wrapMode: Text.WordWrap
             color: MD.Token.color.on_surface_variant
             typescale: MD.Token.typescale.body_medium
         }
         MD.Label {
             Layout.fillWidth: true
+            Layout.topMargin: MD.Token.spacing.small
             text: Messages.gamePlayabilityNote
             wrapMode: Text.WordWrap
             color: MD.Token.color.on_surface_variant

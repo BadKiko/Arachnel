@@ -80,7 +80,7 @@ Item {
                     MD.Label {
                         Layout.fillWidth: true
                         Layout.maximumWidth: 520
-                        text: Messages.libraryEmptySubtitle
+                        text: Core.sources.enabledCount > 0 ? Messages.libraryEmptySubtitleReady : Messages.libraryEmptySubtitle
                         color: MD.Token.color.on_surface_variant
                         typescale: MD.Token.typescale.body_medium
                         wrapMode: Text.WordWrap
@@ -134,7 +134,7 @@ Item {
                             icon: MD.Token.icon.extension,
                             step: qsTr("Step 1"),
                             title: qsTr("Source"),
-                            body: Messages.libraryStep1Body
+                            body: Core.sources.enabledCount > 0 ? Messages.libraryStep1DoneBody : Messages.libraryStep1Body
                         },
                         {
                             icon: MD.Token.icon.storefront,

@@ -194,6 +194,7 @@ Item {
                     OnboardingFinalSteps {
                         stepId: root.stepId
                         hasSource: root.pluginRows.length > 0
+                        sourceNames: root.pluginRows.map(function(r) { return r.name }).join(", ")
                         onNextRequested: root.goNext()
                     }
                 }

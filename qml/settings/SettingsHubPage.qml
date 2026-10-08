@@ -21,7 +21,7 @@ Flickable {
             {
                 id: "sources",
                 title: qsTr("Hydra catalogs"),
-                subtitle: qsTr("Extra game lists added by link (advanced)")
+                subtitle: qsTr("Add extra game lists from a link, e.g. a Hydra Launcher list (advanced)")
             },
             {
                 id: "friends",
