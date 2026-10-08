@@ -12,8 +12,9 @@ MD.ApplicationWindow {
     visible: true
     width: 1450
     height: 900
-    minimumWidth: 1100
-    minimumHeight: 720
+    // Small enough for half-screen Win+Arrow snapping on a 1920 px display (960 px wide).
+    minimumWidth: 900
+    minimumHeight: 680
     title: qsTr("Arachnel")
     color: MD.Token.color.surface_container
     flags: customTitleBar ? (Qt.Window | Qt.FramelessWindowHint) : Qt.Window

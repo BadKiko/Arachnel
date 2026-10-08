@@ -4,7 +4,7 @@ Item {
     id: root
 
     required property var window
-    property int margin: 5
+    property int margin: 6
 
     function resize(edge) {
         if (root.window.visibility !== Window.Maximized)
