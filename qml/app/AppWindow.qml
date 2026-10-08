@@ -423,6 +423,7 @@ MD.ApplicationWindow {
                 opacity: mainPages.pageIndex === 4 ? 1 : 0
                 enabled: mainPages.pageIndex === 4 && opacity > 0.99
                 onOpenGame: function (id) { root.openGameDetails(id, true) }
+                onOpenCatalog: root.goToPage(2)
 
                 Behavior on opacity {
                     NumberAnimation {
@@ -437,6 +438,7 @@ MD.ApplicationWindow {
                 opacity: mainPages.pageIndex === 5 ? 1 : 0
                 enabled: mainPages.pageIndex === 5 && opacity > 0.99
                 onOpenGame: function (id) { root.openGameDetails(id, false) }
+                onOpenCatalog: root.goToPage(2)
 
                 Behavior on opacity {
                     NumberAnimation {

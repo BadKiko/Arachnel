@@ -43,6 +43,15 @@ Item {
                     typescale: MD.Token.typescale.headline_small
                 }
 
+                MD.Label {
+                    Layout.fillWidth: true
+                    horizontalAlignment: Text.AlignHCenter
+                    text: qsTr("Friends you add can see when you are online and which game you are playing.")
+                    color: MD.Token.color.on_surface_variant
+                    typescale: MD.Token.typescale.body_medium
+                    wrapMode: Text.WordWrap
+                }
+
                 MD.Button {
                     Layout.alignment: Qt.AlignHCenter
                     text: qsTr("Change in settings")

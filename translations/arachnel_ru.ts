@@ -111,6 +111,10 @@
         <source>%1 games</source>
         <translation>%1 игр</translation>
     </message>
+    <message>
+        <source>Open catalog</source>
+        <translation>Открыть каталог</translation>
+    </message>
 </context>
 <context>
     <name>CatalogCompactBar</name>
@@ -369,8 +373,8 @@
     </message>
     <message>
         <location line="+18" />
-        <source>Add catalog</source>
-        <translation>Добавить каталог</translation>
+        <source>Add game source</source>
+        <translation>Добавить источник игр</translation>
     </message>
     <message>
         <location line="+7" />
@@ -2841,6 +2845,10 @@
         <source>Clear finished</source>
         <translation>Очистить завершённые</translation>
     </message>
+    <message>
+        <source>Open catalog</source>
+        <translation>Открыть каталог</translation>
+    </message>
 </context>
 <context>
     <name>FriendCodePin</name>
@@ -2924,6 +2932,10 @@
         <location line="+1" />
         <source>Online</source>
         <translation>В сети</translation>
+    </message>
+    <message>
+        <source>Friends you add can see when you are online and which game you are playing.</source>
+        <translation>Друзья, которых вы добавите, видят, когда вы в сети и в какую игру играете.</translation>
     </message>
 </context>
 <context>
@@ -3915,13 +3927,13 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
     <message>
         <location line="+4" />
-        <source>Your library is empty. Install a plugin, pick a game in Catalog, and it will appear here.</source>
-        <translation>Библиотека пустая. Поставьте плагин, выберите игру в Каталоге - она появится здесь.</translation>
+        <source>Your library is empty. Add a game source, pick a game in Catalog, and it will appear here.</source>
+        <translation>Библиотека пуста. Добавьте источник игр, выберите игру в Каталоге, и она появится здесь.</translation>
     </message>
     <message>
         <location line="+2" />
-        <source>Install a plugin in Settings → Plugins.</source>
-        <translation>Поставьте плагин в Настройки → Плагины.</translation>
+        <source>Add a game source in Settings → Plugins.</source>
+        <translation>Добавьте источник игр в Настройки → Плагины.</translation>
     </message>
     <message>
         <location line="+4" />
@@ -3940,8 +3952,8 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
     <message>
         <location line="+2" />
-        <source>Install a plugin in Settings → Plugins, or add a catalog.</source>
-        <translation>Поставьте плагин в Настройки → Плагины или добавьте каталог.</translation>
+        <source>Add a game source in Settings → Plugins to see games here.</source>
+        <translation>Добавьте источник игр в Настройки → Плагины, чтобы увидеть игры здесь.</translation>
     </message>
     <message>
         <location line="+0" />
@@ -4560,8 +4572,8 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
     <message>
         <location line="+1" />
-        <source>Invite codes and relay presence</source>
-        <translation>Коды приглашений и присутствие через релей</translation>
+        <source>Friend codes and online status</source>
+        <translation>Коды друзей и статус онлайн</translation>
     </message>
     <message>
         <location line="+4" />
@@ -4610,8 +4622,8 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
     <message>
         <location line="+5" />
-        <source>JSON catalog URLs</source>
-        <translation>JSON-ссылки на каталоги</translation>
+        <source>Extra game lists added by link (advanced)</source>
+        <translation>Дополнительные списки игр по ссылке (для опытных)</translation>
     </message>
     <message>
         <location line="+24" />

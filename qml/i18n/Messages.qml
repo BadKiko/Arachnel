@@ -24,9 +24,9 @@ QtObject {
 
     readonly property string settingsPluginsDesc: qsTr("Arachnel has no games until you install a plugin. Each plugin is a source: it fills Catalog and handles download, install, and Play.")
 
-    readonly property string libraryEmptySubtitle: qsTr("Your library is empty. Install a plugin, pick a game in Catalog, and it will appear here.")
+    readonly property string libraryEmptySubtitle: qsTr("Your library is empty. Add a game source, pick a game in Catalog, and it will appear here.")
 
-    readonly property string libraryStep1Body: qsTr("Install a plugin in Settings → Plugins.")
+    readonly property string libraryStep1Body: qsTr("Add a game source in Settings → Plugins.")
 
     readonly property string libraryStep2Body: qsTr("Pick a game in Catalog and start the download.")
 
@@ -38,7 +38,7 @@ QtObject {
 
     readonly property string catalogPipelineDesc: qsTr("Browse games from your catalogs and sources.")
 
-    readonly property string catalogConnectHint: qsTr("Install a plugin in Settings → Plugins, or add a catalog.")
+    readonly property string catalogConnectHint: qsTr("Add a game source in Settings → Plugins to see games here.")
 
     readonly property string catalogEnableChipsHint: qsTr("Turn on one or more sources above - or leave them all off.")
 

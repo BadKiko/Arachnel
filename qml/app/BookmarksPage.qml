@@ -14,6 +14,7 @@ Item {
     readonly property bool favoritesEmpty: favoritesModel.count === 0
 
     signal openGame(string gameId)
+    signal openCatalog()
 
     ListModel {
         id: favoritesModel
@@ -124,6 +125,13 @@ Item {
                 color: MD.Token.color.on_surface_variant
                 typescale: MD.Token.typescale.body_medium
                 wrapMode: Text.WordWrap
+            }
+
+            MD.Button {
+                Layout.alignment: Qt.AlignHCenter
+                text: qsTr("Open catalog")
+                mdState.type: MD.Enum.BtFilled
+                onClicked: root.openCatalog()
             }
         }
     }

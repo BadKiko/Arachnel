@@ -21,12 +21,12 @@ Flickable {
             {
                 id: "sources",
                 title: qsTr("Hydra catalogs"),
-                subtitle: qsTr("JSON catalog URLs")
+                subtitle: qsTr("Extra game lists added by link (advanced)")
             },
             {
                 id: "friends",
                 title: qsTr("Friends"),
-                subtitle: qsTr("Invite codes and relay presence")
+                subtitle: qsTr("Friend codes and online status")
             },
             {
                 id: "storage",

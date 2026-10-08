@@ -111,6 +111,10 @@
         <source>%1 games</source>
         <translation>%1 games</translation>
     </message>
+    <message>
+        <source>Open catalog</source>
+        <translation>Open catalog</translation>
+    </message>
 </context>
 <context>
     <name>CatalogCompactBar</name>
@@ -369,8 +373,8 @@
     </message>
     <message>
         <location line="+18" />
-        <source>Add catalog</source>
-        <translation>Add catalog</translation>
+        <source>Add game source</source>
+        <translation>Add game source</translation>
     </message>
     <message>
         <location line="+7" />
@@ -2841,6 +2845,10 @@
         <source>Clear finished</source>
         <translation>Clear finished</translation>
     </message>
+    <message>
+        <source>Open catalog</source>
+        <translation>Open catalog</translation>
+    </message>
 </context>
 <context>
     <name>FriendCodePin</name>
@@ -2924,6 +2932,10 @@
         <location line="+1" />
         <source>Online</source>
         <translation>Online</translation>
+    </message>
+    <message>
+        <source>Friends you add can see when you are online and which game you are playing.</source>
+        <translation>Friends you add can see when you are online and which game you are playing.</translation>
     </message>
 </context>
 <context>
@@ -3653,7 +3665,7 @@
     <message>
         <location line="+1" />
         <source>Add game source</source>
-        <translation></translation>
+        <translation>Add game source</translation>
     </message>
     <message>
         <location line="+15" />
@@ -3663,7 +3675,7 @@
     <message>
         <location line="+8" />
         <source>How it works</source>
-        <translation></translation>
+        <translation>How it works</translation>
     </message>
     <message>
         <location line="+16" />
@@ -3909,13 +3921,13 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
     <message>
         <location line="+4" />
-        <source>Your library is empty. Install a plugin, pick a game in Catalog, and it will appear here.</source>
-        <translation>Your library is empty. Install a plugin, pick a game in Catalog, and it will appear here.</translation>
+        <source>Your library is empty. Add a game source, pick a game in Catalog, and it will appear here.</source>
+        <translation>Your library is empty. Add a game source, pick a game in Catalog, and it will appear here.</translation>
     </message>
     <message>
         <location line="+2" />
-        <source>Install a plugin in Settings → Plugins.</source>
-        <translation>Install a plugin in Settings → Plugins.</translation>
+        <source>Add a game source in Settings → Plugins.</source>
+        <translation>Add a game source in Settings → Plugins.</translation>
     </message>
     <message>
         <location line="+4" />
@@ -3934,8 +3946,8 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
     <message>
         <location line="+2" />
-        <source>Install a plugin in Settings → Plugins, or add a catalog.</source>
-        <translation>Install a plugin in Settings → Plugins, or add a catalog.</translation>
+        <source>Add a game source in Settings → Plugins to see games here.</source>
+        <translation>Add a game source in Settings → Plugins to see games here.</translation>
     </message>
     <message>
         <location line="+0" />
@@ -4074,7 +4086,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location line="+3" />
         <source>Proton lets Windows games run on Linux. Install it now or later in Settings → Launch.</source>
-        <translation></translation>
+        <translation>Proton lets Windows games run on Linux. Install it now or later in Settings → Launch.</translation>
     </message>
     <message>
         <location line="+8" />
@@ -4114,12 +4126,12 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location line="+3" />
         <source>Open Catalog to browse games. Change language, storage, and game sources anytime in Settings.</source>
-        <translation></translation>
+        <translation>Open Catalog to browse games. Change language, storage, and game sources anytime in Settings.</translation>
     </message>
     <message>
         <location line="+7" />
         <source>You have no game source yet, so Catalog will be empty. Add one in Settings → Plugins to see games.</source>
-        <translation></translation>
+        <translation>You have no game source yet, so Catalog will be empty. Add one in Settings → Plugins to see games.</translation>
     </message>
 </context>
 <context>
@@ -4554,8 +4566,8 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
     <message>
         <location line="+1" />
-        <source>Invite codes and relay presence</source>
-        <translation>Invite codes and relay presence</translation>
+        <source>Friend codes and online status</source>
+        <translation>Friend codes and online status</translation>
     </message>
     <message>
         <location line="+4" />
@@ -4604,8 +4616,8 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
     <message>
         <location line="+5" />
-        <source>JSON catalog URLs</source>
-        <translation>JSON catalog URLs</translation>
+        <source>Extra game lists added by link (advanced)</source>
+        <translation>Extra game lists added by link (advanced)</translation>
     </message>
     <message>
         <location line="+24" />
@@ -5114,7 +5126,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location filename="../qml/components/SourceHelpDialog.qml" line="+12" />
         <source>How game sources work</source>
-        <translation></translation>
+        <translation>How game sources work</translation>
     </message>
     <message>
         <location line="+7" />

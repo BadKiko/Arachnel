@@ -46,7 +46,7 @@ Item {
             spacing: MD.Token.spacing.small
 
             MD.Button {
-                text: qsTr("Add catalog")
+                text: qsTr("Add game source")
                 icon.name: MD.Token.icon.add
                 mdState.type: MD.Enum.BtFilled
                 onClicked: page.addSourceRequested()
