@@ -8,6 +8,7 @@ ColumnLayout {
     id: root
 
     required property string stepId
+    property bool hasSource: false
     signal nextRequested()
 
     Layout.fillWidth: true
@@ -76,7 +77,7 @@ ColumnLayout {
         MD.Label { text: qsTr("Proton (Linux)"); typescale: MD.Token.typescale.headline_small }
         MD.Label {
             Layout.fillWidth: true
-            text: qsTr("Windows games need Proton on Linux. Install it now or later in Settings → Launch.")
+            text: qsTr("Proton lets Windows games run on Linux. Install it now or later in Settings → Launch.")
             wrapMode: Text.WordWrap
             color: MD.Token.color.on_surface_variant
             typescale: MD.Token.typescale.body_medium
@@ -125,17 +126,12 @@ ColumnLayout {
         MD.Label { text: qsTr("You're all set"); typescale: MD.Token.typescale.headline_small }
         MD.Label {
             Layout.fillWidth: true
-            text: qsTr("Open Catalog to browse games. Change language, storage, and plugins anytime in Settings.")
+            text: root.hasSource
+                  ? qsTr("Open Catalog to browse games. Change language, storage, and game sources anytime in Settings.")
+                  : qsTr("You have no game source yet, so Catalog will be empty. Add one in Settings → Plugins to see games.")
             wrapMode: Text.WordWrap
             color: MD.Token.color.on_surface_variant
             typescale: MD.Token.typescale.body_medium
-        }
-        MD.Label {
-            Layout.fillWidth: true
-            text: qsTr("Tip: with a plugin installed, Install runs automatically after download. Catalog-only setups need a manual Install step.")
-            wrapMode: Text.WordWrap
-            color: MD.Token.color.on_surface_variant
-            typescale: MD.Token.typescale.body_small
         }
         MD.Label {
             Layout.fillWidth: true

@@ -93,7 +93,7 @@ Item {
                         MD.Button {
                             text: Core.sources.enabledCount > 0
                                   ? qsTr("Open catalog")
-                                  : qsTr("Install plugin")
+                                  : qsTr("Add game source")
                             icon.name: Core.sources.enabledCount > 0
                                        ? MD.Token.icon.storefront
                                        : MD.Token.icon.add
@@ -116,7 +116,7 @@ Item {
 
                         MD.Button {
                             visible: Core.sources.enabledCount === 0
-                            text: qsTr("Catalogs and plugins")
+                            text: qsTr("How it works")
                             mdState.type: MD.Enum.BtText
                             onClicked: sourceHelpDialog.open()
                         }

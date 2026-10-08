@@ -3657,8 +3657,8 @@
     </message>
     <message>
         <location line="+1" />
-        <source>Install plugin</source>
-        <translation>Установить плагин</translation>
+        <source>Add game source</source>
+        <translation>Добавить источник игр</translation>
     </message>
     <message>
         <location line="+15" />
@@ -3667,8 +3667,8 @@
     </message>
     <message>
         <location line="+8" />
-        <source>Catalogs and plugins</source>
-        <translation>Каталоги и плагины</translation>
+        <source>How it works</source>
+        <translation>Как это работает</translation>
     </message>
     <message>
         <location line="+16" />
@@ -4079,8 +4079,8 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
     <message>
         <location line="+3" />
-        <source>Windows games need Proton on Linux. Install it now or later in Settings → Launch.</source>
-        <translation>Windows-играм на Linux нужен Proton. Установите сейчас или позже в Настройки → Запуск.</translation>
+        <source>Proton lets Windows games run on Linux. Install it now or later in Settings → Launch.</source>
+        <translation>Proton позволяет запускать Windows-игры на Linux. Установите сейчас или позже в Настройки → Запуск.</translation>
     </message>
     <message>
         <location line="+8" />
@@ -4119,13 +4119,13 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
     <message>
         <location line="+3" />
-        <source>Open Catalog to browse games. Change language, storage, and plugins anytime in Settings.</source>
-        <translation>Откройте Каталог, чтобы выбрать игры. Язык, хранилище и плагины - в Настройках.</translation>
+        <source>Open Catalog to browse games. Change language, storage, and game sources anytime in Settings.</source>
+        <translation>Откройте Каталог, чтобы выбрать игры. Язык, хранилище и источники игр - в Настройках.</translation>
     </message>
     <message>
         <location line="+7" />
-        <source>Tip: with a plugin installed, Install runs automatically after download. Catalog-only setups need a manual Install step.</source>
-        <translation>Подсказка: с плагином установка идёт автоматически после загрузки. Только каталог - нужна ручная установка.</translation>
+        <source>You have no game source yet, so Catalog will be empty. Add one in Settings → Plugins to see games.</source>
+        <translation>Источника игр пока нет, поэтому Каталог будет пустым. Добавьте его в Настройки → Плагины.</translation>
     </message>
 </context>
 <context>
@@ -5119,8 +5119,8 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <name>SourceHelpDialog</name>
     <message>
         <location filename="../qml/components/SourceHelpDialog.qml" line="+12" />
-        <source>Catalogs and plugins</source>
-        <translation>Каталоги и плагины</translation>
+        <source>How game sources work</source>
+        <translation>Как работают источники игр</translation>
     </message>
     <message>
         <location line="+7" />
