@@ -3170,6 +3170,10 @@
         <source>Screenshots</source>
         <translation>Скриншоты</translation>
     </message>
+    <message>
+        <source>Space - pause, ← → - seek, M - mute</source>
+        <translation>Пробел - пауза, ← → - перемотка, M - звук</translation>
+    </message>
 </context>
 <context>
     <name>GameDetailsMediaSection</name>
