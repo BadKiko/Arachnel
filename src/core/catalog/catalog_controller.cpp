@@ -76,7 +76,10 @@ CatalogController::CatalogController(CatalogModel* catalog, SourcePluginModel* s
                 connect(watcher, &QFutureWatcher<QVector<CatalogEntry>>::finished, this,
                         [this, watcher, sourceId]() {
                             m_inFlightPluginCatalogWatchers.removeAll(watcher);
-                            QVector<CatalogEntry> prepared = watcher->result();
+                            // takeResult() moves the vector out of the future. result() would
+                            // leave a second reference behind, and normalizing the entries
+                            // below would then deep-copy the whole 125k-row catalog.
+                            QVector<CatalogEntry> prepared = watcher->future().takeResult();
                             watcher->deleteLater();
                             storeCatalogForSource(sourceId, std::move(prepared),
                                                   /*prepareEntries=*/false);
@@ -412,7 +415,7 @@ void CatalogController::rebuildMergedCatalog()
     auto* watcher = new QFutureWatcher<MergeResult>(this);
     connect(watcher, &QFutureWatcher<MergeResult>::finished, this,
             [this, watcher, generation]() {
-                MergeResult result = watcher->result();
+                MergeResult result = watcher->future().takeResult();
                 watcher->deleteLater();
                 applyMergedCatalogResult(generation, std::move(result.merged),
                                          std::move(result.installOffers),
@@ -788,7 +791,7 @@ void CatalogController::loadCatalogSourceNow(const QString& sourceId)
         connect(watcher, &QFutureWatcher<DiskCatalogLoad>::finished, this,
                 [this, watcher, sourceId]() {
                     m_inFlightPluginCatalogWatchers.removeAll(watcher);
-                    const DiskCatalogLoad loaded = watcher->result();
+                    DiskCatalogLoad loaded = watcher->future().takeResult();
                     watcher->deleteLater();
                     if (!loaded.hadDiskPayload) {
                         // Fall through to plugin/network on the UI thread.
@@ -798,7 +801,8 @@ void CatalogController::loadCatalogSourceNow(const QString& sourceId)
                     if (!loaded.entries.isEmpty()) {
                         if (!loaded.payloadSha.isEmpty())
                             m_sourcePayloadSha.insert(sourceId, loaded.payloadSha);
-                        storeCatalogForSource(sourceId, loaded.entries, /*prepareEntries=*/false);
+                        storeCatalogForSource(sourceId, std::move(loaded.entries),
+                                              /*prepareEntries=*/false);
                     }
                 });
         watcher->setFuture(QtConcurrent::run([sourceId, prepare]() -> DiskCatalogLoad {
@@ -857,7 +861,7 @@ void CatalogController::loadCatalogSourceNowFromNetwork(const QString& sourceId)
             connect(watcher, &QFutureWatcher<PluginCatalogLoad>::finished, this,
                     [this, watcher, sourceId]() {
                         m_inFlightPluginCatalogWatchers.removeAll(watcher);
-                        PluginCatalogLoad loaded = watcher->result();
+                        PluginCatalogLoad loaded = watcher->future().takeResult();
                         watcher->deleteLater();
                         if (!loaded.payloadSha.isEmpty()
                             && m_sourcePayloadSha.value(sourceId) == loaded.payloadSha
@@ -959,7 +963,7 @@ void CatalogController::revalidateCatalogSource(const QString& sourceId, const Q
         connect(watcher, &QFutureWatcher<PluginCatalogLoad>::finished, this,
                 [this, watcher, sourceId]() {
                     m_inFlightPluginCatalogWatchers.removeAll(watcher);
-                    PluginCatalogLoad loaded = watcher->result();
+                    PluginCatalogLoad loaded = watcher->future().takeResult();
                     watcher->deleteLater();
                     if (!loaded.payloadSha.isEmpty()
                         && m_sourcePayloadSha.value(sourceId) == loaded.payloadSha

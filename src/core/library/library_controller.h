@@ -3,7 +3,9 @@
 #include "catalog_types.h"
 #include "library_model.h"
 
+#include <QHash>
 #include <QStringList>
+#include <QVariantMap>
 #include <functional>
 
 namespace arachnel::core {
@@ -86,6 +88,25 @@ public:
 
 private:
     void sync() const;
+
+    /** Cached results of the expensive per-install disk probes (see entryDetails). */
+    struct FsProbe {
+        QString key;
+        qint64 atMs = 0;
+        QVariantMap fixInfo;
+        QVariantMap steamlessInfo;
+        QString defaultExe;
+    };
+    struct ExeProbe {
+        qint64 atMs = 0;
+        bool found = false;
+    };
+    const FsProbe& fsProbeFor(const QString& entryId, const QString& installPath,
+                              const LibraryGame* game) const;
+    QString computeDefaultExecutable(const LibraryGame& game) const;
+    bool hasGameExecutableCached(const QString& installPath) const;
+    mutable QHash<QString, FsProbe> m_fsProbe;
+    mutable QHash<QString, ExeProbe> m_exeProbe;
     LibraryModel* m_library;
     CatalogModel* m_catalog;
     LibraryStore* m_store;
