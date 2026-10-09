@@ -1,4 +1,5 @@
 import QtQuick
+import QtQml
 import QtQuick.Layouts
 import QtQuick.Controls
 import QtQuick.Window
@@ -490,9 +491,34 @@ MD.ApplicationWindow {
         }
     }
 
+    // Ctrl+1..6 jump between the rail tabs, Ctrl+, opens settings.
+    Instantiator {
+        model: root.navModel.length
+        delegate: Shortcut {
+            required property int index
+            sequence: "Ctrl+" + (index + 1)
+            onActivated: root.goToPage(index)
+        }
+    }
+
+    Shortcut {
+        sequence: "Ctrl+,"
+        onActivated: settingsSheet.openSettings()
+    }
+
     ColumnLayout {
         anchors.fill: parent
         spacing: 0
+        focus: true
+
+        // Esc closes game details. Popups take the key first, so a dialog never also
+        // navigates back.
+        Keys.onEscapePressed: function (event) {
+            if (root.detailsOpen) {
+                root.closeGameDetails()
+                event.accepted = true
+            }
+        }
 
         AppTitleBar {
             visible: root.customTitleBar
@@ -511,6 +537,7 @@ MD.ApplicationWindow {
                 model: root.navModel
                 currentIndex: root.pageIndex
                 downloadBadge: root.downloadBadge
+                compact: root.width < 1000
                 onActivated: function (index) { root.goToPage(index) }
                 onSettingsRequested: settingsSheet.openSettings()
             }
