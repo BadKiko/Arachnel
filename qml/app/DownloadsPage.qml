@@ -207,6 +207,8 @@ Item {
             reuseItems: true
             cacheBuffer: height * 2
             model: groupsModel
+            populate: StaggerEnterTransition {}
+            add: StaggerEnterTransition { staggered: false }
 
             ScrollBar.vertical: MD.ScrollBar {
                 policy: ScrollBar.AsNeeded

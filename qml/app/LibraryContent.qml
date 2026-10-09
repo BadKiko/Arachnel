@@ -352,6 +352,8 @@ Item {
                         cellWidth: gridHost.cellW
                         cellHeight: gridHost.cellH
                         cacheBuffer: 0
+                        populate: StaggerEnterTransition {}
+                        add: StaggerEnterTransition { staggered: false }
                         delegate: LibraryGameCard {
                             width: gridHost.cardWidth
                             height: gridHost.cardHeight

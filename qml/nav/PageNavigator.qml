@@ -3,7 +3,7 @@ import QtQuick.Controls
 
 import Qcm.Material as MD
 
-// Unified page navigation: fade + soft scale.
+// Unified page navigation: shared-axis Z (fade + soft scale).
 // Covered pages can stay at opacity 0 after Immediate pop; restoreCurrent() fixes that.
 MD.StackView {
     id: root
@@ -14,12 +14,14 @@ MD.StackView {
 
     clip: true
 
-    pushEnter: PageEnterMotion {}
-    pushExit: PageExitMotion {}
-    popEnter: PageEnterMotion {}
-    popExit: PageExitMotion {}
-    replaceEnter: PageEnterMotion {}
-    replaceExit: PageExitMotion {}
+    // Shared-axis Z: forward pushes the old page "up and away" and brings the new one in
+    // from slightly smaller; back reverses the direction.
+    pushEnter: PageEnterMotion { fromScale: 0.92 }
+    pushExit: PageExitMotion { toScale: 1.08 }
+    popEnter: PageEnterMotion { fromScale: 1.08 }
+    popExit: PageExitMotion { toScale: 0.92 }
+    replaceEnter: PageEnterMotion { fromScale: 0.96 }
+    replaceExit: PageExitMotion { toScale: 1.04 }
 
     function restoreCurrent() {
         const item = currentItem
