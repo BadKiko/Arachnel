@@ -133,7 +133,8 @@ Item {
         root.peekArmed = false
         root.peekWaiting = false
         root.peekScreenshotUrls = []
-        screenshotPeek.hideNow()
+        if (peekLoader.item)
+            peekLoader.item.hideNow()
     }
 
     function loadPeekScreenshots() {
@@ -169,6 +170,9 @@ Item {
     // shelves hit this every time. Reload peek when metadata lands.
     Connections {
         target: Core
+        // Only matters while a peek is arming/open; otherwise every card would run this handler
+        // for every metadata update.
+        enabled: root.peekArmed || root.peekWaiting
         function onEntryMetadataChanged(entryId) {
             if (entryId !== root.entryId)
                 return
@@ -459,15 +463,32 @@ Item {
                 trackColor: MD.Util.transparent(MD.Token.color.on_surface, 0.18)
             }
 
-            CatalogScreenshotPeek {
-                id: screenshotPeek
-                entryId: root.entryId
-                anchorItem: posterHost
-                urls: root.shotUrls
-                leftEdgeX: root.peekLeftEdge
-                // Only after we have URLs - popup itself waits for Image.Ready
-                // and rejects frames that don't belong to this entryId.
-                active: root.peekArmed && posterMouse.containsMouse && root.shotUrls.length > 0
+            // The peek is a Popup with several Images, Timers and an animation. Building one per
+            // card made every grid delegate heavy; now only the hovered card owns one, and it
+            // stays alive until the popup has finished closing (so the exit transition plays).
+            Loader {
+                id: peekLoader
+                active: root.peekArmed || root.peekWaiting
+                        || (peekLoader.item !== null && peekLoader.item.opened)
+                sourceComponent: Component {
+                    CatalogScreenshotPeek {
+                        entryId: root.entryId
+                        anchorItem: posterHost
+                        urls: root.shotUrls
+                        leftEdgeX: root.peekLeftEdge
+                        // Switched on by the Binding below, after creation, so onActiveChanged fires.
+                        active: false
+                    }
+                }
+            }
+
+            // Only after we have URLs - popup itself waits for Image.Ready and rejects frames
+            // that don't belong to this entryId.
+            Binding {
+                target: peekLoader.item
+                property: "active"
+                value: root.peekArmed && posterMouse.containsMouse && root.shotUrls.length > 0
+                when: peekLoader.item !== null
             }
         }
 
