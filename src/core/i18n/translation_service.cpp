@@ -30,12 +30,11 @@ void TranslationService::applyLanguage(const QString& languageCode)
 
     QCoreApplication::removeTranslator(m_translator);
 
-    // English is the source language — qsTr()/translate() fall back to the string in code.
-    if (effective != QStringLiteral("en")) {
-        const QString resourceName = QStringLiteral("arachnel_%1").arg(effective);
-        if (m_translator->load(resourceName, QStringLiteral(":/i18n")))
-            QCoreApplication::installTranslator(m_translator);
-    }
+    // English is the source language, but its catalog still carries the plural forms:
+    // without it "%n game(s)" is shown as "4 game(s)".
+    const QString resourceName = QStringLiteral("arachnel_%1").arg(effective);
+    if (m_translator->load(resourceName, QStringLiteral(":/i18n")))
+        QCoreApplication::installTranslator(m_translator);
 
     m_currentLanguage = effective;
 
