@@ -231,52 +231,59 @@ Item {
         }
     }
 
-    Item {
-        id: fillHost
+    // Download-progress fill (grey cover + coloured part). Only exists while a download is
+    // running; before it was built for every poster in every grid (2 images, an effect and a
+    // clip layer each).
+    Loader {
         anchors.fill: parent
-        visible: root.showFillProgress
-        clip: true
+        active: root.showFillProgress
+        sourceComponent: Component {
+            Item {
+                id: fillHost
+                clip: true
 
-        layer.enabled: true
-        layer.effect: MD.RoundClip {
-            corners: MD.Util.corners(root.cornerRadius)
-            size: Qt.vector2d(fillHost.width, fillHost.height)
-        }
+                layer.enabled: true
+                layer.effect: MD.RoundClip {
+                    corners: MD.Util.corners(root.cornerRadius)
+                    size: Qt.vector2d(fillHost.width, fillHost.height)
+                }
 
-        Image {
-            id: grayImage
-            anchors.fill: parent
-            source: root.coverReady ? root.resolvedSource : ""
-            fillMode: Image.PreserveAspectCrop
-            asynchronous: true
-            cache: true
-            smooth: true
-            sourceSize.width: root.decodeWidth
-            sourceSize.height: root.decodeHeight
-            visible: false
-        }
+                Image {
+                    id: grayImage
+                    anchors.fill: parent
+                    source: root.coverReady ? root.resolvedSource : ""
+                    fillMode: Image.PreserveAspectCrop
+                    asynchronous: true
+                    cache: true
+                    smooth: true
+                    sourceSize.width: root.decodeWidth
+                    sourceSize.height: root.decodeHeight
+                    visible: false
+                }
 
-        MultiEffect {
-            anchors.fill: parent
-            source: grayImage
-            saturation: -1.0
-        }
+                MultiEffect {
+                    anchors.fill: parent
+                    source: grayImage
+                    saturation: -1.0
+                }
 
-        Item {
-            width: parent.width * root.fillRatio
-            height: parent.height
-            clip: true
+                Item {
+                    width: parent.width * root.fillRatio
+                    height: parent.height
+                    clip: true
 
-            Image {
-                width: fillHost.width
-                height: fillHost.height
-                source: root.coverReady ? root.resolvedSource : ""
-                fillMode: Image.PreserveAspectCrop
-                asynchronous: true
-                cache: true
-                smooth: true
-                sourceSize.width: root.decodeWidth
-                sourceSize.height: root.decodeHeight
+                    Image {
+                        width: fillHost.width
+                        height: fillHost.height
+                        source: root.coverReady ? root.resolvedSource : ""
+                        fillMode: Image.PreserveAspectCrop
+                        asynchronous: true
+                        cache: true
+                        smooth: true
+                        sourceSize.width: root.decodeWidth
+                        sourceSize.height: root.decodeHeight
+                    }
+                }
             }
         }
     }
