@@ -69,19 +69,40 @@ struct TorrentSession::Impl
     QSet<QString> pausedJobs;
     QHash<QString, qint64> metadataStallSinceMs;
     QHash<QString, qint64> lastPeerRefreshMs;
+
+    // Last values sent through torrentProgress(): an unchanged tick (paused, stalled, idle
+    // seeding) is not re-emitted.
+    struct ProgressSnapshot
+    {
+        int progress = -1;
+        qint64 downloaded = -1;
+        qint64 total = -1;
+        int downloadRate = -1;
+        int peers = -1;
+        QString state;
+
+        bool operator==(const ProgressSnapshot& o) const
+        {
+            return progress == o.progress && downloaded == o.downloaded && total == o.total
+                && downloadRate == o.downloadRate && peers == o.peers && state == o.state;
+        }
+    };
+    QHash<QString, ProgressSnapshot> lastProgress;
 };
 
 namespace {
 
 constexpr int kMetadataKickAfterMs = 3000;
 
+// `status` is the tick's single handle.status() snapshot: every status() call is a blocking
+// round trip to the libtorrent session thread.
 void kickStalledMetadata(const QString& jobId, lt::torrent_handle handle,
+                         const lt::torrent_status& status,
                          QHash<QString, qint64>& metadataStallSinceMs)
 {
     if (!handle.is_valid())
         return;
 
-    const lt::torrent_status status = handle.status();
     if (status.state != lt::torrent_status::downloading_metadata) {
         metadataStallSinceMs.remove(jobId);
         return;

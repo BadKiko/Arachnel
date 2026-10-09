@@ -45,32 +45,54 @@ QByteArray payloadSha256(const QByteArray& payload)
     return QCryptographicHash::hash(payload, QCryptographicHash::Sha256).toHex();
 }
 
-bool savePayload(const QString& sourceId, const QByteArray& payload, const QByteArray& etag)
+bool savePayload(const QString& sourceId, const QByteArray& payload, const QByteArray& etag,
+                 const QByteArray& payloadSha)
 {
     if (sourceId.isEmpty() || payload.isEmpty())
         return false;
     QDir().mkpath(cacheDir());
     const QString path = payloadFilePath(sourceId);
-    const QString tmp = path + QStringLiteral(".tmp");
+    const QByteArray sha = payloadSha.isEmpty() ? payloadSha256(payload) : payloadSha;
+
+    // Plugin catalogs (steamidra is ~49 MB) are re-serialized on every launch and are almost
+    // always identical to what is already on disk: skip rewriting the payload in that case.
+    bool unchanged = false;
     {
-        QFile file(tmp);
-        if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate))
-            return false;
-        if (file.write(payload) != payload.size()) {
-            file.close();
+        QFile oldMeta(metaFilePath(sourceId));
+        if (oldMeta.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            const QList<QByteArray> lines = oldMeta.readAll().split('\n');
+            unchanged = lines.size() >= 2 && lines.at(0).trimmed() == sha
+                && lines.at(1).trimmed() == etag && QFileInfo(path).size() == payload.size();
+        }
+    }
+    if (unchanged) {
+        // The saved-at stamp in .meta comes from the file mtime; keep it fresh so a feed that
+        // returned identical bytes still counts as just refreshed.
+        QFile existing(path);
+        if (existing.open(QIODevice::ReadWrite))
+            existing.setFileTime(QDateTime::currentDateTime(), QFileDevice::FileModificationTime);
+    } else {
+        const QString tmp = path + QStringLiteral(".tmp");
+        {
+            QFile file(tmp);
+            if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate))
+                return false;
+            if (file.write(payload) != payload.size()) {
+                file.close();
+                QFile::remove(tmp);
+                return false;
+            }
+        }
+        QFile::remove(path);
+        if (!QFile::rename(tmp, path)) {
             QFile::remove(tmp);
             return false;
         }
     }
-    QFile::remove(path);
-    if (!QFile::rename(tmp, path)) {
-        QFile::remove(tmp);
-        return false;
-    }
 
     QFile meta(metaFilePath(sourceId));
     if (meta.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
-        meta.write(payloadSha256(payload));
+        meta.write(sha);
         meta.write("\n");
         meta.write(etag);
         meta.write("\n");

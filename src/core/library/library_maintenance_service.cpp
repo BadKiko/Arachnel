@@ -85,8 +85,9 @@ void LibraryMaintenanceService::pruneCancelledAddonJobs()
 
 void LibraryMaintenanceService::runStartupMaintenance()
 {
-    migratePollutedEntryIds();
-    pruneBrokenLibraryEntries();
+    // migratePollutedEntryIds / pruneBrokenLibraryEntries already ran from
+    // CoreController::initialize (before the addon prune); repeating them stat'ed every
+    // install path twice during startup.
     pruneCancelledAddonJobs();
     if (m_hooks.reconcileInstallState)
         m_hooks.reconcileInstallState();

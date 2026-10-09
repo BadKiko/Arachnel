@@ -23,6 +23,8 @@ public:
         std::function<bool(const QString&)> entryHasActiveJob;
         std::function<void(const QString&)> updateCatalogEntry;
         std::function<bool(const QString&)> catalogUpdateHasDlcRisk;
+        /** Catalog row for an id via the id index (no scan). Null when not in the catalog. */
+        std::function<const CatalogEntry*(const QString&)> findCachedEntry;
     };
 
     GameUpdateService(LibraryStore* store, SettingsStore* settings, PluginHost* plugins,

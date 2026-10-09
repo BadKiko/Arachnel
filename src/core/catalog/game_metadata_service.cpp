@@ -1,7 +1,9 @@
 #include "game_metadata_service.h"
 
 #include <QDir>
+#include <QCoreApplication>
 #include <QFile>
+#include <QSaveFile>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -30,6 +32,15 @@ GameMetadataService::GameMetadataService(QObject* parent)
     m_saveTimer->setSingleShot(true);
     m_saveTimer->setInterval(2000);
     connect(m_saveTimer, &QTimer::timeout, this, &GameMetadataService::saveCache);
+    // A save still pending in the debounce window would be lost on quit.
+    if (QCoreApplication::instance()) {
+        connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit, this, [this]() {
+            if (m_saveTimer->isActive()) {
+                m_saveTimer->stop();
+                saveCache();
+            }
+        });
+    }
     loadCache();
 }
 
@@ -122,10 +133,13 @@ void GameMetadataService::saveCache()
             root.insert(it.key(), obj);
         }
     }
-    QFile file(cacheFilePath());
+    // QSaveFile renames a finished temp file into place: a crash mid-write can't leave a
+    // truncated cache that loadCache() then discards.
+    QSaveFile file(cacheFilePath());
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate))
         return;
     file.write(QJsonDocument(root).toJson(QJsonDocument::Compact));
+    file.commit();
 }
 
 GameMetadata GameMetadataService::metadataForTitle(const QString& title) const

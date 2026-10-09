@@ -2,7 +2,9 @@
 
 #include "catalog_types.h"
 
+#include <QCoreApplication>
 #include <QDir>
+#include <QSaveFile>
 #include <QFile>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -101,6 +103,19 @@ QVector<GameLaunchOption> launchOptionsFromJson(const QJsonArray& array)
 LibraryStore::LibraryStore(QObject* parent)
     : QObject(parent)
 {
+    // upsertGame / setGames / removeGame each save; installs and cover applies fire them in
+    // bursts, and every save rewrote the whole indented JSON. Coalesce into one write.
+    m_saveTimer.setSingleShot(true);
+    m_saveTimer.setInterval(400);
+    connect(&m_saveTimer, &QTimer::timeout, this, &LibraryStore::flush);
+    if (QCoreApplication::instance())
+        connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit, this,
+                &LibraryStore::flush);
+}
+
+LibraryStore::~LibraryStore()
+{
+    flush();
 }
 
 void LibraryStore::setGames(QVector<LibraryGame> games)
@@ -198,6 +213,18 @@ void LibraryStore::load()
 
 void LibraryStore::save()
 {
+    m_dirty = true;
+    if (!m_saveTimer.isActive())
+        m_saveTimer.start();
+}
+
+void LibraryStore::flush()
+{
+    m_saveTimer.stop();
+    if (!m_dirty)
+        return;
+    m_dirty = false;
+
     QJsonArray array;
     for (const auto& game : m_games) {
         QJsonObject obj;
@@ -231,10 +258,13 @@ void LibraryStore::save()
         array.append(obj);
     }
 
-    QFile file(libraryFilePath());
+    // QSaveFile writes a temp file and renames it: a crash mid-write can't leave a truncated
+    // library.json behind.
+    QSaveFile file(libraryFilePath());
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate))
         return;
     file.write(QJsonDocument(array).toJson(QJsonDocument::Indented));
+    file.commit();
 }
 
 } // namespace arachnel::core

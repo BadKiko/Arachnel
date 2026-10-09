@@ -323,22 +323,27 @@ void disambiguateDuplicateIds(QVector<CatalogEntry>& entries)
 
 void deduplicateCatalogEntriesImpl(QVector<CatalogEntry>& entries)
 {
+    // Compact in place: a second vector of ~125k CatalogEntry (68 MB) used to coexist with the
+    // first one at the peak of every catalog load.
     QHash<QString, int> keyToIndex;
-    QVector<CatalogEntry> unique;
-    unique.reserve(entries.size());
+    keyToIndex.reserve(entries.size());
+    int write = 0;
 
-    for (CatalogEntry& entry : entries) {
+    for (int read = 0; read < entries.size(); ++read) {
+        CatalogEntry& entry = entries[read];
         const QString btih = magnetBtih(entry.magnetUris);
         const QString key = btih.isEmpty() ? entry.id : entry.id + QLatin1Char(':') + btih;
 
         const auto it = keyToIndex.constFind(key);
         if (it == keyToIndex.constEnd()) {
-            keyToIndex.insert(key, unique.size());
-            unique.append(std::move(entry));
+            keyToIndex.insert(key, write);
+            if (write != read)
+                entries[write] = std::move(entry);
+            ++write;
             continue;
         }
 
-        CatalogEntry& existing = unique[it.value()];
+        CatalogEntry& existing = entries[it.value()];
         if (uploadDateIsNewer(entry.uploadDate, existing.uploadDate)) {
             mergeAddons(entry.addons, existing.addons);
             existing = std::move(entry);
@@ -347,7 +352,7 @@ void deduplicateCatalogEntriesImpl(QVector<CatalogEntry>& entries)
         }
     }
 
-    entries = std::move(unique);
+    entries.resize(write);
     disambiguateDuplicateIds(entries);
 }
 
@@ -391,76 +396,83 @@ void deduplicateCatalogEntries(QVector<CatalogEntry>& entries)
 
 QVector<CatalogEntry> parseCatalogFeed(const QByteArray& payload, const QString& sourceId)
 {
-    const QJsonDocument document = QJsonDocument::fromJson(payload);
-    if (!document.isObject())
-        return {};
-
-    const QJsonObject root = document.object();
     QVector<CatalogEntry> entries;
+    enum class FeedKind { Hydra, Ryuu } kind = FeedKind::Ryuu;
 
-    // Hydra-compatible games.json
-    const QJsonArray downloads = root.value(QStringLiteral("downloads")).toArray();
-    if (!downloads.isEmpty()) {
-        entries.reserve(downloads.size());
-        for (const QJsonValue& value : downloads) {
-            if (!value.isObject())
-                continue;
-            entries.append(parseDownloadObject(value.toObject(), sourceId));
+    // The QJsonDocument of a 70 MB feed is itself ~70 MB: keep it scoped so it is released
+    // before dedupe/post-processing instead of living until the function returns.
+    {
+        const QJsonDocument document = QJsonDocument::fromJson(payload);
+        if (!document.isObject())
+            return {};
+
+        const QJsonObject root = document.object();
+
+        // Hydra-compatible games.json
+        const QJsonArray downloads = root.value(QStringLiteral("downloads")).toArray();
+        if (!downloads.isEmpty()) {
+            kind = FeedKind::Hydra;
+            entries.reserve(downloads.size());
+            for (const QJsonValue& value : downloads) {
+                if (!value.isObject())
+                    continue;
+                entries.append(parseDownloadObject(value.toObject(), sourceId));
+            }
+        } else {
+            // Arachnel Ryuu relay / steamidra catalog ({ "entries": [ ... ] }).
+            QJsonArray ryuu = root.value(QStringLiteral("entries")).toArray();
+            if (ryuu.isEmpty())
+                ryuu = root.value(QStringLiteral("games")).toArray();
+            if (ryuu.isEmpty())
+                return {};
+
+            QSet<QString> referencedDlc;
+            const auto addDlcId = [&referencedDlc](QString id) {
+                id = id.trimmed();
+                if (id.startsWith(QStringLiteral("steam-")))
+                    id = id.mid(6);
+                if (!id.isEmpty())
+                    referencedDlc.insert(id);
+            };
+            for (const QJsonValue& value : ryuu) {
+                if (!value.isObject())
+                    continue;
+                const QJsonValue dlcVal = value.toObject().value(QStringLiteral("dlc"));
+                if (dlcVal.isArray()) {
+                    for (const QJsonValue& d : dlcVal.toArray()) {
+                        if (d.isString())
+                            addDlcId(d.toString());
+                        else if (d.isDouble())
+                            addDlcId(QString::number(d.toInteger()));
+                    }
+                } else if (dlcVal.isString()) {
+                    for (const QString& part : dlcVal.toString().split(QLatin1Char(',')))
+                        addDlcId(part);
+                }
+            }
+
+            entries.reserve(ryuu.size());
+            for (const QJsonValue& value : ryuu) {
+                if (!value.isObject())
+                    continue;
+                CatalogEntry entry = parseRyuuEntryObject(value.toObject(), sourceId);
+                if (!entry.steamAppId.isEmpty() && referencedDlc.contains(entry.steamAppId))
+                    continue;
+                entries.append(std::move(entry));
+            }
         }
+    }
+
+    if (kind == FeedKind::Hydra) {
         attachOrphanAddons(entries);
         entries.erase(std::remove_if(entries.begin(), entries.end(),
                                      [](const CatalogEntry& entry) {
                                          return entry.itemKind != CatalogItemKind::Game;
                                      }),
                       entries.end());
-        deduplicateCatalogEntriesImpl(entries);
-        return entries;
     }
-
-    // Arachnel Ryuu relay / steamidra catalog ({ "entries": [ ... ] }).
-    QJsonArray ryuu = root.value(QStringLiteral("entries")).toArray();
-    if (ryuu.isEmpty())
-        ryuu = root.value(QStringLiteral("games")).toArray();
-    if (!ryuu.isEmpty()) {
-        QSet<QString> referencedDlc;
-        const auto addDlcId = [&referencedDlc](QString id) {
-            id = id.trimmed();
-            if (id.startsWith(QStringLiteral("steam-")))
-                id = id.mid(6);
-            if (!id.isEmpty())
-                referencedDlc.insert(id);
-        };
-        for (const QJsonValue& value : ryuu) {
-            if (!value.isObject())
-                continue;
-            const QJsonValue dlcVal = value.toObject().value(QStringLiteral("dlc"));
-            if (dlcVal.isArray()) {
-                for (const QJsonValue& d : dlcVal.toArray()) {
-                    if (d.isString())
-                        addDlcId(d.toString());
-                    else if (d.isDouble())
-                        addDlcId(QString::number(d.toInteger()));
-                }
-            } else if (dlcVal.isString()) {
-                for (const QString& part : dlcVal.toString().split(QLatin1Char(',')))
-                    addDlcId(part);
-            }
-        }
-
-        entries.reserve(ryuu.size());
-        for (const QJsonValue& value : ryuu) {
-            if (!value.isObject())
-                continue;
-            CatalogEntry entry = parseRyuuEntryObject(value.toObject(), sourceId);
-            if (!entry.steamAppId.isEmpty() && referencedDlc.contains(entry.steamAppId))
-                continue;
-            entries.append(std::move(entry));
-        }
-        deduplicateCatalogEntriesImpl(entries);
-        return entries;
-    }
-
-    return {};
+    deduplicateCatalogEntriesImpl(entries);
+    return entries;
 }
 
 QString catalogFeedValidationError(const QByteArray& payload)

@@ -426,6 +426,13 @@ void CoreController::initializeServices()
     updateHooks.catalogUpdateHasDlcRisk = [this](const QString& entryId) {
         return catalogUpdateHasDlcRisk(entryId);
     };
+    updateHooks.findCachedEntry = [this](const QString& entryId) -> const CatalogEntry* {
+        const auto it = m_catalogIdToCacheIndex.constFind(entryId);
+        if (it == m_catalogIdToCacheIndex.cend())
+            return nullptr;
+        const int idx = it.value();
+        return (idx >= 0 && idx < m_catalogCache.size()) ? &m_catalogCache.at(idx) : nullptr;
+    };
     m_gameUpdates = new GameUpdateService(&m_libraryStore, &m_settings, m_pluginHost,
                                           m_jobOrchestrator, &m_catalogCache, std::move(updateHooks));
 
@@ -616,12 +623,13 @@ void CoreController::initializeServices()
                 bool applied = false;
                 {
                     QWriteLocker locker(&m_catalogCacheLock);
-                    for (auto& entry : m_catalogCache) {
-                        if (entry.id != entryId)
-                            continue;
-                        applyMetadataToEntry(entry, metadata);
+                    // Index lookup instead of scanning ~125k rows per metadata result.
+                    const auto idxIt = m_catalogIdToCacheIndex.constFind(entryId);
+                    if (idxIt != m_catalogIdToCacheIndex.cend() && idxIt.value() >= 0
+                        && idxIt.value() < m_catalogCache.size()
+                        && m_catalogCache.at(idxIt.value()).id == entryId) {
+                        applyMetadataToEntry(m_catalogCache[idxIt.value()], metadata);
                         applied = true;
-                        break;
                     }
                 }
                 if (applied) {

@@ -99,18 +99,36 @@ int GameUpdateService::recalculateLibraryUpdates(bool notify)
 {
     if (!m_catalog || m_catalog->isEmpty())
         return 0;
-    QHash<QString, CatalogEntry> remoteById;
-    for (const CatalogEntry& entry : *m_catalog)
-        remoteById.insert(entry.id, entry);
+    // Look up only the library's own ids. This used to copy all ~125k catalog rows into a
+    // QHash on every call (after each catalog load and install): ~100 ms and a 75 MB spike.
+    auto findRemote = [this](const QString& id) -> const CatalogEntry* {
+        if (m_hooks.findCachedEntry)
+            return m_hooks.findCachedEntry(id);
+        for (const CatalogEntry& entry : *m_catalog) {
+            if (entry.id == id)
+                return &entry;
+        }
+        return nullptr;
+    };
+
     QVector<LibraryGame> games = m_store->games();
     int updates = 0;
+    bool changed = false;
     for (LibraryGame& game : games) {
-        game.hasUpdate = gameHasUpdate(game, remoteById.value(game.id));
-        updates += game.hasUpdate;
+        const CatalogEntry* remote = findRemote(game.id);
+        const bool hasUpdate = remote && gameHasUpdate(game, *remote);
+        if (game.hasUpdate != hasUpdate) {
+            game.hasUpdate = hasUpdate;
+            changed = true;
+        }
+        updates += hasUpdate;
     }
-    m_store->setGames(games);
-    if (m_hooks.syncLibrary)
-        m_hooks.syncLibrary();
+    // setGames() rewrites library.json: only do it when an update flag actually flipped.
+    if (changed) {
+        m_store->setGames(games);
+        if (m_hooks.syncLibrary)
+            m_hooks.syncLibrary();
+    }
     if (notify && m_hooks.notice)
         m_hooks.notice(updates ? QStringLiteral("%1 update(s) available").arg(updates)
                                : QStringLiteral("No updates"));
@@ -138,9 +156,19 @@ void GameUpdateService::runAutoInstallUpdates()
             || (m_hooks.entryHasActiveJob && m_hooks.entryHasActiveJob(game.id))
             || (m_hooks.catalogUpdateHasDlcRisk && m_hooks.catalogUpdateHasDlcRisk(game.id)))
             continue;
-        for (const CatalogEntry& entry : *m_catalog) {
-            if (entry.id != game.id)
-                continue;
+        const CatalogEntry* match = nullptr;
+        if (m_hooks.findCachedEntry) {
+            match = m_hooks.findCachedEntry(game.id);
+        } else {
+            for (const CatalogEntry& entry : *m_catalog) {
+                if (entry.id == game.id) {
+                    match = &entry;
+                    break;
+                }
+            }
+        }
+        if (match) {
+            const CatalogEntry& entry = *match;
             const QString libId =
                 game.libraryId.isEmpty() ? m_settings->defaultLibraryId() : game.libraryId;
             if (m_plugins && m_plugins->pluginOwnsDownload(entry.sourceId)) {
@@ -154,7 +182,6 @@ void GameUpdateService::runAutoInstallUpdates()
                          ->startCatalogDownload(entry, JobKind::Update, libId)
                          .isEmpty();
             }
-            break;
         }
     }
     if (started && m_hooks.notice)
