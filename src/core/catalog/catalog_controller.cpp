@@ -817,18 +817,20 @@ void CatalogController::loadCatalogSourceNow(const QString& sourceId)
             // Plugin JSON uses schema + entries[]; parseCatalogFeed treats "entries" as Ryuu
             // and used to drop FreeTP magnets. Prefer the plugin parser when schema matches.
             QVector<CatalogEntry> entries;
-            const QJsonDocument doc = QJsonDocument::fromJson(payload);
-            if (doc.isObject()
-                && doc.object()
-                       .value(QStringLiteral("schema"))
-                       .toString()
-                       .startsWith(QStringLiteral("arachnel.plugin.catalog"))) {
+            // Parsing a 70 MB feed just to read its "schema" field doubled the load time and the
+            // peak memory. Object keys are written sorted, so the marker sits in the first or
+            // last few KB; a false positive only costs the fallback chain below.
+            constexpr qsizetype kSchemaProbe = 4096;
+            const QByteArray marker("arachnel.plugin.catalog");
+            if (payload.left(kSchemaProbe).contains(marker)
+                || payload.right(kSchemaProbe).contains(marker)) {
                 entries = parsePluginCatalogJson(payload, sourceId);
             }
             if (entries.isEmpty())
                 entries = parseCatalogFeed(payload, sourceId);
             if (entries.isEmpty())
                 entries = parsePluginCatalogJson(payload, sourceId);
+            payload = QByteArray(); // release the raw feed before entries are post-processed
             for (CatalogEntry& entry : entries) {
                 entry.sourceId = sourceId;
                 entry.id = repairCatalogEntryId(entry.id);
