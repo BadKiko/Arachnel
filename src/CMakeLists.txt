@@ -8,6 +8,7 @@ set(ARACHNEL_APP_SOURCES
     src/app/settings_identity.cpp
     src/app/crash_log_report.cpp
     src/app/deep_link.cpp
+    src/app/snap_layouts_filter.cpp
 
     src/core/install/install_kind.cpp
     src/core/jobs/job_display.cpp

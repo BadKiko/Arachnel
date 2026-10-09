@@ -5,6 +5,7 @@
 #include <QQmlApplicationEngine>
 #include <QQmlError>
 #include <QStyleHints>
+#include <QWindow>
 #include <QString>
 #include <QTimer>
 #include <cstdio>
@@ -21,6 +22,7 @@
 #include "crash_log.h"
 #include "deep_link.h"
 #include "settings_identity.h"
+#include "snap_layouts_filter.h"
 
 #ifndef QT_QML_MATERIAL_IMPORT_PATH
 #define QT_QML_MATERIAL_IMPORT_PATH ""
@@ -161,6 +163,11 @@ int main(int argc, char* argv[])
             engine.loadFromModule(QStringLiteral("arachnel"), QStringLiteral("Main"));
 
         if (!crashDialogMode) {
+            if (!engine.rootObjects().isEmpty()) {
+                QObject* root = engine.rootObjects().first();
+                arachnel::installSnapLayoutsFilter(qobject_cast<QWindow*>(root),
+                                                   root->findChild<QObject*>(QStringLiteral("appTitleBar")));
+            }
             applyTranslations(engine, app);
             QTimer::singleShot(0, &app, []() { arachnel::startHangWatchdog(); });
             const QStringList args = app.arguments();
