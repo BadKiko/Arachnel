@@ -853,8 +853,7 @@ void CatalogController::loadCatalogSourceNow(const QString& sourceId)
         auto* watcher = new QFutureWatcher<DiskCatalogLoad>(this);
         m_inFlightPluginCatalogWatchers.append(watcher);
         const auto prepare = m_hooks.prepareEntry;
-        // Keys written by the catalog-source path end with the plugin version; a key from
-        // another plugin build (or from the catalog_json path) must not select a snapshot.
+        // Keys written by the catalog-source path end with the plugin version.
         const QByteArray expectedKeySuffix =
             m_pluginHost ? pluginCatalogSourceKeySuffix(*m_pluginHost, sourceId) : QByteArray();
         connect(watcher, &QFutureWatcher<DiskCatalogLoad>::finished, this,
@@ -887,14 +886,14 @@ void CatalogController::loadCatalogSourceNow(const QString& sourceId)
             QByteArray etag;
             QVector<CatalogEntry> entries;
 
+            // A key from another plugin build / loading path is still a correct snapshot of what
+            // it was written for, so show it right away - but report it stale so the background
+            // revalidation replaces it with the current plugin's output.
             const QByteArray earlyKey = CatalogDiskCache::storedPayloadKey(sourceId);
             const bool sourceKey = earlyKey.contains('|');
-            if (sourceKey != !expectedKeySuffix.isEmpty()
-                || (sourceKey && !earlyKey.endsWith(expectedKeySuffix))) {
-                // Cached under a different plugin build / loading path: not usable here. The
-                // plugin load rebuilds it (from the cached raw feed when there is one).
-                return out;
-            }
+            const bool keyFromOtherBuild = !earlyKey.isEmpty()
+                && (sourceKey != !expectedKeySuffix.isEmpty()
+                    || (sourceKey && !earlyKey.endsWith(expectedKeySuffix)));
 
             // Warm start: a snapshot written for exactly this payload skips reading, hashing and
             // parsing ~70 MB of JSON. Any mismatch falls through to the JSON path below.
@@ -938,6 +937,8 @@ void CatalogController::loadCatalogSourceNow(const QString& sourceId)
             }
             prepareCatalogRows(entries, sourceId, prepare);
             out.entries = std::move(entries);
+            if (keyFromOtherBuild)
+                out.savedAtMs = 0;
             return out;
         }));
         return;
