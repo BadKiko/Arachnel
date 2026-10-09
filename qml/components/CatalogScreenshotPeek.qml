@@ -63,8 +63,8 @@ Popup {
             property: "opacity"
             from: 0
             to: 1
-            duration: MD.Token.duration.short4
-            easing: MD.Token.easing.emphasized_decelerate
+            duration: AppMotion.short
+            easing: AppMotion.emphasizedDecelerate
         }
     }
 
@@ -72,8 +72,8 @@ Popup {
         NumberAnimation {
             property: "opacity"
             to: 0
-            duration: MD.Token.duration.short3
-            easing: MD.Token.easing.emphasized_accelerate
+            duration: AppMotion.quick
+            easing: AppMotion.emphasizedAccelerate
         }
     }
 
@@ -471,43 +471,43 @@ Popup {
             target: shownShot
             property: "opacity"
             to: 0
-            duration: 200
-            easing.type: Easing.OutCubic
+            duration: AppMotion.short
+            easing: AppMotion.standardDecelerate
         }
         NumberAnimation {
             target: shownShot
             property: "x"
             to: -pageAnim.dir * pageAnim.travel
-            duration: 260
-            easing.type: Easing.OutCubic
+            duration: AppMotion.medium
+            easing: AppMotion.standardDecelerate
         }
         NumberAnimation {
             target: shownShot
             property: "scale"
             to: 0.96
-            duration: 260
-            easing.type: Easing.OutCubic
+            duration: AppMotion.medium
+            easing: AppMotion.standardDecelerate
         }
         NumberAnimation {
             target: nextShot
             property: "opacity"
             to: 1
-            duration: 180
-            easing.type: Easing.OutCubic
+            duration: AppMotion.short
+            easing: AppMotion.standardDecelerate
         }
         NumberAnimation {
             target: nextShot
             property: "x"
             to: 0
-            duration: 260
-            easing.type: Easing.OutCubic
+            duration: AppMotion.medium
+            easing: AppMotion.standardDecelerate
         }
         NumberAnimation {
             target: nextShot
             property: "scale"
             to: 1
-            duration: 260
-            easing.type: Easing.OutCubic
+            duration: AppMotion.medium
+            easing: AppMotion.standardDecelerate
         }
 
         onFinished: {
@@ -604,13 +604,13 @@ Popup {
 
                             Behavior on width {
                                 NumberAnimation {
-                                    duration: MD.Token.duration.short3
-                                    easing: MD.Token.easing.emphasized_decelerate
+                                    duration: AppMotion.quick
+                                    easing: AppMotion.emphasizedDecelerate
                                 }
                             }
                             Behavior on color {
                                 ColorAnimation {
-                                    duration: MD.Token.duration.short3
+                                    duration: AppMotion.quick
                                 }
                             }
                         }

@@ -67,8 +67,8 @@ ColumnLayout {
     opacity: root.showSection ? 1 : 0
     Behavior on opacity {
         NumberAnimation {
-            duration: MD.Token.duration.medium2
-            easing.type: Easing.OutCubic
+            duration: AppMotion.medium
+            easing: AppMotion.standardDecelerate
         }
     }
 
@@ -108,14 +108,14 @@ ColumnLayout {
 
             Behavior on opacity {
                 NumberAnimation {
-                    duration: MD.Token.duration.short4
-                    easing.type: Easing.OutCubic
+                    duration: AppMotion.short
+                    easing: AppMotion.standardDecelerate
                 }
             }
             Behavior on scale {
                 NumberAnimation {
-                    duration: MD.Token.duration.short4
-                    easing.type: Easing.OutCubic
+                    duration: AppMotion.short
+                    easing: AppMotion.standardDecelerate
                 }
             }
 
@@ -186,7 +186,7 @@ ColumnLayout {
                                     from: -shimmerBand.width
                                     to: mediaTile.width + shimmerBand.width
                                     duration: 1300
-                                    easing.type: Easing.InOutCubic
+                                    easing: AppMotion.standard
                                 }
                                 PauseAnimation { duration: 220 }
                             }
@@ -216,8 +216,8 @@ ColumnLayout {
 
                 Behavior on opacity {
                     NumberAnimation {
-                        duration: MD.Token.duration.short4
-                        easing.type: Easing.OutCubic
+                        duration: AppMotion.short
+                        easing: AppMotion.standardDecelerate
                     }
                 }
             }
@@ -232,7 +232,7 @@ ColumnLayout {
                             : (mediaHover.hovered ? 0.12 : 0))
                          : 0
                 Behavior on opacity {
-                    NumberAnimation { duration: 150 }
+                    NumberAnimation { duration: AppMotion.quick }
                 }
             }
 

@@ -88,12 +88,12 @@ MD.Pane {
                             transformOrigin: Item.Center
 
                             Behavior on color {
-                                ColorAnimation { duration: MD.Token.duration.short4 }
+                                ColorAnimation { duration: AppMotion.short }
                             }
                             Behavior on scale {
                                 NumberAnimation {
-                                    duration: MD.Token.duration.short4
-                                    easing: MD.Token.easing.emphasized_decelerate
+                                    duration: AppMotion.short
+                                    easing: AppMotion.emphasizedDecelerate
                                 }
                             }
 

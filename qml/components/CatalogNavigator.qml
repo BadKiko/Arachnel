@@ -217,8 +217,8 @@ Item {
 
         Behavior on width {
             NumberAnimation {
-                duration: MD.Token.duration.short4
-                easing: MD.Token.easing.emphasized_decelerate
+                duration: AppMotion.short
+                easing: AppMotion.emphasizedDecelerate
             }
         }
 
@@ -229,7 +229,7 @@ Item {
                                        root.scrubbing || trackPad.containsMouse ? 0.18 : 0.10)
 
             Behavior on color {
-                ColorAnimation { duration: MD.Token.duration.short4 }
+                ColorAnimation { duration: AppMotion.short }
             }
         }
 
@@ -255,20 +255,20 @@ Item {
             Behavior on y {
                 enabled: !root.scrubbing
                 NumberAnimation {
-                    duration: MD.Token.duration.short4
-                    easing: MD.Token.easing.emphasized_decelerate
+                    duration: AppMotion.short
+                    easing: AppMotion.emphasizedDecelerate
                 }
             }
             Behavior on height {
                 NumberAnimation {
-                    duration: MD.Token.duration.short4
-                    easing: MD.Token.easing.emphasized_decelerate
+                    duration: AppMotion.short
+                    easing: AppMotion.emphasizedDecelerate
                 }
             }
             Behavior on opacity {
                 NumberAnimation {
-                    duration: MD.Token.duration.short4
-                    easing: MD.Token.easing.standard
+                    duration: AppMotion.short
+                    easing: AppMotion.standard
                 }
             }
         }
@@ -299,27 +299,27 @@ Item {
 
         Behavior on opacity {
             NumberAnimation {
-                duration: MD.Token.duration.short4
-                easing: MD.Token.easing.emphasized_decelerate
+                duration: AppMotion.short
+                easing: AppMotion.emphasizedDecelerate
             }
         }
         Behavior on scale {
             NumberAnimation {
-                duration: MD.Token.duration.short4
-                easing: MD.Token.easing.emphasized_decelerate
+                duration: AppMotion.short
+                easing: AppMotion.emphasizedDecelerate
             }
         }
         Behavior on color {
             ColorAnimation {
-                duration: MD.Token.duration.medium1
-                easing: MD.Token.easing.standard
+                duration: AppMotion.medium
+                easing: AppMotion.standard
             }
         }
         Behavior on y {
             enabled: root.scrubbing
             NumberAnimation {
-                duration: 90
-                easing.type: Easing.OutCubic
+                duration: AppMotion.fast
+                easing: AppMotion.standardDecelerate
             }
         }
 
@@ -341,14 +341,14 @@ Item {
 
                 Behavior on opacity {
                     NumberAnimation {
-                        duration: MD.Token.duration.short3
-                        easing: MD.Token.easing.emphasized_decelerate
+                        duration: AppMotion.quick
+                        easing: AppMotion.emphasizedDecelerate
                     }
                 }
                 Behavior on height {
                     NumberAnimation {
-                        duration: MD.Token.duration.short4
-                        easing: MD.Token.easing.emphasized_decelerate
+                        duration: AppMotion.short
+                        easing: AppMotion.emphasizedDecelerate
                     }
                 }
             }
@@ -365,7 +365,7 @@ Item {
                 horizontalAlignment: Text.AlignHCenter
 
                 Behavior on color {
-                    ColorAnimation { duration: MD.Token.duration.short4 }
+                    ColorAnimation { duration: AppMotion.short }
                 }
             }
 
@@ -385,7 +385,7 @@ Item {
                 horizontalAlignment: Text.AlignHCenter
 
                 Behavior on color {
-                    ColorAnimation { duration: MD.Token.duration.short4 }
+                    ColorAnimation { duration: AppMotion.short }
                 }
             }
         }

@@ -135,8 +135,14 @@ Item {
 
     Item {
         anchors.fill: parent
-        visible: root.favoritesEmpty
-
+        opacity: root.favoritesEmpty ? 1 : 0
+        visible: opacity > 0
+        Behavior on opacity {
+            NumberAnimation {
+                duration: AppMotion.short
+                easing: AppMotion.standard
+            }
+        }
         ColumnLayout {
             anchors.centerIn: parent
             spacing: MD.Token.spacing.medium
@@ -180,7 +186,14 @@ Item {
 
     Flickable {
         anchors.fill: parent
-        visible: !root.favoritesEmpty
+        opacity: !root.favoritesEmpty ? 1 : 0
+        visible: opacity > 0
+        Behavior on opacity {
+            NumberAnimation {
+                duration: AppMotion.short
+                easing: AppMotion.standard
+            }
+        }
         contentWidth: width
         contentHeight: contentCol.implicitHeight + pageMargin
         clip: true
@@ -239,6 +252,8 @@ Item {
                     cellWidth: gridHost.cellW
                     cellHeight: gridHost.cellH
                     cacheBuffer: 0
+                    populate: StaggerEnterTransition {}
+                    add: StaggerEnterTransition { staggered: false }
 
                     delegate: FavoriteGameCard {
                         width: gridHost.cardWidth

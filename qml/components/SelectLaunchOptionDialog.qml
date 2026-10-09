@@ -78,8 +78,8 @@ MD.Dialog {
                     border.width: isSelected ? 2 : 1
                     border.color: isSelected ? MD.Token.color.primary : MD.Token.color.outline_variant
 
-                    Behavior on color { ColorAnimation { duration: 120 } }
-                    Behavior on border.color { ColorAnimation { duration: 120 } }
+                    Behavior on color { ColorAnimation { duration: AppMotion.fast } }
+                    Behavior on border.color { ColorAnimation { duration: AppMotion.fast } }
 
                     MouseArea {
                         id: optMouse

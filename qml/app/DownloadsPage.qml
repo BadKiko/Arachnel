@@ -102,8 +102,14 @@ Item {
     // ── Empty (как «Нет игр» в каталоге) ─────────────────────────────────────
     Item {
         anchors.fill: parent
-        visible: root.downloadsEmpty
-
+        opacity: root.downloadsEmpty ? 1 : 0
+        visible: opacity > 0
+        Behavior on opacity {
+            NumberAnimation {
+                duration: AppMotion.short
+                easing: AppMotion.standard
+            }
+        }
         ColumnLayout {
             anchors.centerIn: parent
             spacing: MD.Token.spacing.medium
@@ -149,8 +155,14 @@ Item {
     ColumnLayout {
         anchors.fill: parent
         spacing: MD.Token.spacing.medium
-        visible: !root.downloadsEmpty
-
+        opacity: !root.downloadsEmpty ? 1 : 0
+        visible: opacity > 0
+        Behavior on opacity {
+            NumberAnimation {
+                duration: AppMotion.short
+                easing: AppMotion.standard
+            }
+        }
         RowLayout {
             Layout.fillWidth: true
             Layout.leftMargin: pageMargin
@@ -207,6 +219,8 @@ Item {
             reuseItems: true
             cacheBuffer: height * 2
             model: groupsModel
+            populate: StaggerEnterTransition {}
+            add: StaggerEnterTransition { staggered: false }
 
             ScrollBar.vertical: MD.ScrollBar {
                 policy: ScrollBar.AsNeeded

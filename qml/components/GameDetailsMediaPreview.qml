@@ -182,7 +182,7 @@ Item {
                                 color: MD.Token.color.on_surface
                                 opacity: trailerDialogHover.hovered ? 0.08 : 0
                                 Behavior on opacity {
-                                    NumberAnimation { duration: 150 }
+                                    NumberAnimation { duration: AppMotion.quick }
                                 }
                             }
 

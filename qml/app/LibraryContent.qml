@@ -10,7 +10,14 @@ Item {
     Flickable {
         id: flick
         anchors.fill: parent
-        visible: !page.libraryEmpty
+        opacity: !page.libraryEmpty ? 1 : 0
+        visible: opacity > 0
+        Behavior on opacity {
+            NumberAnimation {
+                duration: AppMotion.short
+                easing: AppMotion.standard
+            }
+        }
         contentWidth: width
         contentHeight: contentCol.implicitHeight + page.pageMargin
         clip: true
@@ -357,6 +364,8 @@ Item {
                         cellWidth: gridHost.cellW
                         cellHeight: gridHost.cellH
                         cacheBuffer: 0
+                        populate: StaggerEnterTransition {}
+                        add: StaggerEnterTransition { staggered: false }
                         delegate: LibraryGameCard {
                             width: gridHost.cardWidth
                             height: gridHost.cardHeight

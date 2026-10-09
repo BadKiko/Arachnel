@@ -502,8 +502,8 @@ Item {
 
             Behavior on opacity {
                 NumberAnimation {
-                    duration: MD.Token.duration.short3
-                    easing: MD.Token.easing.emphasized_decelerate
+                    duration: AppMotion.quick
+                    easing: AppMotion.emphasizedDecelerate
                 }
             }
         }

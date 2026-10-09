@@ -51,15 +51,15 @@ Item {
 
         Behavior on opacity {
             NumberAnimation {
-                duration: MD.Token.duration.short4
-                easing: MD.Token.easing.standard
+                duration: AppMotion.short
+                easing: AppMotion.standard
             }
         }
 
         Behavior on scale {
             NumberAnimation {
-                duration: MD.Token.duration.medium2
-                easing: MD.Token.easing.emphasized_decelerate
+                duration: AppMotion.medium
+                easing: AppMotion.emphasizedDecelerate
             }
         }
 
