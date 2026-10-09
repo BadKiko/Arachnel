@@ -15,6 +15,7 @@
 #include <QThread>
 
 #include <algorithm>
+#include <limits>
 #include <numeric>
 
 namespace arachnel::core {
@@ -140,8 +141,11 @@ bool CatalogFilterService::rowMatches(const CatalogFilterRow& row, const FilterS
 
 namespace {
 
-constexpr int kMaxVisibleBrowse = 8192;
-constexpr int kMaxVisibleSearch = 4096;
+// No row cap: the catalog GridView is virtualized, so only the delegates on screen exist.
+// The old caps (8192 browse / 4096 search) hid ~94% of a 125k catalog behind "Found: 8192".
+// Huge replacements still go through CatalogModel's bulk path (view unbound while swapping).
+constexpr int kMaxVisibleBrowse = std::numeric_limits<int>::max();
+constexpr int kMaxVisibleSearch = std::numeric_limits<int>::max();
 
 struct FilterSoA {
     QVector<CatalogFilterRow> rows;
