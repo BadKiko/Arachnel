@@ -625,9 +625,10 @@ QByteArray PluginHost::loadPluginCatalogPayload(const QString& id, QByteArray* p
     }
     if (bytes.isEmpty())
         return {};
-    CatalogDiskCache::savePayload(id, bytes, {});
+    const QByteArray sha = CatalogDiskCache::payloadSha256(bytes);
+    CatalogDiskCache::savePayload(id, bytes, {}, sha);
     if (payloadSha)
-        *payloadSha = CatalogDiskCache::payloadSha256(bytes);
+        *payloadSha = sha;
     return bytes;
 }
 
