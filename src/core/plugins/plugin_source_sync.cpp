@@ -5,6 +5,7 @@
 #include "plugin_api.h"
 #include "plugin_catalog_json.h"
 #include "plugin_host.h"
+#include "crash_log.h"
 
 #include <QDateTime>
 #include <QDir>
@@ -28,6 +29,10 @@ namespace arachnel::core {
 namespace {
 
 constexpr qsizetype kRowsPerBatch = 1024;
+// First-start preview: ~600 KB of a 70 MB feed is ~1000 newest-first rows, enough to fill the
+// grid while the remaining ~99% downloads.
+constexpr qsizetype kPreviewPrefixBytes = 600'000;
+constexpr qsizetype kPreviewMaxRows = 1024;
 
 struct SourceDescriptor {
     QUrl url;
@@ -218,7 +223,8 @@ bool collectRowSpans(const char* p, qsizetype n, const Range& range, QVector<Row
 enum class FetchStatus { Ok, NotModified, Error };
 
 FetchStatus fetchToFile(const SourceDescriptor& d, const QByteArray& etag, const QString& tmpPath,
-                        QByteArray* newEtag, QString* error)
+                        QByteArray* newEtag, QString* error,
+                        const std::function<void(const QByteArray&)>& onPrefix = {})
 {
     QNetworkAccessManager nam;
     QNetworkRequest req(d.url);
@@ -240,10 +246,20 @@ FetchStatus fetchToFile(const SourceDescriptor& d, const QByteArray& etag, const
 
     QNetworkReply* reply = nam.get(req);
     bool writeFailed = false;
+    QByteArray prefix;
+    bool prefixSent = !onPrefix;
     QObject::connect(reply, &QNetworkReply::readyRead, reply, [&]() {
         const QByteArray chunk = reply->readAll();
         if (out.write(chunk) != chunk.size())
             writeFailed = true;
+        if (!prefixSent) {
+            prefix.append(chunk);
+            if (prefix.size() >= kPreviewPrefixBytes && reply->error() == QNetworkReply::NoError) {
+                prefixSent = true;
+                onPrefix(prefix);
+                prefix = QByteArray();
+            }
+        }
     });
     QEventLoop loop;
     QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
@@ -269,6 +285,66 @@ FetchStatus fetchToFile(const SourceDescriptor& d, const QByteArray& etag, const
         return FetchStatus::Error;
     }
     return FetchStatus::Ok;
+}
+
+// Rows of the feed's array that are complete inside `prefix` (the start of the download).
+QByteArray previewRowsJson(const QByteArray& prefix, const QByteArrayList& rowsKeys)
+{
+    const char* p = prefix.constData();
+    const qsizetype n = prefix.size();
+    qsizetype i = skipSpace(p, n, 0);
+    if (i >= n)
+        return {};
+    if (p[i] != '[') {
+        qsizetype at = -1;
+        for (const QByteArray& key : rowsKeys) {
+            const QByteArray needle = '"' + key + '"';
+            qsizetype k = prefix.indexOf(needle);
+            while (k >= 0) {
+                qsizetype j = skipSpace(p, n, k + needle.size());
+                if (j < n && p[j] == ':') {
+                    j = skipSpace(p, n, j + 1);
+                    if (j < n && p[j] == '[') {
+                        at = j;
+                        break;
+                    }
+                }
+                k = prefix.indexOf(needle, k + 1);
+            }
+            if (at >= 0)
+                break;
+        }
+        if (at < 0)
+            return {};
+        i = at;
+    }
+    ++i; // past '['
+
+    QByteArray rows("[");
+    qsizetype count = 0;
+    while (count < kPreviewMaxRows) {
+        i = skipSpace(p, n, i);
+        if (i >= n)
+            break;
+        if (p[i] == ',') {
+            ++i;
+            continue;
+        }
+        if (p[i] != '{')
+            break;
+        const qsizetype stop = skipValue(p, n, i);
+        if (stop < 0)
+            break; // the row is cut off by the end of the prefix
+        if (count > 0)
+            rows.append(',');
+        rows.append(p + i, stop - i);
+        ++count;
+        i = stop;
+    }
+    if (count == 0)
+        return {};
+    rows.append(']');
+    return rows;
 }
 
 QByteArray keySuffix(const QString& pluginVersion)
@@ -306,7 +382,8 @@ QByteArray pluginCatalogSourceKeySuffix(const PluginHost& host, const QString& s
 }
 
 PluginSourceSyncResult syncPluginCatalogSource(const PluginHost& host, const QString& sourceId,
-                                               const QByteArray& knownKey, bool force)
+                                               const QByteArray& knownKey, bool force,
+                                               const PluginSourcePreview& onPreview)
 {
     PluginSourceSyncResult result;
     if (!pluginCatalogSourceEnabled() || !host.pluginHasCatalogSource(sourceId)) {
@@ -351,7 +428,31 @@ PluginSourceSyncResult syncPluginCatalogSource(const PluginHost& host, const QSt
     if (needNetwork) {
         QString err;
         QByteArray fetchedEtag;
-        const FetchStatus status = fetchToFile(desc, etag, tmpPath, &fetchedEtag, &err);
+        std::function<void(const QByteArray&)> onPrefix;
+        if (onPreview && !haveRaw) {
+            onPrefix = [&](const QByteArray& prefix) {
+                const QByteArray rows = previewRowsJson(prefix, desc.rowsKeys);
+                if (rows.isEmpty())
+                    return;
+                const QByteArray normalized = host.pluginNormalizeRows(
+                    sourceId, rows.constData(), static_cast<size_t>(rows.size()));
+                if (normalized.isEmpty())
+                    return;
+                QStringList supersedes;
+                QVector<CatalogEntry> entries = parsePluginCatalogJsonEx(normalized, sourceId, &supersedes);
+                if (!supersedes.isEmpty()) {
+                    const QSet<QString> hidden(supersedes.begin(), supersedes.end());
+                    entries.erase(std::remove_if(entries.begin(), entries.end(),
+                                                 [&hidden](const CatalogEntry& e) {
+                                                     return hidden.contains(e.id);
+                                                 }),
+                                  entries.end());
+                }
+                if (!entries.isEmpty())
+                    onPreview(std::move(entries));
+            };
+        }
+        const FetchStatus status = fetchToFile(desc, etag, tmpPath, &fetchedEtag, &err, onPrefix);
         if (status == FetchStatus::Ok) {
             QFile::remove(rawPath);
             if (!QFile::rename(tmpPath, rawPath)) {
@@ -524,6 +625,7 @@ PluginSourceSyncResult syncPluginCatalogSource(const PluginHost& host, const QSt
     // Snapshot first, then the meta key: the two never disagree.
     CatalogSnapshot::save(sourceId, key, result.entries);
     CatalogDiskCache::saveMeta(sourceId, key, newEtag);
+
     // A stale payload from the catalog_json path must not outlive the new raw feed.
     QFile::remove(CatalogDiskCache::sidecarPath(sourceId, QStringLiteral(".json")));
 
