@@ -4,6 +4,7 @@
 
 #include <QCoreApplication>
 #include <QDate>
+#include <QHash>
 #include <QRegularExpression>
 #include <QtMath>
 
@@ -84,32 +85,55 @@ void prepareCatalogEntry(CatalogEntry& entry)
     }
 }
 
+namespace {
+
+quint8 playModeMaskForToken(const QString& raw)
+{
+    quint8 mask = 0;
+    const QString t = raw.trimmed().toLower();
+    if (t.isEmpty())
+        return mask;
+    if (t.contains(QLatin1String("single-player")) || t.contains(QLatin1String("singleplayer"))
+        || t.contains(QStringLiteral("однопользовател")))
+        mask |= kPlayModeSingle;
+    if (t.contains(QLatin1String("co-op")) || t.contains(QLatin1String("coop"))
+        || t.contains(QStringLiteral("кооп"))
+        || t.contains(QLatin1String("shared/split"))
+        || t.contains(QLatin1String("shared and split"))
+        || t.contains(QLatin1String("split screen")))
+        mask |= kPlayModeCoop;
+    if (t.contains(QLatin1String("multi-player")) || t.contains(QLatin1String("multiplayer"))
+        || t.contains(QLatin1String("online pvp")) || t == QLatin1String("pvp")
+        || t.contains(QLatin1String("mmo"))
+        || t.contains(QLatin1String("cross-platform multiplayer"))
+        || t.contains(QStringLiteral("мультиплеер"))
+        || t.contains(QLatin1String("massively multiplayer")))
+        mask |= kPlayModeMulti;
+    if (t.contains(QLatin1String("online co-op")) || t.contains(QLatin1String("online pvp")))
+        mask |= kPlayModeMulti;
+    return mask;
+}
+
+} // namespace
+
 quint8 playModeMaskFromEntry(const QStringList& genreTokens, InstallKind installKind)
 {
     Q_UNUSED(installKind);
+    // A 125k-row catalog repeats the same few hundred tags: the substring checks run once per
+    // distinct token instead of once per occurrence. Per-thread cache, so no locking.
+    thread_local QHash<QString, quint8> cache;
+    constexpr int kMaxCached = 8192;
     quint8 mask = 0;
     for (const QString& raw : genreTokens) {
-        const QString t = raw.trimmed().toLower();
-        if (t.isEmpty())
+        const auto it = cache.constFind(raw);
+        if (it != cache.cend()) {
+            mask |= it.value();
             continue;
-        if (t.contains(QLatin1String("single-player")) || t.contains(QLatin1String("singleplayer"))
-            || t.contains(QStringLiteral("однопользовател")))
-            mask |= kPlayModeSingle;
-        if (t.contains(QLatin1String("co-op")) || t.contains(QLatin1String("coop"))
-            || t.contains(QStringLiteral("кооп"))
-            || t.contains(QLatin1String("shared/split"))
-            || t.contains(QLatin1String("shared and split"))
-            || t.contains(QLatin1String("split screen")))
-            mask |= kPlayModeCoop;
-        if (t.contains(QLatin1String("multi-player")) || t.contains(QLatin1String("multiplayer"))
-            || t.contains(QLatin1String("online pvp")) || t == QLatin1String("pvp")
-            || t.contains(QLatin1String("mmo"))
-            || t.contains(QLatin1String("cross-platform multiplayer"))
-            || t.contains(QStringLiteral("мультиплеер"))
-            || t.contains(QLatin1String("massively multiplayer")))
-            mask |= kPlayModeMulti;
-        if (t.contains(QLatin1String("online co-op")) || t.contains(QLatin1String("online pvp")))
-            mask |= kPlayModeMulti;
+        }
+        const quint8 tokenMask = playModeMaskForToken(raw);
+        if (cache.size() < kMaxCached)
+            cache.insert(raw, tokenMask);
+        mask |= tokenMask;
     }
     return mask;
 }
@@ -129,7 +153,7 @@ bool catalogEntryHasOnlineFixAddon(const CatalogEntry& entry)
     return false;
 }
 
-qint64 parseSizeLabelBytes(const QString& label)
+static qint64 parseSizeLabelBytesUncached(const QString& label)
 {
     static const QRegularExpression re(
         QStringLiteral(R"(^(\d+(?:\.\d+)?)\s*(B|KB|MB|GB|TB))"),
@@ -148,6 +172,22 @@ qint64 parseSizeLabelBytes(const QString& label)
     else if (unit == QLatin1String("TB"))
         value *= 1024.0 * 1024.0 * 1024.0 * 1024.0;
     return static_cast<qint64>(value);
+}
+
+qint64 parseSizeLabelBytes(const QString& label)
+{
+    if (label.isEmpty())
+        return 0;
+    // Size labels repeat heavily ("12.4 GB"): parse each distinct label once per thread.
+    thread_local QHash<QString, qint64> cache;
+    constexpr int kMaxCached = 8192;
+    const auto cached = cache.constFind(label);
+    if (cached != cache.cend())
+        return cached.value();
+    const qint64 bytes = parseSizeLabelBytesUncached(label);
+    if (cache.size() < kMaxCached)
+        cache.insert(label, bytes);
+    return bytes;
 }
 
 QString formatSizeLabelBytes(qint64 bytes)

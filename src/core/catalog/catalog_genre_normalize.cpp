@@ -219,9 +219,21 @@ quint32 curatedGenreBit(const QString& canonicalKey)
 
 quint32 genreBitsFromTokens(const QStringList& rawTokens)
 {
+    // Same few hundred tags across the whole catalog: canonicalize each distinct token once
+    // per thread (-1 = not a curated genre).
+    thread_local QHash<QString, int> cache;
+    constexpr int kMaxCached = 8192;
     quint32 bits = 0;
     for (const QString& raw : rawTokens) {
-        const int idx = curatedGenreBitIndex(canonicalizeGenreToken(raw));
+        int idx;
+        const auto it = cache.constFind(raw);
+        if (it != cache.cend()) {
+            idx = it.value();
+        } else {
+            idx = curatedGenreBitIndex(canonicalizeGenreToken(raw));
+            if (cache.size() < kMaxCached)
+                cache.insert(raw, idx);
+        }
         if (idx >= 0)
             bits |= (quint32(1) << idx);
     }
