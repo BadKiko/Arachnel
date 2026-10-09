@@ -7,6 +7,32 @@ Item {
 
     required property var window
 
+    // Read and written by the native Snap Layouts filter (src/app/snap_layouts_filter.cpp).
+    objectName: "appTitleBar"
+    property rect maxButtonRect: Qt.rect(0, 0, 0, 0)
+    property bool maxButtonHovered: false
+    property bool maxButtonPressed: false
+
+    function toggleMaximize() {
+        if (root.window.visibility === Window.Maximized)
+            root.window.showNormal()
+        else
+            root.window.showMaximized()
+    }
+
+    function updateMaxButtonRect() {
+        if (!maxButton.visible || !maxButton.width) {
+            root.maxButtonRect = Qt.rect(0, 0, 0, 0)
+            return
+        }
+        const p = maxButton.mapToItem(null, 0, 0)
+        root.maxButtonRect = Qt.rect(p.x, p.y, maxButton.width, maxButton.height)
+    }
+
+    onWidthChanged: updateMaxButtonRect()
+    onVisibleChanged: updateMaxButtonRect()
+    Component.onCompleted: updateMaxButtonRect()
+
     implicitHeight: 32
     height: implicitHeight
 
@@ -52,15 +78,17 @@ Item {
         }
 
         WindowChromeButton {
+            id: maxButton
             iconName: root.window.visibility === Window.Maximized
                       ? MD.Token.icon.fullscreen_exit
                       : MD.Token.icon.crop_square
-            onClicked: {
-                if (root.window.visibility === Window.Maximized)
-                    root.window.showNormal()
-                else
-                    root.window.showMaximized()
-            }
+            // Windows answers the hit-test for this button itself (Snap Layouts), so Qt gets no
+            // mouse events over it; hover / press come from the native filter instead.
+            forceHovered: root.maxButtonHovered
+            forcePressed: root.maxButtonPressed
+            onClicked: root.toggleMaximize()
+            onXChanged: root.updateMaxButtonRect()
+            onWidthChanged: root.updateMaxButtonRect()
         }
 
         WindowChromeButton {

@@ -7,6 +7,10 @@ Item {
 
     property string iconName
     property bool danger: false
+    property bool forceHovered: false
+    property bool forcePressed: false
+    readonly property bool hot: mouseArea.containsMouse || forceHovered
+    readonly property bool down: mouseArea.pressed || forcePressed
 
     signal clicked()
 
@@ -18,20 +22,20 @@ Item {
     Rectangle {
         anchors.fill: parent
         color: {
-            if (!mouseArea.containsMouse && !mouseArea.pressed)
+            if (!root.hot && !root.down)
                 return "transparent"
             if (root.danger)
                 return "#e81123"
             return MD.Token.color.on_surface
         }
-        opacity: root.danger ? 1 : (mouseArea.containsMouse || mouseArea.pressed ? 0.08 : 0)
+        opacity: root.danger ? 1 : (root.hot || root.down ? 0.08 : 0)
     }
 
     MD.Icon {
         anchors.centerIn: parent
         name: root.iconName
         size: 14
-        color: root.danger && mouseArea.containsMouse
+        color: root.danger && root.hot
                ? "#ffffff"
                : MD.Token.color.on_surface_variant
     }
