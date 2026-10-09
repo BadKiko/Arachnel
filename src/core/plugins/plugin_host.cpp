@@ -598,7 +598,8 @@ void PluginHost::setLoadRejectReason(const QString& reason)
         g_lastPluginLoadError = reason;
 }
 
-QByteArray PluginHost::loadPluginCatalogPayload(const QString& id, QByteArray* payloadSha) const
+QByteArray PluginHost::loadPluginCatalogPayload(const QString& id, QByteArray* payloadSha,
+                                                bool persist) const
 {
     if (payloadSha)
         payloadSha->clear();
@@ -625,8 +626,9 @@ QByteArray PluginHost::loadPluginCatalogPayload(const QString& id, QByteArray* p
     }
     if (bytes.isEmpty())
         return {};
-    const QByteArray sha = CatalogDiskCache::payloadSha256(bytes);
-    CatalogDiskCache::savePayload(id, bytes, {}, sha);
+    const QByteArray sha = CatalogDiskCache::payloadFingerprint(bytes);
+    if (persist)
+        CatalogDiskCache::savePayload(id, bytes, {}, sha);
     if (payloadSha)
         *payloadSha = sha;
     return bytes;
@@ -634,7 +636,9 @@ QByteArray PluginHost::loadPluginCatalogPayload(const QString& id, QByteArray* p
 
 QVector<CatalogEntry> PluginHost::loadPluginCatalog(const QString& id) const
 {
-    const QByteArray bytes = loadPluginCatalogPayload(id);
+    // Count/prefetch callers only want entries: persisting here would race the main load
+    // and leave the disk cache key and the catalog snapshot out of step.
+    const QByteArray bytes = loadPluginCatalogPayload(id, nullptr, /*persist=*/false);
     if (bytes.isEmpty())
         return {};
     return parsePluginCatalogJson(bytes, id);

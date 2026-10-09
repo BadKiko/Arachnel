@@ -47,8 +47,13 @@ public:
      * API 2/3: calls plugin->catalog() directly.
      */
     QVector<CatalogEntry> loadPluginCatalog(const QString& id) const;
-    /** Raw catalog JSON; optional SHA out-param. */
-    QByteArray loadPluginCatalogPayload(const QString& id, QByteArray* payloadSha = nullptr) const;
+    /**
+     * Raw catalog JSON; optional fingerprint out-param. With `persist` (default) the payload is
+     * also written to the disk cache; callers that save a parsed snapshot first pass false and
+     * persist afterwards, so the cache key and the snapshot never disagree.
+     */
+    QByteArray loadPluginCatalogPayload(const QString& id, QByteArray* payloadSha = nullptr,
+                                        bool persist = true) const;
     bool hasPlugin(const QString& id) const;
     /** True if plugin.json exists under a search root (even if DLL failed to load). */
     bool hasPluginFilesOnDisk(const QString& id) const;
