@@ -17,15 +17,54 @@
 #include <QJsonObject>
 #include <QReadLocker>
 #include <QSet>
+#include <QThread>
 #include <QTimer>
 #include <QUrl>
 #include <QWriteLocker>
 #include <QtConcurrent>
 
+#include <functional>
 #include <optional>
 
 namespace arachnel::core {
 namespace {
+
+// Normalizes ids and runs the per-entry prepare hook. The hook (a cached-metadata lookup behind
+// a read lock, then the pure prepareCatalogEntry) is safe to run concurrently, so a 125k-row
+// catalog is split across cores instead of taking ~300 ms on one.
+void prepareCatalogRows(QVector<CatalogEntry>& entries, const QString& sourceId,
+                        const std::function<void(CatalogEntry&)>& prepare)
+{
+    const int n = static_cast<int>(entries.size());
+    if (n == 0)
+        return;
+    CatalogEntry* data = entries.data(); // detaches once, before any worker starts
+    const auto runRange = [&](int from, int to) {
+        for (int i = from; i < to; ++i) {
+            CatalogEntry& entry = data[i];
+            entry.sourceId = sourceId;
+            entry.id = repairCatalogEntryId(entry.id);
+            if (prepare)
+                prepare(entry);
+            else
+                prepareCatalogEntry(entry);
+        }
+    };
+
+    constexpr int kMinParallelRows = 8192;
+    const int threads = qBound(1, QThread::idealThreadCount(), 8);
+    if (n < kMinParallelRows || threads == 1) {
+        runRange(0, n);
+        return;
+    }
+    QVector<QPair<int, int>> ranges;
+    const int chunk = (n + threads - 1) / threads;
+    for (int from = 0; from < n; from += chunk)
+        ranges.append({from, qMin(n, from + chunk)});
+    QtConcurrent::blockingMap(ranges, [&](QPair<int, int>& range) {
+        runRange(range.first, range.second);
+    });
+}
 bool catalogCacheHasPollutedIds(const QVector<CatalogEntry>& entries)
 {
     for (const CatalogEntry& entry : entries) {
@@ -87,14 +126,7 @@ CatalogController::CatalogController(CatalogModel* catalog, SourcePluginModel* s
                         });
                 watcher->setFuture(QtConcurrent::run(
                     [entries = std::move(entries), sourceId, prepare]() mutable {
-                        for (CatalogEntry& entry : entries) {
-                            entry.sourceId = sourceId;
-                            entry.id = repairCatalogEntryId(entry.id);
-                            if (prepare)
-                                prepare(entry);
-                            else
-                                prepareCatalogEntry(entry);
-                        }
+                        prepareCatalogRows(entries, sourceId, prepare);
                         return entries;
                     }));
             });
@@ -831,14 +863,7 @@ void CatalogController::loadCatalogSourceNow(const QString& sourceId)
             if (entries.isEmpty())
                 entries = parsePluginCatalogJson(payload, sourceId);
             payload = QByteArray(); // release the raw feed before entries are post-processed
-            for (CatalogEntry& entry : entries) {
-                entry.sourceId = sourceId;
-                entry.id = repairCatalogEntryId(entry.id);
-                if (prepare)
-                    prepare(entry);
-                else
-                    prepareCatalogEntry(entry);
-            }
+            prepareCatalogRows(entries, sourceId, prepare);
             out.entries = std::move(entries);
             return out;
         }));
@@ -920,14 +945,7 @@ void CatalogController::loadCatalogSourceNowFromNetwork(const QString& sourceId)
                     return out;
                 out.entries = parsePluginCatalogJson(payload, sourceId);
                 payload.clear();
-                for (CatalogEntry& entry : out.entries) {
-                    entry.sourceId = sourceId;
-                    entry.id = repairCatalogEntryId(entry.id);
-                    if (prepare)
-                        prepare(entry);
-                    else
-                        prepareCatalogEntry(entry);
-                }
+                prepareCatalogRows(out.entries, sourceId, prepare);
                 return out;
             }));
             return;
@@ -995,14 +1013,7 @@ void CatalogController::revalidateCatalogSource(const QString& sourceId, const Q
                 return out;
             out.entries = parsePluginCatalogJson(payload, sourceId);
             payload.clear();
-            for (CatalogEntry& entry : out.entries) {
-                entry.sourceId = sourceId;
-                entry.id = repairCatalogEntryId(entry.id);
-                if (prepare)
-                    prepare(entry);
-                else
-                    prepareCatalogEntry(entry);
-            }
+            prepareCatalogRows(out.entries, sourceId, prepare);
             return out;
         }));
         return;
