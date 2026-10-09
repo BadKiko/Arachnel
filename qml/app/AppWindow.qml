@@ -423,6 +423,24 @@ MD.ApplicationWindow {
                 }
             }
 
+            // Building a CatalogPage takes over a second (async, time-sliced), so a first click on the
+            // Catalog tab used to show an empty page for that long. Build both pages in the
+            // background shortly after startup instead; they only bind the model once enabled.
+            Timer {
+                id: catalogPreloadTimer
+                interval: 1500
+                running: true
+                onTriggered: {
+                    catalogBrowseLoader.keepAlive = true
+                    discoverPreloadTimer.start()
+                }
+            }
+            Timer {
+                id: discoverPreloadTimer
+                interval: 1500
+                onTriggered: discoverLoader.keepAlive = true
+            }
+
             BookmarksPage {
                 anchors.fill: parent
                 opacity: mainPages.pageIndex === 4 ? 1 : 0
