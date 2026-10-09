@@ -28,6 +28,7 @@ set(ARACHNEL_APP_SOURCES
     src/core/util/file_utils.cpp
     src/core/library/library_store.cpp
     src/core/library/library_controller.cpp
+    src/core/library/game_import.cpp
     src/core/library/library_maintenance_service.cpp
     src/core/library/game_update_service.cpp
     src/core/catalog/catalog_feed_loader.cpp

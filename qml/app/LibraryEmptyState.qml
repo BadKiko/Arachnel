@@ -115,6 +115,13 @@ Item {
                         }
 
                         MD.Button {
+                            text: qsTr("Add existing game")
+                            icon.name: MD.Token.icon.folder_open
+                            mdState.type: MD.Enum.BtOutlined
+                            onClicked: page.importGameRequested()
+                        }
+
+                        MD.Button {
                             visible: Core.sources.enabledCount === 0
                             text: qsTr("How it works")
                             mdState.type: MD.Enum.BtText

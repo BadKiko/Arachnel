@@ -218,8 +218,9 @@ Item {
                             mdState.outlineColor: MD.Token.color.error_container
                         }
                         MD.AssistChip {
-                            visible: !!(page.info.hasAddons) || ((page.info.installedComponentCount ?? 0) > 0)
-                                     || ((page.info.componentCount ?? 0) > 0)
+                            visible: !page.info.imported
+                                     && (!!(page.info.hasAddons) || ((page.info.installedComponentCount ?? 0) > 0)
+                                         || ((page.info.componentCount ?? 0) > 0))
                             text: {
                                 const installed = page.info.installedComponentCount ?? 0
                                 const total = page.info.componentCount ?? 0
@@ -491,7 +492,7 @@ Item {
                                 visible: page.playable
                                          || page.downloadComplete
                                          || page.inLibrary
-                                text: qsTr("Delete")
+                                text: page.info.imported ? qsTr("Remove") : qsTr("Delete")
                                 icon.name: MD.Token.icon.delete
                                 mdState.type: MD.Enum.BtOutlined
                                 onClicked: removeDialog.open()
@@ -836,7 +837,7 @@ Item {
 
         MD.Label {
             width: removeDialog.width - removeDialog.horizontalPadding * 2
-            text: Messages.gameDeleteWarning
+            text: page.info.imported ? Messages.gameImportedRemoveNote : Messages.gameDeleteWarning
             wrapMode: Text.WordWrap
             typescale: MD.Token.typescale.body_medium
         }
@@ -858,7 +859,7 @@ Item {
                 }
                 MD.Button {
                     mdState.type: MD.Enum.BtFilled
-                    text: qsTr("Delete")
+                    text: page.info.imported ? qsTr("Remove") : qsTr("Delete")
                     DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole
                     onClicked: {
                         removeDialog.close()

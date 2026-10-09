@@ -347,6 +347,7 @@ MD.ApplicationWindow {
                 onOpenDownloads: root.goToPage(5)
                 onOpenSettings: settingsSheet.openSettings()
                 onAddSourceRequested: settingsSheet.openPlugins()
+                onImportGameRequested: importGameDialog.start()
 
                 Behavior on opacity {
                     NumberAnimation {
@@ -595,6 +596,11 @@ MD.ApplicationWindow {
     SettingsSheet {
         id: settingsSheet
         anchors.fill: parent
+    }
+
+    ImportGameDialog {
+        id: importGameDialog
+        onImported: root.goToPage(0)
     }
 
     OnboardingSheet {

@@ -65,6 +65,8 @@
     Q_INVOKABLE QString browseGameExecutable(const QString& currentPath = {},
                                              const QString& preferredDir = {});
     Q_INVOKABLE QString browseStorageFolder();
+    Q_INVOKABLE QString browseGameFolder();
+    QString browseFolderDialog(const QString& dialogTitle);
     Q_INVOKABLE QVariantMap gameRuntimeContainerInfo(const QString&) const;
     Q_INVOKABLE void openGameRuntimeContainer(const QString&);
     Q_INVOKABLE void removeGame(const QString&, bool = true);
@@ -73,6 +75,9 @@
     Q_INVOKABLE QVariantList gamesOnLibrary(const QString&) const;
     Q_INVOKABLE bool removeStorageLibrary(const QString&, bool force = false);
     Q_INVOKABLE int scanInstalledGames();
+    /** Add a game that is already on disk. See LibraryController::inspectGameFolder / importGameFolder. */
+    Q_INVOKABLE QVariantMap inspectGameFolder(const QString&);
+    Q_INVOKABLE QString importGameFolder(const QString&, const QString&, const QString&);
     Q_INVOKABLE bool isEntryPlayable(const QString&) const;
     Q_INVOKABLE bool isEntryDownloadComplete(const QString&) const;
     Q_INVOKABLE bool entryDownloadFilesExist(const QString&) const;

@@ -8,10 +8,12 @@
 #include <QPointer>
 #include <QThreadPool>
 #include <QTimer>
+#include <QReadLocker>
 #include <QUuid>
 #include <QWriteLocker>
 #include <QtConcurrent>
 
+#include "game_import.h"
 #include "social_controller.h"
 
 namespace arachnel::core {
@@ -393,6 +395,11 @@ void CoreController::initializeServices()
     };
     libraryHooks.detectInstallKind = [this](const QString& sourceId, const QString& path) {
         return detectInstallKindForEntry(sourceId, path);
+    };
+    libraryHooks.searchCatalogForImport = [this](const QString& title, const QString& steamAppId,
+                                                 int limit) {
+        QReadLocker locker(&m_catalogCacheLock);
+        return pickImportCandidates(m_catalogCache, title, steamAppId, limit);
     };
     m_libraryController = new LibraryController(
         &m_library, &m_catalog, &m_libraryStore, &m_jobStore, &m_settings, m_pluginHost,

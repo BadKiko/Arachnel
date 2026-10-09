@@ -739,7 +739,8 @@ void LaunchController::launchGame(const QString& gameId, const QString& optionId
         if (m_library->gameById(gameId) == nullptr)
             return;
         LibraryGame gameCopy = gameCopyBase;
-        if (!gameCopy.installPath.isEmpty()) {
+        // Imported folders are the user's own files - don't repair or rewrite them.
+        if (!gameCopy.installPath.isEmpty() && !gameCopy.imported) {
             healWindowsInstallLayout(gameCopy.installPath);
             const int unityHealed = healUnityScriptingAssemblies(gameCopy.installPath);
             if (unityHealed > 0) {
@@ -783,7 +784,7 @@ void LaunchController::launchGame(const QString& gameId, const QString& optionId
         }
 
         // Default Play pipeline: Steamless (SteamStub) then Online Fix env.
-        if (m_steamless) {
+        if (m_steamless && !gameCopy.imported) {
             QString steamlessError;
             const int stripped = m_steamless->ensureUnpacked(gameCopy.installPath, &steamlessError);
             if (stripped > 0) {

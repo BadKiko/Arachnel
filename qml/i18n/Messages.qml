@@ -64,5 +64,7 @@ QtObject {
 
     readonly property string gameNotFoundHint: qsTr("It may be missing from your sources, or a plugin is outdated. Check Sources in Settings.")
 
+    readonly property string gameImportedRemoveNote: qsTr("The game files stay on your disk. It is only removed from Arachnel.")
+
     readonly property string gameDeleteWarning: qsTr("Game files will be deleted from disk. This cannot be undone.")
 }

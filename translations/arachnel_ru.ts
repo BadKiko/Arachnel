@@ -2617,6 +2617,30 @@
         <source>Torrent error %1</source>
         <translation>Ошибка торрента %1</translation>
     </message>
+    <message>
+        <source>Folder not found</source>
+        <translation>Папка не найдена</translation>
+    </message>
+    <message>
+        <source>This folder is already in your library</source>
+        <translation>Эта папка уже есть в вашей библиотеке</translation>
+    </message>
+    <message>
+        <source>No game executable found in this folder. Pick the folder that contains the game's .exe.</source>
+        <translation>В этой папке не найден исполняемый файл игры. Выберите папку, где лежит .exe игры.</translation>
+    </message>
+    <message>
+        <source>Imported</source>
+        <translation>Добавлена</translation>
+    </message>
+    <message>
+        <source>Added %1 to your library</source>
+        <translation>%1 добавлена в библиотеку</translation>
+    </message>
+    <message>
+        <source>Choose the game folder</source>
+        <translation>Выберите папку с игрой</translation>
+    </message>
 </context>
 <context>
     <name>CrashReportDialog</name>
@@ -3139,6 +3163,10 @@
     <message>
         <source>Separate fix: the game and the files needed to run it are downloaded separately.</source>
         <translation>Отдельный фикс: игра и файлы для её запуска скачиваются отдельно.</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>Убрать</translation>
     </message>
 </context>
 <context>
@@ -3684,6 +3712,10 @@
             <numerusform>%n игр</numerusform>
         </translation>
     </message>
+    <message>
+        <source>Add existing game</source>
+        <translation>Добавить готовую игру</translation>
+    </message>
 </context>
 <context>
     <name>LibraryEmptyState</name>
@@ -3741,6 +3773,10 @@
         <location line="+1" />
         <source>Library</source>
         <translation>Библиотека</translation>
+    </message>
+    <message>
+        <source>Add existing game</source>
+        <translation>Добавить готовую игру</translation>
     </message>
 </context>
 <context>
@@ -4014,6 +4050,10 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <source>When it is done, press Play in your Library.</source>
         <translation>Когда всё закончится, нажмите «Играть» в библиотеке.</translation>
+    </message>
+    <message>
+        <source>The game files stay on your disk. It is only removed from Arachnel.</source>
+        <translation>Файлы игры останутся на диске. Игра только уберётся из Arachnel.</translation>
     </message>
 </context>
 <context>
@@ -5336,6 +5376,53 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <location line="+120" />
         <source>Friend</source>
         <translation>Друг</translation>
+    </message>
+</context>
+<context>
+    <name>ImportGameDialog</name>
+    <message>
+        <source>Add existing game</source>
+        <translation>Добавить готовую игру</translation>
+    </message>
+    <message>
+        <source>Arachnel will use this folder as it is. Nothing is copied or deleted.</source>
+        <translation>Arachnel будет использовать эту папку как есть. Ничего не копируется и не удаляется.</translation>
+    </message>
+    <message>
+        <source>Game title</source>
+        <translation>Название игры</translation>
+    </message>
+    <message>
+        <source>Starts: %1</source>
+        <translation>Запускается: %1</translation>
+    </message>
+    <message>
+        <source>Steam app id found in the files: %1. Online Fix settings are applied when you press Play.</source>
+        <translation>В файлах найден Steam app id: %1. Настройки Online Fix применяются при нажатии «Играть».</translation>
+    </message>
+    <message>
+        <source>Pick the matching game for cover and details</source>
+        <translation>Выберите подходящую игру для обложки и описания</translation>
+    </message>
+    <message>
+        <source>No match in the catalog. It will be added as a local game.</source>
+        <translation>В каталоге ничего не найдено. Игра будет добавлена как локальная.</translation>
+    </message>
+    <message>
+        <source>Already in your library</source>
+        <translation>Уже в библиотеке</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Отмена</translation>
+    </message>
+    <message>
+        <source>Choose another folder</source>
+        <translation>Выбрать другую папку</translation>
+    </message>
+    <message>
+        <source>Add to library</source>
+        <translation>Добавить в библиотеку</translation>
     </message>
 </context>
 </TS>

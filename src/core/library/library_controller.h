@@ -42,6 +42,10 @@ public:
         std::function<const JobEntry*(const QString&)> findLatestJob;
         std::function<QString(const QString&)> sourceWebsiteFor;
         std::function<InstallKind(const QString&, const QString&)> detectInstallKind;
+        /** Catalog rows that look like a folder: Steam app id first, then title (see game_import). */
+        std::function<QVector<CatalogEntry>(const QString& title, const QString& steamAppId,
+                                            int limit)>
+            searchCatalogForImport;
     };
 
     LibraryController(LibraryModel* library, CatalogModel* catalog, LibraryStore* store,
@@ -83,6 +87,17 @@ public:
     QVector<ScanCandidate> discoverInstallCandidates() const;
     /** Apply discover results on the UI thread (catalog hooks / store). */
     int commitScanCandidates(const QVector<ScanCandidate>& candidates);
+
+    /**
+     * Look at a folder the user wants to add: executable, guessed title / Steam app id and
+     * likely catalog matches. Keys: ok, error, executable, title, steamAppId, candidates[].
+     */
+    QVariantMap inspectGameFolder(const QString& folder) const;
+    /**
+     * Register the folder in place (nothing is copied or moved). `entryId` is a catalog match
+     * chosen by the user or empty for a plain local game. Returns an error text, empty on success.
+     */
+    QString importGameFolder(const QString& folder, const QString& entryId, const QString& title);
 
 private:
     void sync() const;

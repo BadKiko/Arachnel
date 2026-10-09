@@ -89,6 +89,7 @@ Item {
     signal openDownloads()
     signal openSettings()
     signal addSourceRequested()
+    signal importGameRequested()
 
     Component.onCompleted: {
         Core.prefetchCatalogCounts()

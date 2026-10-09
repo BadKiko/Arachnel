@@ -42,6 +42,8 @@ struct LibraryGame {
     InstallKind installKind = InstallKind::PortableArchive;
     bool hasUpdate = false;
     bool autoUpdate = true;
+    /** Added from a folder the user already had. Arachnel never deletes or updates its files. */
+    bool imported = false;
     QString uploadDate;
     QString magnetUri;
     QString downloadPath;

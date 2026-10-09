@@ -1,5 +1,7 @@
 #include "library_controller.h"
 
+#include "game_import.h"
+
 #include "catalog_genre_normalize.h"
 #include "catalog_model.h"
 #include "catalog_types.h"
@@ -485,7 +487,8 @@ void LibraryController::removeGame(const QString& gameId, bool deleteFiles)
     const LibraryGame removed = *game;
 
     QStringList pathsToDelete;
-    if (deleteFiles) {
+    // The folder of an imported game belongs to the user: only forget the library entry.
+    if (deleteFiles && !removed.imported) {
         const QString libraryId = removed.libraryId.isEmpty() ? m_settings->defaultLibraryId()
                                                                : removed.libraryId;
         const QString gameDir = m_settings->gameDirFor(libraryId, gameId);
@@ -835,7 +838,7 @@ int LibraryController::commitScanCandidates(const QVector<ScanCandidate>& candid
 
     // Stamp known library installs so re-scan keeps only Arachnel-managed folders.
     for (const LibraryGame& game : m_store->games()) {
-        if (game.installPath.isEmpty() || !QFileInfo::exists(game.installPath))
+        if (game.imported || game.installPath.isEmpty() || !QFileInfo::exists(game.installPath))
             continue;
         if (!hasInstallMarker(game.installPath))
             writeInstallMarker(game.installPath, game.id, game.sourceId);
@@ -898,6 +901,136 @@ int LibraryController::commitScanCandidates(const QVector<ScanCandidate>& candid
         sync();
     }
     return added;
+}
+
+namespace {
+
+QString normalizedFolderPath(const QString& folder)
+{
+    return QDir::cleanPath(QDir::fromNativeSeparators(folder.trimmed()));
+}
+
+QVariantMap candidateToMap(const CatalogEntry& entry, const LibraryStore* store)
+{
+    QVariantMap row;
+    row.insert(QStringLiteral("id"), entry.id);
+    row.insert(QStringLiteral("title"), entry.title);
+    row.insert(QStringLiteral("coverUrl"), entry.coverUrl);
+    row.insert(QStringLiteral("sourceId"), entry.sourceId);
+    row.insert(QStringLiteral("steamAppId"), entry.steamAppId);
+    row.insert(QStringLiteral("sizeLabel"), entry.sizeLabel);
+    row.insert(QStringLiteral("inLibrary"), store && store->gameById(entry.id) != nullptr);
+    return row;
+}
+
+} // namespace
+
+QVariantMap LibraryController::inspectGameFolder(const QString& folder) const
+{
+    QVariantMap out;
+    out.insert(QStringLiteral("ok"), false);
+
+    const QString path = normalizedFolderPath(folder);
+    out.insert(QStringLiteral("folder"), path);
+
+    if (path.isEmpty() || !QFileInfo(path).isDir()) {
+        out.insert(QStringLiteral("error"),
+                   QCoreApplication::translate("Core", "Folder not found"));
+        return out;
+    }
+    if (installPathTaken(m_store, path)) {
+        out.insert(QStringLiteral("error"),
+                   QCoreApplication::translate("Core", "This folder is already in your library"));
+        return out;
+    }
+
+    const QString executable =
+        findImportExecutable(path, cleanGameTitleFromFolderName(QFileInfo(path).fileName()));
+    if (executable.isEmpty()) {
+        out.insert(QStringLiteral("error"),
+                   QCoreApplication::translate(
+                       "Core", "No game executable found in this folder. Pick the folder that "
+                               "contains the game's .exe."));
+        return out;
+    }
+
+    const QString steamAppId = detectSteamAppIdForImport(path, executable);
+    const QString title = cleanGameTitleFromFolderName(QFileInfo(path).fileName());
+
+    QVariantList candidates;
+    if (m_hooks.searchCatalogForImport) {
+        const QVector<CatalogEntry> found = m_hooks.searchCatalogForImport(title, steamAppId, 5);
+        for (const CatalogEntry& entry : found)
+            candidates.append(candidateToMap(entry, m_store));
+    }
+
+    out.insert(QStringLiteral("ok"), true);
+    out.insert(QStringLiteral("executable"), executable);
+    out.insert(QStringLiteral("title"), title);
+    out.insert(QStringLiteral("steamAppId"), steamAppId);
+    out.insert(QStringLiteral("candidates"), candidates);
+    return out;
+}
+
+QString LibraryController::importGameFolder(const QString& folder, const QString& entryId,
+                                            const QString& title)
+{
+    const QVariantMap info = inspectGameFolder(folder);
+    if (!info.value(QStringLiteral("ok")).toBool())
+        return info.value(QStringLiteral("error")).toString();
+
+    const QString path = info.value(QStringLiteral("folder")).toString();
+    const CatalogEntry* entry =
+        (!entryId.isEmpty() && m_hooks.findCatalogEntry) ? m_hooks.findCatalogEntry(entryId)
+                                                         : nullptr;
+
+    LibraryGame game;
+    // A catalog id gives the game its cover, details and the "installed" state in Catalog.
+    if (entry && !m_store->gameById(entry->id)) {
+        game.id = entry->id;
+    } else {
+        const QString base = localGameIdFromTitle(title.isEmpty() ? info.value(QStringLiteral("title")).toString()
+                                                                    : title);
+        game.id = base;
+        for (int n = 2; m_store->gameById(game.id); ++n)
+            game.id = base + QLatin1Char('-') + QString::number(n);
+        entry = nullptr;
+    }
+
+    game.installPath = path;
+    game.executableOverride = info.value(QStringLiteral("executable")).toString();
+    game.imported = true;
+    game.autoUpdate = false;
+    game.installKind = InstallKind::PortableArchive;
+    game.sourceName = QCoreApplication::translate("Core", "Imported");
+    game.steamAppId = info.value(QStringLiteral("steamAppId")).toString();
+    game.title = title.trimmed();
+
+    if (entry) {
+        if (game.title.isEmpty())
+            game.title = entry->title;
+        if (entry->coverUrl.startsWith(QStringLiteral("file:")))
+            game.coverUrl = entry->coverUrl;
+        game.description = entry->description;
+        game.genres = entry->genres;
+        game.sizeLabel = entry->sizeLabel;
+        if (game.steamAppId.isEmpty())
+            game.steamAppId = entry->steamAppId;
+    }
+    if (game.title.isEmpty())
+        game.title = info.value(QStringLiteral("title")).toString();
+    if (game.steamAppId.isEmpty() && m_metadata)
+        game.steamAppId = m_metadata->metadataForTitle(game.title).steamAppId;
+
+    m_store->upsertGame(game);
+    m_store->save();
+    sync();
+
+    if (m_hooks.notice) {
+        m_hooks.notice(QCoreApplication::translate("Core", "Added %1 to your library")
+                           .arg(game.title));
+    }
+    return {};
 }
 
 } // namespace arachnel::core

@@ -103,7 +103,7 @@ QString CoreController::browseGameExecutable(const QString& currentPath,
 #endif
 }
 
-QString CoreController::browseStorageFolder()
+QString CoreController::browseFolderDialog(const QString& dialogTitle)
 {
 #if defined(Q_OS_WIN)
     QString path;
@@ -116,11 +116,7 @@ QString CoreController::browseStorageFolder()
         DWORD options = 0;
         if (SUCCEEDED(dialog->GetOptions(&options)))
             dialog->SetOptions(options | FOS_PICKFOLDERS | FOS_FORCEFILESYSTEM);
-        {
-            const QString title =
-                QCoreApplication::translate("Core", "Choose library folder");
-            dialog->SetTitle(reinterpret_cast<LPCWSTR>(title.utf16()));
-        }
+        dialog->SetTitle(reinterpret_cast<LPCWSTR>(dialogTitle.utf16()));
 
         if (SUCCEEDED(dialog->Show(nullptr))) {
             IShellItem* item = nullptr;
@@ -142,9 +138,19 @@ QString CoreController::browseStorageFolder()
 #else
     return QFileDialog::getExistingDirectory(
         nullptr,
-        QCoreApplication::translate("Core", "Choose library folder"),
+        dialogTitle,
         QStandardPaths::writableLocation(QStandardPaths::HomeLocation));
 #endif
+}
+
+QString CoreController::browseStorageFolder()
+{
+    return browseFolderDialog(QCoreApplication::translate("Core", "Choose library folder"));
+}
+
+QString CoreController::browseGameFolder()
+{
+    return browseFolderDialog(QCoreApplication::translate("Core", "Choose the game folder"));
 }
 
 void CoreController::removeGame(const QString& gameId, bool deleteFiles)
@@ -188,6 +194,19 @@ int CoreController::scanInstalledGames()
         showNotice(QCoreApplication::translate("Core", "No new games found on disk"));
     }
     return added;
+}
+
+QVariantMap CoreController::inspectGameFolder(const QString& folder)
+{
+    return m_libraryController ? m_libraryController->inspectGameFolder(folder) : QVariantMap();
+}
+
+QString CoreController::importGameFolder(const QString& folder, const QString& entryId,
+                                         const QString& title)
+{
+    if (!m_libraryController)
+        return {};
+    return m_libraryController->importGameFolder(folder, entryId, title);
 }
 
 void CoreController::checkUpdates()

@@ -105,7 +105,8 @@ int GameUpdateService::recalculateLibraryUpdates(bool notify)
     QVector<LibraryGame> games = m_store->games();
     int updates = 0;
     for (LibraryGame& game : games) {
-        game.hasUpdate = gameHasUpdate(game, remoteById.value(game.id));
+        // Imported folders are the user's own files: never offer to replace them.
+        game.hasUpdate = !game.imported && gameHasUpdate(game, remoteById.value(game.id));
         updates += game.hasUpdate;
     }
     m_store->setGames(games);

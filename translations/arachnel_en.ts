@@ -2616,6 +2616,30 @@
         <source>Torrent error %1</source>
         <translation>Torrent error %1</translation>
     </message>
+    <message>
+        <source>Folder not found</source>
+        <translation>Folder not found</translation>
+    </message>
+    <message>
+        <source>This folder is already in your library</source>
+        <translation>This folder is already in your library</translation>
+    </message>
+    <message>
+        <source>No game executable found in this folder. Pick the folder that contains the game's .exe.</source>
+        <translation>No game executable found in this folder. Pick the folder that contains the game's .exe.</translation>
+    </message>
+    <message>
+        <source>Imported</source>
+        <translation>Imported</translation>
+    </message>
+    <message>
+        <source>Added %1 to your library</source>
+        <translation>Added %1 to your library</translation>
+    </message>
+    <message>
+        <source>Choose the game folder</source>
+        <translation>Choose the game folder</translation>
+    </message>
 </context>
 <context>
     <name>CrashReportDialog</name>
@@ -3137,6 +3161,10 @@
     <message>
         <source>Separate fix: the game and the files needed to run it are downloaded separately.</source>
         <translation>Separate fix: the game and the files needed to run it are downloaded separately.</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>Remove</translation>
     </message>
 </context>
 <context>
@@ -3677,6 +3705,10 @@
             <numerusform>%n games</numerusform>
         </translation>
     </message>
+    <message>
+        <source>Add existing game</source>
+        <translation>Add existing game</translation>
+    </message>
 </context>
 <context>
     <name>LibraryEmptyState</name>
@@ -3734,6 +3766,10 @@
         <location line="+1" />
         <source>Library</source>
         <translation>Library</translation>
+    </message>
+    <message>
+        <source>Add existing game</source>
+        <translation>Add existing game</translation>
     </message>
 </context>
 <context>
@@ -4006,6 +4042,10 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <source>When it is done, press Play in your Library.</source>
         <translation>When it is done, press Play in your Library.</translation>
+    </message>
+    <message>
+        <source>The game files stay on your disk. It is only removed from Arachnel.</source>
+        <translation>The game files stay on your disk. It is only removed from Arachnel.</translation>
     </message>
 </context>
 <context>
@@ -5328,6 +5368,53 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <location line="+120" />
         <source>Friend</source>
         <translation>Friend</translation>
+    </message>
+</context>
+<context>
+    <name>ImportGameDialog</name>
+    <message>
+        <source>Add existing game</source>
+        <translation>Add existing game</translation>
+    </message>
+    <message>
+        <source>Arachnel will use this folder as it is. Nothing is copied or deleted.</source>
+        <translation>Arachnel will use this folder as it is. Nothing is copied or deleted.</translation>
+    </message>
+    <message>
+        <source>Game title</source>
+        <translation>Game title</translation>
+    </message>
+    <message>
+        <source>Starts: %1</source>
+        <translation>Starts: %1</translation>
+    </message>
+    <message>
+        <source>Steam app id found in the files: %1. Online Fix settings are applied when you press Play.</source>
+        <translation>Steam app id found in the files: %1. Online Fix settings are applied when you press Play.</translation>
+    </message>
+    <message>
+        <source>Pick the matching game for cover and details</source>
+        <translation>Pick the matching game for cover and details</translation>
+    </message>
+    <message>
+        <source>No match in the catalog. It will be added as a local game.</source>
+        <translation>No match in the catalog. It will be added as a local game.</translation>
+    </message>
+    <message>
+        <source>Already in your library</source>
+        <translation>Already in your library</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Cancel</translation>
+    </message>
+    <message>
+        <source>Choose another folder</source>
+        <translation>Choose another folder</translation>
+    </message>
+    <message>
+        <source>Add to library</source>
+        <translation>Add to library</translation>
     </message>
 </context>
 </TS>

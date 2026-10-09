@@ -178,6 +178,7 @@ void LibraryStore::load()
             static_cast<InstallKind>(obj.value(QStringLiteral("installKind")).toInt());
         game.hasUpdate = obj.value(QStringLiteral("hasUpdate")).toBool();
         game.autoUpdate = obj.value(QStringLiteral("autoUpdate")).toBool(true);
+        game.imported = obj.value(QStringLiteral("imported")).toBool(false);
         game.uploadDate = obj.value(QStringLiteral("uploadDate")).toString();
         game.magnetUri = obj.value(QStringLiteral("magnetUri")).toString();
         game.downloadPath = obj.value(QStringLiteral("downloadPath")).toString();
@@ -214,6 +215,8 @@ void LibraryStore::save()
         obj.insert(QStringLiteral("installKind"), static_cast<int>(game.installKind));
         obj.insert(QStringLiteral("hasUpdate"), game.hasUpdate);
         obj.insert(QStringLiteral("autoUpdate"), game.autoUpdate);
+        if (game.imported)
+            obj.insert(QStringLiteral("imported"), true);
         obj.insert(QStringLiteral("uploadDate"), game.uploadDate);
         obj.insert(QStringLiteral("magnetUri"), game.magnetUri);
         obj.insert(QStringLiteral("downloadPath"), game.downloadPath);

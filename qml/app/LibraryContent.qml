@@ -309,6 +309,13 @@ Item {
                         typescale: MD.Token.typescale.title_large
                     }
 
+                    MD.Button {
+                        mdState.type: MD.Enum.BtText
+                        text: qsTr("Add existing game")
+                        icon.name: MD.Token.icon.add
+                        onClicked: page.importGameRequested()
+                    }
+
                     MD.Label {
                         text: qsTr("%n game(s)", "", Core.library.count)
                         color: MD.Token.color.on_surface_variant

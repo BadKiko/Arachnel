@@ -53,7 +53,7 @@ Item {
     }
     readonly property string statusLine: {
         if (!showJobStatus)
-            return root.sourceName + " · v" + root.version
+            return root.version.length ? root.sourceName + " · v" + root.version : root.sourceName
         if (activeJob.status === "installing") {
             if (activeJob.detail && activeJob.detail.length)
                 return activeJob.detail
@@ -182,7 +182,7 @@ Item {
         MD.Label {
             Layout.fillWidth: true
             visible: !root.showJobStatus && !root.isRunning
-            text: root.sourceName + " · v" + root.version
+            text: root.version.length ? root.sourceName + " · v" + root.version : root.sourceName
             color: MD.Token.color.on_surface_variant
             typescale: MD.Token.typescale.label_medium
             elide: Text.ElideRight
