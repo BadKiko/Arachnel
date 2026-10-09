@@ -793,6 +793,7 @@ void CatalogController::loadCatalogSourceNow(const QString& sourceId)
         QVector<CatalogEntry> entries;
         QByteArray payloadSha;
         QByteArray etag;
+        qint64 savedAtMs = 0; // when the disk cache was last written (0 = unknown)
         bool hadDiskPayload = false;
     };
 
@@ -816,6 +817,14 @@ void CatalogController::loadCatalogSourceNow(const QString& sourceId)
                             m_sourcePayloadSha.insert(sourceId, loaded.payloadSha);
                         storeCatalogForSource(sourceId, std::move(loaded.entries),
                                               /*prepareEntries=*/false);
+                        // The disk cache is shown immediately; if it is older than the TTL, fetch
+                        // fresh data in the background (this used to happen as a side effect of
+                        // the count prefetch, which parsed the whole catalog a second time).
+                        const bool stale = loaded.savedAtMs <= 0
+                            || QDateTime::currentMSecsSinceEpoch() - loaded.savedAtMs
+                                >= kCatalogCacheTtlMs;
+                        if (stale && !m_loadingSourceIds.contains(sourceId))
+                            revalidateCatalogSource(sourceId, loaded.etag);
                     }
                 });
         watcher->setFuture(QtConcurrent::run([sourceId, prepare]() -> DiskCatalogLoad {
@@ -828,14 +837,15 @@ void CatalogController::loadCatalogSourceNow(const QString& sourceId)
             const QByteArray storedKey = CatalogDiskCache::storedPayloadKey(sourceId);
             if (!storedKey.isEmpty()
                 && CatalogSnapshot::load(sourceId, storedKey, &entries)) {
-                CatalogDiskCache::loadPayload(sourceId, nullptr, &etag);
+                CatalogDiskCache::loadPayload(sourceId, nullptr, &etag, &out.savedAtMs);
                 out.hadDiskPayload = true;
                 out.etag = etag;
                 out.payloadSha = storedKey;
             } else {
                 entries.clear();
                 QByteArray payload;
-                if (!CatalogDiskCache::loadPayload(sourceId, &payload, &etag) || payload.isEmpty())
+                if (!CatalogDiskCache::loadPayload(sourceId, &payload, &etag, &out.savedAtMs)
+                    || payload.isEmpty())
                     return out;
                 out.hadDiskPayload = true;
                 out.etag = etag;
@@ -1068,6 +1078,7 @@ void CatalogController::refreshCatalog(const QString& sourceId)
     m_sourcePayloadSha.remove(sourceId);
     m_catalogCounts.remove(sourceId);
     CatalogDiskCache::remove(sourceId);
+    CatalogSnapshot::remove(sourceId);
     emit catalogCountsChanged();
     m_loadingSourceIds.remove(sourceId);
     m_catalogLoadQueue.removeAll(sourceId);
