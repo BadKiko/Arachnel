@@ -9,8 +9,14 @@ Item {
     // ── Empty library ────────────────────────────────────────────────────────
     Item {
         anchors.fill: parent
-        visible: page.libraryEmpty
-
+        opacity: page.libraryEmpty ? 1 : 0
+        visible: opacity > 0
+        Behavior on opacity {
+            NumberAnimation {
+                duration: AppMotion.short
+                easing: AppMotion.standard
+            }
+        }
         ColumnLayout {
             anchors.left: parent.left
             anchors.right: parent.right

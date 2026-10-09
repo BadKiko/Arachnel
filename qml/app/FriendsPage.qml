@@ -25,8 +25,14 @@ Item {
 
     Item {
         anchors.fill: parent
-        visible: root.emptyState
-
+        opacity: root.emptyState ? 1 : 0
+        visible: opacity > 0
+        Behavior on opacity {
+            NumberAnimation {
+                duration: AppMotion.short
+                easing: AppMotion.standard
+            }
+        }
         ColumnLayout {
             anchors.centerIn: parent
             width: Math.min(parent.width - root.pageMargin * 2, 880)
@@ -195,7 +201,14 @@ Item {
 
     Flickable {
         anchors.fill: parent
-        visible: !root.emptyState
+        opacity: !root.emptyState ? 1 : 0
+        visible: opacity > 0
+        Behavior on opacity {
+            NumberAnimation {
+                duration: AppMotion.short
+                easing: AppMotion.standard
+            }
+        }
         contentWidth: width
         contentHeight: listCol.implicitHeight + root.pageMargin
         clip: true

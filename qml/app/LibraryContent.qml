@@ -10,7 +10,14 @@ Item {
     Flickable {
         id: flick
         anchors.fill: parent
-        visible: !page.libraryEmpty
+        opacity: !page.libraryEmpty ? 1 : 0
+        visible: opacity > 0
+        Behavior on opacity {
+            NumberAnimation {
+                duration: AppMotion.short
+                easing: AppMotion.standard
+            }
+        }
         contentWidth: width
         contentHeight: contentCol.implicitHeight + page.pageMargin
         clip: true

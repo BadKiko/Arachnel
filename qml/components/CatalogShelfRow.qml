@@ -72,7 +72,10 @@ Column {
             policy: ScrollBar.AlwaysOff
         }
 
+        // Only the arrow buttons animate contentX; while the user drags or flicks, the
+        // behavior would fight every frame of the gesture.
         Behavior on contentX {
+            enabled: !shelfList.dragging && !shelfList.flicking
             NumberAnimation {
                 duration: AppMotion.medium
                 easing: AppMotion.emphasizedDecelerate
