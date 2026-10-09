@@ -25,6 +25,8 @@ bool save(const QString& sourceId, const QByteArray& payloadKey,
           const QVector<CatalogEntry>& entries);
 bool load(const QString& sourceId, const QByteArray& payloadKey, QVector<CatalogEntry>* out);
 void remove(const QString& sourceId);
+/** Cheap "is there a file" check (does not validate it). */
+bool exists(const QString& sourceId);
 
 } // namespace CatalogSnapshot
 

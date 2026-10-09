@@ -17,6 +17,7 @@
 #include <QFutureWatcher>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QPointer>
 #include <QReadLocker>
 #include <QSet>
 #include <QThread>
@@ -59,11 +60,12 @@ struct PluginCatalogLoad {
 // Entries come back prepared; `entries` empty with `payloadSha == expectedSha` means unchanged.
 PluginCatalogLoad loadPluginCatalogEntries(PluginHost* host, const QString& sourceId,
                                            const QByteArray& expectedSha,
-                                           const std::function<void(CatalogEntry&)>& prepare)
+                                           const std::function<void(CatalogEntry&)>& prepare,
+                                           const PluginSourcePreview& onPreview = {})
 {
     PluginCatalogLoad out;
     if (pluginCatalogSourceEnabled() && host->pluginHasCatalogSource(sourceId)) {
-        PluginSourceSyncResult synced = syncPluginCatalogSource(*host, sourceId, expectedSha);
+        PluginSourceSyncResult synced = syncPluginCatalogSource(*host, sourceId, expectedSha, false, onPreview);
         if (synced.status == PluginSourceSyncResult::Status::Unchanged) {
             out.payloadSha = synced.payloadKey;
             return out;
@@ -174,6 +176,7 @@ CatalogController::CatalogController(CatalogModel* catalog, SourcePluginModel* s
             [this](const QString& sourceId, const QString& error) {
                 m_catalogHttpLoadActive = false;
                 m_loadingSourceIds.remove(sourceId);
+                dropCatalogPreview();
                 if (m_activeSourceIds.contains(sourceId) && !m_catalogBySource.contains(sourceId)) {
                     emit noticeRequested(
                         QCoreApplication::translate("Core", "Catalog error: %1").arg(error));
@@ -591,10 +594,14 @@ void CatalogController::rebuildMergedCatalog()
 void CatalogController::applyMergedCatalogResult(
     quint64 generation, QVector<CatalogEntry> merged,
     QHash<QString, QVector<CatalogEntry>> installOffers,
-    QHash<QString, QString> entryIdToOfferGroup)
+    QHash<QString, QString> entryIdToOfferGroup, bool preview)
 {
     if (generation != m_mergeGeneration)
         return;
+    if (!preview && m_previewActive) {
+        m_previewActive = false;
+        emit catalogPartialChanged();
+    }
 
     m_installOffers = std::move(installOffers);
     m_entryIdToOfferGroup = std::move(entryIdToOfferGroup);
@@ -624,7 +631,7 @@ void CatalogController::applyMergedCatalogResult(
 
     // Another enabled source is still downloading - don't push a partial catalog into
     // QML (freetp 2k then steamidra 100k reset was crashing GridView / Qt6QmlMeta).
-    if (waitingOnPeer) {
+    if (waitingOnPeer && !preview) {
         // Cache already swapped above - drop stale visibles and rebuild the id index so
         // cover/metadata lookups don't use indices from the previous layout.
         if (m_catalog)
@@ -643,7 +650,7 @@ void CatalogController::applyMergedCatalogResult(
     if (m_hooks.mergedEntriesReady)
         m_hooks.mergedEntriesReady(*m_mergedCache, m_activeSourceIds, m_activeQuery);
 
-    if (enabledActiveCount == 1 && !singleEnabledId.isEmpty()) {
+    if (!preview && enabledActiveCount == 1 && !singleEnabledId.isEmpty()) {
         const auto it = m_catalogBySource.find(singleEnabledId);
         if (it != m_catalogBySource.end() && !it.value().isEmpty())
             it.value() = QVector<CatalogEntry>();
@@ -657,6 +664,11 @@ void CatalogController::applyMergedCatalogResult(
         m_hooks.applyFilter(m_activeQuery);
     if (m_hooks.warmCovers)
         m_hooks.warmCovers();
+
+    if (preview) {
+        updateCatalogLoadingState();
+        return;
+    }
 
     const int catalogTotal = m_mergedCache ? m_mergedCache->size() : (m_catalog ? m_catalog->count() : 0);
     if (enabledActiveCount == 1) {
@@ -672,6 +684,50 @@ void CatalogController::applyMergedCatalogResult(
     updateCatalogLoadingState();
     if (m_hooks.catalogReady)
         m_hooks.catalogReady();
+}
+
+void CatalogController::applyCatalogPreview(const QString& sourceId, QVector<CatalogEntry> entries)
+{
+    // Only while the first load is still running and nothing is on screen yet, and only for a
+    // single active source (a multi-source merge needs every source).
+    if (entries.isEmpty() || !m_loadingSourceIds.contains(sourceId)
+        || m_catalogBySource.contains(sourceId) || !m_mergedCache || !m_mergedCache->isEmpty()) {
+        return;
+    }
+    int enabledActive = 0;
+    for (const QString& id : m_activeSourceIds) {
+        const SourcePluginInfo* source = m_sources->pluginById(id);
+        if (source && source->enabled)
+            ++enabledActive;
+    }
+    if (enabledActive != 1 || !m_activeSourceIds.contains(sourceId))
+        return;
+
+    normalizeCatalogSourceIds(entries, sourceId);
+    m_previewActive = true;
+    const quint64 generation = ++m_mergeGeneration;
+    applyMergedCatalogResult(generation, std::move(entries), {}, {}, /*preview=*/true);
+    emit catalogPartialChanged();
+}
+
+void CatalogController::dropCatalogPreview()
+{
+    if (!m_previewActive)
+        return;
+    m_previewActive = false;
+    ++m_mergeGeneration;
+    if (m_mergedCacheLock) {
+        QWriteLocker locker(m_mergedCacheLock);
+        m_mergedCache->clear();
+    } else {
+        m_mergedCache->clear();
+    }
+    m_catalog->clear();
+    if (m_hooks.rebuildIdIndex)
+        m_hooks.rebuildIdIndex();
+    if (m_hooks.rebuildGenres)
+        m_hooks.rebuildGenres();
+    emit catalogPartialChanged();
 }
 
 QVariantList CatalogController::installOffersForEntry(const QString& entryId) const
@@ -848,6 +904,14 @@ void CatalogController::loadCatalogSourceNow(const QString& sourceId)
         bool hadDiskPayload = false;
     };
 
+    // Nothing on disk (first start): go straight to the network path. The disk worker below would
+    // only report "nothing here" back to the UI thread, which may be busy loading QML.
+    if (!m_catalogBySource.contains(sourceId) && !CatalogSnapshot::exists(sourceId)
+        && !CatalogDiskCache::loadPayload(sourceId, nullptr, nullptr)) {
+        loadCatalogSourceNowFromNetwork(sourceId);
+        return;
+    }
+
     // Fast path: read+parse disk cache on a worker (not the UI thread), then revalidate.
     if (!m_catalogBySource.contains(sourceId)) {
         auto* watcher = new QFutureWatcher<DiskCatalogLoad>(this);
@@ -996,6 +1060,7 @@ void CatalogController::loadCatalogSourceNowFromNetwork(const QString& sourceId)
                             return;
                         }
                         m_loadingSourceIds.remove(sourceId);
+                        dropCatalogPreview();
                         if (m_activeSourceIds.contains(sourceId)) {
                             emit noticeRequested(QCoreApplication::translate(
                                 "Core", "Catalog empty or unavailable: %1")
@@ -1005,8 +1070,25 @@ void CatalogController::loadCatalogSourceNowFromNetwork(const QString& sourceId)
                     });
             PluginHost* host = m_pluginHost;
             const QByteArray expectedSha = m_sourcePayloadSha.value(sourceId);
-            watcher->setFuture(QtConcurrent::run([host, sourceId, prepare, expectedSha]() {
-                return loadPluginCatalogEntries(host, sourceId, expectedSha, prepare);
+            // Nothing cached and nothing on screen: show the first rows of the download early.
+            PluginSourcePreview previewCb;
+            if (!m_catalogBySource.contains(sourceId) && m_mergedCache && m_mergedCache->isEmpty()) {
+                previewCb = [self = QPointer<CatalogController>(this), sourceId,
+                             prepare](QVector<CatalogEntry> rows) {
+                    prepareCatalogRows(rows, sourceId, prepare);
+                    if (!self)
+                        return;
+                    QMetaObject::invokeMethod(
+                        self.data(),
+                        [self, sourceId, rows = std::move(rows)]() mutable {
+                            if (self)
+                                self->applyCatalogPreview(sourceId, std::move(rows));
+                        },
+                        Qt::QueuedConnection);
+                };
+            }
+            watcher->setFuture(QtConcurrent::run([host, sourceId, prepare, expectedSha, previewCb]() {
+                return loadPluginCatalogEntries(host, sourceId, expectedSha, prepare, previewCb);
             }));
             return;
         }
@@ -1080,6 +1162,8 @@ void CatalogController::revalidateCatalogSource(const QString& sourceId, const Q
 void CatalogController::updateCatalogLoadingState()
 {
     emit catalogLoadingChanged(catalogLoading());
+    if (m_previewActive)
+        emit catalogPartialChanged();
 }
 
 void CatalogController::setCatalogStatus(const QString& status)

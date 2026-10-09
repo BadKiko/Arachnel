@@ -138,6 +138,9 @@ int main(int argc, char* argv[])
 
     int exitCode = 1;
     {
+        // Catalog download / snapshot read runs on worker threads while the QML engine below loads.
+        if (!crashDialogMode)
+            arachnel::core::CoreController::instance().startCatalogLoadEarly();
         QQmlApplicationEngine engine;
         configureQmlEngine(engine);
         wireEngineLogging(engine, app);

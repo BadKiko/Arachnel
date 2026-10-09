@@ -64,7 +64,7 @@ Item {
 
             MD.Label {
                 Layout.fillWidth: true
-                text: Core.catalogLoading && Core.catalog.count === 0
+                text: Core.catalogPartial || (Core.catalogLoading && Core.catalog.count === 0)
                     ? qsTr("Loading catalog…")
                     : qsTr("Found: %1").arg(Core.catalog.count)
                 color: MD.Token.color.on_surface_variant

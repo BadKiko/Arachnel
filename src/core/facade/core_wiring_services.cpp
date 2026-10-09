@@ -137,6 +137,8 @@ void CoreController::initializeServices()
     }
     connect(m_catalogController, &CatalogController::catalogLoadingChanged, this,
             [this](bool) { emit catalogLoadingChanged(); });
+    connect(m_catalogController, &CatalogController::catalogPartialChanged, this,
+            &CoreController::catalogPartialChanged);
     connect(m_catalogController, &CatalogController::catalogStatusChanged, this,
             [this](const QString&) { emit catalogStatusChanged(); });
     connect(m_catalogController, &CatalogController::activeCatalogSourcesChanged, this,
