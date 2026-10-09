@@ -21,6 +21,10 @@ Item {
     property int currentPlayers: -1
     property bool peekArmed: false
     property bool peekWaiting: false
+    // Keeps the lazily-built peek popup alive from "armed" until it has finished closing, so its
+    // exit transition plays. A plain bool (not a read of peekLoader.item) so the Loader's
+    // `active` doesn't depend on its own item - that was a binding loop.
+    property bool peekHold: false
     /** Loaded from entryInfo only when peek arms — not a GridView model role. */
     property var peekScreenshotUrls: []
     /** Pass navRail.width so screenshot peek doesn't render over the nav rail. */
@@ -133,8 +137,10 @@ Item {
         root.peekArmed = false
         root.peekWaiting = false
         root.peekScreenshotUrls = []
-        if (peekLoader.item)
-            peekLoader.item.hideNow()
+        if (peekLoader.item && peekLoader.item.opened)
+            peekLoader.item.hideNow()   // peekHold is cleared from the popup's closed signal
+        else
+            root.peekHold = false
     }
 
     function loadPeekScreenshots() {
@@ -156,7 +162,14 @@ Item {
         }
     }
 
+    onPeekWaitingChanged: {
+        if (root.peekWaiting)
+            root.peekHold = true
+    }
+
     onPeekArmedChanged: {
+        if (root.peekArmed)
+            root.peekHold = true
         if (root.peekArmed)
             root.loadPeekScreenshots()
     }
@@ -468,8 +481,7 @@ Item {
             // stays alive until the popup has finished closing (so the exit transition plays).
             Loader {
                 id: peekLoader
-                active: root.peekArmed || root.peekWaiting
-                        || (peekLoader.item !== null && peekLoader.item.opened)
+                active: root.peekHold
                 sourceComponent: Component {
                     CatalogScreenshotPeek {
                         entryId: root.entryId
@@ -484,6 +496,15 @@ Item {
 
             // Only after we have URLs - popup itself waits for Image.Ready and rejects frames
             // that don't belong to this entryId.
+            Connections {
+                target: peekLoader.item
+                ignoreUnknownSignals: true
+                function onClosed() {
+                    if (!root.peekArmed && !root.peekWaiting)
+                        root.peekHold = false
+                }
+            }
+
             Binding {
                 target: peekLoader.item
                 property: "active"
