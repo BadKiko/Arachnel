@@ -5,6 +5,7 @@
 #include "catalog_model.h"
 #include "catalog_parser.h"
 #include "catalog_search_utils.h"
+#include "catalog_snapshot.h"
 #include "crash_log.h"
 #include "plugin_catalog_json.h"
 #include "plugin_host.h"
@@ -17,15 +18,34 @@
 #include <QJsonObject>
 #include <QReadLocker>
 #include <QSet>
+#include <QThread>
 #include <QTimer>
 #include <QUrl>
 #include <QWriteLocker>
 #include <QtConcurrent>
 
+#include <functional>
 #include <optional>
 
 namespace arachnel::core {
 namespace {
+
+// Normalizes ids and runs the per-entry prepare hook. Kept on one thread on purpose: with the
+// per-token caches in prepareCatalogEntry the whole pass is ~150 ms for 125k rows, and splitting
+// it across threads measured slower (each thread rebuilds its own caches and the cores are busy
+// with startup).
+void prepareCatalogRows(QVector<CatalogEntry>& entries, const QString& sourceId,
+                        const std::function<void(CatalogEntry&)>& prepare)
+{
+    for (CatalogEntry& entry : entries) {
+        entry.sourceId = sourceId;
+        entry.id = repairCatalogEntryId(entry.id);
+        if (prepare)
+            prepare(entry);
+        else
+            prepareCatalogEntry(entry);
+    }
+}
 bool catalogCacheHasPollutedIds(const QVector<CatalogEntry>& entries)
 {
     for (const CatalogEntry& entry : entries) {
@@ -87,14 +107,7 @@ CatalogController::CatalogController(CatalogModel* catalog, SourcePluginModel* s
                         });
                 watcher->setFuture(QtConcurrent::run(
                     [entries = std::move(entries), sourceId, prepare]() mutable {
-                        for (CatalogEntry& entry : entries) {
-                            entry.sourceId = sourceId;
-                            entry.id = repairCatalogEntryId(entry.id);
-                            if (prepare)
-                                prepare(entry);
-                            else
-                                prepareCatalogEntry(entry);
-                        }
+                        prepareCatalogRows(entries, sourceId, prepare);
                         return entries;
                     }));
             });
@@ -780,6 +793,7 @@ void CatalogController::loadCatalogSourceNow(const QString& sourceId)
         QVector<CatalogEntry> entries;
         QByteArray payloadSha;
         QByteArray etag;
+        qint64 savedAtMs = 0; // when the disk cache was last written (0 = unknown)
         bool hadDiskPayload = false;
     };
 
@@ -803,42 +817,62 @@ void CatalogController::loadCatalogSourceNow(const QString& sourceId)
                             m_sourcePayloadSha.insert(sourceId, loaded.payloadSha);
                         storeCatalogForSource(sourceId, std::move(loaded.entries),
                                               /*prepareEntries=*/false);
+                        // The disk cache is shown immediately; if it is older than the TTL, fetch
+                        // fresh data in the background (this used to happen as a side effect of
+                        // the count prefetch, which parsed the whole catalog a second time).
+                        const bool stale = loaded.savedAtMs <= 0
+                            || QDateTime::currentMSecsSinceEpoch() - loaded.savedAtMs
+                                >= kCatalogCacheTtlMs;
+                        if (stale && !m_loadingSourceIds.contains(sourceId))
+                            revalidateCatalogSource(sourceId, loaded.etag);
                     }
                 });
         watcher->setFuture(QtConcurrent::run([sourceId, prepare]() -> DiskCatalogLoad {
             DiskCatalogLoad out;
-            QByteArray payload;
             QByteArray etag;
-            if (!CatalogDiskCache::loadPayload(sourceId, &payload, &etag) || payload.isEmpty())
-                return out;
-            out.hadDiskPayload = true;
-            out.etag = etag;
-            out.payloadSha = CatalogDiskCache::payloadSha256(payload);
-            // Plugin JSON uses schema + entries[]; parseCatalogFeed treats "entries" as Ryuu
-            // and used to drop FreeTP magnets. Prefer the plugin parser when schema matches.
             QVector<CatalogEntry> entries;
-            // Parsing a 70 MB feed just to read its "schema" field doubled the load time and the
-            // peak memory. Object keys are written sorted, so the marker sits in the first or
-            // last few KB; a false positive only costs the fallback chain below.
-            constexpr qsizetype kSchemaProbe = 4096;
-            const QByteArray marker("arachnel.plugin.catalog");
-            if (payload.left(kSchemaProbe).contains(marker)
-                || payload.right(kSchemaProbe).contains(marker)) {
-                entries = parsePluginCatalogJson(payload, sourceId);
+
+            // Warm start: a snapshot written for exactly this payload skips reading, hashing and
+            // parsing ~70 MB of JSON. Any mismatch falls through to the JSON path below.
+            const QByteArray storedKey = CatalogDiskCache::storedPayloadKey(sourceId);
+            if (!storedKey.isEmpty()
+                && CatalogSnapshot::load(sourceId, storedKey, &entries)) {
+                CatalogDiskCache::loadPayload(sourceId, nullptr, &etag, &out.savedAtMs);
+                out.hadDiskPayload = true;
+                out.etag = etag;
+                out.payloadSha = storedKey;
+            } else {
+                entries.clear();
+                QByteArray payload;
+                if (!CatalogDiskCache::loadPayload(sourceId, &payload, &etag, &out.savedAtMs)
+                    || payload.isEmpty())
+                    return out;
+                out.hadDiskPayload = true;
+                out.etag = etag;
+                out.payloadSha = CatalogDiskCache::payloadFingerprint(payload);
+                if (out.payloadSha != storedKey)
+                    CatalogDiskCache::setStoredPayloadKey(sourceId, out.payloadSha);
+                // Plugin JSON uses schema + entries[]; parseCatalogFeed treats "entries" as Ryuu
+                // and used to drop FreeTP magnets. Prefer the plugin parser when schema matches.
+                // Parsing a 70 MB feed just to read its "schema" field doubled the load time and
+                // the peak memory. Object keys are written sorted, so the marker sits in the
+                // first or last few KB; a false positive only costs the fallback chain below.
+                constexpr qsizetype kSchemaProbe = 4096;
+                const QByteArray marker("arachnel.plugin.catalog");
+                if (payload.left(kSchemaProbe).contains(marker)
+                    || payload.right(kSchemaProbe).contains(marker)) {
+                    entries = parsePluginCatalogJson(payload, sourceId);
+                }
+                if (entries.isEmpty())
+                    entries = parseCatalogFeed(payload, sourceId);
+                if (entries.isEmpty())
+                    entries = parsePluginCatalogJson(payload, sourceId);
+                payload = QByteArray(); // release the raw feed before entries are post-processed
+                // Snapshot the parser output (before the per-entry prepare below).
+                if (!entries.isEmpty())
+                    CatalogSnapshot::save(sourceId, out.payloadSha, entries);
             }
-            if (entries.isEmpty())
-                entries = parseCatalogFeed(payload, sourceId);
-            if (entries.isEmpty())
-                entries = parsePluginCatalogJson(payload, sourceId);
-            payload = QByteArray(); // release the raw feed before entries are post-processed
-            for (CatalogEntry& entry : entries) {
-                entry.sourceId = sourceId;
-                entry.id = repairCatalogEntryId(entry.id);
-                if (prepare)
-                    prepare(entry);
-                else
-                    prepareCatalogEntry(entry);
-            }
+            prepareCatalogRows(entries, sourceId, prepare);
             out.entries = std::move(entries);
             return out;
         }));
@@ -913,21 +947,23 @@ void CatalogController::loadCatalogSourceNowFromNetwork(const QString& sourceId)
             const QByteArray expectedSha = m_sourcePayloadSha.value(sourceId);
             watcher->setFuture(QtConcurrent::run([host, sourceId, prepare, expectedSha]() {
                 PluginCatalogLoad out;
-                QByteArray payload = host->loadPluginCatalogPayload(sourceId, &out.payloadSha);
+                QByteArray payload =
+                    host->loadPluginCatalogPayload(sourceId, &out.payloadSha, /*persist=*/false);
                 if (payload.isEmpty())
                     return out;
-                if (!expectedSha.isEmpty() && out.payloadSha == expectedSha)
+                if (!expectedSha.isEmpty() && out.payloadSha == expectedSha) {
+                    // Unchanged: only refreshes the cache stamps, nothing is rewritten.
+                    CatalogDiskCache::savePayload(sourceId, payload, {}, out.payloadSha);
                     return out;
-                out.entries = parsePluginCatalogJson(payload, sourceId);
-                payload.clear();
-                for (CatalogEntry& entry : out.entries) {
-                    entry.sourceId = sourceId;
-                    entry.id = repairCatalogEntryId(entry.id);
-                    if (prepare)
-                        prepare(entry);
-                    else
-                        prepareCatalogEntry(entry);
                 }
+                out.entries = parsePluginCatalogJson(payload, sourceId);
+                // Snapshot first, then the payload/.meta key: the two never disagree, so the next
+                // launch can use the snapshot.
+                if (!out.entries.isEmpty() && !out.payloadSha.isEmpty())
+                    CatalogSnapshot::save(sourceId, out.payloadSha, out.entries);
+                CatalogDiskCache::savePayload(sourceId, payload, {}, out.payloadSha);
+                payload.clear();
+                prepareCatalogRows(out.entries, sourceId, prepare);
                 return out;
             }));
             return;
@@ -988,21 +1024,23 @@ void CatalogController::revalidateCatalogSource(const QString& sourceId, const Q
         PluginHost* host = m_pluginHost;
         watcher->setFuture(QtConcurrent::run([host, sourceId, prepare, expectedSha]() {
             PluginCatalogLoad out;
-            QByteArray payload = host->loadPluginCatalogPayload(sourceId, &out.payloadSha);
+            QByteArray payload =
+                host->loadPluginCatalogPayload(sourceId, &out.payloadSha, /*persist=*/false);
             if (payload.isEmpty())
                 return out;
-            if (!expectedSha.isEmpty() && out.payloadSha == expectedSha)
+            if (!expectedSha.isEmpty() && out.payloadSha == expectedSha) {
+                // Unchanged: only refreshes the cache stamps, nothing is rewritten.
+                CatalogDiskCache::savePayload(sourceId, payload, {}, out.payloadSha);
                 return out;
-            out.entries = parsePluginCatalogJson(payload, sourceId);
-            payload.clear();
-            for (CatalogEntry& entry : out.entries) {
-                entry.sourceId = sourceId;
-                entry.id = repairCatalogEntryId(entry.id);
-                if (prepare)
-                    prepare(entry);
-                else
-                    prepareCatalogEntry(entry);
             }
+            out.entries = parsePluginCatalogJson(payload, sourceId);
+            // Snapshot first, then the payload/.meta key: the two never disagree, so the next
+            // launch can use the snapshot.
+            if (!out.entries.isEmpty() && !out.payloadSha.isEmpty())
+                CatalogSnapshot::save(sourceId, out.payloadSha, out.entries);
+            CatalogDiskCache::savePayload(sourceId, payload, {}, out.payloadSha);
+            payload.clear();
+            prepareCatalogRows(out.entries, sourceId, prepare);
             return out;
         }));
         return;
@@ -1040,6 +1078,7 @@ void CatalogController::refreshCatalog(const QString& sourceId)
     m_sourcePayloadSha.remove(sourceId);
     m_catalogCounts.remove(sourceId);
     CatalogDiskCache::remove(sourceId);
+    CatalogSnapshot::remove(sourceId);
     emit catalogCountsChanged();
     m_loadingSourceIds.remove(sourceId);
     m_catalogLoadQueue.removeAll(sourceId);
@@ -1156,8 +1195,12 @@ void CatalogController::prefetchCatalogCounts()
 
 void CatalogController::prefetchPluginCatalogCount(const QString& sourceId)
 {
+    // The count prefetch used to sync and fully parse the plugin catalog (~70 MB) just to learn
+    // how many games it has, racing the real load. When a disk cache exists, the real load sets
+    // the count shortly anyway.
     if (!m_pluginHost || !m_pluginHost->hasPlugin(sourceId) || m_catalogBySource.contains(sourceId)
-        || m_loadingSourceIds.contains(sourceId)) {
+        || m_loadingSourceIds.contains(sourceId)
+        || !CatalogDiskCache::storedPayloadKey(sourceId).isEmpty()) {
         startNextCatalogPrefetch();
         return;
     }

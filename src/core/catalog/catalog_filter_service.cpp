@@ -11,6 +11,8 @@
 #include <QThreadPool>
 #include <QTimer>
 #include <QWriteLocker>
+#include <QtConcurrent>
+#include <QThread>
 
 #include <algorithm>
 #include <numeric>
@@ -157,6 +159,9 @@ FilterSoA buildFilterSoA(const QVector<CatalogEntry>* cachePtr)
     out.rows.resize(n);
     out.searchEntries.resize(n);
     out.sourceIdsBySlot.reserve(8);
+
+    // Cheap sequential pass: source slots depend on first-seen order.
+    QVector<quint8> sourceSlotByRow(n);
     QHash<QString, quint8> intern;
     intern.reserve(8);
     for (int i = 0; i < n; ++i) {
@@ -172,10 +177,33 @@ FilterSoA buildFilterSoA(const QVector<CatalogEntry>* cachePtr)
         } else {
             slot = 31;
         }
-        out.rows[i] = catalogFilterRowFromEntry(entry, slot);
-        out.searchEntries[i] = CatalogSearchEntry::fromEntry(entry);
+        sourceSlotByRow[i] = slot;
         out.presentGenreBits |= entry.genreBits;
     }
+
+    // Row + search-entry construction (tokenizing every title) is independent per entry.
+    const CatalogEntry* entries = cachePtr->constData();
+    CatalogFilterRow* rows = out.rows.data();
+    CatalogSearchEntry* searchEntries = out.searchEntries.data();
+    const auto buildRange = [&](int from, int to) {
+        for (int i = from; i < to; ++i) {
+            rows[i] = catalogFilterRowFromEntry(entries[i], sourceSlotByRow.at(i));
+            searchEntries[i] = CatalogSearchEntry::fromEntry(entries[i]);
+        }
+    };
+    constexpr int kMinParallelRows = 8192;
+    const int threads = qBound(1, QThread::idealThreadCount(), 8);
+    if (n < kMinParallelRows || threads == 1) {
+        buildRange(0, n);
+        return out;
+    }
+    QVector<QPair<int, int>> ranges;
+    const int chunk = (n + threads - 1) / threads;
+    for (int from = 0; from < n; from += chunk)
+        ranges.append({from, qMin(n, from + chunk)});
+    QtConcurrent::blockingMap(ranges, [&](QPair<int, int>& range) {
+        buildRange(range.first, range.second);
+    });
     return out;
 }
 
