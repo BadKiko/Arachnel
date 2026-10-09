@@ -162,7 +162,7 @@ Item {
                 }
 
                 MD.Label {
-                    text: qsTr("%1 games").arg(favoritesModel.count)
+                    text: qsTr("%n game(s)", "", favoritesModel.count)
                     color: MD.Token.color.on_surface_variant
                     typescale: MD.Token.typescale.label_large
                 }

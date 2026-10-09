@@ -106,10 +106,12 @@
         <source>Favorites</source>
         <translation>Favorites</translation>
     </message>
-    <message>
-        <location line="+5" />
-        <source>%1 games</source>
-        <translation>%1 games</translation>
+    <message numerus="yes">
+        <source>%n game(s)</source>
+        <translation>
+            <numerusform>%n game</numerusform>
+            <numerusform>%n games</numerusform>
+        </translation>
     </message>
     <message>
         <source>Open catalog</source>
@@ -3116,6 +3118,26 @@
         <source>Ready to download from Steam CDN. Online Fix can be included when needed.</source>
         <translation>Ready to download from Steam CDN. Online Fix can be included when needed.</translation>
     </message>
+    <message>
+        <source>Build number of the game files. A higher number means a newer build.</source>
+        <translation>Build number of the game files. A higher number means a newer build.</translation>
+    </message>
+    <message>
+        <source>Portable: Arachnel unpacks the game into your library folder. No installer to run.</source>
+        <translation>Portable: Arachnel unpacks the game into your library folder. No installer to run.</translation>
+    </message>
+    <message>
+        <source>Installer: after the download you click Install and follow the game's own setup.</source>
+        <translation>Installer: after the download you click Install and follow the game's own setup.</translation>
+    </message>
+    <message>
+        <source>Bundled fix: the files needed to run the game are already included in the download.</source>
+        <translation>Bundled fix: the files needed to run the game are already included in the download.</translation>
+    </message>
+    <message>
+        <source>Separate fix: the game and the files needed to run it are downloaded separately.</source>
+        <translation>Separate fix: the game and the files needed to run it are downloaded separately.</translation>
+    </message>
 </context>
 <context>
     <name>GameDetailsMediaPreview</name>
@@ -3145,6 +3167,10 @@
         <location line="+3" />
         <source>Screenshots</source>
         <translation>Screenshots</translation>
+    </message>
+    <message>
+        <source>Space - pause, ← → - seek, M - mute</source>
+        <translation>Space - pause, ← → - seek, M - mute</translation>
     </message>
 </context>
 <context>
@@ -3644,10 +3670,12 @@
         <source>My library</source>
         <translation>My library</translation>
     </message>
-    <message>
-        <location line="+5" />
-        <source>%1 games</source>
-        <translation>%1 games</translation>
+    <message numerus="yes">
+        <source>%n game(s)</source>
+        <translation>
+            <numerusform>%n game</numerusform>
+            <numerusform>%n games</numerusform>
+        </translation>
     </message>
 </context>
 <context>
@@ -3832,8 +3860,8 @@
     </message>
     <message>
         <location line="+4" />
-        <source>Arachnel has no games until you install a plugin. Each plugin is a source: it fills Catalog and handles download, install, and Play.</source>
-        <translation>Arachnel has no games until you install a plugin. Each plugin is a source: it fills Catalog and handles download, install, and Play.</translation>
+        <source>A plugin is a game source: it fills Catalog and handles download, install, and Play. Install at least one to see games.</source>
+        <translation>A plugin is a game source: it fills Catalog and handles download, install, and Play. Install at least one to see games.</translation>
     </message>
     <message>
         <location line="+12" />
@@ -3958,6 +3986,26 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <location line="+14" />
         <source>Game files will be deleted from disk. This cannot be undone.</source>
         <translation>Game files will be deleted from disk. This cannot be undone.</translation>
+    </message>
+    <message>
+        <source>Your library is empty. Open Catalog, pick a game and press Download - it will appear here when it is ready.</source>
+        <translation>Your library is empty. Open Catalog, pick a game and press Download - it will appear here when it is ready.</translation>
+    </message>
+    <message>
+        <source>Source added. See Settings → Plugins.</source>
+        <translation>Source added. See Settings → Plugins.</translation>
+    </message>
+    <message>
+        <source>Open Catalog and pick a game.</source>
+        <translation>Open Catalog and pick a game.</translation>
+    </message>
+    <message>
+        <source>Press Download. Progress shows in the Downloads tab.</source>
+        <translation>Press Download. Progress shows in the Downloads tab.</translation>
+    </message>
+    <message>
+        <source>When it is done, press Play in your Library.</source>
+        <translation>When it is done, press Play in your Library.</translation>
     </message>
 </context>
 <context>
@@ -4124,14 +4172,29 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>You're all set</translation>
     </message>
     <message>
-        <location line="+3" />
-        <source>Open Catalog to browse games. Change language, storage, and game sources anytime in Settings.</source>
-        <translation>Open Catalog to browse games. Change language, storage, and game sources anytime in Settings.</translation>
-    </message>
-    <message>
         <location line="+7" />
         <source>You have no game source yet, so Catalog will be empty. Add one in Settings → Plugins to see games.</source>
         <translation>You have no game source yet, so Catalog will be empty. Add one in Settings → Plugins to see games.</translation>
+    </message>
+    <message>
+        <source>Games folder</source>
+        <translation>Games folder</translation>
+    </message>
+    <message>
+        <source>Game source</source>
+        <translation>Game source</translation>
+    </message>
+    <message>
+        <source>None yet</source>
+        <translation>None yet</translation>
+    </message>
+    <message>
+        <source>How to get your first game</source>
+        <translation>How to get your first game</translation>
+    </message>
+    <message>
+        <source>Language</source>
+        <translation>Language</translation>
     </message>
 </context>
 <context>
@@ -4186,8 +4249,8 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
     <message>
         <location line="+13" />
-        <source>Or keep the default path already listed above.</source>
-        <translation>Or keep the default path already listed above.</translation>
+        <source>The star marks the folder new games go to. Or keep the default path listed above.</source>
+        <translation>The star marks the folder new games go to. Or keep the default path listed above.</translation>
     </message>
     <message>
         <location line="+27" />
@@ -4616,8 +4679,8 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
     <message>
         <location line="+5" />
-        <source>Extra game lists added by link (advanced)</source>
-        <translation>Extra game lists added by link (advanced)</translation>
+        <source>Add extra game lists from a link, e.g. a Hydra Launcher list (advanced)</source>
+        <translation>Add extra game lists from a link, e.g. a Hydra Launcher list (advanced)</translation>
     </message>
     <message>
         <location line="+24" />

@@ -310,7 +310,7 @@ Item {
                     }
 
                     MD.Label {
-                        text: qsTr("%1 games").arg(Core.library.count)
+                        text: qsTr("%n game(s)", "", Core.library.count)
                         color: MD.Token.color.on_surface_variant
                         typescale: MD.Token.typescale.label_large
                     }

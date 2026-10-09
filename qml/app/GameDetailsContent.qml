@@ -196,6 +196,11 @@ Item {
                         MD.AssistChip {
                             text: "v" + (page.info.version ?? "")
                             icon.name: MD.Token.icon.tag
+
+                            MD.ToolTip {
+                                visible: parent.hovered
+                                text: qsTr("Build number of the game files. A higher number means a newer build.")
+                            }
                         }
                         MD.AssistChip {
                             visible: !!(page.info.sizeLabel)
@@ -236,6 +241,19 @@ Item {
                         MD.AssistChip {
                             text: page.info.installKindLabel ?? ""
                             icon.name: MD.Token.icon.install_desktop
+
+                            MD.ToolTip {
+                                visible: parent.hovered
+                                text: {
+                                    switch (page.info.installKind) {
+                                    case 0: return qsTr("Portable: Arachnel unpacks the game into your library folder. No installer to run.")
+                                    case 1: return qsTr("Installer: after the download you click Install and follow the game's own setup.")
+                                    case 2: return qsTr("Bundled fix: the files needed to run the game are already included in the download.")
+                                    case 3: return qsTr("Separate fix: the game and the files needed to run it are downloaded separately.")
+                                    }
+                                    return ""
+                                }
+                            }
                         }
                         MD.AssistChip {
                             visible: page.installSourceCount <= 1

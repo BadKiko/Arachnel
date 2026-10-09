@@ -11,7 +11,7 @@
 
 | Плагин | Репозиторий | Статус |
 |--------|-------------|--------|
-| `freetp` | [arachnel-plugin-freetp](https://github.com/PetWork/arachnel-plugin-freetp) | реализован (API v4, torrent → install) |
+| `freetp` | [arachnel_freetp_plugin](https://github.com/BadKikoSecond/arachnel_freetp_plugin) | реализован (API v4, torrent → install) |
 | `steamidra` | [arachnel-plugin-steamidra](https://gitlab.com/BadKiko/arachnel-plugin-steamidra) | реализован (API v4, `owns_download`, GPL-3) |
 | `online-fix` | — | не начат |
 

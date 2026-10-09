@@ -35,11 +35,9 @@ Item {
     }
 
     readonly property string displaySourceName: {
-        const s = (root.sourceName || "").trim()
-        if (s.length)
-            return s
         const info = Core.entryDetails(root.gameId)
-        return String(info.sourceName || info.sourceId || "")
+        const raw = (root.sourceName || "").trim() || String(info.sourceName || info.sourceId || "")
+        return raw.length ? Core.sources.nameForId(raw) : ""
     }
 
     function requestCover() {

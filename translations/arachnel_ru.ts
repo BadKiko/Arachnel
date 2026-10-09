@@ -106,10 +106,13 @@
         <source>Favorites</source>
         <translation>Избранное</translation>
     </message>
-    <message>
-        <location line="+5" />
-        <source>%1 games</source>
-        <translation>%1 игр</translation>
+    <message numerus="yes">
+        <source>%n game(s)</source>
+        <translation>
+            <numerusform>%n игра</numerusform>
+            <numerusform>%n игры</numerusform>
+            <numerusform>%n игр</numerusform>
+        </translation>
     </message>
     <message>
         <source>Open catalog</source>
@@ -3117,6 +3120,26 @@
         <source>Ready to download from Steam CDN. Online Fix can be included when needed.</source>
         <translation>Готово к загрузке с Steam CDN. При необходимости можно включить Online Fix.</translation>
     </message>
+    <message>
+        <source>Build number of the game files. A higher number means a newer build.</source>
+        <translation>Номер сборки файлов игры. Чем он больше, тем новее сборка.</translation>
+    </message>
+    <message>
+        <source>Portable: Arachnel unpacks the game into your library folder. No installer to run.</source>
+        <translation>Портабл: Arachnel распаковывает игру в папку библиотеки. Запускать установщик не нужно.</translation>
+    </message>
+    <message>
+        <source>Installer: after the download you click Install and follow the game's own setup.</source>
+        <translation>Установщик: после загрузки нажмите «Установить» и пройдите установку самой игры.</translation>
+    </message>
+    <message>
+        <source>Bundled fix: the files needed to run the game are already included in the download.</source>
+        <translation>Встроенный фикс: всё, что нужно для запуска игры, уже входит в загрузку.</translation>
+    </message>
+    <message>
+        <source>Separate fix: the game and the files needed to run it are downloaded separately.</source>
+        <translation>Отдельный фикс: игра и файлы для её запуска скачиваются отдельно.</translation>
+    </message>
 </context>
 <context>
     <name>GameDetailsMediaPreview</name>
@@ -3146,6 +3169,10 @@
         <location line="+3" />
         <source>Screenshots</source>
         <translation>Скриншоты</translation>
+    </message>
+    <message>
+        <source>Space - pause, ← → - seek, M - mute</source>
+        <translation>Пробел - пауза, ← → - перемотка, M - звук</translation>
     </message>
 </context>
 <context>
@@ -3649,10 +3676,13 @@
         <source>My library</source>
         <translation>Моя библиотека</translation>
     </message>
-    <message>
-        <location line="+5" />
-        <source>%1 games</source>
-        <translation>%1 игр</translation>
+    <message numerus="yes">
+        <source>%n game(s)</source>
+        <translation>
+            <numerusform>%n игра</numerusform>
+            <numerusform>%n игры</numerusform>
+            <numerusform>%n игр</numerusform>
+        </translation>
     </message>
 </context>
 <context>
@@ -3838,8 +3868,8 @@
     </message>
     <message>
         <location line="+4" />
-        <source>Arachnel has no games until you install a plugin. Each plugin is a source: it fills Catalog and handles download, install, and Play.</source>
-        <translation>Без плагина в Arachnel нет игр. Плагин - это источник: он заполняет Каталог и занимается загрузкой, установкой и Play.</translation>
+        <source>A plugin is a game source: it fills Catalog and handles download, install, and Play. Install at least one to see games.</source>
+        <translation>Плагин - это источник игр: он наполняет каталог и отвечает за загрузку, установку и запуск. Установите хотя бы один, чтобы увидеть игры.</translation>
     </message>
     <message>
         <location line="+12" />
@@ -3964,6 +3994,26 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <location line="+14" />
         <source>Game files will be deleted from disk. This cannot be undone.</source>
         <translation>Файлы игры будут удалены с диска. Это действие нельзя отменить.</translation>
+    </message>
+    <message>
+        <source>Your library is empty. Open Catalog, pick a game and press Download - it will appear here when it is ready.</source>
+        <translation>Библиотека пока пуста. Откройте каталог, выберите игру и нажмите «Скачать» - когда она будет готова, появится здесь.</translation>
+    </message>
+    <message>
+        <source>Source added. See Settings → Plugins.</source>
+        <translation>Источник добавлен. См. Настройки → Плагины.</translation>
+    </message>
+    <message>
+        <source>Open Catalog and pick a game.</source>
+        <translation>Откройте каталог и выберите игру.</translation>
+    </message>
+    <message>
+        <source>Press Download. Progress shows in the Downloads tab.</source>
+        <translation>Нажмите «Скачать». Ход загрузки виден на вкладке «Загрузки».</translation>
+    </message>
+    <message>
+        <source>When it is done, press Play in your Library.</source>
+        <translation>Когда всё закончится, нажмите «Играть» в библиотеке.</translation>
     </message>
 </context>
 <context>
@@ -4130,14 +4180,29 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>Готово</translation>
     </message>
     <message>
-        <location line="+3" />
-        <source>Open Catalog to browse games. Change language, storage, and game sources anytime in Settings.</source>
-        <translation>Откройте Каталог, чтобы выбрать игры. Язык, хранилище и источники игр - в Настройках.</translation>
-    </message>
-    <message>
         <location line="+7" />
         <source>You have no game source yet, so Catalog will be empty. Add one in Settings → Plugins to see games.</source>
         <translation>Источника игр пока нет, поэтому Каталог будет пустым. Добавьте его в Настройки → Плагины.</translation>
+    </message>
+    <message>
+        <source>Games folder</source>
+        <translation>Папка с играми</translation>
+    </message>
+    <message>
+        <source>Game source</source>
+        <translation>Источник игр</translation>
+    </message>
+    <message>
+        <source>None yet</source>
+        <translation>Пока нет</translation>
+    </message>
+    <message>
+        <source>How to get your first game</source>
+        <translation>Как получить первую игру</translation>
+    </message>
+    <message>
+        <source>Language</source>
+        <translation>Язык</translation>
     </message>
 </context>
 <context>
@@ -4192,8 +4257,8 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
     <message>
         <location line="+13" />
-        <source>Or keep the default path already listed above.</source>
-        <translation>Или оставьте путь по умолчанию из списка выше.</translation>
+        <source>The star marks the folder new games go to. Or keep the default path listed above.</source>
+        <translation>Звёздочка отмечает папку, куда попадают новые игры. Или оставьте путь по умолчанию из списка выше.</translation>
     </message>
     <message>
         <location line="+27" />
@@ -4622,8 +4687,8 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     </message>
     <message>
         <location line="+5" />
-        <source>Extra game lists added by link (advanced)</source>
-        <translation>Дополнительные списки игр по ссылке (для опытных)</translation>
+        <source>Add extra game lists from a link, e.g. a Hydra Launcher list (advanced)</source>
+        <translation>Дополнительные списки игр по ссылке, например из Hydra Launcher (для опытных)</translation>
     </message>
     <message>
         <location line="+24" />
