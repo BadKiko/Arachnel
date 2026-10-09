@@ -107,7 +107,7 @@ Item {
         onActionTriggered: root.openCatalog()
     }
 
-    // ── Список загрузок ────────────────────────────────────────────────────────
+    // Downloads list
     ColumnLayout {
         anchors.fill: parent
         spacing: MD.Token.spacing.medium
