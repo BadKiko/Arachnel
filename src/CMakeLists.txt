@@ -66,6 +66,7 @@ set(ARACHNEL_APP_SOURCES
     src/core/jobs/job_orchestrator_completion.cpp
     src/core/plugins/plugin_api.cpp
     src/core/plugins/plugin_catalog_json.cpp
+    src/core/plugins/plugin_source_sync.cpp
     src/core/plugins/plugin_version.cpp
     src/core/plugins/plugin_host.cpp
     src/core/plugins/plugin_host_async.cpp

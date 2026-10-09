@@ -24,6 +24,11 @@ struct LoadedPlugin {
     void (*destroyFn)(ISourcePlugin*) = nullptr;
     int (*catalogJsonFn)(ISourcePlugin*, char**, size_t*) = nullptr;
     void (*catalogJsonFreeFn)(char*) = nullptr;
+    /** Optional catalog-source extension (null when the plugin does not export it). */
+    int (*sourceExtVersionFn)() = nullptr;
+    int (*catalogSourceFn)(ISourcePlugin*, char**, size_t*) = nullptr;
+    int (*normalizeRowsFn)(ISourcePlugin*, const char*, size_t, char**, size_t*) = nullptr;
+    void (*sourceFreeFn)(char*) = nullptr;
     int apiVersion = 0;
     /** True when CatalogEntry sizeof matched (safe for entryById / detectUpdate). */
     bool catalogEntryLayoutTrusted = false;
@@ -55,6 +60,15 @@ public:
     QByteArray loadPluginCatalogPayload(const QString& id, QByteArray* payloadSha = nullptr,
                                         bool persist = true) const;
     bool hasPlugin(const QString& id) const;
+    /**
+     * True when the plugin exports the optional catalog-source extension at a version this host
+     * understands (see plugin_api.h). Never true for plugins that only offer catalog_json.
+     */
+    bool pluginHasCatalogSource(const QString& id) const;
+    /** JSON descriptor from the plugin (empty on failure). Safe to call from a worker. */
+    QByteArray pluginCatalogSourceDescriptor(const QString& id) const;
+    /** Normalizes one JSON array of raw rows; returns plugin JSON or empty on failure. */
+    QByteArray pluginNormalizeRows(const QString& id, const char* rows, size_t len) const;
     /** True if plugin.json exists under a search root (even if DLL failed to load). */
     bool hasPluginFilesOnDisk(const QString& id) const;
     /** Version from on-disk plugin.json (empty if missing). */

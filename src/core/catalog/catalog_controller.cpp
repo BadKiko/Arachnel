@@ -9,6 +9,7 @@
 #include "crash_log.h"
 #include "plugin_catalog_json.h"
 #include "plugin_host.h"
+#include "plugin_source_sync.h"
 #include "source_plugin_model.h"
 
 #include <QCoreApplication>
@@ -46,6 +47,56 @@ void prepareCatalogRows(QVector<CatalogEntry>& entries, const QString& sourceId,
             prepareCatalogEntry(entry);
     }
 }
+struct PluginCatalogLoad {
+    QVector<CatalogEntry> entries;
+    QByteArray payloadSha;
+};
+
+// One plugin catalog load, shared by the first load and the background revalidation.
+//  1. Plugins that export the catalog-source extension: the host downloads, caches and scans the
+//     raw feed and the plugin only normalizes rows (see plugin_api.h).
+//  2. Everything else, and any failure of (1): the plugin's catalog_json, exactly as before.
+// Entries come back prepared; `entries` empty with `payloadSha == expectedSha` means unchanged.
+PluginCatalogLoad loadPluginCatalogEntries(PluginHost* host, const QString& sourceId,
+                                           const QByteArray& expectedSha,
+                                           const std::function<void(CatalogEntry&)>& prepare)
+{
+    PluginCatalogLoad out;
+    if (pluginCatalogSourceEnabled() && host->pluginHasCatalogSource(sourceId)) {
+        PluginSourceSyncResult synced = syncPluginCatalogSource(*host, sourceId, expectedSha);
+        if (synced.status == PluginSourceSyncResult::Status::Unchanged) {
+            out.payloadSha = synced.payloadKey;
+            return out;
+        }
+        if (synced.status == PluginSourceSyncResult::Status::Loaded) {
+            out.payloadSha = synced.payloadKey;
+            out.entries = std::move(synced.entries);
+            prepareCatalogRows(out.entries, sourceId, prepare);
+            return out;
+        }
+        logDiagnostic(QStringLiteral("Plugin %1: catalog source failed (%2) - using catalog_json")
+                          .arg(sourceId, synced.error));
+    }
+
+    QByteArray payload = host->loadPluginCatalogPayload(sourceId, &out.payloadSha, /*persist=*/false);
+    if (payload.isEmpty())
+        return out;
+    if (!expectedSha.isEmpty() && out.payloadSha == expectedSha) {
+        // Unchanged: only refreshes the cache stamps, nothing is rewritten.
+        CatalogDiskCache::savePayload(sourceId, payload, {}, out.payloadSha);
+        return out;
+    }
+    out.entries = parsePluginCatalogJson(payload, sourceId);
+    // Snapshot first, then the payload/.meta key: the two never disagree, so the next
+    // launch can use the snapshot.
+    if (!out.entries.isEmpty() && !out.payloadSha.isEmpty())
+        CatalogSnapshot::save(sourceId, out.payloadSha, out.entries);
+    CatalogDiskCache::savePayload(sourceId, payload, {}, out.payloadSha);
+    payload.clear();
+    prepareCatalogRows(out.entries, sourceId, prepare);
+    return out;
+}
+
 bool catalogCacheHasPollutedIds(const QVector<CatalogEntry>& entries)
 {
     for (const CatalogEntry& entry : entries) {
@@ -802,6 +853,10 @@ void CatalogController::loadCatalogSourceNow(const QString& sourceId)
         auto* watcher = new QFutureWatcher<DiskCatalogLoad>(this);
         m_inFlightPluginCatalogWatchers.append(watcher);
         const auto prepare = m_hooks.prepareEntry;
+        // Keys written by the catalog-source path end with the plugin version; a key from
+        // another plugin build (or from the catalog_json path) must not select a snapshot.
+        const QByteArray expectedKeySuffix =
+            m_pluginHost ? pluginCatalogSourceKeySuffix(*m_pluginHost, sourceId) : QByteArray();
         connect(watcher, &QFutureWatcher<DiskCatalogLoad>::finished, this,
                 [this, watcher, sourceId]() {
                     m_inFlightPluginCatalogWatchers.removeAll(watcher);
@@ -827,10 +882,19 @@ void CatalogController::loadCatalogSourceNow(const QString& sourceId)
                             revalidateCatalogSource(sourceId, loaded.etag);
                     }
                 });
-        watcher->setFuture(QtConcurrent::run([sourceId, prepare]() -> DiskCatalogLoad {
+        watcher->setFuture(QtConcurrent::run([sourceId, prepare, expectedKeySuffix]() -> DiskCatalogLoad {
             DiskCatalogLoad out;
             QByteArray etag;
             QVector<CatalogEntry> entries;
+
+            const QByteArray earlyKey = CatalogDiskCache::storedPayloadKey(sourceId);
+            const bool sourceKey = earlyKey.contains('|');
+            if (sourceKey != !expectedKeySuffix.isEmpty()
+                || (sourceKey && !earlyKey.endsWith(expectedKeySuffix))) {
+                // Cached under a different plugin build / loading path: not usable here. The
+                // plugin load rebuilds it (from the cached raw feed when there is one).
+                return out;
+            }
 
             // Warm start: a snapshot written for exactly this payload skips reading, hashing and
             // parsing ~70 MB of JSON. Any mismatch falls through to the JSON path below.
@@ -884,11 +948,6 @@ void CatalogController::loadCatalogSourceNow(const QString& sourceId)
 
 void CatalogController::loadCatalogSourceNowFromNetwork(const QString& sourceId)
 {
-    struct PluginCatalogLoad {
-        QVector<CatalogEntry> entries;
-        QByteArray payloadSha;
-    };
-
     if (m_pluginHost) {
         if (m_pluginHost->hasPlugin(sourceId)) {
             auto* watcher = new QFutureWatcher<PluginCatalogLoad>(this);
@@ -946,25 +1005,7 @@ void CatalogController::loadCatalogSourceNowFromNetwork(const QString& sourceId)
             PluginHost* host = m_pluginHost;
             const QByteArray expectedSha = m_sourcePayloadSha.value(sourceId);
             watcher->setFuture(QtConcurrent::run([host, sourceId, prepare, expectedSha]() {
-                PluginCatalogLoad out;
-                QByteArray payload =
-                    host->loadPluginCatalogPayload(sourceId, &out.payloadSha, /*persist=*/false);
-                if (payload.isEmpty())
-                    return out;
-                if (!expectedSha.isEmpty() && out.payloadSha == expectedSha) {
-                    // Unchanged: only refreshes the cache stamps, nothing is rewritten.
-                    CatalogDiskCache::savePayload(sourceId, payload, {}, out.payloadSha);
-                    return out;
-                }
-                out.entries = parsePluginCatalogJson(payload, sourceId);
-                // Snapshot first, then the payload/.meta key: the two never disagree, so the next
-                // launch can use the snapshot.
-                if (!out.entries.isEmpty() && !out.payloadSha.isEmpty())
-                    CatalogSnapshot::save(sourceId, out.payloadSha, out.entries);
-                CatalogDiskCache::savePayload(sourceId, payload, {}, out.payloadSha);
-                payload.clear();
-                prepareCatalogRows(out.entries, sourceId, prepare);
-                return out;
+                return loadPluginCatalogEntries(host, sourceId, expectedSha, prepare);
             }));
             return;
         }
@@ -988,11 +1029,6 @@ void CatalogController::loadCatalogSourceNowFromNetwork(const QString& sourceId)
 void CatalogController::revalidateCatalogSource(const QString& sourceId, const QByteArray& etag)
 {
     Q_UNUSED(etag);
-    struct PluginCatalogLoad {
-        QVector<CatalogEntry> entries;
-        QByteArray payloadSha;
-    };
-
     if (m_pluginHost && m_pluginHost->hasPlugin(sourceId)) {
         auto* watcher = new QFutureWatcher<PluginCatalogLoad>(this);
         m_inFlightPluginCatalogWatchers.append(watcher);
@@ -1023,26 +1059,8 @@ void CatalogController::revalidateCatalogSource(const QString& sourceId, const Q
                 });
         PluginHost* host = m_pluginHost;
         watcher->setFuture(QtConcurrent::run([host, sourceId, prepare, expectedSha]() {
-            PluginCatalogLoad out;
-            QByteArray payload =
-                host->loadPluginCatalogPayload(sourceId, &out.payloadSha, /*persist=*/false);
-            if (payload.isEmpty())
-                return out;
-            if (!expectedSha.isEmpty() && out.payloadSha == expectedSha) {
-                // Unchanged: only refreshes the cache stamps, nothing is rewritten.
-                CatalogDiskCache::savePayload(sourceId, payload, {}, out.payloadSha);
-                return out;
-            }
-            out.entries = parsePluginCatalogJson(payload, sourceId);
-            // Snapshot first, then the payload/.meta key: the two never disagree, so the next
-            // launch can use the snapshot.
-            if (!out.entries.isEmpty() && !out.payloadSha.isEmpty())
-                CatalogSnapshot::save(sourceId, out.payloadSha, out.entries);
-            CatalogDiskCache::savePayload(sourceId, payload, {}, out.payloadSha);
-            payload.clear();
-            prepareCatalogRows(out.entries, sourceId, prepare);
-            return out;
-        }));
+                return loadPluginCatalogEntries(host, sourceId, expectedSha, prepare);
+            }));
         return;
     }
 
@@ -1200,7 +1218,10 @@ void CatalogController::prefetchPluginCatalogCount(const QString& sourceId)
     // the count shortly anyway.
     if (!m_pluginHost || !m_pluginHost->hasPlugin(sourceId) || m_catalogBySource.contains(sourceId)
         || m_loadingSourceIds.contains(sourceId)
-        || !CatalogDiskCache::storedPayloadKey(sourceId).isEmpty()) {
+        || !CatalogDiskCache::storedPayloadKey(sourceId).isEmpty()
+        // The real load of a catalog-source plugin sets the count itself; a prefetch would run
+        // the plugin's own download+parse a second time.
+        || (pluginCatalogSourceEnabled() && m_pluginHost->pluginHasCatalogSource(sourceId))) {
         startNextCatalogPrefetch();
         return;
     }

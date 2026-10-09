@@ -433,6 +433,18 @@ bool PluginHost::loadPluginDir(const QString& dirPath)
     auto* catalogJsonFreeFn =
         reinterpret_cast<void (*)(char*)>(resolvePluginFn("arachnel_plugin_catalog_json_free"));
 
+    // Optional catalog-source extension: resolved quietly, absence is the normal case for older
+    // plugins and must never reject a plugin.
+    auto* sourceExtVersionFn =
+        reinterpret_cast<int (*)()>(resolvePluginFn("arachnel_plugin_source_ext_version"));
+    auto* catalogSourceFn = reinterpret_cast<int (*)(ISourcePlugin*, char**, size_t*)>(
+        resolvePluginFn("arachnel_plugin_catalog_source"));
+    auto* normalizeRowsFn =
+        reinterpret_cast<int (*)(ISourcePlugin*, const char*, size_t, char**, size_t*)>(
+            resolvePluginFn("arachnel_plugin_normalize_rows"));
+    auto* sourceFreeFn =
+        reinterpret_cast<void (*)(char*)>(resolvePluginFn("arachnel_plugin_source_free"));
+
     if (!apiVersionFn || !createFn || !destroyFn) {
         setLoadRejectReason(QCoreApplication::translate(
             "Core", "%1 is missing required plugin exports. Reinstall from the store.")
@@ -546,6 +558,23 @@ bool PluginHost::loadPluginDir(const QString& dirPath)
         return false;
     }
 
+    if (exportedApi >= 4 && sourceExtVersionFn && catalogSourceFn && normalizeRowsFn
+        && sourceFreeFn && loaded->catalogJsonFn) {
+        const int extVersion = sourceExtVersionFn();
+        if (extVersion >= 1 && extVersion <= ARACHNEL_PLUGIN_SOURCE_EXT_VERSION) {
+            loaded->sourceExtVersionFn = sourceExtVersionFn;
+            loaded->catalogSourceFn = catalogSourceFn;
+            loaded->normalizeRowsFn = normalizeRowsFn;
+            loaded->sourceFreeFn = sourceFreeFn;
+        } else {
+            logDiagnostic(QStringLiteral("Plugin %1: catalog source ext %2 not supported by this "
+                                         "app (max %3) - using catalog_json")
+                              .arg(id)
+                              .arg(extVersion)
+                              .arg(ARACHNEL_PLUGIN_SOURCE_EXT_VERSION));
+        }
+    }
+
     loaded->instance = createFn(dirPath.toUtf8().constData());
     loaded->destroyFn = destroyFn;
     loaded->catalogEntryLayoutTrusted = layoutTrusted;
@@ -632,6 +661,60 @@ QByteArray PluginHost::loadPluginCatalogPayload(const QString& id, QByteArray* p
     if (payloadSha)
         *payloadSha = sha;
     return bytes;
+}
+
+bool PluginHost::pluginHasCatalogSource(const QString& id) const
+{
+    const auto it = m_plugins.constFind(id);
+    return it != m_plugins.constEnd() && it.value() && it.value()->instance
+        && it.value()->catalogSourceFn && it.value()->normalizeRowsFn
+        && it.value()->sourceFreeFn;
+}
+
+QByteArray PluginHost::pluginCatalogSourceDescriptor(const QString& id) const
+{
+    if (!pluginHasCatalogSource(id))
+        return {};
+    LoadedPlugin* loaded = m_plugins.value(id);
+    char* buf = nullptr;
+    size_t len = 0;
+    int rc = -1;
+    try {
+        rc = loaded->catalogSourceFn(loaded->instance, &buf, &len);
+    } catch (...) {
+        rc = -3;
+    }
+    if (rc != 0 || !buf) {
+        if (buf)
+            loaded->sourceFreeFn(buf);
+        return {};
+    }
+    const QByteArray out(buf, static_cast<qsizetype>(len));
+    loaded->sourceFreeFn(buf);
+    return out;
+}
+
+QByteArray PluginHost::pluginNormalizeRows(const QString& id, const char* rows, size_t len) const
+{
+    if (!pluginHasCatalogSource(id))
+        return {};
+    LoadedPlugin* loaded = m_plugins.value(id);
+    char* buf = nullptr;
+    size_t outLen = 0;
+    int rc = -1;
+    try {
+        rc = loaded->normalizeRowsFn(loaded->instance, rows, len, &buf, &outLen);
+    } catch (...) {
+        rc = -3;
+    }
+    if (rc != 0 || !buf) {
+        if (buf)
+            loaded->sourceFreeFn(buf);
+        return {};
+    }
+    const QByteArray out(buf, static_cast<qsizetype>(outLen));
+    loaded->sourceFreeFn(buf);
+    return out;
 }
 
 QVector<CatalogEntry> PluginHost::loadPluginCatalog(const QString& id) const

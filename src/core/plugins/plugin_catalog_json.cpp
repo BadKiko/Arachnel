@@ -230,11 +230,25 @@ QByteArray serializePluginCatalogJson(const QVector<CatalogEntry>& entries)
 QVector<CatalogEntry> parsePluginCatalogJson(const QByteArray& json,
                                              const QString& defaultSourceId)
 {
+    return parsePluginCatalogJsonEx(json, defaultSourceId, nullptr);
+}
+
+QVector<CatalogEntry> parsePluginCatalogJsonEx(const QByteArray& json,
+                                               const QString& defaultSourceId,
+                                               QStringList* supersedes)
+{
     QVector<CatalogEntry> out;
     const QJsonDocument doc = QJsonDocument::fromJson(json);
     QJsonArray arr;
     if (doc.isObject()) {
         const QJsonObject root = doc.object();
+        if (supersedes) {
+            for (const QJsonValue& v : root.value(QStringLiteral("supersedes")).toArray()) {
+                const QString id = v.toString();
+                if (!id.isEmpty())
+                    supersedes->append(id);
+            }
+        }
         if (root.contains(QStringLiteral("entries")))
             arr = root.value(QStringLiteral("entries")).toArray();
         else if (root.contains(QStringLiteral("downloads")))
