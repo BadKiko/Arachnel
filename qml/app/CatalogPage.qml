@@ -95,6 +95,9 @@ Item {
     // Defaults false so GridView can't bind 100k rows while Loader properties
     // (enabled / browseOnly) are still at Item defaults.
     property bool catalogModelReady: false
+    // Search results arrive asynchronously: go back to the top once the new rows are in,
+    // otherwise the old scroll offset points into a different list.
+    property bool resetScrollOnResults: false
 
     readonly property bool discoveryMode: !root.browseOnly
                                          && !root.browseAllMode
@@ -241,6 +244,7 @@ Item {
             root.browseAllMode = false
         }
         Core.applyCatalogSearch(query)
+        root.resetScrollOnResults = true
         catalogContent.resetScroll()
     }
 
@@ -250,6 +254,7 @@ Item {
         root.searchQuery = q
         catalogContent.searchText = q
         Core.applyCatalogSearch(q)
+        root.resetScrollOnResults = true
         catalogContent.resetScroll()
     }
 
@@ -286,6 +291,16 @@ Item {
             }
             if (root.searchQuery.length === 0)
                 root.browseAllMode = false
+        }
+    }
+
+    Connections {
+        target: Core.catalog
+        function onBulkUpdatingChanged() {
+            if (Core.catalog.bulkUpdating || !root.resetScrollOnResults)
+                return
+            root.resetScrollOnResults = false
+            Qt.callLater(catalogContent.resetScroll)
         }
     }
 

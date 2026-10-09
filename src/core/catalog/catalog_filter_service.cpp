@@ -317,6 +317,17 @@ void CatalogFilterService::applyFilterResult(quint64 generation, QVector<int> in
     }
 }
 
+namespace {
+/** Matches that make a search level good enough that the next, looser level is not tried. */
+constexpr int kSearchEnough[] = {8, 5, 5, 0};
+/** Score of a hit that has the query's words in the title (below: acronym, typo, sound-alike). */
+constexpr int kStrongScore = 50000;
+/** This many such hits are enough to hide the weaker kinds. */
+constexpr int kStrongEnough = 3;
+/** How far below the best fuzzy hit another fuzzy hit may score and still be shown. */
+constexpr int kFuzzySpread = 4500;
+} // namespace
+
 void CatalogFilterService::applyFilter(const QString& query)
 {
     if (!m_model || !m_cache)
@@ -459,21 +470,63 @@ void CatalogFilterService::applyFilter(const QString& query)
                         indices.append(i);
                     }
                 } else {
+                    // Whole words first. Only when that finds too little is the query widened to an
+                    // unfinished last word, then typos, then sound-alikes across scripts, so a
+                    // precise query never gets noise from the looser levels.
                     scoredMatches.reserve(qMin(cacheSize, 1024));
-                    for (int i = 0; i < cacheSize; ++i) {
-                        if ((i & 0x3FF) == 0
-                            && generation != m_filterGeneration.load(std::memory_order_relaxed)) {
-                            return false;
+                    const ParsedSearchQuery baseQuery = localSnap.query;
+                    for (int level = 0; level < 4; ++level) {
+                        scoredMatches.clear();
+                        const ParsedSearchQuery levelQuery = baseQuery.withLevel(level);
+                        for (int i = 0; i < cacheSize; ++i) {
+                            if ((i & 0x3FF) == 0
+                                && generation
+                                       != m_filterGeneration.load(std::memory_order_relaxed)) {
+                                return false;
+                            }
+                            if (!rowMatches(rowsPtr->at(i), localSnap))
+                                continue;
+
+                            const int score = scoreCatalogMatch(searchPtr->at(i), cachePtr->at(i),
+                                                                levelQuery);
+                            if (score <= 0)
+                                continue;
+
+                            scoredMatches.append({i, score});
                         }
-                        if (!rowMatches(rowsPtr->at(i), localSnap))
-                            continue;
+                        if (scoredMatches.size() >= kSearchEnough[level])
+                            break;
+                    }
 
-                        const int score =
-                            scoreCatalogMatch(searchPtr->at(i), cachePtr->at(i), localSnap.query);
-                        if (score <= 0)
-                            continue;
+                    // Fuzzy hits are only worth showing when they are close to the best fuzzy hit:
+                    // a typo in a whole word beats "sort of looks like the start of another word".
+                    // With real word matches on screen, acronym / typo / sound-alike hits are noise.
+                    int strong = 0;
+                    for (const ScoredIndex& sm : scoredMatches)
+                        strong += sm.score >= kStrongScore ? 1 : 0;
+                    if (strong >= kStrongEnough) {
+                        scoredMatches.erase(
+                            std::remove_if(scoredMatches.begin(), scoredMatches.end(),
+                                           [](const ScoredIndex& sm) {
+                                               return sm.score < kStrongScore;
+                                           }),
+                            scoredMatches.end());
+                    }
 
-                        scoredMatches.append({i, score});
+                    constexpr int kFuzzyCeiling = 40000;
+                    int bestFuzzy = 0;
+                    for (const ScoredIndex& sm : scoredMatches) {
+                        if (sm.score < kFuzzyCeiling)
+                            bestFuzzy = qMax(bestFuzzy, sm.score);
+                    }
+                    if (bestFuzzy > 0) {
+                        scoredMatches.erase(
+                            std::remove_if(scoredMatches.begin(), scoredMatches.end(),
+                                           [&](const ScoredIndex& sm) {
+                                               return sm.score < kFuzzyCeiling
+                                                      && sm.score < bestFuzzy - kFuzzySpread;
+                                           }),
+                            scoredMatches.end());
                     }
                 }
                 mode = static_cast<CatalogModel::SortMode>(localSnap.sortMode);
