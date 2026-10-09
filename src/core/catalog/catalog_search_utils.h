@@ -56,6 +56,37 @@ QStringList generateTitleAcronyms(const QStringList& tokens);
  */
 QStringList resolveSearchAliases(const QString& normalizedQuery);
 
+/** True when the text has CJK / kana / Hangul / Thai characters (scripts written without spaces). */
+bool containsCjk(const QString& text);
+
+/**
+ * Edit distance (insert / delete / replace / adjacent swap) between two tokens. Returns
+ * maxDist + 1 as soon as the distance is known to exceed maxDist, so it is cheap to call on
+ * every title of a large catalog.
+ */
+int boundedEditDistance(const QString& a, const QString& b, int maxDist);
+
+/**
+ * Cross-script phonetic key of one token: Cyrillic is transliterated, then c/k/q, ph/f, ck, sh,
+ * ch... are folded and vowels dropped. "киберпанк" and "cyberpunk" both give "kbrpnk".
+ * Returns an empty string when the result would be too short to mean anything.
+ */
+QString phoneticSkeleton(const QString& token);
+
+/** One way of writing the query (as typed, keyboard-layout converted, or an alias expansion). */
+struct QueryForm {
+    QString clean;
+    QString compact;
+    QStringList tokens;
+    QVector<QStringList> variants;   // per token: itself plus roman <-> arabic numeral forms
+    QVector<bool> isStop;            // "the", "of"... may be missing from the title
+    QVector<bool> isCjk;             // matched as a substring, there are no word boundaries
+    QStringList skeletons;           // phoneticSkeleton() per token
+
+    bool isEmpty() const { return tokens.isEmpty(); }
+    static QueryForm build(const QString& text);
+};
+
 /** Pre-parsed query structures reused across the entire catalog search scan. */
 struct ParsedSearchQuery {
     QString rawQuery;
@@ -72,10 +103,30 @@ struct ParsedSearchQuery {
     QStringList aliasExpansions;
     QVector<QString> aliasCompacts;
 
+    QueryForm main;
+    QueryForm layout;
+    QVector<QueryForm> aliases;
+
+    /**
+     * 0 = whole words only, every query word must be present.
+     * 1 = also an unfinished last word ("witch" -> "witcher").
+     * 2 = also tolerate typos.
+     * 3 = also match by sound across scripts (transliteration).
+     * The caller starts at 0 and only widens when too few results came back, so a precise
+     * query never gets noise from the looser levels.
+     */
+    int level = 0;
+
     bool isNumericOnly = false;
     bool isEmpty = true;
 
     static ParsedSearchQuery parse(const QString& query);
+    ParsedSearchQuery withLevel(int newLevel) const
+    {
+        ParsedSearchQuery copy = *this;
+        copy.level = newLevel;
+        return copy;
+    }
 };
 
 /** Precomputed search data stored per entry in the SoA filter table. */
