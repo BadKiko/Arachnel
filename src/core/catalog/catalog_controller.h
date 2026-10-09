@@ -78,6 +78,13 @@ public:
     /** Block until in-flight plugin->catalog() futures finish (call before unloading DLLs). */
     void waitForInFlightPluginCatalogLoads();
     bool hasInFlightPluginCatalogLoads() const;
+    /**
+     * Non-blocking counterpart of waitForInFlightPluginCatalogLoads(): stops the queue and
+     * detaches every running plugin catalog load so its result is dropped, but doesn't wait.
+     * Poll hasDrainingPluginCatalogLoads() until it is false before unloading the plugin.
+     */
+    void detachInFlightPluginCatalogLoads();
+    bool hasDrainingPluginCatalogLoads();
 
     /** Install offers for a merged catalog entry (same steamAppId / title across sources). */
     QVariantList installOffersForEntry(const QString& entryId) const;
@@ -140,6 +147,7 @@ private:
     bool m_catalogHttpLoadActive = false;
     quint64 m_mergeGeneration = 0;
     QList<QObject*> m_inFlightPluginCatalogWatchers;
+    QList<QObject*> m_drainingPluginCatalogWatchers;
 };
 
 } // namespace arachnel::core

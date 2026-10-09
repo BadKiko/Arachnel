@@ -4351,6 +4351,10 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <source>Installing plugins…</source>
         <translation>Установка плагинов…</translation>
     </message>
+    <message>
+        <source>Removing plugin…</source>
+        <translation>Удаление плагина…</translation>
+    </message>
 </context>
 <context>
     <name>ProtonRequiredDialog</name>

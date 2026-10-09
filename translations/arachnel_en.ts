@@ -4343,6 +4343,10 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <source>Installing plugins…</source>
         <translation>Installing plugins…</translation>
     </message>
+    <message>
+        <source>Removing plugin…</source>
+        <translation>Removing plugin…</translation>
+    </message>
 </context>
 <context>
     <name>ProtonRequiredDialog</name>

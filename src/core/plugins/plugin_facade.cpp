@@ -2,6 +2,7 @@
 
 #include "plugin_version.h"
 
+#include <QElapsedTimer>
 #include <QEventLoop>
 #include <QSet>
 #include <QTimer>
@@ -171,20 +172,51 @@ bool CoreController::installPluginArachInternal(const QUrl& fileUrl, bool quiet)
 
 bool CoreController::uninstallPlugin(const QString& pluginId)
 {
-    if (!m_pluginHost)
+    if (!m_pluginHost || m_pluginRemoveBusy)
         return false;
 
-    const bool ok = m_pluginHost->uninstallPlugin(pluginId);
-    m_lastPluginError = ok ? QString() : m_pluginHost->lastError();
-    emit lastPluginErrorChanged();
-    if (ok) {
-        showNotice(QCoreApplication::translate("Core", "Plugin removed"));
-        // pluginsChanged already emitted from PluginHost::uninstallPlugin.
-    } else {
-        showNotice(QCoreApplication::translate("Core", "Could not remove plugin: %1")
-                       .arg(m_lastPluginError));
-    }
-    return ok;
+    // Unloading the library must wait for every catalog load / install worker that is still
+    // running code from it. Waiting on the GUI thread (what PluginHost::uninstallPlugin does
+    // through its before-unload hook) froze the whole window for as long as a catalog parse
+    // or download lasted - several seconds on a fresh start. So: stop new work, let the
+    // running work drain while the event loop keeps running, then do the removal.
+    m_pluginRemoveBusy = true;
+    emit pluginRemoveBusyChanged();
+    m_pluginCallsBlocked = true;
+    if (m_catalogController)
+        m_catalogController->detachInFlightPluginCatalogLoads();
+
+    auto* poll = new QTimer(this);
+    poll->setInterval(50);
+    auto* waited = new QElapsedTimer;
+    waited->start();
+    connect(poll, &QTimer::timeout, this, [this, poll, waited, pluginId]() {
+        const bool busy = hasInFlightCatalogAddonEnrich() || m_pluginHost->hasInFlightPluginWorkers()
+                          || (m_catalogController && m_catalogController->hasDrainingPluginCatalogLoads());
+        // Give up waiting after 30 s rather than leaving the overlay up forever; the removal
+        // below still waits for whatever is left, as it always did.
+        if (busy && waited->elapsed() < 30000)
+            return;
+        poll->stop();
+        poll->deleteLater();
+        delete waited;
+
+        const bool ok = m_pluginHost->uninstallPlugin(pluginId);
+        m_lastPluginError = ok ? QString() : m_pluginHost->lastError();
+        emit lastPluginErrorChanged();
+        if (ok) {
+            showNotice(QCoreApplication::translate("Core", "Plugin removed"));
+            // pluginsChanged already emitted from PluginHost::uninstallPlugin.
+        } else {
+            m_pluginCallsBlocked = false;
+            showNotice(QCoreApplication::translate("Core", "Could not remove plugin: %1")
+                           .arg(m_lastPluginError));
+        }
+        m_pluginRemoveBusy = false;
+        emit pluginRemoveBusyChanged();
+    });
+    poll->start();
+    return true;
 }
 
 void CoreController::refreshOfficialPlugins()
