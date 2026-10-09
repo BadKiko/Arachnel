@@ -11,8 +11,13 @@ loading, `.arach` package installation and the stable source-plugin ABI.
 - `PluginCatalogService` downloads entries from the official plugin catalog.
 - `SourcePluginModel` exposes configured and loaded source information to QML.
 
-The host currently speaks API v3 and accepts API v2–v3. API v3 supports the
-`owns_download` capability, where a plugin reports download/install progress.
+API v3 added the `owns_download` capability, where a plugin reports download/install progress.
+
+The host speaks API v4 and accepts API v2-v4. On top of that, plugins may export the optional
+**catalog source extension** (`plugin_api.h`, `plugin_source_sync.*`): the host downloads and caches
+the raw feed and the plugin only normalizes rows. It is additive - no `apiVersion` / `minArachnel`
+change - and `arachnel_plugin_catalog_json` stays the universal fallback, so plugin and launcher
+updates never have to happen in lockstep.
 
 ## Boundaries
 

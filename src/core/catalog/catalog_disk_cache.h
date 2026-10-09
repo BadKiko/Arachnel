@@ -23,6 +23,10 @@ QByteArray payloadFingerprint(const QByteArray& payload);
 QByteArray storedPayloadKey(const QString& sourceId);
 /** Rewrites only the key line of .meta (e.g. after the fingerprint format changed). */
 void setStoredPayloadKey(const QString& sourceId, const QByteArray& key);
+/** Writes only .meta (key, etag, saved-at) for sources whose raw feed lives in a sidecar file. */
+void saveMeta(const QString& sourceId, const QByteArray& key, const QByteArray& etag);
+/** Path of an extra per-source file next to the payload, e.g. suffix ".src". */
+QString sidecarPath(const QString& sourceId, const QString& suffix);
 void remove(const QString& sourceId);
 
 } // namespace CatalogDiskCache

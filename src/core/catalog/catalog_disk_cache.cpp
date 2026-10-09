@@ -7,6 +7,7 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QSaveFile>
 #include <QStandardPaths>
 
 namespace arachnel::core {
@@ -100,6 +101,28 @@ void setStoredPayloadKey(const QString& sourceId, const QByteArray& key)
     lines[0] = key;
     if (meta.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text))
         meta.write(lines.join('\n'));
+}
+
+void saveMeta(const QString& sourceId, const QByteArray& key, const QByteArray& etag)
+{
+    if (sourceId.isEmpty())
+        return;
+    QDir().mkpath(cacheDir());
+    QSaveFile meta(metaFilePath(sourceId));
+    if (!meta.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text))
+        return;
+    meta.write(key);
+    meta.write("\n");
+    meta.write(etag);
+    meta.write("\n");
+    meta.write(QByteArray::number(QDateTime::currentMSecsSinceEpoch()));
+    meta.write("\n");
+    meta.commit();
+}
+
+QString sidecarPath(const QString& sourceId, const QString& suffix)
+{
+    return cacheDir() + QLatin1Char('/') + safeSourceFileName(sourceId) + suffix;
 }
 
 bool savePayload(const QString& sourceId, const QByteArray& payload, const QByteArray& etag,
@@ -198,6 +221,7 @@ void remove(const QString& sourceId)
         return;
     QFile::remove(payloadFilePath(sourceId));
     QFile::remove(metaFilePath(sourceId));
+    QFile::remove(sidecarPath(sourceId, QStringLiteral(".src")));
 }
 
 } // namespace CatalogDiskCache
