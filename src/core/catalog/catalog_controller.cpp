@@ -1291,6 +1291,39 @@ void CatalogController::waitForInFlightPluginCatalogLoads()
     }
 }
 
+void CatalogController::detachInFlightPluginCatalogLoads()
+{
+    m_catalogPrefetchQueue.clear();
+    const QList<QObject*> watchers = m_inFlightPluginCatalogWatchers;
+    m_inFlightPluginCatalogWatchers.clear();
+    for (QObject* obj : watchers) {
+        QObject::disconnect(obj, nullptr, this, nullptr);
+        m_drainingPluginCatalogWatchers.append(obj);
+    }
+    if (!m_loadingSourceIds.isEmpty()) {
+        m_loadingSourceIds.clear();
+        m_catalogHttpLoadActive = false;
+        updateCatalogLoadingState();
+    }
+}
+
+bool CatalogController::hasDrainingPluginCatalogLoads()
+{
+    bool running = false;
+    for (auto it = m_drainingPluginCatalogWatchers.begin();
+         it != m_drainingPluginCatalogWatchers.end();) {
+        auto* base = dynamic_cast<QFutureWatcherBase*>(*it);
+        if (!base || base->isFinished()) {
+            (*it)->deleteLater();
+            it = m_drainingPluginCatalogWatchers.erase(it);
+            continue;
+        }
+        running = true;
+        ++it;
+    }
+    return running;
+}
+
 bool CatalogController::hasInFlightPluginCatalogLoads() const
 {
     return !m_inFlightPluginCatalogWatchers.isEmpty();

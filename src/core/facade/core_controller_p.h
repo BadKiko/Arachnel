@@ -108,6 +108,7 @@
     bool m_autoUpdatingOfficialPlugins = false;
     int m_autoUpdatePluginSuccessCount = 0;
     bool m_pluginInstallBusy = false;
+    bool m_pluginRemoveBusy = false;
     QVector<CatalogEntry> m_catalogCache;
     QReadWriteLock m_catalogCacheLock;
     QHash<QString, int> m_catalogIdToCacheIndex;

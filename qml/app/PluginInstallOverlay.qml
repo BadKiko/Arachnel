@@ -8,7 +8,7 @@ Item {
     z: 2900
 
     readonly property bool busy: (Core.pluginCatalog && Core.pluginCatalog.installing)
-                                 || Core.pluginInstallBusy
+                                 || Core.pluginInstallBusy || Core.pluginRemoveBusy
 
     visible: busy
 
@@ -42,8 +42,9 @@ Item {
 
                 MD.Label {
                     Layout.fillWidth: true
-                    text: Core.pluginAutoUpdating ? qsTr("Updating plugins…")
-                                                  : qsTr("Installing plugins…")
+                    text: Core.pluginRemoveBusy ? qsTr("Removing plugin…")
+                          : Core.pluginAutoUpdating ? qsTr("Updating plugins…")
+                                                    : qsTr("Installing plugins…")
                     typescale: MD.Token.typescale.title_medium
                     wrapMode: Text.WordWrap
                     horizontalAlignment: Text.AlignHCenter
