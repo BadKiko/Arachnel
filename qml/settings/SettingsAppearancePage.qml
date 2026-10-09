@@ -74,6 +74,31 @@ Flickable {
             Item { Layout.fillWidth: true }
         }
 
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.leftMargin: contentMargin
+            Layout.rightMargin: contentMargin
+            spacing: MD.Token.spacing.medium
+
+            MD.Label {
+                text: qsTr("Reduce motion")
+                color: MD.Token.color.on_surface_variant
+                typescale: MD.Token.typescale.label_large
+            }
+
+            MD.Switch {
+                id: reduceMotionSwitch
+                checked: Appearance.reduceMotion
+                onToggled: {
+                    if (root.applying)
+                        return
+                    Appearance.setReduceMotion(checked)
+                }
+            }
+
+            Item { Layout.fillWidth: true }
+        }
+
         MD.Label {
             Layout.fillWidth: true
             Layout.leftMargin: contentMargin

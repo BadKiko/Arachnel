@@ -265,7 +265,7 @@ MD.ApplicationWindow {
     ]
 
     // Main rail tabs stay mounted after first open; keep the crossfade snappy.
-    readonly property int mainTabDuration: MD.Token.duration.short2
+    readonly property int mainTabDuration: AppMotion.fast
 
     Component {
         id: mainPagesComponent
@@ -351,7 +351,7 @@ MD.ApplicationWindow {
                 Behavior on opacity {
                     NumberAnimation {
                         duration: root.mainTabDuration
-                        easing: MD.Token.easing.emphasized_decelerate
+                        easing: AppMotion.emphasizedDecelerate
                     }
                 }
             }
@@ -385,7 +385,7 @@ MD.ApplicationWindow {
                 Behavior on opacity {
                     NumberAnimation {
                         duration: root.mainTabDuration
-                        easing: MD.Token.easing.emphasized_decelerate
+                        easing: AppMotion.emphasizedDecelerate
                     }
                 }
             }
@@ -414,7 +414,7 @@ MD.ApplicationWindow {
                 Behavior on opacity {
                     NumberAnimation {
                         duration: root.mainTabDuration
-                        easing: MD.Token.easing.emphasized_decelerate
+                        easing: AppMotion.emphasizedDecelerate
                     }
                 }
             }
@@ -429,7 +429,7 @@ MD.ApplicationWindow {
                 Behavior on opacity {
                     NumberAnimation {
                         duration: root.mainTabDuration
-                        easing: MD.Token.easing.emphasized_decelerate
+                        easing: AppMotion.emphasizedDecelerate
                     }
                 }
             }
@@ -444,7 +444,7 @@ MD.ApplicationWindow {
                 Behavior on opacity {
                     NumberAnimation {
                         duration: root.mainTabDuration
-                        easing: MD.Token.easing.emphasized_decelerate
+                        easing: AppMotion.emphasizedDecelerate
                     }
                 }
             }
@@ -459,7 +459,7 @@ MD.ApplicationWindow {
                 Behavior on opacity {
                     NumberAnimation {
                         duration: root.mainTabDuration
-                        easing: MD.Token.easing.emphasized_decelerate
+                        easing: AppMotion.emphasizedDecelerate
                     }
                 }
             }

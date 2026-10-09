@@ -106,8 +106,8 @@ Item {
     Behavior on scale {
         enabled: root.hoverScaleEnabled
         NumberAnimation {
-            duration: MD.Token.duration.short4
-            easing: MD.Token.easing.emphasized_decelerate
+            duration: AppMotion.short
+            easing: AppMotion.emphasizedDecelerate
         }
     }
 
@@ -180,7 +180,7 @@ Item {
                         from: -shimmerBand.width
                         to: placeholder.width + shimmerBand.width
                         duration: 1400
-                        easing.type: Easing.OutCubic
+                        easing: AppMotion.standardDecelerate
                     }
                     PauseAnimation { duration: 280 }
                 }
@@ -225,8 +225,8 @@ Item {
 
         Behavior on opacity {
             NumberAnimation {
-                duration: MD.Token.duration.short4
-                easing.type: Easing.OutCubic
+                duration: AppMotion.short
+                easing: AppMotion.standardDecelerate
             }
         }
     }
@@ -292,8 +292,8 @@ Item {
 
         Behavior on opacity {
             NumberAnimation {
-                duration: MD.Token.duration.short3
-                easing: MD.Token.easing.emphasized_decelerate
+                duration: AppMotion.quick
+                easing: AppMotion.emphasizedDecelerate
             }
         }
     }

@@ -74,8 +74,8 @@ Column {
 
         Behavior on contentX {
             NumberAnimation {
-                duration: MD.Token.duration.medium2
-                easing: MD.Token.easing.emphasized_decelerate
+                duration: AppMotion.medium
+                easing: AppMotion.emphasizedDecelerate
             }
         }
 

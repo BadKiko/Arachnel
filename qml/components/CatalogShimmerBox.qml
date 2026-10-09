@@ -59,7 +59,7 @@ Item {
                         from: -shimmerBand.width
                         to: shimmerClip.width + shimmerBand.width
                         duration: 1500
-                        easing.type: Easing.InOutCubic
+                        easing: AppMotion.standard
                     }
                     PauseAnimation { duration: 320 }
                 }

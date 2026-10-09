@@ -39,8 +39,8 @@ Item {
 
     Behavior on scrubberTopMargin {
         NumberAnimation {
-            duration: MD.Token.duration.medium2
-            easing.type: Easing.OutCubic
+            duration: AppMotion.medium
+            easing: AppMotion.standardDecelerate
         }
     }
 
@@ -205,7 +205,7 @@ Item {
     NumberAnimation {
         id: indexScrollAnim
         property: "contentY"
-        easing.type: Easing.OutCubic
+        easing: AppMotion.standardDecelerate
         onStopped: root.updateScrubberMode()
     }
 

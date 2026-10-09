@@ -6,7 +6,7 @@ Transition {
     OpacityAnimator {
         from: 1.0
         to: 0.0
-        duration: MD.Token.duration.short3
-        easing: MD.Token.easing.emphasized_accelerate
+        duration: AppMotion.quick
+        easing: AppMotion.emphasizedAccelerate
     }
 }

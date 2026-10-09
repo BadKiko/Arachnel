@@ -22,8 +22,8 @@ Rectangle {
 
     Behavior on opacity {
         NumberAnimation {
-            duration: MD.Token.duration.short4
-            easing: MD.Token.easing.emphasized_decelerate
+            duration: AppMotion.short
+            easing: AppMotion.emphasizedDecelerate
         }
     }
 

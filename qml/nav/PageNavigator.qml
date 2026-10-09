@@ -9,8 +9,8 @@ MD.StackView {
     id: root
 
     readonly property bool canPop: depth > 1
-    readonly property int enterDuration: MD.Token.duration.medium4
-    readonly property int exitDuration: MD.Token.duration.short3
+    readonly property int enterDuration: AppMotion.long
+    readonly property int exitDuration: AppMotion.quick
 
     clip: true
 

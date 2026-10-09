@@ -4561,6 +4561,10 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <source>Help translate</source>
         <translation>Help translate</translation>
     </message>
+    <message>
+        <source>Reduce motion</source>
+        <translation>Reduce motion</translation>
+    </message>
 </context>
 <context>
     <name>SettingsFriendsPage</name>
