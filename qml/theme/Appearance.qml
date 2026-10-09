@@ -27,6 +27,9 @@ Item {
     readonly property string accentColor: store.accentColor
     readonly property bool reduceMotion: store.reduceMotion
 
+    // One page gutter for every top-level page.
+    readonly property int pageMargin: MD.Token.spacing.large
+
     function apply() {
         if (store.accentColor === "#D4D4D4")
             store.accentColor = root.defaultAccentColor

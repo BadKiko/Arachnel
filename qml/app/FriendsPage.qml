@@ -10,7 +10,7 @@ Item {
     signal openGame(string gameId)
     signal openSettings()
 
-    readonly property int pageMargin: MD.Token.spacing.extra_large
+    readonly property int pageMargin: Appearance.pageMargin
     readonly property int cardRadius: MD.Token.shape.corner.extra_large
     readonly property bool emptyState: Core.social.friends.count === 0
 

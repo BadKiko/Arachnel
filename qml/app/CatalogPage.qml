@@ -14,7 +14,7 @@ Item {
     readonly property int cardWidth: 160
     readonly property int cardHeight: 268
     readonly property int listRowHeight: 80
-    readonly property int pageMargin: MD.Token.spacing.large
+    readonly property int pageMargin: Appearance.pageMargin
     readonly property int cardRadius: MD.Token.shape.corner.extra_large
     /** Rail width forwarded so screenshot peeks don't render over the nav rail. */
     property real peekLeftEdge: 0

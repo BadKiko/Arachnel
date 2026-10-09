@@ -11,7 +11,7 @@ Item {
     readonly property int gridSpacing: MD.Token.spacing.medium
     readonly property int metaHeight: 48
     readonly property bool libraryEmpty: Core.library.count === 0
-    readonly property int pageMargin: MD.Token.spacing.medium
+    readonly property int pageMargin: Appearance.pageMargin
     readonly property int cardRadius: MD.Token.shape.corner.extra_large
 
     property string selectedSourceId: Core.sources.firstEnabledId

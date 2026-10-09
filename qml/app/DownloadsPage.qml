@@ -8,7 +8,7 @@ import Qcm.Material as MD
 Item {
     id: root
 
-    readonly property int pageMargin: MD.Token.spacing.large
+    readonly property int pageMargin: Appearance.pageMargin
     property var expandedGroups: ({})
     readonly property bool downloadsEmpty: groupsModel.count === 0
 
@@ -99,56 +99,12 @@ Item {
     signal openGame(string gameId)
     signal openCatalog()
 
-    // ── Empty (как «Нет игр» в каталоге) ─────────────────────────────────────
-    Item {
-        anchors.fill: parent
-        opacity: root.downloadsEmpty ? 1 : 0
-        visible: opacity > 0
-        Behavior on opacity {
-            NumberAnimation {
-                duration: AppMotion.short
-                easing: AppMotion.standard
-            }
-        }
-        ColumnLayout {
-            anchors.centerIn: parent
-            spacing: MD.Token.spacing.medium
-            width: Math.min(parent.width - pageMargin * 2, 420)
-
-            SpiderWebMark {
-                Layout.alignment: Qt.AlignHCenter
-                Layout.preferredWidth: 160
-                Layout.preferredHeight: 160
-                width: 160
-                height: 160
-                strokeColor: MD.Token.color.primary
-                strokeWidth: 2.5
-                opacity: 0.35
-            }
-
-            MD.Label {
-                Layout.fillWidth: true
-                horizontalAlignment: Text.AlignHCenter
-                text: qsTr("No downloads")
-                typescale: MD.Token.typescale.title_large
-            }
-
-            MD.Label {
-                Layout.fillWidth: true
-                horizontalAlignment: Text.AlignHCenter
-                text: Messages.downloadsEmptyHint
-                color: MD.Token.color.on_surface_variant
-                typescale: MD.Token.typescale.body_medium
-                wrapMode: Text.WordWrap
-            }
-
-            MD.Button {
-                Layout.alignment: Qt.AlignHCenter
-                text: qsTr("Open catalog")
-                mdState.type: MD.Enum.BtFilled
-                onClicked: root.openCatalog()
-            }
-        }
+    EmptyState {
+        shown: root.downloadsEmpty
+        title: qsTr("No downloads")
+        message: Messages.downloadsEmptyHint
+        actionText: qsTr("Open catalog")
+        onActionTriggered: root.openCatalog()
     }
 
     // ── Список загрузок ────────────────────────────────────────────────────────
@@ -163,38 +119,18 @@ Item {
                 easing: AppMotion.standard
             }
         }
-        RowLayout {
-            Layout.fillWidth: true
-            Layout.leftMargin: pageMargin
-            Layout.rightMargin: pageMargin
-            Layout.topMargin: MD.Token.spacing.large
-            spacing: MD.Token.spacing.medium
-
-            ColumnLayout {
-                Layout.fillWidth: true
-                spacing: 2
-
-                MD.Label {
-                    text: qsTr("Downloads")
-                    typescale: MD.Token.typescale.headline_medium
-                }
-
-                MD.Label {
-                    text: {
-                        const active = Core.jobs.activeCount
-                        const finished = root.countFinished()
-                        if (active > 0 && finished > 0)
-                            return qsTr("%1 active · %2 finished").arg(active).arg(finished)
-                        if (active > 0)
-                            return qsTr("%1 active · will resume after restart").arg(active)
-                        if (finished > 0)
-                            return qsTr("%1 finished").arg(finished)
-                        return qsTr("No downloads yet")
-                    }
-                    color: MD.Token.color.on_surface_variant
-                    typescale: MD.Token.typescale.body_medium
-                    elide: Text.ElideRight
-                }
+        PageHeader {
+            title: qsTr("Downloads")
+            subtitle: {
+                const active = Core.jobs.activeCount
+                const finished = root.countFinished()
+                if (active > 0 && finished > 0)
+                    return qsTr("%1 active · %2 finished").arg(active).arg(finished)
+                if (active > 0)
+                    return qsTr("%1 active · will resume after restart").arg(active)
+                if (finished > 0)
+                    return qsTr("%1 finished").arg(finished)
+                return qsTr("No downloads yet")
             }
 
             MD.Button {
