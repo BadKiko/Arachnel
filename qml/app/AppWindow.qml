@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
+import QtQuick.Shapes
 import QtQuick.Window
 
 import Arachnel.Core 1.0
@@ -545,10 +546,58 @@ MD.ApplicationWindow {
                         anchors.fill: parent
                         clip: true
 
-                        layer.enabled: true
-                        layer.effect: MD.RoundClip {
-                            corners: mainPane.corners
-                            size: Qt.vector2d(mainPaneClip.width, mainPaneClip.height)
+                        // Rounded corners without an offscreen layer. A layer + RoundClip over the
+                        // whole pane re-rendered every page into a texture on every frame (each
+                        // scrolled pixel). Instead the four corner gaps are covered with the window
+                        // colour: a frame-shaped path (outer rect minus rounded rect, odd-even fill).
+                        Shape {
+                            id: cornerMask
+                            anchors.fill: parent
+                            z: 1000
+                            preferredRendererType: Shape.CurveRenderer
+                            readonly property real r: Math.min(mainPane.radius, width / 2, height / 2)
+
+                            ShapePath {
+                                fillRule: ShapePath.OddEvenFill
+                                fillColor: root.color
+                                strokeColor: "transparent"
+                                strokeWidth: 0
+
+                                // outer rectangle
+                                startX: 0
+                                startY: 0
+                                PathLine { x: cornerMask.width; y: 0 }
+                                PathLine { x: cornerMask.width; y: cornerMask.height }
+                                PathLine { x: 0; y: cornerMask.height }
+                                PathLine { x: 0; y: 0 }
+
+                                // inner rounded rectangle
+                                PathMove { x: cornerMask.r; y: 0 }
+                                PathLine { x: cornerMask.width - cornerMask.r; y: 0 }
+                                PathArc {
+                                    x: cornerMask.width; y: cornerMask.r
+                                    radiusX: cornerMask.r; radiusY: cornerMask.r
+                                    direction: PathArc.Clockwise
+                                }
+                                PathLine { x: cornerMask.width; y: cornerMask.height - cornerMask.r }
+                                PathArc {
+                                    x: cornerMask.width - cornerMask.r; y: cornerMask.height
+                                    radiusX: cornerMask.r; radiusY: cornerMask.r
+                                    direction: PathArc.Clockwise
+                                }
+                                PathLine { x: cornerMask.r; y: cornerMask.height }
+                                PathArc {
+                                    x: 0; y: cornerMask.height - cornerMask.r
+                                    radiusX: cornerMask.r; radiusY: cornerMask.r
+                                    direction: PathArc.Clockwise
+                                }
+                                PathLine { x: 0; y: cornerMask.r }
+                                PathArc {
+                                    x: cornerMask.r; y: 0
+                                    radiusX: cornerMask.r; radiusY: cornerMask.r
+                                    direction: PathArc.Clockwise
+                                }
+                            }
                         }
 
                         ColumnLayout {
