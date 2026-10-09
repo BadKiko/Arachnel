@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
+import QtQuick.Shapes
 import QtQuick.Window
 
 import Arachnel.Core 1.0
@@ -184,14 +185,14 @@ MD.ApplicationWindow {
     // Hang watchdog writes a pending report while the app is still alive.
     Timer {
         interval: 4000
-        running: true
+        running: root.active
         repeat: true
         onTriggered: {
             if (!Core.hasPendingCrashReport())
                 return
             if (crashReportDialog.opened || crashReportDialog.visible)
                 return
-            if (onboardingSheet.visible)
+            if (onboardingSheet.item && onboardingSheet.item.visible)
                 return
             crashReportDialog.open()
         }
@@ -341,6 +342,8 @@ MD.ApplicationWindow {
             LibraryPage {
                 anchors.fill: parent
                 opacity: mainPages.pageIndex === 0 ? 1 : 0
+                // Fully faded-out tabs stop painting (they stay mounted for instant switches).
+                visible: opacity > 0
                 enabled: mainPages.pageIndex === 0 && opacity > 0.99
                 onOpenGame: function (id) { root.openGameDetails(id, false) }
                 onOpenCatalog: root.goToPage(2)
@@ -422,6 +425,8 @@ MD.ApplicationWindow {
             BookmarksPage {
                 anchors.fill: parent
                 opacity: mainPages.pageIndex === 4 ? 1 : 0
+                // Fully faded-out tabs stop painting (they stay mounted for instant switches).
+                visible: opacity > 0
                 enabled: mainPages.pageIndex === 4 && opacity > 0.99
                 onOpenGame: function (id) { root.openGameDetails(id, true) }
                 onOpenCatalog: root.goToPage(2)
@@ -437,6 +442,8 @@ MD.ApplicationWindow {
             DownloadsPage {
                 anchors.fill: parent
                 opacity: mainPages.pageIndex === 5 ? 1 : 0
+                // Fully faded-out tabs stop painting (they stay mounted for instant switches).
+                visible: opacity > 0
                 enabled: mainPages.pageIndex === 5 && opacity > 0.99
                 onOpenGame: function (id) { root.openGameDetails(id, false) }
                 onOpenCatalog: root.goToPage(2)
@@ -452,6 +459,8 @@ MD.ApplicationWindow {
             FriendsPage {
                 anchors.fill: parent
                 opacity: mainPages.pageIndex === 3 ? 1 : 0
+                // Fully faded-out tabs stop painting (they stay mounted for instant switches).
+                visible: opacity > 0
                 enabled: mainPages.pageIndex === 3 && opacity > 0.99
                 onOpenGame: function (id) { root.openGameDetails(id, true) }
                 onOpenSettings: settingsSheet.openFriends()
@@ -537,10 +546,58 @@ MD.ApplicationWindow {
                         anchors.fill: parent
                         clip: true
 
-                        layer.enabled: true
-                        layer.effect: MD.RoundClip {
-                            corners: mainPane.corners
-                            size: Qt.vector2d(mainPaneClip.width, mainPaneClip.height)
+                        // Rounded corners without an offscreen layer. A layer + RoundClip over the
+                        // whole pane re-rendered every page into a texture on every frame (each
+                        // scrolled pixel). Instead the four corner gaps are covered with the window
+                        // colour: a frame-shaped path (outer rect minus rounded rect, odd-even fill).
+                        Shape {
+                            id: cornerMask
+                            anchors.fill: parent
+                            z: 1000
+                            preferredRendererType: Shape.CurveRenderer
+                            readonly property real r: Math.min(mainPane.radius, width / 2, height / 2)
+
+                            ShapePath {
+                                fillRule: ShapePath.OddEvenFill
+                                fillColor: root.color
+                                strokeColor: "transparent"
+                                strokeWidth: 0
+
+                                // outer rectangle
+                                startX: 0
+                                startY: 0
+                                PathLine { x: cornerMask.width; y: 0 }
+                                PathLine { x: cornerMask.width; y: cornerMask.height }
+                                PathLine { x: 0; y: cornerMask.height }
+                                PathLine { x: 0; y: 0 }
+
+                                // inner rounded rectangle
+                                PathMove { x: cornerMask.r; y: 0 }
+                                PathLine { x: cornerMask.width - cornerMask.r; y: 0 }
+                                PathArc {
+                                    x: cornerMask.width; y: cornerMask.r
+                                    radiusX: cornerMask.r; radiusY: cornerMask.r
+                                    direction: PathArc.Clockwise
+                                }
+                                PathLine { x: cornerMask.width; y: cornerMask.height - cornerMask.r }
+                                PathArc {
+                                    x: cornerMask.width - cornerMask.r; y: cornerMask.height
+                                    radiusX: cornerMask.r; radiusY: cornerMask.r
+                                    direction: PathArc.Clockwise
+                                }
+                                PathLine { x: cornerMask.r; y: cornerMask.height }
+                                PathArc {
+                                    x: 0; y: cornerMask.height - cornerMask.r
+                                    radiusX: cornerMask.r; radiusY: cornerMask.r
+                                    direction: PathArc.Clockwise
+                                }
+                                PathLine { x: 0; y: cornerMask.r }
+                                PathArc {
+                                    x: cornerMask.r; y: 0
+                                    radiusX: cornerMask.r; radiusY: cornerMask.r
+                                    direction: PathArc.Clockwise
+                                }
+                            }
                         }
 
                         ColumnLayout {
@@ -592,28 +649,58 @@ MD.ApplicationWindow {
         z: 1000
     }
 
-    SettingsSheet {
+    // Heavy, rarely used sheets are created on first use. Each Loader exposes the same open*()
+    // functions as the sheet it wraps, so call sites stay unchanged.
+    Loader {
         id: settingsSheet
         anchors.fill: parent
+        active: false
+        sourceComponent: Component {
+            SettingsSheet {
+                anchors.fill: parent
+            }
+        }
+        function openSettings() { active = true; item.openSettings() }
+        function openPlugins() { active = true; item.openPlugins() }
+        function openSources(createSource) { active = true; item.openSources(createSource) }
+        function openFriends() { active = true; item.openFriends() }
+        function openLaunch() { active = true; item.openLaunch() }
     }
 
-    OnboardingSheet {
+    Loader {
         id: onboardingSheet
         anchors.fill: parent
-        onFinished: {
-            if (Core.hasPendingCrashReport())
-                Qt.callLater(function () { crashReportDialog.open() })
+        active: false
+        sourceComponent: Component {
+            OnboardingSheet {
+                anchors.fill: parent
+                onFinished: {
+                    if (Core.hasPendingCrashReport())
+                        Qt.callLater(function () { crashReportDialog.open() })
+                }
+            }
         }
+        function openWizard() { active = true; item.openWizard() }
     }
 
-    InstallLocationSheet {
+    Loader {
         id: installLocationSheet
         anchors.fill: parent
-        installEntry: function (entryId, libraryId, addonIds, sourceId) {
-            root.beginCatalogInstall(entryId, libraryId, addonIds, sourceId)
+        active: false
+        sourceComponent: Component {
+            InstallLocationSheet {
+                anchors.fill: parent
+                installEntry: function (entryId, libraryId, addonIds, sourceId) {
+                    root.beginCatalogInstall(entryId, libraryId, addonIds, sourceId)
+                }
+                onBackToAddons: function (entryId, title, selectedAddonIds) {
+                    installAddonSheet.openForEntry(entryId, title)
+                }
+            }
         }
-        onBackToAddons: function (entryId, title, selectedAddonIds) {
-            installAddonSheet.openForEntry(entryId, title)
+        function openForEntry(entryId, title, selectedAddonIds, fromPicker, sourceId) {
+            active = true
+            item.openForEntry(entryId, title, selectedAddonIds, fromPicker, sourceId)
         }
     }
 
@@ -635,22 +722,32 @@ MD.ApplicationWindow {
         }
     }
 
-    InstallAddonSelectionSheet {
+    Loader {
         id: installAddonSheet
         anchors.fill: parent
-        onConfirmed: function (entryId, title, selectedAddonIds) {
-            const page = pageStack.currentItem
-            if (page && typeof page.afterAddonsSelected === "function")
-                page.afterAddonsSelected(selectedAddonIds)
-            else if (Core.needsInstallLocationChoice()) {
-                const catalogAddons = Core.catalog.addonsFor(entryId)
-                const fromPicker = (selectedAddonIds && selectedAddonIds.length > 0)
-                                   || (catalogAddons && catalogAddons.length > 0)
-                const details = Core.entryDetails(entryId)
-                installLocationSheet.openForEntry(entryId, title, selectedAddonIds, fromPicker,
-                                                  details.sourceId || "")
-            } else
-                root.beginCatalogInstall(entryId, "", selectedAddonIds)
+        active: false
+        sourceComponent: Component {
+            InstallAddonSelectionSheet {
+                anchors.fill: parent
+                onConfirmed: function (entryId, title, selectedAddonIds) {
+                    const page = pageStack.currentItem
+                    if (page && typeof page.afterAddonsSelected === "function")
+                        page.afterAddonsSelected(selectedAddonIds)
+                    else if (Core.needsInstallLocationChoice()) {
+                        const catalogAddons = Core.catalog.addonsFor(entryId)
+                        const fromPicker = (selectedAddonIds && selectedAddonIds.length > 0)
+                                           || (catalogAddons && catalogAddons.length > 0)
+                        const details = Core.entryDetails(entryId)
+                        installLocationSheet.openForEntry(entryId, title, selectedAddonIds, fromPicker,
+                                                          details.sourceId || "")
+                    } else
+                        root.beginCatalogInstall(entryId, "", selectedAddonIds)
+                }
+            }
+        }
+        function openForEntry(entryId, title) {
+            active = true
+            item.openForEntry(entryId, title)
         }
     }
 
@@ -689,7 +786,7 @@ MD.ApplicationWindow {
     AppSnackbar {
         id: snackbar
         anchors.fill: parent
-        anchors.leftMargin: 88
+        anchors.leftMargin: navRail.width
         z: 3200
     }
 

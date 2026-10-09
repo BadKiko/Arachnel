@@ -22,12 +22,53 @@ Item {
 
     property bool refreshing: false
 
+    // Reconcile the model in place instead of clear() + append(): cards that stay keep their
+    // loaded cover, so nothing flashes when an unrelated signal triggers a refresh.
+    function applyRows(next) {
+        for (let i = 0; i < next.length; ++i) {
+            const row = next[i]
+            let at = -1
+            for (let j = i; j < favoritesModel.count; ++j) {
+                if (favoritesModel.get(j).gameId === row.gameId) {
+                    at = j
+                    break
+                }
+            }
+            if (at < 0) {
+                favoritesModel.insert(i, row)
+                continue
+            }
+            if (at !== i)
+                favoritesModel.move(at, i, 1)
+            const cur = favoritesModel.get(i)
+            if (cur.title !== row.title)
+                favoritesModel.setProperty(i, "title", row.title)
+            if (cur.coverUrl !== row.coverUrl)
+                favoritesModel.setProperty(i, "coverUrl", row.coverUrl)
+            if (cur.sourceName !== row.sourceName)
+                favoritesModel.setProperty(i, "sourceName", row.sourceName)
+        }
+        if (favoritesModel.count > next.length)
+            favoritesModel.remove(next.length, favoritesModel.count - next.length)
+    }
+
+    // Many signals (plugins, catalog status, library, metadata) land in bursts: coalesce.
+    function scheduleRefresh() {
+        refreshTimer.restart()
+    }
+
+    Timer {
+        id: refreshTimer
+        interval: 120
+        onTriggered: root.refreshFavorites()
+    }
+
     function refreshFavorites() {
         if (root.refreshing)
             return
         root.refreshing = true
         const rows = Core.settings.bookmarks || []
-        favoritesModel.clear()
+        const next = []
         const snapshots = []
         for (let i = 0; i < rows.length; ++i) {
             const row = rows[i] || {}
@@ -43,12 +84,12 @@ Item {
             const coverUrl = liveCover.length ? liveCover : String(row.coverUrl || "")
             const sourceName = liveSource.length ? liveSource : String(row.sourceName || "")
 
-            favoritesModel.append({
-                                      gameId: id,
-                                      title: title,
-                                      coverUrl: coverUrl,
-                                      sourceName: sourceName
-                                  })
+            next.push({
+                          gameId: id,
+                          title: title,
+                          coverUrl: coverUrl,
+                          sourceName: sourceName
+                      })
 
             if (liveTitle.length || liveCover.startsWith("file:") || liveSource.length)
                 snapshots.push({
@@ -58,6 +99,7 @@ Item {
                                    sourceName: liveSource
                                })
         }
+        root.applyRows(next)
         root.refreshing = false
         for (let s = 0; s < snapshots.length; ++s) {
             const snap = snapshots[s]
@@ -67,17 +109,17 @@ Item {
 
     Connections {
         target: Core.settings
-        function onBookmarkedEntryIdsChanged() { root.refreshFavorites() }
+        function onBookmarkedEntryIdsChanged() { root.scheduleRefresh() }
     }
 
     Connections {
         target: Core
-        function onPluginsChanged() { root.refreshFavorites() }
-        function onCatalogStatusChanged() { root.refreshFavorites() }
+        function onPluginsChanged() { root.scheduleRefresh() }
+        function onCatalogStatusChanged() { root.scheduleRefresh() }
         function onEntryMetadataChanged(entryId) {
             for (let i = 0; i < favoritesModel.count; ++i) {
                 if (favoritesModel.get(i).gameId === entryId) {
-                    root.refreshFavorites()
+                    root.scheduleRefresh()
                     return
                 }
             }
@@ -86,7 +128,7 @@ Item {
 
     Connections {
         target: Core.library
-        function onLibraryChanged() { root.refreshFavorites() }
+        function onLibraryChanged() { root.scheduleRefresh() }
     }
 
     Component.onCompleted: refreshFavorites()

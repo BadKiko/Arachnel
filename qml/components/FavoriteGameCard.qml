@@ -14,12 +14,21 @@ Item {
 
     signal openDetails(string gameId)
 
+    // The bookmark snapshot already carries title / cover / source. Ask the core (one call,
+    // not three) only when something is missing.
+    readonly property bool needsLiveInfo: {
+        const t = (root.title || "").trim()
+        return !t.length || t === root.gameId
+               || !(root.coverUrl || "").startsWith("file:")
+               || !(root.sourceName || "").trim().length
+    }
+    readonly property var liveInfo: needsLiveInfo ? Core.entryDetails(root.gameId) : ({})
+
     readonly property string displayTitle: {
         const t = (root.title || "").trim()
         if (t.length && t !== root.gameId)
             return t
-        const info = Core.entryDetails(root.gameId)
-        const live = String(info.title || "").trim()
+        const live = String(liveInfo.title || "").trim()
         return live.length ? live : (t.length ? t : root.gameId)
     }
 
@@ -27,16 +36,12 @@ Item {
         const local = (root.coverUrl || "")
         if (local.startsWith("file:"))
             return local
-        const info = Core.entryDetails(root.gameId)
-        const live = String(info.coverUrl || "")
-        if (live.startsWith("file:"))
-            return live
-        return local.startsWith("file:") ? local : ""
+        const live = String(liveInfo.coverUrl || "")
+        return live.startsWith("file:") ? live : ""
     }
 
     readonly property string displaySourceName: {
-        const info = Core.entryDetails(root.gameId)
-        const raw = (root.sourceName || "").trim() || String(info.sourceName || info.sourceId || "")
+        const raw = (root.sourceName || "").trim() || String(liveInfo.sourceName || liveInfo.sourceId || "")
         return raw.length ? Core.sources.nameForId(raw) : ""
     }
 

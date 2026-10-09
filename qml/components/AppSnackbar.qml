@@ -8,7 +8,8 @@ Item {
 
     property string message: ""
     property bool open: false
-    readonly property real railInset: 88
+    // The host already starts after the rail (AppWindow sets leftMargin to the rail width).
+    readonly property real railInset: 0
 
     function show(text, durationMs) {
         if (!text || text.length === 0)

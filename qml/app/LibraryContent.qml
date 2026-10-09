@@ -243,7 +243,12 @@ Item {
                 StatCard {
                     Layout.fillWidth: true
                     title: qsTr("Updates")
-                    value: String(Core.library.updateCount())
+                    value: {
+                        // Re-evaluate when the library changes (update flags flip there);
+                        // updateCount() alone has no binding dependency and went stale.
+                        void page.libraryRevision
+                        return String(Core.library.updateCount())
+                    }
                     iconName: MD.Token.icon.update
                 }
             }

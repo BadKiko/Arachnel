@@ -8,6 +8,27 @@ namespace arachnel::core {
 
 namespace {
 
+// The torrent poll re-submits every handle each tick. Skipping identical updates avoids a
+// dataChanged + jobsChanged fan-out (Downloads page, details pages, every library card).
+bool sameJobState(const JobEntry& a, const JobEntry& b)
+{
+    return a.id == b.id && a.title == b.title && a.kind == b.kind && a.status == b.status
+           && a.progress == b.progress && a.detail == b.detail
+           && a.bytesDownloaded == b.bytesDownloaded && a.totalBytes == b.totalBytes
+           && a.entryId == b.entryId && a.sourceId == b.sourceId && a.magnetUri == b.magnetUri
+           && a.savePath == b.savePath && a.coverUrl == b.coverUrl && a.libraryId == b.libraryId
+           && a.parentEntryId == b.parentEntryId && a.referer == b.referer
+           && a.httpDownload == b.httpDownload && a.pluginDownload == b.pluginDownload
+           && a.artifactPath == b.artifactPath && a.expectedVersion == b.expectedVersion
+           && a.expectedUploadDate == b.expectedUploadDate
+           && a.expectedSteamAppId == b.expectedSteamAppId && a.createdAt == b.createdAt
+           && a.completedAt == b.completedAt;
+}
+
+} // namespace
+
+namespace {
+
 QVariantMap jobToMap(const JobEntry& job)
 {
     return {
@@ -260,6 +281,9 @@ void JobModel::updateJob(const JobEntry& job)
 {
     const int row = indexOfJob(job.id);
     if (row < 0)
+        return;
+
+    if (sameJobState(m_jobs[row], job))
         return;
 
     const int prevActive = activeCount();

@@ -13,6 +13,8 @@ Item {
     required property string sourceName
     required property string version
     required property string installKindLabel
+    // Model role: updates through dataChanged, no Core call per card.
+    required property string installPath
     required property bool hasUpdate
     property int componentCount: 0
     property int installedComponentCount: 0
@@ -28,16 +30,25 @@ Item {
         return qsTr("%n add-ons", "", componentCount)
     }
 
-    property int jobRevision: 0
+    // Re-assigned only when this game's own job changed, so a progress tick of another
+    // download doesn't re-evaluate every binding below on every card.
+    property var activeJob: ({})
+    property string jobKey: ""
 
-    readonly property var activeJob: {
-        root.jobRevision
-        return Core.jobs.jobForEntry(root.gameId)
+    function refreshJob() {
+        const job = Core.jobs.jobForEntry(root.gameId)
+        const key = (job.jobId ?? "") + "|" + (job.status ?? "") + "|" + (job.progress ?? "")
+                    + "|" + (job.detail ?? "") + "|" + (job.inProgress ? 1 : 0)
+        if (key === root.jobKey)
+            return
+        root.jobKey = key
+        root.activeJob = job
     }
-    readonly property bool hasInstallFolder: {
-        const lib = Core.library.gameInfo(root.gameId)
-        return ((lib.installPath ?? "")).length > 0
-    }
+
+    Component.onCompleted: refreshJob()
+    onGameIdChanged: refreshJob()
+
+    readonly property bool hasInstallFolder: root.installPath.length > 0
     readonly property bool showJobStatus: !root.hasInstallFolder
         && !Core.isEntryPlayable(root.gameId)
         && !!(activeJob.jobId)
@@ -81,13 +92,8 @@ Item {
     signal requestUpdate(string gameId)
 
     Connections {
-        target: Core
-        function onRunningGameChanged() { /* refresh isRunning */ }
-    }
-
-    Connections {
         target: Core.jobs
-        function onJobsChanged() { root.jobRevision++ }
+        function onJobsChanged() { root.refreshJob() }
     }
 
     ColumnLayout {

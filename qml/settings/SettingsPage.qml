@@ -73,6 +73,10 @@ ColumnLayout {
     }
 
     function rebuildHub() {
+        // Called on creation, on every open and on every close: don't rebuild a hub that
+        // is already the only page on the stack.
+        if (stack.depth === 1 && stack.currentItem && stack.currentItem.isSettingsHub)
+            return
         stack.navigateReset(hubComponent)
     }
 
@@ -133,6 +137,7 @@ ColumnLayout {
         id: hubComponent
         SettingsHubPage {
             property string pageTitle: qsTr("Settings")
+            readonly property bool isSettingsHub: true
             contentMargin: root.contentMargin
             onOpenSection: function (sectionId) { root.openSection(sectionId) }
         }
