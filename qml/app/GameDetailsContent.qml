@@ -35,27 +35,6 @@ Item {
         anchors.fill: parent
         spacing: 0
 
-        RowLayout {
-            Layout.fillWidth: true
-            Layout.leftMargin: MD.Token.spacing.large
-            Layout.rightMargin: MD.Token.spacing.large
-            Layout.topMargin: MD.Token.spacing.large
-            Layout.bottomMargin: MD.Token.spacing.medium
-            spacing: MD.Token.spacing.small
-
-            MD.IconButton {
-                mdState.type: MD.Enum.IBtStandard
-                icon.name: MD.Token.icon.arrow_back
-                onClicked: page.backRequested()
-            }
-
-            MD.Label {
-                Layout.fillWidth: true
-                text: qsTr("Game details")
-                typescale: MD.Token.typescale.title_large
-            }
-        }
-
         Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -113,6 +92,13 @@ Item {
             clip: true
             boundsBehavior: Flickable.StopAtBounds
 
+            HeroBackdrop {
+                width: flick.width
+                height: 380
+                z: -1
+                source: page.info.coverUrl ?? ""
+            }
+
             ColumnLayout {
                 id: contentCol
                 width: flick.width
@@ -122,6 +108,7 @@ Item {
                     Layout.fillWidth: true
                     Layout.leftMargin: MD.Token.spacing.large
                     Layout.rightMargin: MD.Token.spacing.large
+                    Layout.topMargin: 92 // clears the floating back button
                     spacing: MD.Token.spacing.large
 
                     GamePoster {
@@ -158,6 +145,8 @@ Item {
                             boundsBehavior: Flickable.StopAtBounds
                             interactive: contentWidth > width
 
+                            property bool expanded: false
+                            readonly property int collapsedCount: 5
                             readonly property var genreTokens: {
                                 const raw = (page.info.genres ?? "").toString().split(",")
                                 const out = []
@@ -175,19 +164,40 @@ Item {
                                 spacing: MD.Token.spacing.extra_small
 
                                 Repeater {
-                                    model: genreStrip.genreTokens
+                                    model: genreStrip.expanded ? genreStrip.genreTokens
+                                                        : genreStrip.genreTokens.slice(0, genreStrip.collapsedCount)
 
                                     MD.AssistChip {
                                         required property var modelData
                                         text: modelData
                                     }
                                 }
+
+                            MD.AssistChip {
+                                visible: genreStrip.genreTokens.length > genreStrip.collapsedCount
+                                text: genreStrip.expanded
+                                      ? qsTr("Less")
+                                      : "+" + (genreStrip.genreTokens.length - genreStrip.collapsedCount)
+                                onClicked: genreStrip.expanded = !genreStrip.expanded
+                            }
                             }
                         }
 
                         Flow {
+                            id: chipFlow
                             Layout.fillWidth: true
                             spacing: MD.Token.spacing.small
+
+                            // Main facts stay visible; the rest folds under a "+N" chip.
+                            property bool chipsExpanded: false
+                            readonly property bool addonsChipVisible: !!(page.info.hasAddons)
+                                || ((page.info.installedComponentCount ?? 0) > 0)
+                                || ((page.info.componentCount ?? 0) > 0)
+                            readonly property bool workshopChipVisible: !!(page.info.hasWorkshop)
+                            readonly property bool trustChipVisible: page.installSourceCount <= 1
+                                && (page.info.sourceId ?? "") === "steamidra"
+                            readonly property int secondaryCount: (addonsChipVisible ? 1 : 0) + (workshopChipVisible ? 1 : 0)
+                                + 1 + (trustChipVisible ? 1 : 0)
 
                             MD.AssistChip {
                                 text: page.sourceLabel
@@ -218,8 +228,7 @@ Item {
                                 mdState.outlineColor: MD.Token.color.error_container
                             }
                             MD.AssistChip {
-                                visible: !!(page.info.hasAddons) || ((page.info.installedComponentCount ?? 0) > 0)
-                                         || ((page.info.componentCount ?? 0) > 0)
+                                visible: chipFlow.chipsExpanded && chipFlow.addonsChipVisible
                                 text: {
                                     const installed = page.info.installedComponentCount ?? 0
                                     const total = page.info.componentCount ?? 0
@@ -234,12 +243,13 @@ Item {
                                 }
                             }
                             MD.AssistChip {
-                                visible: !!(page.info.hasWorkshop)
+                                visible: chipFlow.chipsExpanded && chipFlow.workshopChipVisible
                                 text: qsTr("Workshop")
                                 icon.name: MD.Token.icon.handyman
                             }
                             MD.AssistChip {
-                                text: page.info.installKindLabel ?? ""
+                                visible: chipFlow.chipsExpanded
+                            text: page.info.installKindLabel ?? ""
                                 icon.name: MD.Token.icon.install_desktop
 
                                 MD.ToolTip {
@@ -256,8 +266,7 @@ Item {
                                 }
                             }
                             MD.AssistChip {
-                                visible: page.installSourceCount <= 1
-                                         && (page.info.sourceId ?? "") === "steamidra"
+                                visible: chipFlow.chipsExpanded && chipFlow.trustChipVisible
                                 text: qsTr("Steam CDN · Online Fix")
                                 icon.name: MD.Token.icon.check_circle
                                 elevated: true
@@ -277,6 +286,12 @@ Item {
                                 mdState.iconColor: MD.Token.color.on_tertiary_container
                                 mdState.outlineColor: MD.Token.color.tertiary_container
                             }
+                        MD.AssistChip {
+                            text: chipFlow.chipsExpanded
+                                  ? qsTr("Less")
+                                  : "+" + chipFlow.secondaryCount
+                            onClicked: chipFlow.chipsExpanded = !chipFlow.chipsExpanded
+                        }
                         }
 
                         MD.Label {
@@ -390,11 +405,11 @@ Item {
                         ColumnLayout {
                             spacing: MD.Token.spacing.extra_small
 
-                            RowLayout {
+                            Flow {
+                                Layout.fillWidth: true
                                 spacing: MD.Token.spacing.small
 
                                 MD.Button {
-                                    Layout.alignment: Qt.AlignVCenter
                                     visible: page.playable
                                     enabled: !page.runtimeSetupActive
                                     text: {
@@ -422,7 +437,6 @@ Item {
 
                                 DownloadProgressButton {
                                     id: downloadAction
-                                    Layout.alignment: Qt.AlignVCenter
                                     visible: page.canManageDownload
                                     embedDetail: false
                                     progress: page.downloadJob.progress ?? 0
@@ -450,7 +464,6 @@ Item {
                                 }
 
                                 MD.IconButton {
-                                    Layout.alignment: Qt.AlignVCenter
                                     visible: page.canManualInstall
                                     mdState.type: MD.Enum.IBtStandard
                                     icon.name: MD.Token.icon.folder_open
@@ -463,7 +476,6 @@ Item {
                                 }
 
                                 MD.IconButton {
-                                    Layout.alignment: Qt.AlignVCenter
                                     readonly property bool favorited: {
                                         const ids = Core.settings.bookmarkedEntryIds
                                         return ids.indexOf(page.gameId) >= 0
@@ -478,7 +490,6 @@ Item {
                                 }
 
                                 MD.IconButton {
-                                    Layout.alignment: Qt.AlignVCenter
                                     visible: hasLaunchLog
                                     mdState.type: MD.Enum.IBtOutlined
                                     icon.name: MD.Token.icon.receipt_long
@@ -486,19 +497,30 @@ Item {
                                     onClicked: openLaunchLog()
                                 }
 
-                                MD.Button {
-                                    Layout.alignment: Qt.AlignVCenter
+                                MD.IconButton {
+                                    id: moreActions
                                     visible: page.playable
                                              || page.downloadComplete
                                              || page.inLibrary
-                                    text: qsTr("Delete")
-                                    icon.name: MD.Token.icon.delete
-                                    mdState.type: MD.Enum.BtOutlined
-                                    onClicked: removeDialog.open()
+                                    mdState.type: MD.Enum.IBtOutlined
+                                    icon.name: MD.Token.icon.more_vert
+                                    Accessible.name: qsTr("More actions")
+                                    onClicked: moreMenu.open()
+
+                                    MD.Menu {
+                                        id: moreMenu
+                                        y: parent.height
+                                        autoClose: true
+
+                                        MD.MenuItem {
+                                            text: qsTr("Delete")
+                                            icon.name: MD.Token.icon.delete
+                                            onTriggered: removeDialog.open()
+                                        }
+                                    }
                                 }
 
                                 MD.IconButton {
-                                    Layout.alignment: Qt.AlignVCenter
                                     visible: page.playable
                                              || page.downloadComplete
                                              || page.inLibrary
@@ -508,7 +530,6 @@ Item {
                                 }
 
                                 MD.Button {
-                                    Layout.alignment: Qt.AlignVCenter
                                     visible: page.installed && !!(page.info.hasUpdate) && !page.downloadJob.inProgress
                                     text: qsTr("Update")
                                     icon.name: MD.Token.icon.update
@@ -532,31 +553,6 @@ Item {
                                 maximumLineCount: 1
                             }
                         }
-                    }
-                }
-
-                MD.ElevationRectangle {
-                    Layout.fillWidth: true
-                    Layout.leftMargin: MD.Token.spacing.large
-                    Layout.rightMargin: MD.Token.spacing.large
-                    Layout.preferredHeight: mediaSection.showSection
-                                            ? mediaSection.implicitHeight + 2 * MD.Token.spacing.large
-                                            : 0
-                    visible: mediaSection.showSection
-                    radius: MD.Token.shape.corner.extra_large
-                    color: MD.Token.color.surface_container
-                    elevation: MD.Token.elevation.level0
-
-                    GameDetailsMediaSection {
-                        id: mediaSection
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.top: parent.top
-                        anchors.margins: MD.Token.spacing.large
-                        screenshotUrls: page.info.screenshotUrls ?? []
-                        trailerUrl: page.info.trailerUrl ?? ""
-                        trailerThumbnailUrl: page.info.trailerThumbnailUrl ?? ""
-                        loading: page.mediaLoading
                     }
                 }
 
@@ -591,8 +587,45 @@ Item {
                         }
                     }
                 }
+
+                MD.ElevationRectangle {
+                    Layout.fillWidth: true
+                    Layout.leftMargin: MD.Token.spacing.large
+                    Layout.rightMargin: MD.Token.spacing.large
+                    Layout.preferredHeight: mediaSection.showSection
+                                            ? mediaSection.implicitHeight + 2 * MD.Token.spacing.large
+                                            : 0
+                    visible: mediaSection.showSection
+                    radius: MD.Token.shape.corner.extra_large
+                    color: MD.Token.color.surface_container
+                    elevation: MD.Token.elevation.level0
+
+                    GameDetailsMediaSection {
+                        id: mediaSection
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.top: parent.top
+                        anchors.margins: MD.Token.spacing.large
+                        screenshotUrls: page.info.screenshotUrls ?? []
+                        trailerUrl: page.info.trailerUrl ?? ""
+                        trailerThumbnailUrl: page.info.trailerThumbnailUrl ?? ""
+                        loading: page.mediaLoading
+                    }
+                }
             }
         }
+    }
+
+    // Floats over the hero instead of a dedicated "Game details" title bar.
+    MD.IconButton {
+        id: backButton
+        x: MD.Token.spacing.large
+        y: MD.Token.spacing.large
+        z: 10
+        mdState.type: MD.Enum.IBtFilledTonal
+        icon.name: MD.Token.icon.arrow_back
+        Accessible.name: qsTr("Back")
+        onClicked: page.backRequested()
     }
 
     GameSettingsSheet {

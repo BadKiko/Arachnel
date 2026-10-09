@@ -3140,6 +3140,18 @@
         <source>Separate fix: the game and the files needed to run it are downloaded separately.</source>
         <translation>Отдельный фикс: игра и файлы для её запуска скачиваются отдельно.</translation>
     </message>
+    <message>
+        <source>Less</source>
+        <translation>Меньше</translation>
+    </message>
+    <message>
+        <source>Back</source>
+        <translation>Назад</translation>
+    </message>
+    <message>
+        <source>More actions</source>
+        <translation>Ещё действия</translation>
+    </message>
 </context>
 <context>
     <name>GameDetailsMediaPreview</name>

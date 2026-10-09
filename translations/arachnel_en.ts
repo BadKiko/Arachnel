@@ -3138,6 +3138,18 @@
         <source>Separate fix: the game and the files needed to run it are downloaded separately.</source>
         <translation>Separate fix: the game and the files needed to run it are downloaded separately.</translation>
     </message>
+    <message>
+        <source>Less</source>
+        <translation>Less</translation>
+    </message>
+    <message>
+        <source>Back</source>
+        <translation>Back</translation>
+    </message>
+    <message>
+        <source>More actions</source>
+        <translation>More actions</translation>
+    </message>
 </context>
 <context>
     <name>GameDetailsMediaPreview</name>
