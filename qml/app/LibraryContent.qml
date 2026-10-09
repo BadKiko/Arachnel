@@ -220,11 +220,15 @@ Item {
                 }
             }
 
-            RowLayout {
+            // 4 across when there is room, 2x2 on a narrow window (it used to squeeze).
+            GridLayout {
                 Layout.fillWidth: true
                 Layout.leftMargin: page.pageMargin
                 Layout.rightMargin: page.pageMargin
-                spacing: MD.Token.spacing.medium
+                columns: width < 900 ? 2 : 4
+                columnSpacing: MD.Token.spacing.medium
+                rowSpacing: MD.Token.spacing.medium
+                uniformCellWidths: true
 
                 StatCard {
                     Layout.fillWidth: true

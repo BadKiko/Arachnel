@@ -7,7 +7,7 @@ import Qcm.Material as MD
 Item {
     id: root
 
-    readonly property int pageMargin: MD.Token.spacing.medium
+    readonly property int pageMargin: Appearance.pageMargin
     readonly property int gridSpacing: MD.Token.spacing.medium
     readonly property int minCardWidth: 160
     readonly property int metaHeight: 48
@@ -133,55 +133,12 @@ Item {
 
     Component.onCompleted: refreshFavorites()
 
-    Item {
-        anchors.fill: parent
-        opacity: root.favoritesEmpty ? 1 : 0
-        visible: opacity > 0
-        Behavior on opacity {
-            NumberAnimation {
-                duration: AppMotion.short
-                easing: AppMotion.standard
-            }
-        }
-        ColumnLayout {
-            anchors.centerIn: parent
-            spacing: MD.Token.spacing.medium
-            width: Math.min(parent.width - pageMargin * 2, 420)
-
-            SpiderWebMark {
-                Layout.alignment: Qt.AlignHCenter
-                Layout.preferredWidth: 160
-                Layout.preferredHeight: 160
-                width: 160
-                height: 160
-                strokeColor: MD.Token.color.primary
-                strokeWidth: 2.5
-                opacity: 0.35
-            }
-
-            MD.Label {
-                Layout.fillWidth: true
-                horizontalAlignment: Text.AlignHCenter
-                text: qsTr("No favorites")
-                typescale: MD.Token.typescale.title_large
-            }
-
-            MD.Label {
-                Layout.fillWidth: true
-                horizontalAlignment: Text.AlignHCenter
-                text: Messages.favoritesEmptyHint
-                color: MD.Token.color.on_surface_variant
-                typescale: MD.Token.typescale.body_medium
-                wrapMode: Text.WordWrap
-            }
-
-            MD.Button {
-                Layout.alignment: Qt.AlignHCenter
-                text: qsTr("Open catalog")
-                mdState.type: MD.Enum.BtFilled
-                onClicked: root.openCatalog()
-            }
-        }
+    EmptyState {
+        shown: root.favoritesEmpty
+        title: qsTr("No favorites")
+        message: Messages.favoritesEmptyHint
+        actionText: qsTr("Open catalog")
+        onActionTriggered: root.openCatalog()
     }
 
     Flickable {
@@ -204,23 +161,9 @@ Item {
             width: parent.width
             spacing: MD.Token.spacing.medium
 
-            RowLayout {
-                Layout.fillWidth: true
-                Layout.leftMargin: pageMargin
-                Layout.rightMargin: pageMargin
-                Layout.topMargin: pageMargin
-
-                MD.Label {
-                    Layout.fillWidth: true
-                    text: qsTr("Favorites")
-                    typescale: MD.Token.typescale.title_large
-                }
-
-                MD.Label {
-                    text: qsTr("%n game(s)", "", favoritesModel.count)
-                    color: MD.Token.color.on_surface_variant
-                    typescale: MD.Token.typescale.label_large
-                }
+            PageHeader {
+                title: qsTr("Favorites")
+                subtitle: qsTr("%n game(s)", "", favoritesModel.count)
             }
 
             Item {
