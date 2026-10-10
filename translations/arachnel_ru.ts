@@ -2,6 +2,29 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="ru_RU">
 <context>
+    <name>AppNavDrawer</name>
+    <message>
+        <location filename="../qml/components/AppNavDrawer.qml" line="+87"/>
+        <source>Collapse</source>
+        <translation>Свернуть</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Expand</source>
+        <translation>Развернуть</translation>
+    </message>
+    <message>
+        <location line="+33"/>
+        <source>Search games</source>
+        <translation>Поиск игр</translation>
+    </message>
+    <message>
+        <location line="+164"/>
+        <source>Settings</source>
+        <translation>Настройки</translation>
+    </message>
+</context>
+<context>
     <name>AppUpdateProgressOverlay</name>
     <message>
         <location filename="../qml/app/AppUpdateProgressOverlay.qml" line="+42"/>
@@ -65,7 +88,7 @@
         <translation>Arachnel</translation>
     </message>
     <message>
-        <location line="+223"/>
+        <location line="+239"/>
         <source>Library</source>
         <translation>Библиотека</translation>
     </message>
@@ -158,7 +181,7 @@
         <translation>Подборки</translation>
     </message>
     <message>
-        <location line="+24"/>
+        <location line="+22"/>
         <source>All games</source>
         <translation>Все игры</translation>
     </message>
@@ -362,7 +385,7 @@
         <translation>Каталог игр</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+5"/>
         <source>Search and filter every game from your enabled sources.</source>
         <translation>Поиск и фильтры по всем играм из включённых источников.</translation>
     </message>
@@ -534,7 +557,7 @@
 <context>
     <name>CatalogPageContent</name>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="+289"/>
+        <location filename="../qml/app/CatalogPageContent.qml" line="+293"/>
         <source>With friends</source>
         <translation>С друзьями</translation>
     </message>
@@ -608,7 +631,7 @@
 <context>
     <name>CatalogStickyToolbar</name>
     <message>
-        <location filename="../qml/components/CatalogStickyToolbar.qml" line="+87"/>
+        <location filename="../qml/components/CatalogStickyToolbar.qml" line="+91"/>
         <source>Type</source>
         <translation>Тип</translation>
     </message>
@@ -3689,7 +3712,27 @@
 <context>
     <name>LibraryContent</name>
     <message>
-        <location filename="../qml/app/LibraryContent.qml" line="+138"/>
+        <location filename="../qml/app/LibraryContent.qml" line="+40"/>
+        <source>Library</source>
+        <translation>Библиотека</translation>
+    </message>
+    <message numerus="yes">
+        <location line="+8"/>
+        <source>%n source(s)</source>
+        <translation><numerusform>%n источник</numerusform><numerusform>%n источника</numerusform><numerusform>%n источников</numerusform></translation>
+    </message>
+    <message numerus="yes">
+        <location line="+1"/>
+        <source>%n task(s)</source>
+        <translation><numerusform>%n задача</numerusform><numerusform>%n задачи</numerusform><numerusform>%n задач</numerusform></translation>
+    </message>
+    <message numerus="yes">
+        <location line="+1"/>
+        <source>%n update(s)</source>
+        <translation><numerusform>%n обновление</numerusform><numerusform>%n обновления</numerusform><numerusform>%n обновлений</numerusform></translation>
+    </message>
+    <message>
+        <location line="+124"/>
         <source>Running</source>
         <translation>Запущена</translation>
     </message>
@@ -3719,27 +3762,7 @@
         <translation>Обновление</translation>
     </message>
     <message>
-        <location line="+47"/>
-        <source>In library</source>
-        <translation>В библиотеке</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Sources</source>
-        <translation>Источники</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Tasks</source>
-        <translation>Задачи</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Updates</source>
-        <translation>Обновления</translation>
-    </message>
-    <message>
-        <location line="+38"/>
+        <location line="+61"/>
         <source>%1 active downloads</source>
         <translation>%1 активных загрузок</translation>
     </message>
@@ -3759,7 +3782,8 @@
         <translation>Моя библиотека</translation>
     </message>
     <message numerus="yes">
-        <location line="+5"/>
+        <location line="-294"/>
+        <location line="+299"/>
         <source>%n game(s)</source>
         <translation>
             <numerusform>%n игра</numerusform>
@@ -4885,7 +4909,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
 <context>
     <name>SettingsPage</name>
     <message>
-        <location filename="../qml/settings/SettingsPage.qml" line="+25"/>
+        <location filename="../qml/settings/SettingsPage.qml" line="+26"/>
         <location line="+3"/>
         <location line="+111"/>
         <source>Settings</source>
@@ -4947,7 +4971,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>О приложении</translation>
     </message>
     <message>
-        <location line="+54"/>
+        <location line="+55"/>
         <source>Back</source>
         <translation>Назад</translation>
     </message>

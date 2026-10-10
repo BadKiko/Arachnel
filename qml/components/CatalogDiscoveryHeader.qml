@@ -17,10 +17,8 @@ ColumnLayout {
         Layout.fillWidth: true
         spacing: MD.Token.spacing.small
 
-        MD.Label {
+        DisplayTitle {
             text: qsTr("Discover")
-            typescale: MD.Token.typescale.headline_medium
-            font.weight: Font.DemiBold
         }
 
         MD.Button {

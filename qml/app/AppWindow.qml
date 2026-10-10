@@ -76,6 +76,22 @@ MD.ApplicationWindow {
         Qt.callLater(function () { tryShow(0) })
     }
 
+    // The rail's search pill and Ctrl+K: open the catalog with the search field focused.
+    function openCatalogSearch() {
+        root.goToPage(2)
+        function tryFocus(attempt) {
+            const pages = pageStack.currentItem
+            const page = pages && pages.catalogBrowsePage
+            if (page && page.focusSearch) {
+                page.focusSearch()
+                return
+            }
+            if (attempt < 30)
+                Qt.callLater(function () { tryFocus(attempt + 1) })
+        }
+        Qt.callLater(function () { tryFocus(0) })
+    }
+
     function openGameDetails(gameId, fromCatalog) {
         // Capture before push - StackView hide can zero catalog contentY.
         if (fromCatalog && pageStack.currentItem
@@ -530,6 +546,11 @@ MD.ApplicationWindow {
         onActivated: settingsSheet.openSettings()
     }
 
+    Shortcut {
+        sequence: "Ctrl+K"
+        onActivated: root.openCatalogSearch()
+    }
+
     ColumnLayout {
         anchors.fill: parent
         spacing: 0
@@ -555,15 +576,16 @@ MD.ApplicationWindow {
             Layout.fillHeight: true
             spacing: 0
 
-            AppRail {
+            AppNavDrawer {
                 id: navRail
                 Layout.fillHeight: true
                 model: root.navModel
                 currentIndex: root.pageIndex
                 downloadBadge: root.downloadBadge
-                compact: root.width < 1000
+                narrowWindow: root.width < 1100
                 onActivated: function (index) { root.goToPage(index) }
                 onSettingsRequested: settingsSheet.openSettings()
+                onSearchRequested: root.openCatalogSearch()
             }
 
             ColumnLayout {
@@ -698,9 +720,7 @@ MD.ApplicationWindow {
         anchors.fill: parent
         active: false
         sourceComponent: Component {
-            SettingsSheet {
-                anchors.fill: parent
-            }
+            SettingsSheet {}
         }
         function openSettings() { active = true; item.openSettings() }
         function openPlugins() { active = true; item.openPlugins() }

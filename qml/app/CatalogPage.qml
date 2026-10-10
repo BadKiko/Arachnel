@@ -161,6 +161,8 @@ Item {
 
     function resetScroll() { catalogContent.resetScroll() }
 
+    function focusSearch() { catalogContent.focusSearch() }
+
     function fixViewport() { catalogContent.fixViewport() }
 
     function saveAndResetScroll() {

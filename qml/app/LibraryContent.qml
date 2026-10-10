@@ -28,12 +28,48 @@ Item {
             width: flick.width
             spacing: MD.Token.spacing.medium
 
+            // v2 page header: a big title and the library at a glance as small chips.
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.leftMargin: page.pageMargin
+                Layout.rightMargin: page.pageMargin
+                Layout.topMargin: page.pageMargin
+                spacing: MD.Token.spacing.medium
+
+                DisplayTitle {
+                    text: qsTr("Library")
+                }
+
+                Item { Layout.fillWidth: true }
+
+                Repeater {
+                    model: [
+                        { icon: MD.Token.icon.sports_esports, text: qsTr("%n game(s)", "", Core.library.count), act: "" },
+                        { icon: MD.Token.icon.storefront, text: qsTr("%n source(s)", "", Core.sources.enabledCount), act: "sources" },
+                        { icon: MD.Token.icon.downloading, text: qsTr("%n task(s)", "", Core.jobs.count), act: "downloads" },
+                        { icon: MD.Token.icon.update, text: qsTr("%n update(s)", "", (void page.libraryRevision, Core.library.updateCount())), act: "" }
+                    ]
+
+                    delegate: DetailsChip {
+                        required property var modelData
+                        text: modelData.text
+                        icon.name: modelData.icon
+                        onClicked: {
+                            if (modelData.act === "downloads")
+                                page.openDownloads()
+                            else if (modelData.act === "sources")
+                                page.addSourceRequested()
+                        }
+                    }
+                }
+            }
+
             Item {
                 id: heroHost
                 Layout.fillWidth: true
                 Layout.leftMargin: page.pageMargin
                 Layout.rightMargin: page.pageMargin
-                Layout.topMargin: page.pageMargin
+                Layout.topMargin: MD.Token.spacing.small
                 // Nothing played yet: a compact invitation instead of a big empty card.
                 readonly property bool hasHero: page.heroHasRecentPlay || page.showRunningHero
                                                || page.featuredShowJobStatus
@@ -242,54 +278,6 @@ Item {
                             }
                         }
                     }
-                }
-            }
-
-            // 4 across when there is room, 2x2 on a narrow window (it used to squeeze).
-            GridLayout {
-                Layout.fillWidth: true
-                Layout.leftMargin: page.pageMargin
-                Layout.rightMargin: page.pageMargin
-                columns: width < 900 ? 2 : 4
-                columnSpacing: MD.Token.spacing.medium
-                rowSpacing: MD.Token.spacing.medium
-                uniformCellWidths: true
-
-                StatCard {
-                    Layout.fillWidth: true
-                    title: qsTr("In library")
-                    shapeKind: "cookie9"
-                    value: String(Core.library.count)
-                    iconName: MD.Token.icon.sports_esports
-                }
-
-                StatCard {
-                    Layout.fillWidth: true
-                    title: qsTr("Sources")
-                    shapeKind: "clover4"
-                    value: String(Core.sources.enabledCount)
-                    iconName: MD.Token.icon.storefront
-                }
-
-                StatCard {
-                    Layout.fillWidth: true
-                    title: qsTr("Tasks")
-                    shapeKind: "sunny"
-                    value: String(Core.jobs.count)
-                    iconName: MD.Token.icon.downloading
-                }
-
-                StatCard {
-                    Layout.fillWidth: true
-                    title: qsTr("Updates")
-                    shapeKind: "cookie6"
-                    value: {
-                        // Re-evaluate when the library changes (update flags flip there);
-                        // updateCount() alone has no binding dependency and went stale.
-                        void page.libraryRevision
-                        return String(Core.library.updateCount())
-                    }
-                    iconName: MD.Token.icon.update
                 }
             }
 

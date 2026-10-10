@@ -22,11 +22,9 @@ RowLayout {
         Layout.fillWidth: true
         spacing: 2
 
-        MD.Label {
+        DisplayTitle {
             Layout.fillWidth: true
             text: root.title
-            typescale: MD.Token.typescale.headline_medium
-            elide: Text.ElideRight
         }
 
         MD.Label {

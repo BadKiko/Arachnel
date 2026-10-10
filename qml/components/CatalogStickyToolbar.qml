@@ -12,6 +12,10 @@ Item {
 
     property alias searchText: catalogSearch.searchText
 
+    function focusSearch() {
+        catalogSearch.forceActiveFocus()
+    }
+
     implicitHeight: catalogStickyCol.implicitHeight + MD.Token.spacing.small
 
     Rectangle {

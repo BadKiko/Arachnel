@@ -12,7 +12,8 @@ ColumnLayout {
     spacing: 0
 
     readonly property int contentMargin: MD.Token.spacing.large
-    readonly property int pageHeight: 560
+    // The side sheet hands down its height; the stack takes what the header and footer leave.
+    property int pageHeight: 560
 
     property string pendingSection: ""
     property bool pendingCreateSource: false
@@ -243,11 +244,12 @@ ColumnLayout {
             onClicked: root.goBack()
         }
 
-        MD.Label {
+        DisplayTitle {
             Layout.fillWidth: true
+            Layout.topMargin: 4
+            Layout.bottomMargin: 4
+            size: 30
             text: root.pageTitle
-            typescale: MD.Token.typescale.headline_small
-            elide: Text.ElideRight
         }
     }
 

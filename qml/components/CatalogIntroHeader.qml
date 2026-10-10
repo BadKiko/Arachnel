@@ -18,11 +18,9 @@ ColumnLayout {
         y: -18 * root.collapseProgress
     }
 
-    MD.Label {
+    DisplayTitle {
         Layout.fillWidth: true
         text: qsTr("Browse the catalog")
-        typescale: MD.Token.typescale.headline_large
-        font.weight: Font.DemiBold
     }
 
     MD.Label {

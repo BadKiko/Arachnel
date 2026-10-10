@@ -10,12 +10,14 @@ Item {
     property bool applying: false
 
     readonly property int defaultThemeMode: MD.Enum.Dark
-    readonly property int defaultPaletteType: MD.Enum.PaletteMonochrome
-    readonly property string defaultAccentColor: "#8E8E93"
+    // Launcher v2 starts colourful: the Expressive palette from a violet seed. It keeps its own
+    // settings group, so the classic look's choices are untouched.
+    readonly property int defaultPaletteType: MD.Enum.PaletteExpressive
+    readonly property string defaultAccentColor: "#7C5CFF"
 
     Settings {
         id: store
-        category: "appearance"
+        category: "appearance_v2"
         property int themeMode: root.defaultThemeMode
         property int paletteType: root.defaultPaletteType
         property string accentColor: root.defaultAccentColor
@@ -31,8 +33,6 @@ Item {
     readonly property int pageMargin: MD.Token.spacing.large
 
     function apply() {
-        if (store.accentColor === "#D4D4D4")
-            store.accentColor = root.defaultAccentColor
 
         MD.Token.color.useSysColorSM = false
         MD.Token.color.useSysAccentColor = false

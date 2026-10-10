@@ -11,6 +11,10 @@ Item {
     required property var prefs
 
     property alias searchText: catalogStickyToolbar.searchText
+
+    function focusSearch() {
+        catalogStickyToolbar.focusSearch()
+    }
     property alias gridContentY: catalogScrollViews.gridContentY
     property alias listContentY: catalogScrollViews.listContentY
 

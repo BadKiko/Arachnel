@@ -2,6 +2,29 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="en_US">
 <context>
+    <name>AppNavDrawer</name>
+    <message>
+        <location filename="../qml/components/AppNavDrawer.qml" line="+87"/>
+        <source>Collapse</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Expand</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+33"/>
+        <source>Search games</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+164"/>
+        <source>Settings</source>
+        <translation type="unfinished">Settings</translation>
+    </message>
+</context>
+<context>
     <name>AppUpdateProgressOverlay</name>
     <message>
         <location filename="../qml/app/AppUpdateProgressOverlay.qml" line="+42"/>
@@ -65,7 +88,7 @@
         <translation>Arachnel</translation>
     </message>
     <message>
-        <location line="+223"/>
+        <location line="+239"/>
         <source>Library</source>
         <translation>Library</translation>
     </message>
@@ -157,7 +180,7 @@
         <translation type="unfinished">Discover</translation>
     </message>
     <message>
-        <location line="+24"/>
+        <location line="+22"/>
         <source>All games</source>
         <translation>All games</translation>
     </message>
@@ -361,7 +384,7 @@
         <translation>Browse the catalog</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+5"/>
         <source>Search and filter every game from your enabled sources.</source>
         <translation>Search and filter every game from your enabled sources.</translation>
     </message>
@@ -533,7 +556,7 @@
 <context>
     <name>CatalogPageContent</name>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="+289"/>
+        <location filename="../qml/app/CatalogPageContent.qml" line="+293"/>
         <source>With friends</source>
         <translation>With friends</translation>
     </message>
@@ -607,7 +630,7 @@
 <context>
     <name>CatalogStickyToolbar</name>
     <message>
-        <location filename="../qml/components/CatalogStickyToolbar.qml" line="+87"/>
+        <location filename="../qml/components/CatalogStickyToolbar.qml" line="+91"/>
         <source>Type</source>
         <translation>Type</translation>
     </message>
@@ -3683,7 +3706,36 @@
 <context>
     <name>LibraryContent</name>
     <message>
-        <location filename="../qml/app/LibraryContent.qml" line="+138"/>
+        <location filename="../qml/app/LibraryContent.qml" line="+40"/>
+        <source>Library</source>
+        <translation type="unfinished">Library</translation>
+    </message>
+    <message numerus="yes">
+        <location line="+8"/>
+        <source>%n source(s)</source>
+        <translation type="unfinished">
+            <numerusform>%n source</numerusform>
+            <numerusform>%n sources</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location line="+1"/>
+        <source>%n task(s)</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location line="+1"/>
+        <source>%n update(s)</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message>
+        <location line="+124"/>
         <source>Running</source>
         <translation>Running</translation>
     </message>
@@ -3713,27 +3765,7 @@
         <translation>Update</translation>
     </message>
     <message>
-        <location line="+47"/>
-        <source>In library</source>
-        <translation>In library</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Sources</source>
-        <translation>Sources</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Tasks</source>
-        <translation>Tasks</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Updates</source>
-        <translation>Updates</translation>
-    </message>
-    <message>
-        <location line="+38"/>
+        <location line="+61"/>
         <source>%1 active downloads</source>
         <translation>%1 active downloads</translation>
     </message>
@@ -3753,7 +3785,8 @@
         <translation>My library</translation>
     </message>
     <message numerus="yes">
-        <location line="+5"/>
+        <location line="-294"/>
+        <location line="+299"/>
         <source>%n game(s)</source>
         <translation>
             <numerusform>%n game</numerusform>
@@ -4877,7 +4910,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
 <context>
     <name>SettingsPage</name>
     <message>
-        <location filename="../qml/settings/SettingsPage.qml" line="+25"/>
+        <location filename="../qml/settings/SettingsPage.qml" line="+26"/>
         <location line="+3"/>
         <location line="+111"/>
         <source>Settings</source>
@@ -4939,7 +4972,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>About</translation>
     </message>
     <message>
-        <location line="+54"/>
+        <location line="+55"/>
         <source>Back</source>
         <translation>Back</translation>
     </message>
