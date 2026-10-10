@@ -148,7 +148,7 @@
 <context>
     <name>CatalogCompactBar</name>
     <message>
-        <location filename="../qml/components/CatalogCompactBar.qml" line="+77"/>
+        <location filename="../qml/components/CatalogCompactBar.qml" line="+79"/>
         <source>Catalog</source>
         <translation>Каталог</translation>
     </message>
@@ -380,7 +380,7 @@
 <context>
     <name>CatalogIntroHeader</name>
     <message>
-        <location filename="../qml/components/CatalogIntroHeader.qml" line="+23"/>
+        <location filename="../qml/components/CatalogIntroHeader.qml" line="+26"/>
         <source>Browse the catalog</source>
         <translation>Каталог игр</translation>
     </message>
@@ -631,7 +631,12 @@
 <context>
     <name>CatalogStickyToolbar</name>
     <message>
-        <location filename="../qml/components/CatalogStickyToolbar.qml" line="+91"/>
+        <location filename="../qml/components/CatalogStickyToolbar.qml" line="+42"/>
+        <source>Catalog</source>
+        <translation>Каталог</translation>
+    </message>
+    <message>
+        <location line="+61"/>
         <source>Type</source>
         <translation>Тип</translation>
     </message>
@@ -3899,7 +3904,7 @@
         <translation>%1/%2 доп.</translation>
     </message>
     <message>
-        <location line="+42"/>
+        <location line="+48"/>
         <source>Installing %1%</source>
         <translation>Установка %1%</translation>
     </message>

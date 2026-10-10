@@ -33,11 +33,22 @@ Item {
         anchors.top: parent.top
         spacing: MD.Token.spacing.small
 
+        // v2: the page title and the search share one row.
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: MD.Token.spacing.large
+
+            DisplayTitle {
+                text: qsTr("Catalog")
+            }
+
+            Item { Layout.fillWidth: true }
+
         MD.SearchBar {
             id: catalogSearch
             Layout.fillWidth: true
             Layout.maximumWidth: 560
-            Layout.alignment: Qt.AlignLeft
+            Layout.alignment: Qt.AlignVCenter
 
             // Keep results in sync with the field. Enter used to be required, so
             // typing a new query over a failed search left "Found: 0" on screen.
@@ -70,6 +81,7 @@ Item {
                     catalogSearch.searchText = page.searchQuery
                 }
             }
+        }
         }
 
         Flow {

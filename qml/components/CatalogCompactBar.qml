@@ -73,7 +73,9 @@ Rectangle {
         anchors.rightMargin: pageMargin + MD.Token.spacing.small
         spacing: MD.Token.spacing.small
 
+        // The toolbar above already says "Catalog"; the compact bar keeps the count and tools.
         MD.Label {
+            visible: false
             text: qsTr("Catalog")
             typescale: MD.Token.typescale.title_large
             elide: Text.ElideRight
