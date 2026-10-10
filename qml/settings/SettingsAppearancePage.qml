@@ -1,6 +1,5 @@
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Templates as T
 
 import Arachnel.Core 1.0
 import Qcm.Material as MD
@@ -19,7 +18,7 @@ Flickable {
     readonly property string weblateTranslateUrl: "https://hosted.weblate.org/projects/arachnel/application/"
 
     contentWidth: width
-    contentHeight: body.implicitHeight
+    contentHeight: body.implicitHeight + MD.Token.spacing.extra_large
     clip: true
     boundsBehavior: Flickable.StopAtBounds
     flickableDirection: Flickable.VerticalFlick
@@ -27,214 +26,115 @@ Flickable {
     function syncFromStore() {
         applying = true
         Appearance.apply()
-        paletteListView.currentIndex = Appearance.paletteType
         applying = false
     }
 
     Component.onCompleted: syncFromStore()
 
-    ColumnLayout {
+    SettingsColumn {
         id: body
-        width: root.width
-        spacing: MD.Token.spacing.medium
+        margin: root.contentMargin
 
-        MD.Label {
-            Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            Layout.topMargin: MD.Token.spacing.small
-            text: qsTr("Theme and colors apply across the app.")
-            color: MD.Token.color.on_surface_variant
-            wrapMode: Text.WordWrap
-            typescale: MD.Token.typescale.body_medium
-        }
+        SettingsGroup {
+            title: qsTr("Theme")
+            description: qsTr("Theme and colors apply across the app.")
 
-        RowLayout {
-            Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            spacing: MD.Token.spacing.medium
-
-            MD.Label {
-                text: MD.Token.isDarkTheme ? qsTr("Dark theme") : qsTr("Light theme")
-                color: MD.Token.color.on_surface_variant
-                typescale: MD.Token.typescale.label_large
-            }
-
-            MD.Switch {
-                id: themeSwitch
+            SettingsSwitchRow {
+                title: qsTr("Dark theme")
+                iconName: MD.Token.icon.dark_mode
                 checked: MD.Token.isDarkTheme
-                onToggled: {
-                    if (root.applying)
-                        return
-                    Appearance.setThemeMode(checked ? MD.Enum.Dark : MD.Enum.Light)
+                onToggled: function (on) {
+                    if (!root.applying)
+                        Appearance.setThemeMode(on ? MD.Enum.Dark : MD.Enum.Light)
                 }
             }
 
-            Item { Layout.fillWidth: true }
-        }
-
-        RowLayout {
-            Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            spacing: MD.Token.spacing.medium
-
-            MD.Label {
-                text: qsTr("Reduce motion")
-                color: MD.Token.color.on_surface_variant
-                typescale: MD.Token.typescale.label_large
-            }
-
-            MD.Switch {
-                id: reduceMotionSwitch
+            SettingsSwitchRow {
+                title: qsTr("Reduce motion")
+                iconName: MD.Token.icon.animation
                 checked: Appearance.reduceMotion
-                onToggled: {
-                    if (root.applying)
-                        return
-                    Appearance.setReduceMotion(checked)
+                onToggled: function (on) {
+                    if (!root.applying)
+                        Appearance.setReduceMotion(on)
+                }
+            }
+        }
+
+        SettingsGroup {
+            title: qsTr("Colors")
+
+            SettingsRow {
+                title: qsTr("Palette")
+                iconName: MD.Token.icon.palette
+
+                below: Flow {
+                    Layout.fillWidth: true
+                    spacing: MD.Token.spacing.small
+
+                    Repeater {
+                        model: MD.PaletteModel {}
+
+                        delegate: MD.FilterChip {
+                            required property int index
+                            required property var model
+                            text: model.name
+                            checkable: false
+                            checked: Appearance.paletteType === index
+                            onClicked: {
+                                if (!root.applying)
+                                    Appearance.setPaletteType(index)
+                            }
+                        }
+                    }
                 }
             }
 
-            Item { Layout.fillWidth: true }
-        }
+            SettingsRow {
+                title: qsTr("Primary")
+                iconName: MD.Token.icon.colorize
 
-        MD.Label {
-            Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            text: qsTr("Palette")
-            color: MD.Token.color.on_surface_variant
-            typescale: MD.Token.typescale.label_large
-        }
+                below: Flow {
+                    Layout.fillWidth: true
+                    spacing: MD.Token.spacing.medium
 
-        MD.HorizontalListView {
-            id: paletteListView
-            Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            expand: true
-            spacing: MD.Token.spacing.small
-            implicitHeight: 40
-            model: MD.PaletteModel {}
+                    Repeater {
+                        model: AccentColors.palette
 
-            MD.ActionGroup {
-                id: paletteActionGroup
-            }
-
-            delegate: MD.InputChip {
-                required property int index
-                required property var model
-
-                action: MD.Action {
-                    T.ActionGroup.group: paletteActionGroup
-                    icon.name: ""
-                    checkable: true
-                    checked: paletteListView.currentIndex === index
-                    text: model.name
-                    onTriggered: {
-                        if (root.applying)
-                            return
-                        paletteListView.currentIndex = index
-                        Appearance.setPaletteType(index)
+                        MD.ColorRadio {
+                            required property var modelData
+                            size: 36
+                            color: modelData.color
+                            checked: Appearance.accentColor === modelData.color
+                            onClicked: {
+                                if (!root.applying)
+                                    Appearance.setAccentColor(modelData.color)
+                            }
+                        }
                     }
                 }
             }
         }
 
-        MD.Label {
-            Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            text: qsTr("Primary")
-            color: MD.Token.color.on_surface_variant
-            typescale: MD.Token.typescale.label_large
-        }
+        SettingsGroup {
+            title: qsTr("Language")
 
-        Grid {
-            Layout.alignment: Qt.AlignHCenter
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            spacing: MD.Token.spacing.medium
-            rows: 2
-            columns: 6
+            SettingsRow {
+                title: qsTr("Interface language")
+                iconName: MD.Token.icon.language
 
-            Repeater {
-                model: AccentColors.palette
-
-                MD.ColorRadio {
-                    required property var modelData
-                    size: 32
-                    color: modelData.color
-                    checked: Appearance.accentColor === modelData.color
-                    onClicked: {
-                        if (root.applying)
-                            return
-                        Appearance.setAccentColor(modelData.color)
-                    }
+                ConnectedTextToggle {
+                    labels: root.languageOptions.map(o => o.label)
+                    currentIndex: Math.max(0, root.languageOptions.findIndex(o => o.code === Core.settings.uiLanguage))
+                    onPicked: function (index) { Core.settings.uiLanguage = root.languageOptions[index].code }
                 }
             }
-        }
 
-        MD.Label {
-            Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            Layout.topMargin: MD.Token.spacing.small
-            text: qsTr("Language")
-            typescale: MD.Token.typescale.label_large
-        }
-
-        Flow {
-            Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            spacing: MD.Token.spacing.small
-
-            Repeater {
-                model: root.languageOptions
-
-                MD.InputChip {
-                    required property var modelData
-
-                    action: MD.Action {
-                        checkable: true
-                        checked: Core.settings.uiLanguage === modelData.code
-                        text: modelData.label
-                        onTriggered: Core.settings.uiLanguage = modelData.code
-                    }
-                }
-            }
-        }
-
-        ColumnLayout {
-            Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            Layout.bottomMargin: MD.Token.spacing.medium
-            spacing: MD.Token.spacing.small
-
-            MD.Label {
-                Layout.fillWidth: true
-                text: qsTr("Community translations")
-                typescale: MD.Token.typescale.title_small
-            }
-
-            MD.Label {
-                Layout.fillWidth: true
-                textFormat: Text.StyledText
-                linkColor: MD.Token.color.primary
-                text: Messages.settingsWeblateHint.arg(root.weblateTranslateUrl)
-                wrapMode: Text.WordWrap
-                color: MD.Token.color.on_surface_variant
-                typescale: MD.Token.typescale.body_small
-                onLinkActivated: link => Core.openExternalUrl(link)
-            }
-
-            MD.Button {
-                text: qsTr("Help translate")
-                icon.name: MD.Token.icon.language
-                mdState.type: MD.Enum.BtText
+            SettingsRow {
+                title: qsTr("Community translations")
+                subtitle: qsTr("Missing your language? Help translate Arachnel on Weblate.")
+                iconName: MD.Token.icon.translate
+                clickable: true
+                showChevron: true
                 onClicked: Core.openExternalUrl(root.weblateTranslateUrl)
             }
         }

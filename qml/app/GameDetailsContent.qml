@@ -577,9 +577,10 @@ Item {
                             color: MD.Token.color.on_surface_variant
                             typescale: MD.Token.typescale.body_medium
                         }
+                        // Only worth saying when the game actually has DRM.
                         MD.Label {
                             Layout.fillWidth: true
-                            visible: !page.playable
+                            visible: !page.playable && !!(page.info.hasDrm)
                             text: Messages.gamePlayabilityNote
                             wrapMode: Text.WordWrap
                             color: MD.Token.color.on_surface_variant

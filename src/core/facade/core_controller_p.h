@@ -12,6 +12,7 @@
     void onCatalogReady();
     void runAutoInstallUpdates();
     void syncLibraryFromStore();
+    void repairLibraryTitles();
     void syncProtonCatalog();
     void applyCatalogFilter(const QString&);
     void rebuildCatalogIdIndex();

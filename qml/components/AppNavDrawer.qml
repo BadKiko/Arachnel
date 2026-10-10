@@ -267,10 +267,13 @@ Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 56
 
+            readonly property bool selected: root.currentIndex === 6
+
             Rectangle {
                 anchors.fill: parent
                 radius: 28
-                color: MD.Util.transparent(MD.Token.color.on_surface, settingsHover.hovered ? 0.08 : 0)
+                color: parent.selected ? MD.Token.color.secondary_container
+                     : MD.Util.transparent(MD.Token.color.on_surface, settingsHover.hovered ? 0.08 : 0)
                 Behavior on color { ColorAnimation { duration: AppMotion.short } }
             }
 

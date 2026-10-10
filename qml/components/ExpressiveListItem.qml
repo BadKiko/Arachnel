@@ -17,6 +17,7 @@ Item {
     property bool first: false
     property bool last: false
     property bool showChevron: true
+    property bool selected: false
     default property alias trailing: trailingSlot.data
 
     signal clicked()
@@ -25,11 +26,12 @@ Item {
     implicitWidth: 360
 
     readonly property real outer: 24
-    readonly property real inner: tap.pressed ? 16 : (hover.hovered ? 10 : 4)
+    readonly property real inner: root.selected ? root.outer : (tap.pressed ? 16 : (hover.hovered ? 10 : 4))
 
     Rectangle {
         anchors.fill: parent
-        color: tap.pressed ? MD.Token.color.surface_container_highest
+        color: root.selected ? MD.Token.color.secondary_container
+             : tap.pressed ? MD.Token.color.surface_container_highest
              : hover.hovered ? MD.Token.color.surface_container_high
              : MD.Token.color.surface_container
         topLeftRadius: root.first ? root.outer : root.inner
@@ -60,7 +62,7 @@ Item {
             color: root.shapeColor
             iconColor: root.shapeIconColor
             interactive: false
-            active: hover.hovered
+            active: hover.hovered || root.selected
         }
 
         ColumnLayout {

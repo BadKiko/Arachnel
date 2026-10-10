@@ -32,11 +32,10 @@ Column {
         width: parent.width
         spacing: MD.Token.spacing.small
 
-        MD.Label {
+        DisplayTitle {
             Layout.fillWidth: true
+            size: 24
             text: root.title
-            typescale: MD.Token.typescale.title_medium
-            elide: Text.ElideRight
         }
 
         MD.IconButton {

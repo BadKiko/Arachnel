@@ -76,6 +76,21 @@ MD.ApplicationWindow {
         Qt.callLater(function () { tryShow(0) })
     }
 
+    function openSettingsSection(sectionId, createSource) {
+        root.goToPage(6)
+        function tryOpen(attempt) {
+            const pages = pageStack.currentItem
+            const screen = pages && pages.settingsScreen
+            if (screen) {
+                screen.open(sectionId, createSource)
+                return
+            }
+            if (attempt < 30)
+                Qt.callLater(function () { tryOpen(attempt + 1) })
+        }
+        Qt.callLater(function () { tryOpen(0) })
+    }
+
     // The rail's search pill and Ctrl+K: open the catalog with the search field focused.
     function openCatalogSearch() {
         root.goToPage(2)
@@ -295,6 +310,7 @@ MD.ApplicationWindow {
             readonly property int pageIndex: root.pageIndex
             // Loader.item — null until Catalog tab is opened once.
             readonly property var catalogBrowsePage: catalogBrowseLoader.item
+            readonly property var settingsScreen: settingsLoader.item
             readonly property var discoverPage: discoverLoader.item
 
             transformOrigin: Item.Center
@@ -452,6 +468,28 @@ MD.ApplicationWindow {
                 interval: 1500
                 running: true
                 onTriggered: catalogBrowseLoader.keepAlive = true
+            }
+
+            Loader {
+                id: settingsLoader
+                anchors.fill: parent
+                property bool keepAlive: false
+                active: mainPages.pageIndex === 6 || keepAlive
+                visible: status === Loader.Ready && opacity > 0
+                opacity: mainPages.pageIndex === 6 ? 1 : 0
+                onLoaded: keepAlive = true
+                sourceComponent: Component {
+                    SettingsScreen {
+                        enabled: mainPages.pageIndex === 6
+                    }
+                }
+
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: root.mainTabDuration
+                        easing: AppMotion.emphasizedDecelerate
+                    }
+                }
             }
 
             BookmarksPage {
@@ -715,18 +753,17 @@ MD.ApplicationWindow {
 
     // Heavy, rarely used sheets are created on first use. Each Loader exposes the same open*()
     // functions as the sheet it wraps, so call sites stay unchanged.
-    Loader {
+    // v2: settings are a page of the shell (index 6). Same open*() API as the old sheet.
+    QtObject {
         id: settingsSheet
-        anchors.fill: parent
-        active: false
-        sourceComponent: Component {
-            SettingsSheet {}
+        function openSettings() { root.openSettingsSection("", false) }
+        function openPlugins() { root.openSettingsSection("plugins", false) }
+        function openSources(createSource) { root.openSettingsSection("sources", !!createSource) }
+        function openFriends() { root.openSettingsSection("friends", false) }
+        function openLaunch() {
+            if (Qt.platform.os === "linux")
+                root.openSettingsSection("launch", false)
         }
-        function openSettings() { active = true; item.openSettings() }
-        function openPlugins() { active = true; item.openPlugins() }
-        function openSources(createSource) { active = true; item.openSources(createSource) }
-        function openFriends() { active = true; item.openFriends() }
-        function openLaunch() { active = true; item.openLaunch() }
     }
 
     Loader {

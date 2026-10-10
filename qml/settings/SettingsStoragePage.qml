@@ -18,7 +18,7 @@ Flickable {
     }
 
     contentWidth: width
-    contentHeight: body.implicitHeight
+    contentHeight: body.implicitHeight + MD.Token.spacing.extra_large
     clip: true
     boundsBehavior: Flickable.StopAtBounds
     flickableDirection: Flickable.VerticalFlick
@@ -59,286 +59,146 @@ Flickable {
         }
     }
 
-    ColumnLayout {
+    SettingsColumn {
         id: body
-        width: root.width
-        spacing: MD.Token.spacing.medium
+        margin: root.contentMargin
 
-        MD.Label {
-            Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            Layout.topMargin: MD.Token.spacing.small
-            text: Messages.storageLibrariesDesc
-            wrapMode: Text.WordWrap
-            color: MD.Token.color.on_surface_variant
-            typescale: MD.Token.typescale.body_medium
-        }
+        SettingsGroup {
+            title: qsTr("Drives")
+            description: Messages.storageLibrariesDesc
 
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            radius: MD.Token.shape.corner.large
-            color: MD.Token.color.surface_container
-            border.width: 1
-            border.color: MD.Token.color.outline_variant
-            implicitHeight: driveCol.implicitHeight + MD.Token.spacing.medium * 2
+            Repeater {
+                model: Core.settings.storageLibraries
 
-            ColumnLayout {
-                id: driveCol
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.top: parent.top
-                anchors.margins: MD.Token.spacing.medium
-                spacing: MD.Token.spacing.small
+                delegate: SettingsRow {
+                    id: driveRow
+                    required property string libraryId
+                    required property string label
+                    required property string path
+                    required property bool isDefault
+                    readonly property bool picked: root.selectedLibraryId === libraryId
 
-                Repeater {
-                    model: Core.settings.storageLibraries
-
-                    Rectangle {
-                        required property string libraryId
-                        required property string label
-                        required property string path
-                        required property bool isDefault
-
-                        Layout.fillWidth: true
-                        radius: MD.Token.shape.corner.medium
-                        color: root.selectedLibraryId === libraryId
-                               ? MD.Token.color.secondary_container
-                               : MD.Token.color.surface_container_high
-                        border.width: 1
-                        border.color: root.selectedLibraryId === libraryId
-                                      ? MD.Token.color.primary
-                                      : MD.Token.color.outline_variant
-                        implicitHeight: driveRow.implicitHeight + MD.Token.spacing.small * 2
-
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: {
-                                root.selectedLibraryId = libraryId
-                                root.reloadGames()
-                            }
-                        }
-
-                        RowLayout {
-                            id: driveRow
-                            anchors.left: parent.left
-                            anchors.right: parent.right
-                            anchors.top: parent.top
-                            anchors.margins: MD.Token.spacing.small
-                            spacing: MD.Token.spacing.small
-
-                            ColumnLayout {
-                                Layout.fillWidth: true
-                                spacing: 2
-
-                                RowLayout {
-                                    Layout.fillWidth: true
-                                    spacing: MD.Token.spacing.extra_small
-
-                                    MD.Label {
-                                        Layout.fillWidth: true
-                                        text: label
-                                        typescale: MD.Token.typescale.title_small
-                                    }
-
-                                    MD.Icon {
-                                        visible: isDefault
-                                        name: MD.Token.icon.star
-                                        size: 18
-                                        color: MD.Token.color.primary
-                                    }
-                                }
-
-                                MD.Label {
-                                    Layout.fillWidth: true
-                                    text: path
-                                    color: MD.Token.color.on_surface_variant
-                                    typescale: MD.Token.typescale.body_small
-                                    elide: Text.ElideMiddle
-                                }
-                            }
-
-                            MD.IconButton {
-                                visible: !isDefault
-                                mdState.type: MD.Enum.IBtStandard
-                                icon.name: MD.Token.icon.star
-                                onClicked: Core.settings.storageLibraries.setDefaultLibrary(libraryId)
-                            }
-
-                            MD.IconButton {
-                                visible: Core.settings.storageLibraries.count > 1
-                                mdState.type: MD.Enum.IBtStandard
-                                icon.name: MD.Token.icon.delete
-                                onClicked: {
-                                    const id = libraryId
-                                    const name = label
-                                    const games = Core.gamesOnLibrary(id)
-                                    removeDriveDialog.libraryId = id
-                                    removeDriveDialog.libraryLabel = name
-                                    removeDriveDialog.gameCount = games ? games.length : 0
-                                    removeDriveDialog.open()
-                                }
-                            }
-                        }
-                    }
-                }
-
-                MD.Button {
-                    Layout.fillWidth: true
-                    mdState.type: MD.Enum.BtOutlined
-                    text: qsTr("Add drive…")
-                    icon.name: MD.Token.icon.add
+                    title: label + (isDefault ? "  ★" : "")
+                    subtitle: path
+                    iconName: MD.Token.icon.hard_drive
+                    clickable: true
+                    titleColor: picked ? MD.Token.color.primary : MD.Token.color.on_surface
                     onClicked: {
-                        const folder = Core.browseStorageFolder()
-                        if (folder.length)
-                            Core.settings.storageLibraries.addLibrary(folder)
-                    }
-                }
-
-                MD.Button {
-                    Layout.fillWidth: true
-                    mdState.type: MD.Enum.BtText
-                    text: qsTr("Scan for installed games")
-                    icon.name: MD.Token.icon.folder_open
-                    onClicked: {
-                        Core.scanInstalledGames()
+                        root.selectedLibraryId = libraryId
                         root.reloadGames()
                     }
+
+                    MD.Icon {
+                        visible: driveRow.picked
+                        name: MD.Token.icon.check_circle
+                        size: 22
+                        color: MD.Token.color.primary
+                    }
+
+                    MD.IconButton {
+                        visible: !driveRow.isDefault
+                        mdState.type: MD.Enum.IBtStandard
+                        icon.name: MD.Token.icon.star
+                        Accessible.name: qsTr("Make default")
+                        onClicked: Core.settings.storageLibraries.setDefaultLibrary(driveRow.libraryId)
+                    }
+
+                    MD.IconButton {
+                        visible: Core.settings.storageLibraries.count > 1
+                        mdState.type: MD.Enum.IBtStandard
+                        icon.name: MD.Token.icon.delete
+                        onClicked: {
+                            const games = Core.gamesOnLibrary(driveRow.libraryId)
+                            removeDriveDialog.libraryId = driveRow.libraryId
+                            removeDriveDialog.libraryLabel = driveRow.label
+                            removeDriveDialog.gameCount = games ? games.length : 0
+                            removeDriveDialog.open()
+                        }
+                    }
+                }
+            }
+
+            SettingsRow {
+                title: qsTr("Add drive…")
+                iconName: MD.Token.icon.add
+                clickable: true
+                showChevron: true
+                onClicked: {
+                    const folder = Core.browseStorageFolder()
+                    if (folder.length)
+                        Core.settings.storageLibraries.addLibrary(folder)
+                }
+            }
+
+            SettingsRow {
+                title: qsTr("Scan for installed games")
+                iconName: MD.Token.icon.folder_open
+                clickable: true
+                showChevron: true
+                onClicked: {
+                    Core.scanInstalledGames()
+                    root.reloadGames()
                 }
             }
         }
 
-        RowLayout {
-            Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
+        SettingsGroup {
+            title: qsTr("Games: %1").arg(root.storageGames.length)
 
-            MD.Label {
-                Layout.fillWidth: true
-                text: qsTr("Games: %1").arg(root.storageGames.length)
-                typescale: MD.Token.typescale.title_small
+            SettingsRow {
+                visible: root.storageGames.length === 0
+                title: qsTr("No games on this drive yet")
+                iconName: MD.Token.icon.sports_esports
             }
-        }
-
-        ColumnLayout {
-            Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            spacing: MD.Token.spacing.small
-            visible: root.storageGames.length > 0
 
             Repeater {
                 model: root.storageGames
 
-                Rectangle {
+                delegate: SettingsRow {
+                    id: gameRowItem
                     required property var modelData
+                    title: modelData.title
+                    subtitle: modelData.sizeLabel.length ? modelData.sizeLabel : modelData.installPath
+                    iconName: MD.Token.icon.sports_esports
+                    clickable: true
+                    onClicked: root.toggleGameSelection(modelData.gameId, !root.isGameSelected(modelData.gameId))
 
-                    Layout.fillWidth: true
-                    radius: MD.Token.shape.corner.large
-                    color: MD.Token.color.surface_container_low
-                    border.width: 1
-                    border.color: MD.Token.color.outline_variant
-                    implicitHeight: gameRow.implicitHeight + MD.Token.spacing.small * 2
-
-                    RowLayout {
-                        id: gameRow
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.top: parent.top
-                        anchors.margins: MD.Token.spacing.small
-                        spacing: MD.Token.spacing.small
-
-                        GamePoster {
-                            Layout.preferredWidth: 56
-                            Layout.preferredHeight: 74
-                            source: modelData.coverUrl
-                            seed: modelData.title
-                            fallbackText: modelData.title.charAt(0)
-                            cornerRadius: MD.Token.shape.corner.medium
-                        }
-
-                        ColumnLayout {
-                            Layout.fillWidth: true
-                            spacing: 2
-
-                            MD.Label {
-                                Layout.fillWidth: true
-                                text: modelData.title
-                                typescale: MD.Token.typescale.title_small
-                                elide: Text.ElideRight
-                            }
-
-                            MD.Label {
-                                Layout.fillWidth: true
-                                text: modelData.sizeLabel.length ? modelData.sizeLabel : modelData.installPath
-                                color: MD.Token.color.on_surface_variant
-                                typescale: MD.Token.typescale.body_small
-                                elide: Text.ElideMiddle
-                            }
-                        }
-
-                        MD.CheckBox {
-                            checked: root.isGameSelected(modelData.gameId)
-                            onToggled: root.toggleGameSelection(modelData.gameId, checked)
-                        }
+                    MD.CheckBox {
+                        checked: root.isGameSelected(gameRowItem.modelData.gameId)
+                        onToggled: root.toggleGameSelection(gameRowItem.modelData.gameId, checked)
                     }
                 }
             }
-        }
 
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            visible: root.storageGames.length === 0
-            radius: MD.Token.shape.corner.large
-            color: MD.Token.color.surface_container
-            implicitHeight: emptyCol.implicitHeight + MD.Token.spacing.medium * 2
-
-            ColumnLayout {
-                id: emptyCol
-                anchors.fill: parent
-                anchors.margins: MD.Token.spacing.medium
-
-                MD.Label {
-                    Layout.fillWidth: true
-                    text: qsTr("No games on this drive yet")
-                    typescale: MD.Token.typescale.body_medium
-                    color: MD.Token.color.on_surface_variant
-                }
-            }
-        }
-
-        RowLayout {
-            Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            Layout.bottomMargin: MD.Token.spacing.medium
-            spacing: MD.Token.spacing.small
-
-            MD.Button {
+            // Actions for the ticked games.
+            RowLayout {
                 Layout.fillWidth: true
-                mdState.type: MD.Enum.BtOutlined
-                enabled: root.selectedGameIds.length > 0
-                text: qsTr("Delete")
-                icon.name: MD.Token.icon.delete
-                onClicked: {
-                    for (let i = 0; i < root.selectedGameIds.length; ++i)
-                        Core.removeGame(root.selectedGameIds[i], true)
-                    root.reloadGames()
-                }
-            }
+                Layout.topMargin: MD.Token.spacing.small
+                visible: root.storageGames.length > 0
+                spacing: MD.Token.spacing.small
 
-            MD.Button {
-                Layout.fillWidth: true
-                mdState.type: MD.Enum.BtFilledTonal
-                enabled: root.selectedGameIds.length > 0
-                       && Core.settings.storageLibraries.count > 1
-                text: qsTr("Move…")
-                icon.name: MD.Token.icon.folder_open
-                onClicked: moveSheet.open()
+                MD.Button {
+                    mdState.type: MD.Enum.BtFilledTonal
+                    enabled: root.selectedGameIds.length > 0
+                             && Core.settings.storageLibraries.count > 1
+                    text: qsTr("Move…")
+                    icon.name: MD.Token.icon.drive_file_move
+                    onClicked: moveSheet.open()
+                }
+
+                MD.Button {
+                    mdState.type: MD.Enum.BtOutlined
+                    enabled: root.selectedGameIds.length > 0
+                    text: qsTr("Delete")
+                    icon.name: MD.Token.icon.delete
+                    onClicked: {
+                        for (let i = 0; i < root.selectedGameIds.length; ++i)
+                            Core.removeGame(root.selectedGameIds[i], true)
+                        root.reloadGames()
+                    }
+                }
+
+                Item { Layout.fillWidth: true }
             }
         }
     }

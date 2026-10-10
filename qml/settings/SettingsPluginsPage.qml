@@ -66,120 +66,50 @@ Flickable {
     }
 
     contentWidth: width
-    contentHeight: body.implicitHeight
+    contentHeight: body.implicitHeight + MD.Token.spacing.extra_large
     clip: true
     boundsBehavior: Flickable.StopAtBounds
     flickableDirection: Flickable.VerticalFlick
 
-    ColumnLayout {
+    SettingsColumn {
         id: body
-        width: root.width
-        spacing: MD.Token.spacing.medium
+        margin: root.contentMargin
 
-        MD.Label {
-            Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            Layout.topMargin: MD.Token.spacing.small
-            text: Messages.settingsPluginsDesc
-            wrapMode: Text.WordWrap
-            color: MD.Token.color.on_surface_variant
-            typescale: MD.Token.typescale.body_medium
-        }
+        SettingsGroup {
+            title: qsTr("Installed")
+            description: Messages.settingsPluginsDesc
 
-        MD.Button {
-            Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            mdState.type: MD.Enum.BtFilled
-            text: qsTr("Plugin store")
-            icon.name: MD.Token.icon.storefront
-            onClicked: root.openStoreRequested()
-        }
-
-        MD.ElevationRectangle {
-            Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            visible: root.installedPlugins.length === 0
-            implicitHeight: emptyCol.implicitHeight + MD.Token.spacing.large * 2
-            radius: MD.Token.shape.corner.large
-            color: MD.Token.color.surface_container
-            elevation: MD.Token.elevation.level0
-
-            ColumnLayout {
-                id: emptyCol
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.verticalCenter: parent.verticalCenter
-                anchors.margins: MD.Token.spacing.large
-                spacing: MD.Token.spacing.small
-
-                MD.ElevationRectangle {
-                    Layout.alignment: Qt.AlignHCenter
-                    Layout.preferredWidth: 48
-                    Layout.preferredHeight: 48
-                    radius: MD.Token.shape.corner.full
-                    color: MD.Token.color.primary_container
-                    elevation: MD.Token.elevation.level0
-
-                    MD.Icon {
-                        anchors.centerIn: parent
-                        name: MD.Token.icon.extension
-                        size: 24
-                        color: MD.Token.color.on_primary_container
-                    }
-                }
-
-                MD.Label {
-                    Layout.fillWidth: true
-                    horizontalAlignment: Text.AlignHCenter
-                    text: qsTr("No plugins installed")
-                    typescale: MD.Token.typescale.title_small
-                }
-
-                MD.Label {
-                    Layout.fillWidth: true
-                    horizontalAlignment: Text.AlignHCenter
-                    wrapMode: Text.WordWrap
-                    text: qsTr("Open the plugin store and install a plugin to browse games.")
-                    color: MD.Token.color.on_surface_variant
-                    typescale: MD.Token.typescale.body_medium
-                }
+            SettingsRow {
+                visible: root.installedPlugins.length === 0
+                title: qsTr("No plugins installed")
+                subtitle: qsTr("Open the plugin store and install a plugin to browse games.")
+                iconName: MD.Token.icon.extension
             }
-        }
 
-        MD.ElevationRectangle {
-            Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            visible: root.installedPlugins.length > 0
-            implicitHeight: listCol.implicitHeight + MD.Token.spacing.small * 2
-            radius: MD.Token.shape.corner.large
-            color: MD.Token.color.surface_container
-            elevation: MD.Token.elevation.level0
+            Repeater {
+                model: root.installedPlugins
 
-            ColumnLayout {
-                id: listCol
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.top: parent.top
-                anchors.margins: MD.Token.spacing.small
-                spacing: 0
+                delegate: SettingsRow {
+                    required property var modelData
+                    title: modelData.name
+                    subtitle: {
+                        const parts = []
+                        if ((modelData.version || "").length)
+                            parts.push("v" + modelData.version)
+                        if (!modelData.loaded)
+                            parts.push(qsTr("not loaded"))
+                        if ((modelData.description || "").length)
+                            parts.push(modelData.description)
+                        return parts.join(" · ")
+                    }
+                    iconName: MD.Token.icon[modelData.iconName] ?? MD.Token.icon.extension
+                    titleColor: modelData.loaded ? MD.Token.color.on_surface : MD.Token.color.error
 
-                Repeater {
-                    model: root.installedPlugins
-
-                    OfficialPluginCard {
-                        required property var modelData
-                        required property int index
-                        plugin: modelData
-                        installed: true
-                        loaded: modelData.loaded
-                        showSource: false
-                        showVersion: true
-                        showDivider: index < root.installedPlugins.length - 1
-                        onUninstallClicked: {
+                    MD.IconButton {
+                        mdState.type: MD.Enum.IBtStandard
+                        icon.name: MD.Token.icon.delete
+                        Accessible.name: qsTr("Remove plugin?")
+                        onClicked: {
                             removeDialog.pluginId = modelData.pluginId
                             removeDialog.pluginName = modelData.name
                             removeDialog.open()
@@ -191,32 +121,39 @@ Flickable {
 
         MD.Label {
             Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
+            Layout.leftMargin: MD.Token.spacing.medium
             visible: Core.lastPluginError.length > 0
             text: Core.lastPluginError
             color: MD.Token.color.error
             wrapMode: Text.WordWrap
-            typescale: MD.Token.typescale.body_small
+            typescale: MD.Token.typescale.body_medium
         }
 
-        RowLayout {
-            Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            Layout.bottomMargin: MD.Token.spacing.medium
-            spacing: MD.Token.spacing.small
+        SettingsGroup {
+            title: qsTr("Get more")
 
-            MD.Button {
-                Layout.fillWidth: true
-                mdState.type: MD.Enum.BtText
-                text: qsTr("Install from file…")
+            SettingsRow {
+                title: qsTr("Plugin store")
+                subtitle: qsTr("Official and community plugins.")
+                iconName: MD.Token.icon.storefront
+                clickable: true
+                showChevron: true
+                onClicked: root.openStoreRequested()
+            }
+
+            SettingsRow {
+                title: qsTr("Install from file…")
+                iconName: MD.Token.icon.upload_file
+                clickable: true
+                showChevron: true
                 onClicked: Core.browsePluginArach()
             }
 
-            MD.Button {
-                mdState.type: MD.Enum.BtText
-                text: qsTr("Open folder")
+            SettingsRow {
+                title: qsTr("Open folder")
+                iconName: MD.Token.icon.folder_open
+                clickable: true
+                showChevron: true
                 onClicked: Core.openPluginsFolder()
             }
         }

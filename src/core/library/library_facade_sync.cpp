@@ -3,6 +3,7 @@
 #include "install_heuristics.h"
 
 #include <QFileInfo>
+#include <QRegularExpression>
 
 namespace arachnel::core {
 
@@ -369,8 +370,30 @@ int CoreController::recalculateLibraryUpdates(bool notify)
     return m_gameUpdates ? m_gameUpdates->recalculateLibraryUpdates(notify) : 0;
 }
 
+void CoreController::repairLibraryTitles()
+{
+    // Games found by "Scan for installed games" are named after their folder (the Steam app id).
+    // Once the catalog knows them, show the real name everywhere.
+    static const QRegularExpression digitsOnly(QStringLiteral("^[0-9]+$"));
+    bool changed = false;
+    for (const LibraryGame& game : m_libraryStore.games()) {
+        if (!digitsOnly.match(game.title.trimmed()).hasMatch())
+            continue;
+        const CatalogEntry* entry = findCatalogEntry(game.id);
+        if (!entry || entry->title.trimmed().isEmpty() || entry->title == game.title)
+            continue;
+        LibraryGame fixed = game;
+        fixed.title = entry->title;
+        m_libraryStore.upsertGame(fixed);
+        changed = true;
+    }
+    if (changed)
+        syncLibraryFromStore();
+}
+
 void CoreController::onCatalogReady()
 {
+    repairLibraryTitles();
     const int updates = recalculateLibraryUpdates(false);
     if (m_catalogDiscovery)
         m_catalogDiscovery->onCatalogCacheRebuilt();

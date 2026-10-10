@@ -19,7 +19,7 @@
         <translation>Поиск игр</translation>
     </message>
     <message>
-        <location line="+164"/>
+        <location line="+167"/>
         <source>Settings</source>
         <translation>Настройки</translation>
     </message>
@@ -88,7 +88,7 @@
         <translation>Arachnel</translation>
     </message>
     <message>
-        <location line="+239"/>
+        <location line="+254"/>
         <source>Library</source>
         <translation>Библиотека</translation>
     </message>
@@ -557,7 +557,7 @@
 <context>
     <name>CatalogPageContent</name>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="+294"/>
+        <location filename="../qml/app/CatalogPageContent.qml" line="+327"/>
         <source>With friends</source>
         <translation>С друзьями</translation>
     </message>
@@ -972,7 +972,7 @@
         <location line="+1"/>
         <location filename="../src/core/jobs/job_status.cpp" line="+8"/>
         <location filename="../src/core/catalog/catalog_facade_install.cpp" line="+263"/>
-        <location filename="../src/core/library/library_facade_sync.cpp" line="+232"/>
+        <location filename="../src/core/library/library_facade_sync.cpp" line="+233"/>
         <source>Install failed</source>
         <translation>Ошибка установки</translation>
     </message>
@@ -1104,7 +1104,7 @@
         <translation>Нельзя отменить перемещение</translation>
     </message>
     <message>
-        <location filename="../src/core/library/library_facade_sync.cpp" line="+152"/>
+        <location filename="../src/core/library/library_facade_sync.cpp" line="+174"/>
         <source>%1 update(s) available</source>
         <translation>Доступно обновлений: %1</translation>
     </message>
@@ -1678,7 +1678,7 @@
     <message>
         <location filename="../src/core/catalog/catalog_facade_install.cpp" line="+24"/>
         <location line="+20"/>
-        <location filename="../src/core/library/library_facade_sync.cpp" line="-204"/>
+        <location filename="../src/core/library/library_facade_sync.cpp" line="-226"/>
         <source>Catalog entry not found: %1</source>
         <translation>Запись каталога не найдена: %1</translation>
     </message>
@@ -2684,6 +2684,24 @@
     </message>
 </context>
 <context>
+    <name>DiscoverHeroCarousel</name>
+    <message>
+        <location filename="../qml/components/DiscoverHeroCarousel.qml" line="+130"/>
+        <source>Tonight&apos;s pick</source>
+        <translation>Выбор на вечер</translation>
+    </message>
+    <message>
+        <location line="+29"/>
+        <source>Open game</source>
+        <translation>Открыть игру</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Next</source>
+        <translation>Дальше</translation>
+    </message>
+</context>
+<context>
     <name>DlcUpdateRiskDialog</name>
     <message>
         <location filename="../qml/components/DlcUpdateRiskDialog.qml" line="+13"/>
@@ -2991,7 +3009,7 @@
         <translation>Не удалось установить автоматически. Запустите установщик, затем укажите папку кнопкой с папкой.</translation>
     </message>
     <message>
-        <location line="+86"/>
+        <location line="+87"/>
         <source>Show less</source>
         <translation>Свернуть</translation>
     </message>
@@ -3038,17 +3056,17 @@
         <translation>URL каталога</translation>
     </message>
     <message>
-        <location line="-230"/>
+        <location line="-231"/>
         <source>Launch log</source>
         <translation>Лог запуска</translation>
     </message>
     <message>
-        <location line="+414"/>
+        <location line="+415"/>
         <source>Copy link</source>
         <translation>Скопировать ссылку</translation>
     </message>
     <message>
-        <location line="-361"/>
+        <location line="-362"/>
         <source>Install failed</source>
         <translation>Ошибка установки</translation>
     </message>
@@ -3074,29 +3092,29 @@
     </message>
     <message>
         <location line="+72"/>
-        <location line="+355"/>
+        <location line="+356"/>
         <source>Remove from favorites</source>
         <translation>Убрать из избранного</translation>
     </message>
     <message>
-        <location line="-355"/>
-        <location line="+355"/>
+        <location line="-356"/>
+        <location line="+356"/>
         <source>Add to favorites</source>
         <translation>В избранное</translation>
     </message>
     <message>
-        <location line="-321"/>
-        <location line="+609"/>
+        <location line="-322"/>
+        <location line="+610"/>
         <source>Delete</source>
         <translation>Удалить</translation>
     </message>
     <message>
-        <location line="-674"/>
+        <location line="-675"/>
         <source>Update</source>
         <translation>Обновление</translation>
     </message>
     <message>
-        <location line="+152"/>
+        <location line="+153"/>
         <location line="+197"/>
         <source>Description</source>
         <translation>Описание</translation>
@@ -3152,7 +3170,7 @@
         <translation>Закрыть</translation>
     </message>
     <message>
-        <location line="-516"/>
+        <location line="-517"/>
         <source>Ready to download from Steam CDN. Online Fix can be included when needed.</source>
         <translation>Готово к загрузке с Steam CDN. При необходимости можно включить Online Fix.</translation>
     </message>
@@ -3162,12 +3180,12 @@
         <translation>Номер сборки файлов игры. Чем он больше, тем новее сборка.</translation>
     </message>
     <message>
-        <location line="+563"/>
+        <location line="+564"/>
         <source>Back</source>
         <translation>Назад</translation>
     </message>
     <message>
-        <location line="-351"/>
+        <location line="-352"/>
         <source>More actions</source>
         <translation>Ещё действия</translation>
     </message>
@@ -3866,7 +3884,7 @@
 <context>
     <name>LibraryGameCard</name>
     <message numerus="yes">
-        <location filename="../qml/components/LibraryGameCard.qml" line="+27"/>
+        <location filename="../qml/components/LibraryGameCard.qml" line="+33"/>
         <location line="+3"/>
         <source>%n add-ons</source>
         <translation>
@@ -4587,52 +4605,52 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>macOS</translation>
     </message>
     <message>
-        <location line="+22"/>
+        <location line="+58"/>
         <source>Browse catalogs, download games, and launch from your library.</source>
         <translation>Каталоги, загрузка игр и запуск из библиотеки.</translation>
     </message>
     <message>
-        <location line="+30"/>
+        <location line="+10"/>
         <source>Application</source>
         <translation>Приложение</translation>
     </message>
     <message>
-        <location line="+20"/>
+        <location line="+3"/>
         <source>Version</source>
         <translation>Версия</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+4"/>
         <source>Unknown</source>
         <translation>Неизвестно</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="+7"/>
         <source>Platform</source>
         <translation>Платформа</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="+12"/>
         <source>Danger zone</source>
         <translation>Опасная зона</translation>
     </message>
     <message>
-        <location line="+25"/>
+        <location line="+3"/>
         <source>Delete application data</source>
         <translation>Удалить данные приложения</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+2"/>
         <source>Deletes settings, download history, caches, plugins, and Proton from the app folder. Game files on your disks stay. Arachnel will quit afterward.</source>
         <translation>Удаляет настройки, историю загрузок, кэши, плагины и Proton из папки приложения. Файлы игр на дисках остаются. После этого Arachnel закроется.</translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location line="+13"/>
         <source>Delete application data…</source>
         <translation>Удалить данные приложения…</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="+12"/>
         <source>Delete application data?</source>
         <translation>Удалить данные приложения?</translation>
     </message>
@@ -4655,7 +4673,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
 <context>
     <name>SettingsAppearancePage</name>
     <message>
-        <location filename="../qml/settings/SettingsAppearancePage.qml" line="+15"/>
+        <location filename="../qml/settings/SettingsAppearancePage.qml" line="+14"/>
         <source>English</source>
         <translation>English</translation>
     </message>
@@ -4665,47 +4683,57 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>Русский</translation>
     </message>
     <message>
-        <location line="+30"/>
+        <location line="+24"/>
+        <source>Theme</source>
+        <translation>Тема</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Theme and colors apply across the app.</source>
         <translation>Тема и цвета применяются ко всему приложению.</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="+3"/>
         <source>Dark theme</source>
         <translation>Тёмная тема</translation>
     </message>
     <message>
-        <location line="+0"/>
-        <source>Light theme</source>
-        <translation>Светлая тема</translation>
+        <location line="+21"/>
+        <source>Colors</source>
+        <translation>Цвета</translation>
     </message>
     <message>
-        <location line="+47"/>
+        <location line="+70"/>
+        <source>Missing your language? Help translate Arachnel on Weblate.</source>
+        <translation>Нет вашего языка? Помогите перевести Arachnel на Weblate.</translation>
+    </message>
+    <message>
+        <location line="-67"/>
         <source>Palette</source>
         <translation>Палитра</translation>
     </message>
     <message>
-        <location line="+43"/>
+        <location line="+26"/>
         <source>Primary</source>
         <translation>Основной</translation>
     </message>
     <message>
-        <location line="+35"/>
+        <location line="+26"/>
         <source>Language</source>
         <translation>Язык</translation>
     </message>
     <message>
-        <location line="+35"/>
+        <location line="+3"/>
+        <source>Interface language</source>
+        <translation>Язык интерфейса</translation>
+    </message>
+    <message>
+        <location line="+11"/>
         <source>Community translations</source>
         <translation>Переводы сообщества</translation>
     </message>
     <message>
-        <location line="+16"/>
-        <source>Help translate</source>
-        <translation>Помочь с переводом</translation>
-    </message>
-    <message>
-        <location line="-151"/>
+        <location line="-80"/>
         <source>Reduce motion</source>
         <translation>Уменьшить анимации</translation>
     </message>
@@ -4713,32 +4741,32 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
 <context>
     <name>SettingsFriendsPage</name>
     <message>
-        <location filename="../qml/settings/SettingsFriendsPage.qml" line="+70"/>
+        <location filename="../qml/settings/SettingsFriendsPage.qml" line="+46"/>
         <source>Identity</source>
         <translation>Профиль</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+1"/>
         <source>This name is shown in invites and presence.</source>
         <translation>Это имя показывается в приглашениях и статусе.</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="+8"/>
         <source>Display name</source>
         <translation>Имя профиля</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="+7"/>
         <source>Device ID: %1</source>
         <translation>ID устройства: %1</translation>
     </message>
     <message>
-        <location line="+33"/>
+        <location line="+6"/>
         <source>Relay</source>
         <translation>Релей</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+1"/>
         <source>Used for invites and presence.</source>
         <translation>Для приглашений и статуса в игре.</translation>
     </message>
@@ -4748,7 +4776,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>URL релея</translation>
     </message>
     <message>
-        <location line="+27"/>
+        <location line="+8"/>
         <source>Save</source>
         <translation>Сохранить</translation>
     </message>
@@ -4922,9 +4950,9 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
 <context>
     <name>SettingsPage</name>
     <message>
-        <location filename="../qml/settings/SettingsPage.qml" line="+26"/>
+        <location filename="../qml/settings/SettingsPage.qml" line="+30"/>
         <location line="+3"/>
-        <location line="+111"/>
+        <location line="+138"/>
         <source>Settings</source>
         <translation>Настройки</translation>
     </message>
@@ -4984,7 +5012,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>О приложении</translation>
     </message>
     <message>
-        <location line="+55"/>
+        <location line="+60"/>
         <source>Back</source>
         <translation>Назад</translation>
     </message>
@@ -4997,17 +5025,22 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
 <context>
     <name>SettingsPluginStorePage</name>
     <message>
-        <location filename="../qml/settings/SettingsPluginStorePage.qml" line="+82"/>
+        <location filename="../qml/settings/SettingsPluginStorePage.qml" line="+81"/>
         <source>Refresh list</source>
         <translation>Обновить список</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="-10"/>
         <source>Loading official plugins…</source>
         <translation>Загрузка официальных плагинов…</translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location line="-8"/>
+        <source>Official plugins</source>
+        <translation>Официальные плагины</translation>
+    </message>
+    <message>
+        <location line="+11"/>
         <source>No official plugins available for this platform.</source>
         <translation>Для этой платформы нет официальных плагинов.</translation>
     </message>
@@ -5035,37 +5068,58 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
 <context>
     <name>SettingsPluginsPage</name>
     <message>
-        <location filename="../qml/settings/SettingsPluginsPage.qml" line="+95"/>
+        <location filename="../qml/settings/SettingsPluginsPage.qml" line="+136"/>
         <source>Plugin store</source>
         <translation>Магазин плагинов</translation>
     </message>
     <message>
-        <location line="+42"/>
+        <location line="-52"/>
         <source>No plugins installed</source>
         <translation>Нет установленных плагинов</translation>
     </message>
     <message>
-        <location line="+127"/>
+        <location line="+117"/>
         <source>Delete</source>
         <translation>Удалить</translation>
     </message>
     <message>
-        <location line="-51"/>
+        <location line="-56"/>
         <source>Install from file…</source>
         <translation>Установить из файла…</translation>
     </message>
     <message>
-        <location line="-68"/>
+        <location line="-66"/>
+        <source>Installed</source>
+        <translation>Установленные</translation>
+    </message>
+    <message>
+        <location line="+6"/>
         <source>Open the plugin store and install a plugin to browse games.</source>
         <translation>Откройте магазин плагинов и поставьте плагин, чтобы смотреть игры.</translation>
     </message>
     <message>
-        <location line="+74"/>
+        <location line="+15"/>
+        <source>not loaded</source>
+        <translation>не загружен</translation>
+    </message>
+    <message>
+        <location line="+33"/>
+        <source>Get more</source>
+        <translation>Ещё плагины</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Official and community plugins.</source>
+        <translation>Официальные плагины и плагины сообщества.</translation>
+    </message>
+    <message>
+        <location line="+16"/>
         <source>Open folder</source>
         <translation>Открыть папку</translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location line="-42"/>
+        <location line="+57"/>
         <source>Remove plugin?</source>
         <translation>Удалить плагин?</translation>
     </message>
@@ -5078,6 +5132,69 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <location line="+18"/>
         <source>Cancel</source>
         <translation>Отмена</translation>
+    </message>
+</context>
+<context>
+    <name>SettingsScreen</name>
+    <message>
+        <location filename="../qml/settings/SettingsScreen.qml" line="+17"/>
+        <source>Plugins</source>
+        <translation>Плагины</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Hydra catalogs</source>
+        <translation>Каталоги Hydra</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Storage</source>
+        <translation>Хранилище</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Updates</source>
+        <translation>Обновления</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Friends</source>
+        <translation>Друзья</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Launch</source>
+        <translation>Запуск</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Appearance</source>
+        <translation>Оформление</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>About</source>
+        <translation>О приложении</translation>
+    </message>
+    <message>
+        <location line="+36"/>
+        <source>Settings</source>
+        <translation>Настройки</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Games and storage</source>
+        <translation>Игры и хранилище</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>People</source>
+        <translation>Люди</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>App</source>
+        <translation>Приложение</translation>
     </message>
 </context>
 <context>
@@ -5113,27 +5230,35 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>Найдено игр: %1</translation>
     </message>
     <message>
-        <location line="+26"/>
+        <location line="+10"/>
+        <source>Catalog</source>
+        <translation>Каталог</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <location line="+6"/>
         <source>Name</source>
         <translation>Название</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+6"/>
+        <location line="+6"/>
         <source>Catalog URL</source>
         <translation>URL каталога</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+6"/>
+        <location line="+6"/>
         <source>Short description (optional)</source>
         <translation>Краткое описание (необязательно)</translation>
     </message>
     <message>
-        <location line="+25"/>
+        <location line="+23"/>
         <source>Cancel</source>
         <translation>Отмена</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+8"/>
         <source>Validating…</source>
         <translation>Проверка…</translation>
     </message>
@@ -5161,17 +5286,17 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>Игры: %1</translation>
     </message>
     <message>
-        <location line="+56"/>
+        <location line="+107"/>
         <source>Add catalog</source>
         <translation>Добавить каталог</translation>
     </message>
     <message>
-        <location line="+42"/>
+        <location line="-62"/>
         <source>No catalogs yet</source>
         <translation>Пока нет каталогов</translation>
     </message>
     <message>
-        <location line="-90"/>
+        <location line="-37"/>
         <source>Off</source>
         <translation>Выкл.</translation>
     </message>
@@ -5181,7 +5306,12 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>Нет URL - каталог не загрузится</translation>
     </message>
     <message>
-        <location line="+203"/>
+        <location line="+34"/>
+        <source>Catalogs</source>
+        <translation>Каталоги</translation>
+    </message>
+    <message>
+        <location line="+39"/>
         <source>Edit</source>
         <translation>Изменить</translation>
     </message>
@@ -5191,7 +5321,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>Открыть URL</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+6"/>
         <source>Delete</source>
         <translation>Удалить</translation>
     </message>
@@ -5199,12 +5329,12 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
 <context>
     <name>SettingsStoragePage</name>
     <message>
-        <location filename="../qml/settings/SettingsStoragePage.qml" line="+191"/>
+        <location filename="../qml/settings/SettingsStoragePage.qml" line="+122"/>
         <source>Add drive…</source>
         <translation>Добавить диск…</translation>
     </message>
     <message>
-        <location line="+203"/>
+        <location line="+132"/>
         <source>Remove drive?</source>
         <translation>Удалить диск?</translation>
     </message>
@@ -5224,32 +5354,42 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>Убрать</translation>
     </message>
     <message>
-        <location line="-229"/>
+        <location line="-158"/>
         <source>Scan for installed games</source>
         <translation>Найти установленные игры</translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location line="-67"/>
+        <source>Drives</source>
+        <translation>Диски</translation>
+    </message>
+    <message>
+        <location line="+35"/>
+        <source>Make default</source>
+        <translation>Сделать основным</translation>
+    </message>
+    <message>
+        <location line="+44"/>
         <source>Games: %1</source>
         <translation>Игры: %1</translation>
     </message>
     <message>
-        <location line="+87"/>
+        <location line="+4"/>
         <source>No games on this drive yet</source>
         <translation>На этом диске пока нет игр</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+42"/>
         <source>Delete</source>
         <translation>Удалить</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="-8"/>
         <source>Move…</source>
         <translation>Переместить…</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="+34"/>
         <source>Move to drive</source>
         <translation>Переместить на диск</translation>
     </message>
@@ -5267,82 +5407,82 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
 <context>
     <name>SettingsUpdatesPage</name>
     <message>
-        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="+38"/>
+        <location filename="../qml/settings/SettingsUpdatesPage.qml" line="+23"/>
         <source>Games</source>
         <translation>Игры</translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+4"/>
         <source>Check for updates on launch</source>
         <translation>Проверять обновления при запуске</translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+7"/>
         <source>Install updates automatically on launch</source>
         <translation>Устанавливать обновления при запуске</translation>
     </message>
     <message>
-        <location line="-57"/>
+        <location line="-10"/>
         <source>Check for game updates and new Arachnel versions.</source>
         <translation>Проверка обновлений игр и новых версий Arachnel.</translation>
     </message>
     <message>
-        <location line="+32"/>
+        <location line="+4"/>
         <source>Shows once at startup when a newer build is available in the catalog.</source>
         <translation>Показывает один раз при запуске, если в каталоге есть более новая сборка.</translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+7"/>
         <source>Downloads updates once at startup. You can turn this off per game.</source>
         <translation>Скачивает обновления один раз при запуске. Можно отключить для отдельной игры.</translation>
     </message>
     <message>
-        <location line="+20"/>
+        <location line="+6"/>
         <source>Check for game updates</source>
         <translation>Проверять обновления игр</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+9"/>
         <source>Arachnel</source>
         <translation>Arachnel</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+3"/>
         <source>Current version: %1</source>
         <translation>Текущая версия: %1</translation>
     </message>
     <message>
-        <location line="+52"/>
+        <location line="+45"/>
         <source>Check for Arachnel updates on startup</source>
         <translation>Проверять обновления Arachnel при запуске</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+1"/>
         <source>Checks for new versions in the background.</source>
         <translation>Проверяет новые версии в фоне.</translation>
     </message>
     <message>
-        <location line="+25"/>
+        <location line="+6"/>
         <source>Include pre-releases</source>
         <translation>Включать пререлизы</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+1"/>
         <source>Offer beta and RC builds from GitHub.</source>
         <translation>Предлагать beta и RC сборки с GitHub.</translation>
     </message>
     <message>
-        <location line="+26"/>
+        <location line="-32"/>
         <source>Check for Arachnel updates</source>
         <translation>Проверять обновления Arachnel</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+7"/>
         <source>Download and install</source>
         <translation>Скачать и установить</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="+8"/>
         <source>Open release page</source>
         <translation>Открыть страницу релиза</translation>
     </message>

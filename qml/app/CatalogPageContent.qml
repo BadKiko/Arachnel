@@ -206,7 +206,40 @@ Item {
                             onSurpriseRequested: content.pickRandomFromShelves()
                         }
 
-                        CatalogDiscoveryHero {
+                        // Genres as quick jumps into the filtered catalog.
+                        Flickable {
+                            id: genreJump
+                            width: parent.width
+                            height: genreJumpRow.implicitHeight
+                            visible: Core.availableCatalogGenres.length > 0 && !content.discoveryNoFeed
+                            contentWidth: genreJumpRow.implicitWidth
+                            contentHeight: height
+                            clip: true
+                            flickableDirection: Flickable.HorizontalFlick
+                            boundsBehavior: Flickable.StopAtBounds
+                            interactive: contentWidth > width
+
+                            Row {
+                                id: genreJumpRow
+                                spacing: MD.Token.spacing.small
+
+                                Repeater {
+                                    model: Core.availableCatalogGenres.slice(0, 14)
+
+                                    delegate: MD.Button {
+                                        required property var modelData
+                                        mdState.type: MD.Enum.BtFilledTonal
+                                        text: Core.catalogGenreLabel(String(modelData))
+                                        onClicked: {
+                                            Core.setCatalogFilters(-1, 0, 0, false, String(modelData), 0)
+                                            page.openFullCatalog("")
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        DiscoverHeroCarousel {
                             width: parent.width
                             visible: !content.discoveryShowSkeleton && !content.discoveryNoFeed
                                      && Core.catalogDiscovery.onFireShelf.count > 0

@@ -33,161 +33,72 @@ Flickable {
     }
 
     contentWidth: width
-    contentHeight: body.implicitHeight + contentMargin
+    contentHeight: body.implicitHeight + MD.Token.spacing.extra_large
     clip: true
     boundsBehavior: Flickable.StopAtBounds
     flickableDirection: Flickable.VerticalFlick
 
-    ColumnLayout {
+    SettingsColumn {
         id: body
-        width: root.width
-        spacing: MD.Token.spacing.medium
+        margin: root.contentMargin
 
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            Layout.topMargin: MD.Token.spacing.small
-            radius: MD.Token.shape.corner.large
-            color: MD.Token.color.surface_container
-            border.width: 1
-            border.color: MD.Token.color.outline_variant
-            implicitHeight: identityCol.implicitHeight + MD.Token.spacing.large * 2
+        SettingsGroup {
+            title: qsTr("Identity")
+            description: qsTr("This name is shown in invites and presence.")
 
-            ColumnLayout {
-                id: identityCol
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.top: parent.top
-                anchors.margins: MD.Token.spacing.large
-                spacing: MD.Token.spacing.medium
+            SettingsRow {
+                iconName: MD.Token.icon.person
 
-                ColumnLayout {
+                below: AppTextField {
                     Layout.fillWidth: true
-                    spacing: 4
-
-                    MD.Label {
-                        text: qsTr("Identity")
-                        typescale: MD.Token.typescale.title_medium
-                    }
-
-                    MD.Label {
-                        Layout.fillWidth: true
-                        text: qsTr("This name is shown in invites and presence.")
-                        color: MD.Token.color.on_surface_variant
-                        typescale: MD.Token.typescale.body_medium
-                        wrapMode: Text.WordWrap
-                    }
-                }
-
-                AppTextField {
-                    Layout.fillWidth: true
-                    Layout.preferredWidth: 1
                     text: root.draftDisplayName
                     placeholderText: qsTr("Display name")
                     onTextEdited: root.draftDisplayName = text
                     onEditingFinished: root.saveIdentity()
                 }
+            }
 
-                Rectangle {
-                    Layout.fillWidth: true
-                    implicitHeight: 72
-                    radius: MD.Token.shape.corner.large
-                    color: MD.Token.color.surface_container_high
-
-                    MD.Label {
-                        anchors.fill: parent
-                        anchors.margins: MD.Token.spacing.medium
-                        text: qsTr("Device ID: %1").arg(Core.social.deviceId)
-                        color: MD.Token.color.on_surface_variant
-                        typescale: MD.Token.typescale.body_small
-                        wrapMode: Text.WordWrap
-                        verticalAlignment: Text.AlignVCenter
-                    }
-                }
+            SettingsRow {
+                title: qsTr("Device ID: %1").arg(Core.social.deviceId)
+                iconName: MD.Token.icon.devices
             }
         }
 
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            radius: MD.Token.shape.corner.large
-            color: MD.Token.color.surface_container
-            border.width: 1
-            border.color: MD.Token.color.outline_variant
-            implicitHeight: relayCol.implicitHeight + MD.Token.spacing.large * 2
+        SettingsGroup {
+            title: qsTr("Relay")
+            description: qsTr("Used for invites and presence.")
 
-            ColumnLayout {
-                id: relayCol
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.top: parent.top
-                anchors.margins: MD.Token.spacing.large
-                spacing: MD.Token.spacing.medium
+            SettingsRow {
+                title: Core.social.relayStatus
+                titleColor: Core.social.relayConnected ? MD.Token.color.on_surface : MD.Token.color.error
+                iconName: Core.social.relayConnected ? MD.Token.icon.cloud_done : MD.Token.icon.cloud_off
 
-                ColumnLayout {
-                    Layout.fillWidth: true
-                    spacing: 4
-
-                    MD.Label {
-                        text: qsTr("Relay")
-                        typescale: MD.Token.typescale.title_medium
-                    }
-
-                    MD.Label {
+                below: [
+                    AppTextField {
                         Layout.fillWidth: true
-                        text: qsTr("Used for invites and presence.")
-                        color: MD.Token.color.on_surface_variant
-                        typescale: MD.Token.typescale.body_medium
-                        wrapMode: Text.WordWrap
+                        text: root.draftRelayUrl
+                        placeholderText: qsTr("Relay URL")
+                        onTextEdited: root.draftRelayUrl = text
+                        onEditingFinished: root.saveRelay()
+                    },
+                    RowLayout {
+                        spacing: MD.Token.spacing.small
+
+                        MD.Button {
+                            text: qsTr("Save")
+                            icon.name: MD.Token.icon.save
+                            mdState.type: MD.Enum.BtFilledTonal
+                            onClicked: root.saveRelay()
+                        }
+
+                        MD.Button {
+                            text: qsTr("Refresh")
+                            icon.name: MD.Token.icon.refresh
+                            mdState.type: MD.Enum.BtText
+                            onClicked: Core.refreshFriends()
+                        }
                     }
-                }
-
-                AppTextField {
-                    Layout.fillWidth: true
-                    Layout.preferredWidth: 1
-                    text: root.draftRelayUrl
-                    placeholderText: qsTr("Relay URL")
-                    onTextEdited: root.draftRelayUrl = text
-                    onEditingFinished: root.saveRelay()
-                }
-
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: MD.Token.spacing.small
-
-                    MD.Icon {
-                        name: Core.social.relayConnected ? MD.Token.icon.cloud_done
-                                                        : MD.Token.icon.cloud_off
-                        size: 20
-                        color: Core.social.relayConnected ? MD.Token.color.primary
-                                                         : MD.Token.color.error
-                    }
-
-                    MD.Label {
-                        Layout.fillWidth: true
-                        text: Core.social.relayStatus
-                        elide: Text.ElideRight
-                        color: Core.social.relayConnected ? MD.Token.color.on_surface_variant
-                                                         : MD.Token.color.error
-                        typescale: MD.Token.typescale.body_medium
-                    }
-
-                    MD.Button {
-                        text: qsTr("Save")
-                        icon.name: MD.Token.icon.save
-                        mdState.type: MD.Enum.BtFilled
-                        onClicked: root.saveRelay()
-                    }
-
-                    MD.Button {
-                        text: qsTr("Refresh")
-                        icon.name: MD.Token.icon.refresh
-                        mdState.type: MD.Enum.BtText
-                        onClicked: Core.refreshFriends()
-                    }
-                }
+                ]
             }
         }
     }

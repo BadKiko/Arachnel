@@ -50,115 +50,73 @@ Flickable {
     }
 
     contentWidth: width
-    contentHeight: body.implicitHeight
+    contentHeight: body.implicitHeight + MD.Token.spacing.extra_large
     clip: true
     boundsBehavior: Flickable.StopAtBounds
     flickableDirection: Flickable.VerticalFlick
 
-    ColumnLayout {
+    SettingsColumn {
         id: body
-        width: root.width
-        spacing: MD.Token.spacing.medium
+        margin: root.contentMargin
 
-        RowLayout {
-            Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            Layout.topMargin: MD.Token.spacing.small
-            spacing: MD.Token.spacing.small
+        SettingsGroup {
+            title: qsTr("Official plugins")
+            description: Messages.settingsPluginsDesc
 
-            MD.Label {
+            SettingsRow {
+                visible: (Core.pluginCatalog && Core.pluginCatalog.loading)
+                         || (Core.pluginCatalog && Core.pluginCatalog.error.length > 0)
+                         || root.catalogPlugins.length === 0
+                title: Core.pluginCatalog && Core.pluginCatalog.loading
+                       ? qsTr("Loading official plugins…")
+                       : (Core.pluginCatalog && Core.pluginCatalog.error.length > 0
+                          ? Core.pluginCatalog.error
+                          : qsTr("No official plugins available for this platform."))
+                titleColor: Core.pluginCatalog && Core.pluginCatalog.error.length > 0
+                            ? MD.Token.color.error : MD.Token.color.on_surface
+                iconName: MD.Token.icon.storefront
+
+                MD.Button {
+                    mdState.type: MD.Enum.BtText
+                    text: qsTr("Refresh list")
+                    enabled: !(Core.pluginCatalog && Core.pluginCatalog.loading)
+                    onClicked: Core.refreshOfficialPlugins()
+                }
+            }
+
+            Rectangle {
                 Layout.fillWidth: true
-                Layout.alignment: Qt.AlignTop
-                text: Messages.settingsPluginsDesc
-                wrapMode: Text.WordWrap
-                color: MD.Token.color.on_surface_variant
-                typescale: MD.Token.typescale.body_medium
-            }
+                visible: root.catalogPlugins.length > 0
+                implicitHeight: storeCol.implicitHeight + MD.Token.spacing.small * 2
+                radius: 24
+                color: MD.Token.color.surface_container
 
-            MD.Button {
-                Layout.alignment: Qt.AlignTop
-                mdState.type: MD.Enum.BtText
-                text: qsTr("Refresh list")
-                enabled: !(Core.pluginCatalog && Core.pluginCatalog.loading)
-                onClicked: Core.refreshOfficialPlugins()
-            }
-        }
+                ColumnLayout {
+                    id: storeCol
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    anchors.margins: MD.Token.spacing.small
+                    spacing: 0
 
-        MD.Label {
-            Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            visible: Core.pluginCatalog && Core.pluginCatalog.loading
-            text: qsTr("Loading official plugins…")
-            color: MD.Token.color.on_surface_variant
-            typescale: MD.Token.typescale.body_small
-        }
+                    Repeater {
+                        model: root.catalogPlugins
 
-        MD.Label {
-            Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            visible: Core.pluginCatalog && Core.pluginCatalog.error.length > 0
-            text: Core.pluginCatalog ? Core.pluginCatalog.error : ""
-            color: MD.Token.color.error
-            wrapMode: Text.WordWrap
-            typescale: MD.Token.typescale.body_small
-        }
-
-        MD.Label {
-            Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            visible: Core.pluginCatalog && !Core.pluginCatalog.loading
-                     && Core.pluginCatalog.error.length === 0
-                     && root.catalogPlugins.length === 0
-            text: qsTr("No official plugins available for this platform.")
-            color: MD.Token.color.on_surface_variant
-            wrapMode: Text.WordWrap
-            typescale: MD.Token.typescale.body_small
-        }
-
-        MD.ElevationRectangle {
-            Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            visible: root.catalogPlugins.length > 0
-            implicitHeight: storeCol.implicitHeight + MD.Token.spacing.small * 2
-            radius: MD.Token.shape.corner.large
-            color: MD.Token.color.surface_container
-            elevation: MD.Token.elevation.level0
-
-            ColumnLayout {
-                id: storeCol
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.top: parent.top
-                anchors.margins: MD.Token.spacing.small
-                spacing: 0
-
-                Repeater {
-                    model: root.catalogPlugins
-
-                    OfficialPluginCard {
-                        required property var modelData
-                        required property int index
-                        plugin: modelData
-                        installed: root.isPluginInstalled(modelData.id)
-                        installing: root.thisInstalling(modelData.id)
-                        catalogBusy: root.catalogBusy
-                        showDivider: index < root.catalogPlugins.length - 1
-                        onInstallClicked: Core.installOfficialPlugin(modelData.id)
-                        onUninstallClicked: root.requestUninstall(modelData.id, modelData.name)
-                        onSourceClicked: function (url) { Core.openExternalUrl(url) }
+                        OfficialPluginCard {
+                            required property var modelData
+                            required property int index
+                            plugin: modelData
+                            installed: root.isPluginInstalled(modelData.id)
+                            installing: root.thisInstalling(modelData.id)
+                            catalogBusy: root.catalogBusy
+                            showDivider: index < root.catalogPlugins.length - 1
+                            onInstallClicked: Core.installOfficialPlugin(modelData.id)
+                            onUninstallClicked: root.requestUninstall(modelData.id, modelData.name)
+                            onSourceClicked: function (url) { Core.openExternalUrl(url) }
+                        }
                     }
                 }
             }
-        }
-
-        Item {
-            Layout.fillWidth: true
-            Layout.preferredHeight: MD.Token.spacing.medium
         }
     }
 

@@ -19,6 +19,12 @@ Item {
     property int componentCount: 0
     property int installedComponentCount: 0
 
+    // "Steam · v123" without a dangling "v" when the version is unknown.
+    readonly property string metaText: {
+        const src = root.sourceName.length ? root.sourceName.charAt(0).toUpperCase() + root.sourceName.slice(1) : ""
+        return root.version.length ? src + " · v" + root.version : src
+    }
+
     readonly property bool hasAddons: componentCount > 0
     readonly property string addonLabel: {
         if (!hasAddons)
@@ -45,7 +51,13 @@ Item {
         root.activeJob = job
     }
 
-    Component.onCompleted: refreshJob()
+    Component.onCompleted: {
+        refreshJob()
+        // Games found on disk have no cover yet: ask the catalog for one (it is saved into the
+        // library once it lands).
+        if (!root.coverUrl.startsWith("file:"))
+            Core.requestCatalogCover(root.gameId)
+    }
     onGameIdChanged: refreshJob()
 
     readonly property bool hasInstallFolder: root.installPath.length > 0
@@ -64,7 +76,7 @@ Item {
     }
     readonly property string statusLine: {
         if (!showJobStatus)
-            return root.sourceName + " · v" + root.version
+            return root.metaText
         if (activeJob.status === "installing") {
             if (activeJob.detail && activeJob.detail.length)
                 return activeJob.detail
@@ -188,7 +200,7 @@ Item {
         MD.Label {
             Layout.fillWidth: true
             visible: !root.showJobStatus && !root.isRunning
-            text: root.sourceName + " · v" + root.version
+            text: root.metaText
             color: MD.Token.color.on_surface_variant
             typescale: MD.Token.typescale.label_medium
             elide: Text.ElideRight

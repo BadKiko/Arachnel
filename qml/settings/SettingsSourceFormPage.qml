@@ -119,64 +119,62 @@ Flickable {
         }
     }
 
-    ColumnLayout {
+    SettingsColumn {
         id: body
-        width: root.width
-        spacing: MD.Token.spacing.medium
+        margin: root.contentMargin
 
-        MD.Label {
-            Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            Layout.topMargin: MD.Token.spacing.small
-            text: Messages.settingsSourceFormDesc
-            wrapMode: Text.WordWrap
-            color: MD.Token.color.on_surface_variant
-            typescale: MD.Token.typescale.body_medium
-        }
+        SettingsGroup {
+            title: qsTr("Catalog")
+            description: Messages.settingsSourceFormDesc
 
-        AppTextField {
-            id: nameField
-            Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            placeholderText: qsTr("Name")
-            onTextChanged: errorLabel.text = ""
-        }
+            SettingsRow {
+                title: qsTr("Name")
+                iconName: MD.Token.icon.label
 
-        AppTextField {
-            id: urlField
-            Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            placeholderText: qsTr("Catalog URL")
-            onTextChanged: errorLabel.text = ""
-        }
+                below: AppTextField {
+                    id: nameField
+                    Layout.fillWidth: true
+                    placeholderText: qsTr("Name")
+                    onTextChanged: errorLabel.text = ""
+                }
+            }
 
-        AppTextField {
-            id: descriptionField
-            Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            placeholderText: qsTr("Short description (optional)")
+            SettingsRow {
+                title: qsTr("Catalog URL")
+                iconName: MD.Token.icon.link
+
+                below: AppTextField {
+                    id: urlField
+                    Layout.fillWidth: true
+                    placeholderText: qsTr("Catalog URL")
+                    onTextChanged: errorLabel.text = ""
+                }
+            }
+
+            SettingsRow {
+                title: qsTr("Short description (optional)")
+                iconName: MD.Token.icon.notes
+
+                below: AppTextField {
+                    id: descriptionField
+                    Layout.fillWidth: true
+                    placeholderText: qsTr("Short description (optional)")
+                }
+            }
         }
 
         MD.Label {
             id: errorLabel
             Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
+            Layout.leftMargin: MD.Token.spacing.medium
             visible: text.length > 0
             color: MD.Token.color.error
-            typescale: MD.Token.typescale.body_small
+            typescale: MD.Token.typescale.body_medium
             wrapMode: Text.WordWrap
         }
 
         RowLayout {
             Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            Layout.bottomMargin: MD.Token.spacing.medium
             spacing: MD.Token.spacing.small
 
             Item { Layout.fillWidth: true }
@@ -189,6 +187,7 @@ Flickable {
 
             MD.Button {
                 mdState.type: MD.Enum.BtFilled
+                mdState.size: MD.Enum.M
                 text: root.validating
                       ? qsTr("Validating…")
                       : (root.editing ? qsTr("Save") : qsTr("Add"))

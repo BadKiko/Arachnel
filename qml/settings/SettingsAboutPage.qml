@@ -24,161 +24,115 @@ Flickable {
     }
 
     contentWidth: width
-    contentHeight: body.implicitHeight
+    contentHeight: body.implicitHeight + MD.Token.spacing.extra_large
     clip: true
     boundsBehavior: Flickable.StopAtBounds
     flickableDirection: Flickable.VerticalFlick
 
-    ColumnLayout {
+    SettingsColumn {
         id: body
-        width: root.width
-        spacing: MD.Token.spacing.medium
+        margin: root.contentMargin
 
-        MD.Label {
-            Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            Layout.topMargin: MD.Token.spacing.small
-            text: qsTr("Browse catalogs, download games, and launch from your library.")
-            color: MD.Token.color.on_surface_variant
-            wrapMode: Text.WordWrap
-            typescale: MD.Token.typescale.body_medium
-        }
-
+        // App identity, like a hero card.
         Rectangle {
             Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            radius: MD.Token.shape.corner.large
-            color: MD.Token.color.surface_container
-            border.width: 1
-            border.color: MD.Token.color.outline_variant
-            implicitHeight: aboutColumn.implicitHeight + MD.Token.spacing.medium * 2
+            implicitHeight: heroRow.implicitHeight + 2 * MD.Token.spacing.large
+            radius: 28
+            color: MD.Token.color.primary_container
 
-            ColumnLayout {
-                id: aboutColumn
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.verticalCenter: parent.verticalCenter
-                anchors.margins: MD.Token.spacing.medium
-                spacing: MD.Token.spacing.small
+            RowLayout {
+                id: heroRow
+                anchors.fill: parent
+                anchors.margins: MD.Token.spacing.large
+                spacing: MD.Token.spacing.large
 
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: MD.Token.spacing.medium
+                ShapeIcon {
+                    Layout.preferredWidth: 72
+                    Layout.preferredHeight: 72
+                    kind: "cookie9"
+                    color: MD.Token.color.primary
+                    iconColor: MD.Token.color.on_primary
 
-                    MD.Label {
-                        Layout.fillWidth: true
-                        text: qsTr("Application")
-                        color: MD.Token.color.on_surface_variant
-                        typescale: MD.Token.typescale.label_large
+                    SpiderWebMark {
+                        anchors.centerIn: parent
+                        width: 40
+                        height: 40
+                        strokeColor: MD.Token.color.on_primary
+                        strokeWidth: 1.8
+                        rings: 3
+                        spokes: 8
                     }
+                }
 
-                    MD.Label {
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: 2
+
+                    DisplayTitle {
+                        size: 30
+                        color: MD.Token.color.on_primary_container
                         text: Qt.application.name.length ? Qt.application.name : "Arachnel"
-                        typescale: MD.Token.typescale.body_large
-                        horizontalAlignment: Text.AlignRight
                     }
-                }
-
-                MD.Divider { Layout.fillWidth: true }
-
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: MD.Token.spacing.medium
-
                     MD.Label {
                         Layout.fillWidth: true
-                        text: qsTr("Version")
-                        color: MD.Token.color.on_surface_variant
-                        typescale: MD.Token.typescale.label_large
-                    }
-
-                    MD.Label {
-                        text: Qt.application.version.length ? ("v" + Qt.application.version) : qsTr("Unknown")
-                        typescale: MD.Token.typescale.body_large
-                        horizontalAlignment: Text.AlignRight
-                    }
-                }
-
-                MD.Divider { Layout.fillWidth: true }
-
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: MD.Token.spacing.medium
-
-                    MD.Label {
-                        Layout.fillWidth: true
-                        text: qsTr("Platform")
-                        color: MD.Token.color.on_surface_variant
-                        typescale: MD.Token.typescale.label_large
-                    }
-
-                    MD.Label {
-                        text: root.platformLabel
-                        typescale: MD.Token.typescale.body_large
-                        horizontalAlignment: Text.AlignRight
+                        text: qsTr("Browse catalogs, download games, and launch from your library.")
+                        color: MD.Token.color.on_primary_container
+                        wrapMode: Text.WordWrap
+                        typescale: MD.Token.typescale.body_medium
                     }
                 }
             }
         }
 
-        MD.Label {
-            Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            Layout.topMargin: MD.Token.spacing.small
-            text: qsTr("Danger zone")
-            typescale: MD.Token.typescale.title_small
+        SettingsGroup {
+            title: qsTr("Application")
+
+            SettingsRow {
+                title: qsTr("Version")
+                iconName: MD.Token.icon.tag
+
+                MD.Label {
+                    text: Qt.application.version.length ? ("v" + Qt.application.version) : qsTr("Unknown")
+                    typescale: MD.Token.typescale.title_medium
+                    color: MD.Token.color.on_surface_variant
+                }
+            }
+
+            SettingsRow {
+                title: qsTr("Platform")
+                iconName: MD.Token.icon.computer
+
+                MD.Label {
+                    text: root.platformLabel
+                    typescale: MD.Token.typescale.title_medium
+                    color: MD.Token.color.on_surface_variant
+                }
+            }
         }
 
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.leftMargin: contentMargin
-            Layout.rightMargin: contentMargin
-            Layout.bottomMargin: MD.Token.spacing.medium
-            radius: MD.Token.shape.corner.large
-            color: MD.Token.color.surface_container
-            border.width: 1
-            border.color: MD.Token.color.outline_variant
-            implicitHeight: dangerCol.implicitHeight + MD.Token.spacing.medium * 2
+        SettingsGroup {
+            title: qsTr("Danger zone")
 
-            ColumnLayout {
-                id: dangerCol
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.top: parent.top
-                anchors.margins: MD.Token.spacing.medium
-                spacing: MD.Token.spacing.small
+            SettingsRow {
+                title: qsTr("Delete application data")
+                titleColor: MD.Token.color.error
+                subtitle: qsTr("Deletes settings, download history, caches, plugins, and Proton from the app folder. Game files on your disks stay. Arachnel will quit afterward.")
+                iconName: MD.Token.icon.delete_forever
 
-                MD.Label {
-                    Layout.fillWidth: true
-                    text: qsTr("Delete application data")
-                    typescale: MD.Token.typescale.title_small
-                }
-
-                MD.Label {
-                    Layout.fillWidth: true
-                    text: qsTr("Deletes settings, download history, caches, plugins, and Proton from the app folder. Game files on your disks stay. Arachnel will quit afterward.")
-                    wrapMode: Text.WordWrap
-                    color: MD.Token.color.on_surface_variant
-                    typescale: MD.Token.typescale.body_small
-                }
-
-                MD.Label {
-                    Layout.fillWidth: true
-                    text: Core.applicationDataPath()
-                    wrapMode: Text.WrapAnywhere
-                    color: MD.Token.color.on_surface_variant
-                    typescale: MD.Token.typescale.label_small
-                }
-
-                MD.Button {
-                    Layout.fillWidth: true
-                    mdState.type: MD.Enum.BtOutlined
-                    text: qsTr("Delete application data…")
-                    onClicked: clearDataDialog.open()
-                }
+                below: [
+                    MD.Label {
+                        Layout.fillWidth: true
+                        text: Core.applicationDataPath()
+                        wrapMode: Text.WrapAnywhere
+                        color: MD.Token.color.on_surface_variant
+                        typescale: MD.Token.typescale.label_medium
+                    },
+                    MD.Button {
+                        mdState.type: MD.Enum.BtOutlined
+                        text: qsTr("Delete application data…")
+                        onClicked: clearDataDialog.open()
+                    }
+                ]
             }
         }
     }
