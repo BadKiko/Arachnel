@@ -1,8 +1,13 @@
 #include "plugin_catalog_json.h"
 
+#include "json_row_scanner.h"
+
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QtConcurrent>
+
+#include <algorithm>
 
 namespace arachnel::core {
 
@@ -233,11 +238,93 @@ QVector<CatalogEntry> parsePluginCatalogJson(const QByteArray& json,
     return parsePluginCatalogJsonEx(json, defaultSourceId, nullptr);
 }
 
+namespace {
+
+// A feed this big as one QJsonDocument is a DOM several times its size (a 49 MB catalog peaked
+// at ~1 GB, and the heap stayed committed afterwards). Cut the rows out without parsing them
+// and parse them in small batches, in parallel; only one batch is ever a DOM.
+constexpr qsizetype kStreamingThreshold = 4 * 1024 * 1024;
+constexpr qsizetype kRowsPerBatch = 1024;
+
+bool parseRowsStreaming(const QByteArray& json, const QString& defaultSourceId,
+                        QVector<CatalogEntry>* out, QStringList* supersedes)
+{
+    const char* data = json.constData();
+    const qsizetype n = json.size();
+    jsonrows::Range range;
+    QVector<jsonrows::RowSpan> spans;
+    const QByteArrayList rowKeys{QByteArrayLiteral("entries"), QByteArrayLiteral("downloads"),
+                                 QByteArrayLiteral("games")};
+    if (!jsonrows::locateRows(data, n, rowKeys, &range)
+        || !jsonrows::collectRowSpans(data, n, range, &spans) || spans.isEmpty()) {
+        return false;
+    }
+
+    if (supersedes) {
+        jsonrows::Range sup;
+        if (jsonrows::locateRows(data, n, {QByteArrayLiteral("supersedes")}, &sup) && sup.valid()) {
+            const QByteArray arr = QByteArray("[") + QByteArray::fromRawData(data + sup.begin, sup.end - sup.begin) + "]";
+            for (const QJsonValue& v : QJsonDocument::fromJson(arr).array()) {
+                const QString id = v.toString();
+                if (!id.isEmpty())
+                    supersedes->append(id);
+            }
+        }
+    }
+
+    struct Batch {
+        qsizetype first;
+        qsizetype last;
+    };
+    QVector<Batch> batches;
+    for (qsizetype i = 0; i < spans.size(); i += kRowsPerBatch)
+        batches.append({i, std::min<qsizetype>(i + kRowsPerBatch, spans.size())});
+
+    const auto parseBatch = [&](const Batch& b) {
+        QByteArray input;
+        input.reserve((spans.at(b.last - 1).end - spans.at(b.first).begin) + (b.last - b.first) + 2);
+        input.append('[');
+        for (qsizetype i = b.first; i < b.last; ++i) {
+            if (i > b.first)
+                input.append(',');
+            input.append(data + spans.at(i).begin, spans.at(i).end - spans.at(i).begin);
+        }
+        input.append(']');
+        QVector<CatalogEntry> rows;
+        const QJsonArray arr = QJsonDocument::fromJson(input).array();
+        rows.reserve(arr.size());
+        for (const QJsonValue& v : arr) {
+            if (v.isObject())
+                rows.append(entryFromJson(v.toObject(), defaultSourceId));
+        }
+        return rows;
+    };
+    QVector<QVector<CatalogEntry>> parts =
+        QtConcurrent::blockingMapped<QVector<QVector<CatalogEntry>>>(batches, parseBatch);
+
+    qsizetype total = 0;
+    for (const auto& part : std::as_const(parts))
+        total += part.size();
+    out->reserve(total);
+    for (auto& part : parts) {
+        for (CatalogEntry& e : part)
+            out->append(std::move(e));
+        part.clear();
+        part.squeeze();
+    }
+    return true;
+}
+
+} // namespace
+
 QVector<CatalogEntry> parsePluginCatalogJsonEx(const QByteArray& json,
                                                const QString& defaultSourceId,
                                                QStringList* supersedes)
 {
     QVector<CatalogEntry> out;
+    if (json.size() >= kStreamingThreshold && parseRowsStreaming(json, defaultSourceId, &out, supersedes))
+        return out;
+    out.clear();
     const QJsonDocument doc = QJsonDocument::fromJson(json);
     QJsonArray arr;
     if (doc.isObject()) {
