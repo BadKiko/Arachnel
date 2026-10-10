@@ -328,7 +328,15 @@ void CatalogCoverCoordinator::releasePlanRemote(const QString& entryId, CoverPla
 
 void CatalogCoverCoordinator::ensureCurrentUrl(const QString& entryId, CoverPlan& plan)
 {
+    // Every pass either returns or moves to the next URL; the budget is a seat belt so a future
+    // branch that forgets to advance can never freeze the UI thread again.
+    int budget = static_cast<int>(plan.urls.size()) + 4;
     while (plan.index < plan.urls.size()) {
+        if (--budget < 0) {
+            plan.phase = plan.appliedLocal.startsWith(QStringLiteral("file:")) ? PlanPhase::Done
+                                                                               : PlanPhase::Failed;
+            return;
+        }
         const QString remote = plan.urls.at(plan.index);
         if (const QString local = m_coverCache->localUrlFor(remote); !local.isEmpty()) {
             m_coverCache->noteCacheHit();
@@ -347,6 +355,10 @@ void CatalogCoverCoordinator::ensureCurrentUrl(const QString& entryId, CoverPlan
                 plan.phase = PlanPhase::Done;
                 return;
             }
+            // A cached small image is on screen and the HQ upgrade was already queued: move on to
+            // the next URL. (Without advancing, this loop never ended and froze the window.)
+            ++plan.index;
+            ++m_ladderAdvances;
             continue;
         }
 
