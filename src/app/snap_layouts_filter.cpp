@@ -32,6 +32,11 @@ public:
     {
         if (eventType != "windows_generic_MSG" || !m_window || !m_titleBar)
             return false;
+        // QWindow::winId() creates the platform window when it does not exist. While the main
+        // window is being torn down that means a CreateWindowEx per native message, each one
+        // producing more messages: the process spun for ~30 s after the window had closed.
+        if (!m_window->handle())
+            return false;
 
         MSG* msg = static_cast<MSG*>(message);
         if (msg->hwnd != reinterpret_cast<HWND>(m_window->winId()))
