@@ -12,12 +12,12 @@
 | Плагин | Репозиторий | Статус |
 |--------|-------------|--------|
 | `freetp` | [arachnel_freetp_plugin](https://github.com/BadKikoSecond/arachnel_freetp_plugin) | реализован (API v4, torrent → install) |
-| `steamidra` | [arachnel-plugin-steamidra](https://gitlab.com/BadKiko/arachnel-plugin-steamidra) | реализован (API v4, `owns_download`, GPL-3) |
+| `steamidra` | [arachnel_plugin_steamidra](https://github.com/BadKikoSecond/arachnel_plugin_steamidra) | реализован (API v4, `owns_download`, GPL-3) |
 | `online-fix` | — | не начат |
 
 Официальный список пакетов (что ставит лаунчер из магазина):
 
-`https://gitlab.com/BadKiko/arachnel-plugins-sourcelist/-/raw/main/plugins.json`
+`https://raw.githubusercontent.com/BadKikoSecond/arachnel_plugins_sourcelist/main/plugins.json`
 
 Schema **v2**: `builds[]` with `minArachnel` / `maxArachnel` / `abiToken`. The launcher picks a compatible build for the running app version.
 

@@ -26,7 +26,7 @@ namespace arachnel::core {
 namespace {
 
 const char* kDefaultCatalogUrl =
-    "https://gitlab.com/BadKiko/arachnel-plugins-sourcelist/-/raw/main/plugins.json";
+    "https://raw.githubusercontent.com/BadKikoSecond/arachnel_plugins_sourcelist/main/plugins.json";
 
 QStringList platformsFromJson(const QJsonValue& value)
 {
