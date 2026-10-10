@@ -555,49 +555,6 @@
     </message>
 </context>
 <context>
-    <name>CatalogPageContent</name>
-    <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="+327"/>
-        <source>With friends</source>
-        <translation>С друзьями</translation>
-    </message>
-    <message>
-        <location line="-59"/>
-        <source>Couldn&apos;t load discovery</source>
-        <translation>Не удалось загрузить discovery</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Check your connection, or open All games.</source>
-        <translation>Проверь интернет или открой «Все игры».</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>All games</source>
-        <translation>Все игры</translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>No matching games in your catalog</source>
-        <translation>В каталоге нет подходящих игр</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Discovery loaded, but none of these titles are in your enabled sources yet.</source>
-        <translation>Подборки загружены, но этих игр ещё нет во включённых источниках.</translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>Recommended for you</source>
-        <translation>Рекомендуем вам</translation>
-    </message>
-    <message>
-        <location line="+26"/>
-        <source>Popular this week</source>
-        <translation>Популярное на этой неделе</translation>
-    </message>
-</context>
-<context>
     <name>CatalogScrollHeader</name>
     <message>
         <location filename="../qml/components/CatalogScrollHeader.qml" line="+68"/>
@@ -1641,7 +1598,7 @@
         <translation>Не удалось запустить игру</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_facade_query.cpp" line="+8"/>
+        <location filename="../src/core/catalog/catalog_facade_query.cpp" line="+12"/>
         <source>Unknown source: %1</source>
         <translation>Неизвестный источник: %1</translation>
     </message>
@@ -1671,7 +1628,7 @@
         <translation>Данные приложения удалены. Arachnel сейчас закроется.</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_facade_query.cpp" line="+71"/>
+        <location filename="../src/core/catalog/catalog_facade_query.cpp" line="+93"/>
         <source>Enter a catalog URL</source>
         <translation>Укажите URL каталога</translation>
     </message>
@@ -2686,6 +2643,89 @@
         <location filename="../qml/app/CrashReportWindow.qml" line="+16"/>
         <source>Application crashed</source>
         <translation>Приложение аварийно завершилось</translation>
+    </message>
+</context>
+<context>
+    <name>DiscoverFeed</name>
+    <message>
+        <location filename="../qml/components/DiscoverFeed.qml" line="+22"/>
+        <source>For you</source>
+        <translation>Для вас</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>With friends</source>
+        <translation>С друзьями</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>New</source>
+        <translation>Новинки</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Solo</source>
+        <translation>Для одного</translation>
+    </message>
+    <message>
+        <location line="+148"/>
+        <source>Discover</source>
+        <translation>Подборки</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>All games</source>
+        <translation>Все игры</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Refresh</source>
+        <translation>Обновить</translation>
+    </message>
+    <message>
+        <location line="+249"/>
+        <source>Open game</source>
+        <translation>Открыть игру</translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>Saved</source>
+        <translation>В избранном</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Save</source>
+        <translation>В избранное</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Details</source>
+        <translation>Подробнее</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Sound</source>
+        <translation>Звук</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Mute</source>
+        <translation>Без звука</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Not for me</source>
+        <translation>Не моё</translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>Up next</source>
+        <translation>Дальше</translation>
+    </message>
+    <message>
+        <location line="+79"/>
+        <source>Wheel or ↑ ↓ to browse · Enter opens · M sound</source>
+        <translation>Колесо или ↑ ↓ — листать · Enter — открыть · M — звук</translation>
     </message>
 </context>
 <context>
@@ -5050,7 +5090,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>Для этой платформы нет официальных плагинов.</translation>
     </message>
     <message>
-        <location line="+85"/>
+        <location line="+79"/>
         <source>Delete</source>
         <translation>Удалить</translation>
     </message>
@@ -5541,6 +5581,35 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <location line="+34"/>
         <source>Got it</source>
         <translation>Понятно</translation>
+    </message>
+</context>
+<context>
+    <name>StorePluginCard</name>
+    <message>
+        <location filename="../qml/settings/StorePluginCard.qml" line="+71"/>
+        <source>Installed · v%1</source>
+        <translation>Установлен · v%1</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Installed</source>
+        <translation>Установлен</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <location line="+5"/>
+        <source>Source code</source>
+        <translation>Исходный код</translation>
+    </message>
+    <message>
+        <location line="+33"/>
+        <source>Install</source>
+        <translation>Установить</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Remove</source>
+        <translation>Удалить</translation>
     </message>
 </context>
 <context>

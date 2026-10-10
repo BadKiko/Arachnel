@@ -554,49 +554,6 @@
     </message>
 </context>
 <context>
-    <name>CatalogPageContent</name>
-    <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="+327"/>
-        <source>With friends</source>
-        <translation>With friends</translation>
-    </message>
-    <message>
-        <location line="-59"/>
-        <source>Couldn&apos;t load discovery</source>
-        <translation>Couldn&apos;t load discovery</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Check your connection, or open All games.</source>
-        <translation>Check your connection, or open All games.</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>All games</source>
-        <translation>All games</translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>No matching games in your catalog</source>
-        <translation>No matching games in your catalog</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Discovery loaded, but none of these titles are in your enabled sources yet.</source>
-        <translation>Discovery loaded, but none of these titles are in your enabled sources yet.</translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>Recommended for you</source>
-        <translation>Recommended for you</translation>
-    </message>
-    <message>
-        <location line="+26"/>
-        <source>Popular this week</source>
-        <translation>Popular this week</translation>
-    </message>
-</context>
-<context>
     <name>CatalogScrollHeader</name>
     <message>
         <location filename="../qml/components/CatalogScrollHeader.qml" line="+68"/>
@@ -1640,7 +1597,7 @@
         <translation>Failed to launch game</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_facade_query.cpp" line="+8"/>
+        <location filename="../src/core/catalog/catalog_facade_query.cpp" line="+12"/>
         <source>Unknown source: %1</source>
         <translation>Unknown source: %1</translation>
     </message>
@@ -1670,7 +1627,7 @@
         <translation>Application data deleted. Arachnel will quit now.</translation>
     </message>
     <message>
-        <location filename="../src/core/catalog/catalog_facade_query.cpp" line="+71"/>
+        <location filename="../src/core/catalog/catalog_facade_query.cpp" line="+93"/>
         <source>Enter a catalog URL</source>
         <translation>Enter a catalog URL</translation>
     </message>
@@ -2685,6 +2642,89 @@
         <location filename="../qml/app/CrashReportWindow.qml" line="+16"/>
         <source>Application crashed</source>
         <translation>Application crashed</translation>
+    </message>
+</context>
+<context>
+    <name>DiscoverFeed</name>
+    <message>
+        <location filename="../qml/components/DiscoverFeed.qml" line="+22"/>
+        <source>For you</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>With friends</source>
+        <translation type="unfinished">With friends</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>New</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Solo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+148"/>
+        <source>Discover</source>
+        <translation type="unfinished">Discover</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>All games</source>
+        <translation type="unfinished">All games</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Refresh</source>
+        <translation type="unfinished">Refresh</translation>
+    </message>
+    <message>
+        <location line="+249"/>
+        <source>Open game</source>
+        <translation type="unfinished">Open game</translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>Saved</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Save</source>
+        <translation type="unfinished">Save</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Details</source>
+        <translation type="unfinished">Details</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Sound</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Mute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Not for me</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>Up next</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+79"/>
+        <source>Wheel or ↑ ↓ to browse · Enter opens · M sound</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -5039,7 +5079,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>No official plugins available for this platform.</translation>
     </message>
     <message>
-        <location line="+85"/>
+        <location line="+79"/>
         <source>Delete</source>
         <translation>Delete</translation>
     </message>
@@ -5530,6 +5570,35 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <location line="+34"/>
         <source>Got it</source>
         <translation>Got it</translation>
+    </message>
+</context>
+<context>
+    <name>StorePluginCard</name>
+    <message>
+        <location filename="../qml/settings/StorePluginCard.qml" line="+71"/>
+        <source>Installed · v%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Installed</source>
+        <translation type="unfinished">Installed</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <location line="+5"/>
+        <source>Source code</source>
+        <translation type="unfinished">Source code</translation>
+    </message>
+    <message>
+        <location line="+33"/>
+        <source>Install</source>
+        <translation type="unfinished">Install</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Remove</source>
+        <translation type="unfinished">Remove</translation>
     </message>
 </context>
 <context>

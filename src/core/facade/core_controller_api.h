@@ -104,6 +104,8 @@
     Q_INVOKABLE void clearCatalogView();
     Q_INVOKABLE int catalogEntryCount(const QString&) const;
     Q_INVOKABLE void prefetchCatalogCounts();
+    /** Random catalog games with a Steam page (so they have media), for the endless feed. */
+    Q_INVOKABLE QStringList randomCatalogEntryIds(int count, const QStringList& exclude = {}) const;
     Q_INVOKABLE void validateHydraCatalogUrl(const QString&, const QString&);
     Q_INVOKABLE void invalidateSourceCatalog(const QString&);
     Q_INVOKABLE void openExternalUrl(const QString&);

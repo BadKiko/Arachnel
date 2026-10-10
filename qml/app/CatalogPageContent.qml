@@ -166,7 +166,7 @@ Item {
         Item {
             id: catalogScrollClip
             anchors.top: page.discoveryMode ? parent.top : catalogStickyToolbar.bottom
-            anchors.topMargin: page.discoveryMode ? MD.Token.spacing.extra_large
+            anchors.topMargin: page.discoveryMode ? page.pageMargin
                                                  : MD.Token.spacing.small
             anchors.left: parent.left
             anchors.right: parent.right
@@ -177,174 +177,30 @@ Item {
             // dropped shelf rows after tab/stack transitions; nested non-interactive
             // ListView previously left contentY stuck. Three shelves don't need
             // virtualization - only the horizontal carousels inside each row do.
+            DiscoverFeed {
+                id: discoverFeed
+                anchors.fill: parent
+                anchors.leftMargin: page.pageMargin
+                anchors.rightMargin: page.pageMargin
+                anchors.bottomMargin: page.pageMargin
+                visible: page.discoveryMode
+                page: content.page
+                onOpenGame: function (id) { content.page.openGame(id) }
+                onVisibleChanged: if (visible) forceActiveFocus()
+            }
+
             Flickable {
                 id: discoveryFlick
                 anchors.fill: parent
-                visible: page.discoveryMode
+                visible: false
                 clip: true
                 contentWidth: width
                 contentHeight: discoveryColumn.height
                 boundsBehavior: Flickable.StopAtBounds
                 pixelAligned: true
 
-                Column {
-                    id: discoveryColumn
-                    width: discoveryFlick.width - page.pageMargin * 2
-                    x: page.pageMargin
-                    topPadding: 0
-                    bottomPadding: MD.Token.spacing.extra_large * 2
-                    spacing: MD.Token.spacing.extra_large
-
-                    Column {
-                        width: parent.width
-                        spacing: MD.Token.spacing.large
-
-                        CatalogDiscoveryHeader {
-                            width: parent.width
-                            page: content.page
-                            onBrowseAllRequested: page.openFullCatalog("")
-                            onSurpriseRequested: content.pickRandomFromShelves()
-                        }
-
-                        // Genres as quick jumps into the filtered catalog.
-                        Flickable {
-                            id: genreJump
-                            width: parent.width
-                            height: genreJumpRow.implicitHeight
-                            visible: Core.availableCatalogGenres.length > 0 && !content.discoveryNoFeed
-                            contentWidth: genreJumpRow.implicitWidth
-                            contentHeight: height
-                            clip: true
-                            flickableDirection: Flickable.HorizontalFlick
-                            boundsBehavior: Flickable.StopAtBounds
-                            interactive: contentWidth > width
-
-                            Row {
-                                id: genreJumpRow
-                                spacing: MD.Token.spacing.small
-
-                                Repeater {
-                                    model: Core.availableCatalogGenres.slice(0, 14)
-
-                                    delegate: MD.Button {
-                                        required property var modelData
-                                        mdState.type: MD.Enum.BtFilledTonal
-                                        text: Core.catalogGenreLabel(String(modelData))
-                                        onClicked: {
-                                            Core.setCatalogFilters(-1, 0, 0, false, String(modelData), 0)
-                                            page.openFullCatalog("")
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        DiscoverHeroCarousel {
-                            width: parent.width
-                            visible: !content.discoveryShowSkeleton && !content.discoveryNoFeed
-                                     && Core.catalogDiscovery.onFireShelf.count > 0
-                            height: visible ? implicitHeight : 0
-                            page: content.page
-                            shelfModel: Core.catalogDiscovery.onFireShelf
-                            onOpenGame: function (id) { page.openGame(id) }
-                        }
-
-                        CatalogDiscoverySkeleton {
-                            width: parent.width
-                            visible: content.discoveryShowSkeleton
-                            height: visible ? implicitHeight : 0
-                            page: content.page
-                        }
-
-
-                        Column {
-                            width: parent.width
-                            visible: content.discoveryNoFeed
-                            height: visible ? implicitHeight : 0
-                            spacing: MD.Token.spacing.small
-
-                            MD.Label {
-                                width: parent.width
-                                text: qsTr("Couldn't load discovery")
-                                typescale: MD.Token.typescale.title_medium
-                            }
-
-                            MD.Label {
-                                width: parent.width
-                                text: qsTr("Check your connection, or open All games.")
-                                wrapMode: Text.WordWrap
-                                color: MD.Token.color.on_surface_variant
-                                typescale: MD.Token.typescale.body_medium
-                            }
-
-                            MD.Button {
-                                mdState.type: MD.Enum.BtFilledTonal
-                                text: qsTr("All games")
-                                onClicked: page.openFullCatalog("")
-                            }
-                        }
-
-                        Column {
-                            width: parent.width
-                            visible: content.discoveryEmptyShelves
-                            height: visible ? implicitHeight : 0
-                            spacing: MD.Token.spacing.small
-
-                            MD.Label {
-                                width: parent.width
-                                text: qsTr("No matching games in your catalog")
-                                typescale: MD.Token.typescale.title_medium
-                            }
-
-                            MD.Label {
-                                width: parent.width
-                                text: qsTr("Discovery loaded, but none of these titles are in your enabled sources yet.")
-                                wrapMode: Text.WordWrap
-                                color: MD.Token.color.on_surface_variant
-                                typescale: MD.Token.typescale.body_medium
-                            }
-                        }
-                    }
-
-                    CatalogShelfRow {
-                        width: parent.width
-                        visible: Core.catalogDiscovery.feedLoaded
-                                 && Core.catalogDiscovery.onFireShelf.count > 0
-                        height: visible ? implicitHeight : 0
-                        title: qsTr("Recommended for you")
-                        subtitle: ""
-                        iconName: MD.Token.icon.local_fire_department
-                        shelfModel: Core.catalogDiscovery.onFireShelf
-                        page: content.page
-                        onSurpriseFromShelf: function (entryId) { page.openGame(entryId) }
-                    }
-
-                    CatalogShelfRow {
-                        width: parent.width
-                        visible: Core.catalogDiscovery.feedLoaded
-                                 && Core.catalogDiscovery.friendsShelf.count > 0
-                        height: visible ? implicitHeight : 0
-                        title: qsTr("With friends")
-                        subtitle: ""
-                        iconName: MD.Token.icon.groups
-                        shelfModel: Core.catalogDiscovery.friendsShelf
-                        page: content.page
-                        onSurpriseFromShelf: function (entryId) { page.openGame(entryId) }
-                    }
-
-                    CatalogShelfRow {
-                        width: parent.width
-                        visible: Core.catalogDiscovery.feedLoaded
-                                 && Core.catalogDiscovery.newShelf.count > 0
-                        height: visible ? implicitHeight : 0
-                        title: qsTr("Popular this week")
-                        subtitle: ""
-                        iconName: MD.Token.icon.fiber_new
-                        shelfModel: Core.catalogDiscovery.newShelf
-                        page: content.page
-                        onSurpriseFromShelf: function (entryId) { page.openGame(entryId) }
-                    }
-                }
+                // v2: Discover is the feed below; the old shelves are gone.
+                Item { id: discoveryColumn; height: 0 }
 
                 ScrollBar.vertical: MD.ScrollBar {
                     policy: ScrollBar.AsNeeded

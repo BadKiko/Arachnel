@@ -84,36 +84,30 @@ Flickable {
                 }
             }
 
-            Rectangle {
+            // Plugins as cards, two per row when there is room.
+            GridLayout {
                 Layout.fillWidth: true
                 visible: root.catalogPlugins.length > 0
-                implicitHeight: storeCol.implicitHeight + MD.Token.spacing.small * 2
-                radius: 24
-                color: MD.Token.color.surface_container
+                columns: width > 620 ? 2 : 1
+                columnSpacing: MD.Token.spacing.medium
+                rowSpacing: MD.Token.spacing.medium
 
-                ColumnLayout {
-                    id: storeCol
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    anchors.top: parent.top
-                    anchors.margins: MD.Token.spacing.small
-                    spacing: 0
+                Repeater {
+                    model: root.catalogPlugins
 
-                    Repeater {
-                        model: root.catalogPlugins
-
-                        OfficialPluginCard {
-                            required property var modelData
-                            required property int index
-                            plugin: modelData
-                            installed: root.isPluginInstalled(modelData.id)
-                            installing: root.thisInstalling(modelData.id)
-                            catalogBusy: root.catalogBusy
-                            showDivider: index < root.catalogPlugins.length - 1
-                            onInstallClicked: Core.installOfficialPlugin(modelData.id)
-                            onUninstallClicked: root.requestUninstall(modelData.id, modelData.name)
-                            onSourceClicked: function (url) { Core.openExternalUrl(url) }
-                        }
+                    delegate: StorePluginCard {
+                        required property var modelData
+                        required property int index
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        plugin: modelData
+                        shapeKind: ["cookie9", "clover4", "sunny", "cookie6", "burst", "clover8"][index % 6]
+                        installed: root.isPluginInstalled(modelData.id)
+                        installing: root.thisInstalling(modelData.id)
+                        busy: root.catalogBusy
+                        onInstallClicked: Core.installOfficialPlugin(modelData.id)
+                        onUninstallClicked: root.requestUninstall(modelData.id, modelData.name)
+                        onSourceClicked: function (url) { Core.openExternalUrl(url) }
                     }
                 }
             }

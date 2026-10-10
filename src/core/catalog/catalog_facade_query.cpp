@@ -1,4 +1,8 @@
 #include "core_controller_impl.h"
+
+#include <QRandomGenerator>
+#include <QReadLocker>
+#include <QSet>
 namespace arachnel::core {
 
 void CoreController::searchCatalog(const QString& sourceId, const QString& query)
@@ -67,6 +71,28 @@ void CoreController::invalidateSourceCatalog(const QString& sourceId)
 {
     if (m_catalogController)
         m_catalogController->invalidateSourceCatalog(sourceId);
+}
+
+QStringList CoreController::randomCatalogEntryIds(int count, const QStringList& exclude) const
+{
+    QStringList out;
+    if (count <= 0)
+        return out;
+    const QSet<QString> skip(exclude.cbegin(), exclude.cend());
+    QReadLocker locker(const_cast<QReadWriteLock*>(&m_catalogCacheLock));
+    const qsizetype n = m_catalogCache.size();
+    if (n == 0)
+        return out;
+    QSet<QString> picked;
+    // Bounded tries: the cache is large and most entries qualify.
+    for (int tries = 0; tries < count * 20 && out.size() < count; ++tries) {
+        const CatalogEntry& e = m_catalogCache.at(QRandomGenerator::global()->bounded(n));
+        if (e.steamAppId.isEmpty() || e.title.isEmpty() || skip.contains(e.id) || picked.contains(e.id))
+            continue;
+        picked.insert(e.id);
+        out.append(e.id);
+    }
+    return out;
 }
 
 void CoreController::prefetchCatalogCounts()
