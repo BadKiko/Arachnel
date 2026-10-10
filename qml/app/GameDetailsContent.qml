@@ -168,13 +168,13 @@ Item {
                                     model: genreStrip.expanded ? genreStrip.genreTokens
                                                         : genreStrip.genreTokens.slice(0, genreStrip.collapsedCount)
 
-                                    MD.AssistChip {
+                                    DetailsChip {
                                         required property var modelData
                                         text: modelData
                                     }
                                 }
 
-                            MD.AssistChip {
+                            DetailsChip {
                                 visible: genreStrip.genreTokens.length > genreStrip.collapsedCount
                                 text: genreStrip.expanded
                                       ? qsTr("Less")
@@ -200,11 +200,11 @@ Item {
                             readonly property int secondaryCount: (addonsChipVisible ? 1 : 0) + (workshopChipVisible ? 1 : 0)
                                 + 1 + (trustChipVisible ? 1 : 0)
 
-                            MD.AssistChip {
+                            DetailsChip {
                                 text: page.sourceLabel
                                 icon.name: MD.Token.icon.storefront
                             }
-                            MD.AssistChip {
+                            DetailsChip {
                                 text: "v" + (page.info.version ?? "")
                                 icon.name: MD.Token.icon.tag
 
@@ -213,12 +213,12 @@ Item {
                                     text: qsTr("Build number of the game files. A higher number means a newer build.")
                                 }
                             }
-                            MD.AssistChip {
+                            DetailsChip {
                                 visible: !!(page.info.sizeLabel)
                                 text: page.info.sizeLabel ?? ""
                                 icon.name: MD.Token.icon.hard_drive
                             }
-                            MD.AssistChip {
+                            DetailsChip {
                                 visible: !!(page.info.hasDrm)
                                 text: qsTr("DRM")
                                 icon.name: MD.Token.icon.shield
@@ -228,7 +228,7 @@ Item {
                                 mdState.iconColor: MD.Token.color.on_error_container
                                 mdState.outlineColor: MD.Token.color.error_container
                             }
-                            MD.AssistChip {
+                            DetailsChip {
                                 visible: chipFlow.chipsExpanded && chipFlow.addonsChipVisible
                                 text: {
                                     const installed = page.info.installedComponentCount ?? 0
@@ -243,12 +243,12 @@ Item {
                                     gameSettingsSheet.openForGame(page.gameId)
                                 }
                             }
-                            MD.AssistChip {
+                            DetailsChip {
                                 visible: chipFlow.chipsExpanded && chipFlow.workshopChipVisible
                                 text: qsTr("Workshop")
                                 icon.name: MD.Token.icon.handyman
                             }
-                            MD.AssistChip {
+                            DetailsChip {
                                 visible: chipFlow.chipsExpanded
                             text: page.info.installKindLabel ?? ""
                                 icon.name: MD.Token.icon.install_desktop
@@ -266,7 +266,7 @@ Item {
                                     }
                                 }
                             }
-                            MD.AssistChip {
+                            DetailsChip {
                                 visible: chipFlow.chipsExpanded && chipFlow.trustChipVisible
                                 text: qsTr("Steam CDN · Online Fix")
                                 icon.name: MD.Token.icon.check_circle
@@ -277,7 +277,7 @@ Item {
                                 mdState.outlineColor: MD.Token.color.tertiary_container
                                 onClicked: page.openSteamidraTrust()
                             }
-                            MD.AssistChip {
+                            DetailsChip {
                                 visible: !!(page.info.hasUpdate)
                                 text: qsTr("Update available")
                                 icon.name: MD.Token.icon.update
@@ -287,7 +287,7 @@ Item {
                                 mdState.iconColor: MD.Token.color.on_tertiary_container
                                 mdState.outlineColor: MD.Token.color.tertiary_container
                             }
-                        MD.AssistChip {
+                        DetailsChip {
                             text: chipFlow.chipsExpanded
                                   ? qsTr("Less")
                                   : "+" + chipFlow.secondaryCount
