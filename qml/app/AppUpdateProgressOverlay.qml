@@ -55,7 +55,9 @@ Item {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 8
                     indeterminate: Core.appUpdater.downloadProgress <= 0
-                    running: Core.appUpdater.downloadProgress <= 0
+                    // Hidden overlay, running indicator: an indeterminate bar animates even when
+                    // invisible and kept the whole window rendering ~75 frames/s while idle.
+                    running: root.visible && Core.appUpdater.downloadProgress <= 0
                     from: 0
                     to: 100
                     value: Math.max(0, Core.appUpdater.downloadProgress)
