@@ -21,7 +21,8 @@ ColumnLayout {
     MD.Label {
         Layout.fillWidth: true
         text: qsTr("Browse the catalog")
-        typescale: MD.Token.typescale.headline_medium
+        typescale: MD.Token.typescale.headline_large
+        font.weight: Font.DemiBold
     }
 
     MD.Label {

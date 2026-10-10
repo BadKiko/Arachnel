@@ -163,18 +163,12 @@ Rectangle {
             }
         }
 
-        MD.IconButton {
+        ConnectedIconToggle {
             opacity: 0.4 + 0.6 * root.barOpacity
-            mdState.type: page.listViewMode ? MD.Enum.IBtStandard : MD.Enum.IBtFilledTonal
-            icon.name: MD.Token.icon.grid_view
-            onClicked: prefs.viewMode = 0
-        }
-
-        MD.IconButton {
-            opacity: 0.4 + 0.6 * root.barOpacity
-            mdState.type: page.listViewMode ? MD.Enum.IBtFilledTonal : MD.Enum.IBtStandard
-            icon.name: MD.Token.icon.view_list
-            onClicked: prefs.viewMode = 1
+            icons: [MD.Token.icon.grid_view, MD.Token.icon.view_list]
+            tips: [qsTr("Grid"), qsTr("List")]
+            currentIndex: page.listViewMode ? 1 : 0
+            onPicked: function (index) { prefs.viewMode = index }
         }
 
         MD.IconButton {

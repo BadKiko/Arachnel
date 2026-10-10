@@ -138,6 +138,16 @@
         <source>Found: %1</source>
         <translation>Found: %1</translation>
     </message>
+    <message>
+        <location line="+54"/>
+        <source>Grid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>List</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>CatalogDiscoveryHeader</name>
@@ -574,6 +584,16 @@
         <location line="+1"/>
         <source>Found: %1</source>
         <translation>Found: %1</translation>
+    </message>
+    <message>
+        <location line="+50"/>
+        <source>Grid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>List</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
