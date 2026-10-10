@@ -9,36 +9,36 @@ Item {
     property string title: ""
     property string value: ""
     property string iconName: ""
+    property string shapeKind: "cookie9"
 
     implicitHeight: 88
     Layout.fillWidth: true
     Layout.minimumHeight: 88
 
+    HoverHandler { id: cardHover }
+
     MD.ElevationRectangle {
         anchors.fill: parent
-        radius: MD.Token.shape.corner.extra_large
-        color: MD.Token.color.surface_container
-        elevation: MD.Token.elevation.level1
+        radius: cardHover.hovered ? 32 : 24
+        color: cardHover.hovered ? MD.Token.color.surface_container_high : MD.Token.color.surface_container
+        elevation: MD.Token.elevation.level0
+        Behavior on radius { NumberAnimation { duration: AppMotion.medium; easing.type: Easing.OutBack } }
+        Behavior on color { ColorAnimation { duration: AppMotion.short } }
 
         RowLayout {
             anchors.fill: parent
             anchors.margins: MD.Token.spacing.medium
             spacing: MD.Token.spacing.medium
 
-            MD.ElevationRectangle {
-                Layout.preferredWidth: 48
-                Layout.preferredHeight: 48
+            ShapeIcon {
+                Layout.preferredWidth: 52
+                Layout.preferredHeight: 52
                 Layout.alignment: Qt.AlignVCenter
-                radius: MD.Token.shape.corner.full
-                color: MD.Token.color.primary_container
-                elevation: MD.Token.elevation.level0
-
-                MD.Icon {
-                    anchors.centerIn: parent
-                    name: root.iconName
-                    size: 24
-                    color: MD.Token.color.on_primary_container
-                }
+                iconName: root.iconName
+                kind: root.shapeKind
+                iconSize: 24
+                active: cardHover.hovered
+                interactive: false
             }
 
             ColumnLayout {
@@ -49,7 +49,8 @@ Item {
                 MD.Label {
                     Layout.fillWidth: true
                     text: root.value
-                    typescale: MD.Token.typescale.headline_small
+                    typescale: MD.Token.typescale.headline_medium
+                    font.weight: Font.DemiBold
                     elide: Text.ElideRight
                 }
 

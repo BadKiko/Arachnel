@@ -136,6 +136,8 @@ Item {
     EmptyState {
         shown: root.favoritesEmpty
         title: qsTr("No favorites")
+        iconName: MD.Token.icon.favorite
+        shapeKind: "clover4"
         message: Messages.favoritesEmptyHint
         actionText: qsTr("Open catalog")
         onActionTriggered: root.openCatalog()

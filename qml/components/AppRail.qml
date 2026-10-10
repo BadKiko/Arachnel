@@ -100,16 +100,25 @@ MD.Pane {
 
                         MD.ElevationRectangle {
                             anchors.centerIn: parent
-                            width: 64
+                            // Expressive rail: the pill grows out from the icon with a springy overshoot.
+                            width: railEntry.selected ? 64 : (railEntry.hovered ? 52 : 36)
                             height: 36
                             radius: MD.Token.shape.corner.full
+
+                            Behavior on width {
+                                NumberAnimation {
+                                    duration: AppMotion.scaled(420)
+                                    easing.type: Easing.OutBack
+                                    easing.overshoot: 2.0
+                                }
+                            }
                             color: railEntry.selected
                                    ? MD.Token.color.secondary_container
                                    : railEntry.hovered
                                      ? MD.Util.transparent(MD.Token.color.on_surface, 0.08)
                                      : "transparent"
                             elevation: MD.Token.elevation.level0
-                            scale: railEntry.selected ? 1 : 0.92
+                            scale: entryArea.pressed ? 0.88 : 1
                             transformOrigin: Item.Center
 
                             Behavior on color {

@@ -166,6 +166,7 @@ Item {
                 Layout.maximumWidth: parent.width * 0.62
                 text: featured ? featured.title : ""
                 typescale: MD.Token.typescale.headline_large
+                font.weight: Font.DemiBold
                 elide: Text.ElideRight
                 wrapMode: Text.WordWrap
                 maximumLineCount: 2
@@ -187,13 +188,17 @@ Item {
 
                 MD.Button {
                     mdState.type: MD.Enum.BtFilled
+                    mdState.size: MD.Enum.M
                     text: qsTr("Open game")
+                    icon.name: MD.Token.icon.arrow_forward
                     onClicked: if (featured) root.openGame(featured.entryId)
                 }
 
                 MD.Button {
                     mdState.type: MD.Enum.BtFilledTonal
+                    mdState.size: MD.Enum.M
                     text: qsTr("Another pick")
+                    icon.name: MD.Token.icon.shuffle
                     visible: root.shelfCount > 1
                     onClicked: root.nextPick()
                 }

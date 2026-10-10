@@ -14,42 +14,42 @@ Flickable {
     readonly property var sectionModel: {
         const sections = [
             {
-                id: "plugins",
+                id: "plugins", group: 0, icon: MD.Token.icon.extension, shape: "cookie9",
                 title: qsTr("Plugins"),
                 subtitle: qsTr("Game sources - install one to browse and play games.")
             },
             {
-                id: "sources",
+                id: "sources", group: 0, icon: MD.Token.icon.playlist_add, shape: "clover4",
                 title: qsTr("Hydra catalogs"),
                 subtitle: qsTr("Add extra game lists from a link, e.g. a Hydra Launcher list (advanced)")
             },
             {
-                id: "friends",
+                id: "friends", group: 1, icon: MD.Token.icon.group, shape: "clover8",
                 title: qsTr("Friends"),
                 subtitle: qsTr("Friend codes and online status")
             },
             {
-                id: "storage",
+                id: "storage", group: 0, icon: MD.Token.icon.hard_drive, shape: "cookie6",
                 title: qsTr("Storage"),
                 subtitle: qsTr("Library and download folders")
             },
             {
-                id: "updates",
+                id: "updates", group: 0, icon: MD.Token.icon.update, shape: "sunny",
                 title: qsTr("Updates"),
                 subtitle: qsTr("Game and launcher updates")
             },
             {
-                id: "launch",
+                id: "launch", group: 2, icon: MD.Token.icon.rocket_launch, shape: "burst",
                 title: qsTr("Launch"),
                 subtitle: qsTr("Launch options and Proton on Linux")
             },
             {
-                id: "appearance",
+                id: "appearance", group: 2, icon: MD.Token.icon.palette, shape: "cookie4",
                 title: qsTr("Appearance"),
                 subtitle: qsTr("Theme, colors, and language")
             },
             {
-                id: "about",
+                id: "about", group: 2, icon: MD.Token.icon.info, shape: "circle",
                 title: qsTr("About"),
                 subtitle: qsTr("Version and app data")
             }
@@ -78,46 +78,46 @@ Flickable {
             Layout.bottomMargin: MD.Token.spacing.small
             spacing: MD.Token.spacing.small
 
+            // Sections in three groups, each drawn as one connected list.
             Repeater {
-                model: root.sectionModel
+                model: [
+                    { label: qsTr("Games and storage"), group: 0 },
+                    { label: qsTr("People"), group: 1 },
+                    { label: qsTr("App"), group: 2 }
+                ]
 
-                MD.Card {
-                    id: sectionCard
+                delegate: ColumnLayout {
+                    id: groupBlock
                     required property var modelData
+                    readonly property var rows: root.sectionModel.filter(e => e.group === modelData.group)
 
                     Layout.fillWidth: true
-                    type: MD.Enum.CardOutlined
-                    verticalPadding: MD.Token.spacing.medium
-                    horizontalPadding: MD.Token.spacing.medium
-                    onClicked: root.openSection(sectionCard.modelData.id)
+                    Layout.topMargin: MD.Token.spacing.small
+                    spacing: 2
+                    visible: rows.length > 0
 
-                    contentItem: RowLayout {
-                        id: sectionRow
-                        spacing: MD.Token.spacing.medium
+                    MD.Label {
+                        Layout.leftMargin: MD.Token.spacing.medium
+                        Layout.bottomMargin: MD.Token.spacing.small
+                        text: groupBlock.modelData.label
+                        typescale: MD.Token.typescale.label_large
+                        color: MD.Token.color.primary
+                    }
 
-                        ColumnLayout {
+                    Repeater {
+                        model: groupBlock.rows
+
+                        delegate: ExpressiveListItem {
+                            required property var modelData
+                            required property int index
                             Layout.fillWidth: true
-                            spacing: 2
-
-                            MD.Label {
-                                Layout.fillWidth: true
-                                text: sectionCard.modelData.title
-                                typescale: MD.Token.typescale.title_small
-                            }
-
-                            MD.Label {
-                                Layout.fillWidth: true
-                                text: sectionCard.modelData.subtitle
-                                color: MD.Token.color.on_surface_variant
-                                typescale: MD.Token.typescale.body_small
-                                wrapMode: Text.WordWrap
-                            }
-                        }
-
-                        MD.Icon {
-                            name: MD.Token.icon.chevron_right
-                            size: 24
-                            color: MD.Token.color.on_surface_variant
+                            first: index === 0
+                            last: index === groupBlock.rows.length - 1
+                            title: modelData.title
+                            subtitle: modelData.subtitle
+                            iconName: modelData.icon
+                            shapeKind: modelData.shape
+                            onClicked: root.openSection(modelData.id)
                         }
                     }
                 }

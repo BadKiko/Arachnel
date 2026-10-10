@@ -102,6 +102,8 @@ Item {
     EmptyState {
         shown: root.downloadsEmpty
         title: qsTr("No downloads")
+        iconName: MD.Token.icon.download
+        shapeKind: "sunny"
         message: Messages.downloadsEmptyHint
         actionText: qsTr("Open catalog")
         onActionTriggered: root.openCatalog()

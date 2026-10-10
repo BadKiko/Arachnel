@@ -34,7 +34,13 @@ Item {
                 Layout.leftMargin: page.pageMargin
                 Layout.rightMargin: page.pageMargin
                 Layout.topMargin: page.pageMargin
-                Layout.preferredHeight: 248
+                // Nothing played yet: a compact invitation instead of a big empty card.
+                readonly property bool hasHero: page.heroHasRecentPlay || page.showRunningHero
+                                               || page.featuredShowJobStatus
+                Layout.preferredHeight: hasHero ? 248 : 200
+                Behavior on Layout.preferredHeight {
+                    NumberAnimation { duration: AppMotion.medium; easing: AppMotion.emphasizedDecelerate }
+                }
 
                 Item {
                     id: heroCard
@@ -71,6 +77,16 @@ Item {
                         anchors.margins: MD.Token.spacing.large
                         spacing: MD.Token.spacing.large
 
+                        ShapeIcon {
+                            visible: !heroHost.hasHero
+                            Layout.preferredWidth: 96
+                            Layout.preferredHeight: 96
+                            Layout.alignment: Qt.AlignVCenter
+                            iconName: MD.Token.icon.sports_esports
+                            kind: "burst"
+                            iconSize: 40
+                        }
+
                         ColumnLayout {
                             Layout.fillWidth: true
                             Layout.fillHeight: true
@@ -88,6 +104,7 @@ Item {
                                 Layout.fillWidth: true
                                 text: page.heroTitle
                                 typescale: MD.Token.typescale.headline_large
+                                font.weight: Font.DemiBold
                                 elide: Text.ElideRight
                                 wrapMode: Text.WordWrap
                                 maximumLineCount: 2
@@ -154,6 +171,14 @@ Item {
                             RowLayout {
                                 Layout.fillWidth: true
                                 spacing: MD.Token.spacing.small
+
+                                MD.Button {
+                                    visible: !heroHost.hasHero
+                                    text: qsTr("Open catalog")
+                                    icon.name: MD.Token.icon.storefront
+                                    mdState.type: MD.Enum.BtFilledTonal
+                                    onClicked: page.openCatalog()
+                                }
 
                                 MD.Button {
                                     visible: page.heroHasRecentPlay && !page.showRunningHero
@@ -233,6 +258,7 @@ Item {
                 StatCard {
                     Layout.fillWidth: true
                     title: qsTr("In library")
+                    shapeKind: "cookie9"
                     value: String(Core.library.count)
                     iconName: MD.Token.icon.sports_esports
                 }
@@ -240,6 +266,7 @@ Item {
                 StatCard {
                     Layout.fillWidth: true
                     title: qsTr("Sources")
+                    shapeKind: "clover4"
                     value: String(Core.sources.enabledCount)
                     iconName: MD.Token.icon.storefront
                 }
@@ -247,6 +274,7 @@ Item {
                 StatCard {
                     Layout.fillWidth: true
                     title: qsTr("Tasks")
+                    shapeKind: "sunny"
                     value: String(Core.jobs.count)
                     iconName: MD.Token.icon.downloading
                 }
@@ -254,6 +282,7 @@ Item {
                 StatCard {
                     Layout.fillWidth: true
                     title: qsTr("Updates")
+                    shapeKind: "cookie6"
                     value: {
                         // Re-evaluate when the library changes (update flags flip there);
                         // updateCount() alone has no binding dependency and went stale.

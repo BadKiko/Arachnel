@@ -3,8 +3,8 @@ import QtQuick.Layouts
 
 import Qcm.Material as MD
 
-// Centered placeholder for an empty page: web mark, title, hint and one optional action.
-// Fades in and out with `shown` instead of popping.
+// Centered placeholder for an empty page: an icon in an expressive shape that springs in, a bold
+// title, a hint and one optional action. Fades in and out with `shown` instead of popping.
 Item {
     id: root
 
@@ -12,6 +12,8 @@ Item {
     property string title
     property string message
     property string actionText
+    property string iconName: MD.Token.icon.sports_esports
+    property string shapeKind: "cookie9"
     property int margin: Appearance.pageMargin
 
     signal actionTriggered()
@@ -30,24 +32,37 @@ Item {
     ColumnLayout {
         anchors.centerIn: parent
         spacing: MD.Token.spacing.medium
-        width: Math.min(root.width - root.margin * 2, 420)
+        width: Math.min(root.width - root.margin * 2, 440)
 
-        SpiderWebMark {
+        ShapeIcon {
+            id: hero
             Layout.alignment: Qt.AlignHCenter
-            Layout.preferredWidth: 160
-            Layout.preferredHeight: 160
-            width: 160
-            height: 160
-            strokeColor: MD.Token.color.primary
-            strokeWidth: 2.5
-            opacity: 0.35
+            Layout.preferredWidth: 152
+            Layout.preferredHeight: 152
+            Layout.bottomMargin: MD.Token.spacing.small
+            iconName: root.iconName
+            kind: root.shapeKind
+            color: MD.Token.color.primary_container
+            iconColor: MD.Token.color.on_primary_container
+            iconSize: 64
+
+            // Springs in when the page shows it.
+            scale: root.shown ? 1 : 0.6
+            rotation: root.shown ? 0 : -40
+            Behavior on scale {
+                NumberAnimation { duration: AppMotion.scaled(650); easing.type: Easing.OutBack; easing.overshoot: 1.8 }
+            }
+            Behavior on rotation {
+                NumberAnimation { duration: AppMotion.scaled(800); easing.type: Easing.OutBack; easing.overshoot: 1.2 }
+            }
         }
 
         MD.Label {
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
             text: root.title
-            typescale: MD.Token.typescale.headline_small
+            typescale: MD.Token.typescale.headline_medium
+            font.weight: Font.DemiBold
         }
 
         MD.Label {
@@ -56,15 +71,18 @@ Item {
             horizontalAlignment: Text.AlignHCenter
             text: root.message
             color: MD.Token.color.on_surface_variant
-            typescale: MD.Token.typescale.body_medium
+            typescale: MD.Token.typescale.body_large
             wrapMode: Text.WordWrap
         }
 
         MD.Button {
             Layout.alignment: Qt.AlignHCenter
+            Layout.topMargin: MD.Token.spacing.small
             visible: root.actionText.length > 0
             text: root.actionText
+            icon.name: MD.Token.icon.storefront
             mdState.type: MD.Enum.BtFilled
+            mdState.size: MD.Enum.M
             onClicked: root.actionTriggered()
         }
     }

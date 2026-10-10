@@ -11,6 +11,12 @@ Item {
     property string fallbackText: ""
     property bool awaiting: false
     property int cornerRadius: MD.Token.shape.corner.extra_large
+    // Expressive hover: the corners soften a little under the pointer and spring back.
+    property bool morphOnHover: true
+    property real shownRadius: (morphOnHover && hovered) ? cornerRadius + 14 : cornerRadius
+    Behavior on shownRadius {
+        NumberAnimation { duration: AppMotion.scaled(360); easing.type: Easing.OutBack; easing.overshoot: 1.6 }
+    }
     property real fillProgress: -1
     property bool enableShimmer: true
     property bool hoverScaleEnabled: false
@@ -135,7 +141,7 @@ Item {
 
         layer.enabled: true
         layer.effect: MD.RoundClip {
-            corners: MD.Util.corners(root.cornerRadius)
+            corners: MD.Util.corners(root.shownRadius)
             size: Qt.vector2d(placeholder.width, placeholder.height)
         }
 
@@ -212,7 +218,7 @@ Item {
     MD.Image {
         anchors.fill: parent
         source: root.coverReady ? root.resolvedSource : ""
-        radius: root.cornerRadius
+        radius: root.shownRadius
         elevation: MD.Token.elevation.level0
         fillMode: Image.PreserveAspectCrop
         asynchronous: true
@@ -244,7 +250,7 @@ Item {
 
                 layer.enabled: true
                 layer.effect: MD.RoundClip {
-                    corners: MD.Util.corners(root.cornerRadius)
+                    corners: MD.Util.corners(root.shownRadius)
                     size: Qt.vector2d(fillHost.width, fillHost.height)
                 }
 
@@ -290,7 +296,7 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        radius: root.cornerRadius
+        radius: root.shownRadius
         z: 2
         color: MD.Util.transparent(MD.Token.color.scrim, 0.2)
         opacity: root.hovered ? 1 : 0

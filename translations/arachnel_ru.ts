@@ -103,7 +103,7 @@
         <translation>Нет избранного</translation>
     </message>
     <message>
-        <location line="+27"/>
+        <location line="+29"/>
         <source>Favorites</source>
         <translation>Избранное</translation>
     </message>
@@ -143,12 +143,17 @@
 <context>
     <name>CatalogDiscoveryHeader</name>
     <message>
-        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="+37"/>
+        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="+21"/>
+        <source>Discover</source>
+        <translation>Подборки</translation>
+    </message>
+    <message>
+        <location line="+24"/>
         <source>All games</source>
         <translation>Все игры</translation>
     </message>
     <message>
-        <location line="-15"/>
+        <location line="-16"/>
         <source>Surprise me</source>
         <translation>Удиви меня</translation>
     </message>
@@ -168,12 +173,12 @@
         <translation>Выбор на вечер</translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+33"/>
         <source>Open game</source>
         <translation>Открыть игру</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+8"/>
         <source>Another pick</source>
         <translation>Другой вариант</translation>
     </message>
@@ -2760,7 +2765,7 @@
         <translation>Нет загрузок</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="+21"/>
         <source>Downloads</source>
         <translation>Загрузки</translation>
     </message>
@@ -2806,7 +2811,7 @@
 <context>
     <name>FriendsPage</name>
     <message>
-        <location filename="../qml/app/FriendsPage.qml" line="+238"/>
+        <location filename="../qml/app/FriendsPage.qml" line="+230"/>
         <source>Friends</source>
         <translation>Друзья</translation>
     </message>
@@ -2816,12 +2821,12 @@
         <translation>Не в сети</translation>
     </message>
     <message>
-        <location line="-300"/>
+        <location line="-292"/>
         <source>Change in settings</source>
         <translation>Изменить в настройках</translation>
     </message>
     <message>
-        <location line="+46"/>
+        <location line="+42"/>
         <source>Create a friend code</source>
         <translation>Создать код друга</translation>
     </message>
@@ -2832,13 +2837,13 @@
     </message>
     <message>
         <location line="+9"/>
-        <location line="+124"/>
+        <location line="+120"/>
         <source>New code</source>
         <translation>Новый код</translation>
     </message>
     <message>
-        <location line="-123"/>
-        <location line="+124"/>
+        <location line="-119"/>
+        <location line="+120"/>
         <source>Create code</source>
         <translation>Создать код</translation>
     </message>
@@ -2853,8 +2858,8 @@
         <translation>Открыть</translation>
     </message>
     <message>
-        <location line="-325"/>
-        <location line="+195"/>
+        <location line="-317"/>
+        <location line="+187"/>
         <source>You appear as %1</source>
         <translation>Вас видно как %1</translation>
     </message>
@@ -2879,7 +2884,7 @@
         <translation>В сети</translation>
     </message>
     <message>
-        <location line="-307"/>
+        <location line="-299"/>
         <source>Friends you add can see when you are online and which game you are playing.</source>
         <translation>Друзья, которых вы добавите, видят, когда вы в сети и в какую игру играете.</translation>
     </message>
@@ -3664,12 +3669,17 @@
 <context>
     <name>LibraryContent</name>
     <message>
-        <location filename="../qml/app/LibraryContent.qml" line="+121"/>
+        <location filename="../qml/app/LibraryContent.qml" line="+138"/>
         <source>Running</source>
         <translation>Запущена</translation>
     </message>
     <message>
         <location line="+39"/>
+        <source>Open catalog</source>
+        <translation>Открыть каталог</translation>
+    </message>
+    <message>
+        <location line="+8"/>
         <source>Play</source>
         <translation>Играть</translation>
     </message>
@@ -3694,22 +3704,22 @@
         <translation>В библиотеке</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+8"/>
         <source>Sources</source>
         <translation>Источники</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+8"/>
         <source>Tasks</source>
         <translation>Задачи</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+8"/>
         <source>Updates</source>
         <translation>Обновления</translation>
     </message>
     <message>
-        <location line="+37"/>
+        <location line="+38"/>
         <source>%1 active downloads</source>
         <translation>%1 активных загрузок</translation>
     </message>
@@ -4749,7 +4759,22 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>Версия и данные приложения</translation>
     </message>
     <message>
-        <location line="-11"/>
+        <location line="+30"/>
+        <source>Games and storage</source>
+        <translation>Игры и хранилище</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>People</source>
+        <translation>Люди</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>App</source>
+        <translation>Приложение</translation>
+    </message>
+    <message>
+        <location line="-43"/>
         <source>Launch</source>
         <translation>Запуск</translation>
     </message>

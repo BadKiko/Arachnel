@@ -88,19 +88,15 @@ Item {
                         anchors.rightMargin: MD.Token.spacing.extra_large
                         spacing: MD.Token.spacing.medium
 
-                        Rectangle {
+                        ShapeIcon {
                             Layout.alignment: Qt.AlignHCenter
-                            implicitWidth: 56
-                            implicitHeight: 56
-                            radius: MD.Token.shape.corner.large
+                            Layout.preferredWidth: 80
+                            Layout.preferredHeight: 80
+                            iconName: MD.Token.icon.key
+                            kind: "cookie9"
                             color: MD.Token.color.primary_container
-
-                            MD.Icon {
-                                anchors.centerIn: parent
-                                name: MD.Token.icon.key
-                                size: 28
-                                color: MD.Token.color.on_primary_container
-                            }
+                            iconColor: MD.Token.color.on_primary_container
+                            iconSize: 34
                         }
 
                         MD.Label {
@@ -157,19 +153,15 @@ Item {
                         anchors.rightMargin: MD.Token.spacing.extra_large
                         spacing: MD.Token.spacing.medium
 
-                        Rectangle {
+                        ShapeIcon {
                             Layout.alignment: Qt.AlignHCenter
-                            implicitWidth: 56
-                            implicitHeight: 56
-                            radius: MD.Token.shape.corner.large
+                            Layout.preferredWidth: 80
+                            Layout.preferredHeight: 80
+                            iconName: MD.Token.icon.person_add
+                            kind: "clover4"
                             color: MD.Token.color.secondary_container
-
-                            MD.Icon {
-                                anchors.centerIn: parent
-                                name: MD.Token.icon.person_add
-                                size: 28
-                                color: MD.Token.color.on_secondary_container
-                            }
+                            iconColor: MD.Token.color.on_secondary_container
+                            iconSize: 34
                         }
 
                         MD.Label {
