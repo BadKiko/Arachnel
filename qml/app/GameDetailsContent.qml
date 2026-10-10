@@ -6,6 +6,7 @@ import Arachnel.Core 1.0
 import Qcm.Material as MD
 
 Item {
+    id: detailsRoot
     required property var page
 
     readonly property bool hasLaunchLog: {
@@ -15,6 +16,31 @@ Item {
 
     function openLaunchLog() {
         launchLogDialog.openForGame(page.gameId)
+    }
+
+    // Eases the page to an item instead of jumping.
+    function scrollToItem(item, margin) {
+        if (!item)
+            return
+        const target = Math.max(0, Math.min(flick.contentHeight - flick.height,
+                                            item.mapToItem(flick.contentItem, 0, 0).y - (margin ?? 80)))
+        scrollAnim.stop()
+        scrollAnim.to = target
+        scrollAnim.start()
+    }
+
+    function scrollToTop() {
+        scrollAnim.stop()
+        scrollAnim.to = 0
+        scrollAnim.start()
+    }
+
+    NumberAnimation {
+        id: scrollAnim
+        target: flick
+        property: "contentY"
+        duration: AppMotion.scaled(560)
+        easing: AppMotion.emphasized
     }
 
     Connections {
@@ -467,7 +493,7 @@ Item {
                                         else if (page.downloadFailed)
                                             Core.retryJob(page.downloadJob.jobId)
                                         else
-                                            page.beginInstall()
+                                            installStudio.openStudio()
                                     }
                                     onPauseToggleRequested: Core.toggleJobPause(page.downloadJob.jobId)
                                     onCancelRequested: Core.cancelJob(page.downloadJob.jobId)
@@ -584,6 +610,22 @@ Item {
                     RevealIn { delay: 360 }
                 }
 
+                // ---------- Install studio: grows out of the dock ----------
+                InstallStudio {
+                    id: installStudio
+                    Layout.fillWidth: true
+                    page: detailsRoot.page
+                    // While the card grows, keep its top just under the page header.
+                    onImplicitHeightChanged: {
+                        if (!open || reveal >= 1)
+                            return
+                        const wanted = installStudio.mapToItem(flick.contentItem, 0, 0).y - 96
+                        const limit = flick.contentHeight - flick.height
+                        if (flick.contentY < wanted && !scrollAnim.running)
+                            flick.contentY = Math.max(0, Math.min(wanted, limit))
+                    }
+                }
+
                 // ---------- Description ----------
                 DetailsSection {
                     id: aboutCard
@@ -630,7 +672,7 @@ Item {
                         onClicked: aboutCard.expanded = !aboutCard.expanded
                     }
 
-                    RevealIn { target: aboutCard; delay: 400 }
+                    RevealIn { target: aboutCard; flickable: flick; delay: 60 }
                 }
 
                 // ---------- Media ----------
@@ -649,7 +691,7 @@ Item {
                         loading: page.mediaLoading
                     }
 
-                    RevealIn { target: mediaCard; delay: 440 }
+                    RevealIn { target: mediaCard; flickable: flick; delay: 60 }
                 }
 
                 // ---------- Links ----------
@@ -724,7 +766,7 @@ Item {
                         }
                     }
 
-                    RevealIn { target: linksCard; delay: 480 }
+                    RevealIn { target: linksCard; flickable: flick; delay: 60 }
                 }
             }
         }
@@ -774,6 +816,53 @@ Item {
                 maximumLineCount: 1
             }
 
+            // Jump to a section with one click; the current one follows the scroll.
+            Row {
+                id: sectionNav
+                visible: compactBar.width > 760
+                spacing: MD.Token.spacing.extra_small
+
+                readonly property real y0: flick.contentY + flick.height * 0.4
+                readonly property bool atEnd: flick.contentY >= flick.contentHeight - flick.height - 4
+                                              && flick.contentHeight > flick.height
+                readonly property int current: {
+                    if (linksCard.visible && (y0 >= linksCard.y || atEnd))
+                        return 3
+                    if (mediaCard.visible && y0 >= mediaCard.y)
+                        return 2
+                    if (y0 >= aboutCard.y)
+                        return 1
+                    return 0
+                }
+
+                Repeater {
+                    model: [
+                        { label: qsTr("Overview"), target: 0 },
+                        { label: qsTr("Description"), target: 1 },
+                        { label: qsTr("Media"), target: 2 },
+                        { label: qsTr("Links"), target: 3 }
+                    ]
+
+                    delegate: MD.Button {
+                        required property var modelData
+                        visible: modelData.target !== 2 || mediaCard.visible
+                        text: modelData.label
+                        mdState.type: sectionNav.current === modelData.target
+                                      ? MD.Enum.BtFilledTonal : MD.Enum.BtText
+                        onClicked: {
+                            if (modelData.target === 0)
+                                detailsRoot.scrollToTop()
+                            else if (modelData.target === 1)
+                                detailsRoot.scrollToItem(aboutCard, 84)
+                            else if (modelData.target === 2)
+                                detailsRoot.scrollToItem(mediaCard, 84)
+                            else
+                                detailsRoot.scrollToItem(linksCard, 84)
+                        }
+                    }
+                }
+            }
+
             MD.IconButton {
                 readonly property bool favorited: {
                     const ids = Core.settings.bookmarkedEntryIds
@@ -790,17 +879,8 @@ Item {
                 mdState.type: MD.Enum.IBtStandard
                 icon.name: MD.Token.icon.keyboard_arrow_up
                 Accessible.name: qsTr("Back to top")
-                onClicked: topScroll.restart()
+                onClicked: detailsRoot.scrollToTop()
             }
-        }
-
-        NumberAnimation {
-            id: topScroll
-            target: flick
-            property: "contentY"
-            to: 0
-            duration: AppMotion.long
-            easing: AppMotion.emphasized
         }
     }
 
