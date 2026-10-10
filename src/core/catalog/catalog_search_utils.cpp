@@ -497,7 +497,7 @@ bool containsCjk(const QString& text)
     return false;
 }
 
-int boundedEditDistance(const QString& a, const QString& b, int maxDist)
+int boundedEditDistance(QStringView a, QStringView b, int maxDist)
 {
     const int n = a.size();
     const int m = b.size();
@@ -569,7 +569,7 @@ const QHash<QChar, QString>& cyrillicToLatin()
 
 } // namespace
 
-QString phoneticSkeleton(const QString& token)
+QString phoneticSkeleton(QStringView token)
 {
     if (token.isEmpty())
         return {};
@@ -711,17 +711,67 @@ CatalogSearchEntry CatalogSearchEntry::fromEntry(const CatalogEntry& entry)
 {
     CatalogSearchEntry se;
     se.titleClean = normalizeSearchText(entry.title);
-    se.titleCompact = compactSearchText(se.titleClean);
-    se.tokens = tokenizeSearchText(se.titleClean);
-    se.acronyms = generateTitleAcronyms(se.tokens);
-    se.steamAppId = entry.steamAppId.trimmed();
-    se.entryId = entry.id.trimmed();
+    const QStringList tokens = tokenizeSearchText(se.titleClean);
+    se.acronyms = generateTitleAcronyms(tokens).join(QLatin1Char(' '));
+    const int spaces = tokens.isEmpty() ? 0 : tokens.size() - 1;
+    se.compactLen = static_cast<quint16>(qMin<int>(0xFFFF, se.titleClean.size() - spaces));
     return se;
 }
 
 namespace {
 
 enum class Hit { None, Exact, Prefix, Substring };
+
+using TokenViews = QVarLengthArray<QStringView, 12>;
+
+/** The words of an already normalized title: views into it, no allocation for short titles. */
+TokenViews tokensOf(const QString& clean)
+{
+    TokenViews out;
+    const QStringView v(clean);
+    qsizetype start = 0;
+    for (qsizetype i = 0; i <= v.size(); ++i) {
+        if (i == v.size() || v.at(i) == QLatin1Char(' ')) {
+            if (i > start)
+                out.append(v.mid(start, i - start));
+            start = i + 1;
+        }
+    }
+    return out;
+}
+
+/** titleClean without its spaces equals `compact`? */
+bool compactEquals(const CatalogSearchEntry& se, const QString& compact)
+{
+    if (compact.isEmpty() || se.compactLen != compact.size())
+        return false;
+    qsizetype k = 0;
+    for (const QChar c : se.titleClean) {
+        if (c == QLatin1Char(' '))
+            continue;
+        if (k >= compact.size() || compact.at(k) != c)
+            return false;
+        ++k;
+    }
+    return k == compact.size();
+}
+
+/** Is `needle` one of the space-separated words of `packed`? */
+bool packedContains(const QString& packed, const QString& needle)
+{
+    if (packed.isEmpty() || needle.isEmpty())
+        return false;
+    const QStringView v(packed);
+    qsizetype start = 0;
+    for (qsizetype i = 0; i <= v.size(); ++i) {
+        if (i == v.size() || v.at(i) == QLatin1Char(' ')) {
+            if (i > start && v.mid(start, i - start) == QStringView(needle))
+                return true;
+            start = i + 1;
+        }
+    }
+    return false;
+}
 
 bool isAllDigits(const QString& s)
 {
@@ -735,7 +785,7 @@ bool isAllDigits(const QString& s)
 }
 
 /** How one query word relates to one title word. Substrings only for CJK. */
-Hit tokenHit(const QString& title, const QStringList& variants, bool cjk, bool allowPrefix)
+Hit tokenHit(QStringView title, const QStringList& variants, bool cjk, bool allowPrefix)
 {
     for (const QString& v : variants) {
         if (title == v)
@@ -762,11 +812,11 @@ Hit tokenHit(const QString& title, const QStringList& variants, bool cjk, bool a
  * Query words as consecutive title words. Only the last one may be an unfinished prefix;
  * *lastIsPrefix tells whether it was ("witch" in "witcher") or a whole word.
  */
-bool findPhrase(const CatalogSearchEntry& se, const QueryForm& q, bool allowPrefix, int* startAt,
+bool findPhrase(const TokenViews& toks, const QueryForm& q, bool allowPrefix, int* startAt,
                 bool* lastIsPrefix)
 {
     const int n = q.tokens.size();
-    const int total = se.tokens.size();
+    const int total = toks.size();
     if (n == 0 || n > total)
         return false;
     bool found = false;
@@ -775,7 +825,7 @@ bool findPhrase(const CatalogSearchEntry& se, const QueryForm& q, bool allowPref
         bool prefix = false;
         for (int k = 0; k < n; ++k) {
             const bool last = k == n - 1;
-            const Hit h = tokenHit(se.tokens.at(s + k), q.variants.at(k), q.isCjk.at(k),
+            const Hit h = tokenHit(toks.at(s + k), q.variants.at(k), q.isCjk.at(k),
                                    last && allowPrefix);
             if (h == Hit::None || (!last && h == Hit::Prefix)) {
                 ok = false;
@@ -800,16 +850,16 @@ bool findPhrase(const CatalogSearchEntry& se, const QueryForm& q, bool allowPref
  * boundary: "fc26" in "ea sports fc 26", "spiderman2" in "marvels spider man 2". Starting
  * mid-word is not allowed, so "witcher" does not match inside "switcher".
  */
-bool findCompactPhrase(const CatalogSearchEntry& se, const QString& qc, bool allowPrefix, int* startAt)
+bool findCompactPhrase(const TokenViews& toks, const QString& qc, bool allowPrefix, int* startAt)
 {
     if (qc.size() < 3)
         return false;
-    const int total = se.tokens.size();
+    const int total = toks.size();
     const QStringView qv(qc);
     for (int s = 0; s < total; ++s) {
         int len = 0;
         for (int e = s; e < total; ++e) {
-            const QString& tk = se.tokens.at(e);
+            const QStringView tk = toks.at(e);
             const int rest = qc.size() - len;
             if (tk.size() <= rest) {
                 if (qv.mid(len, tk.size()) != tk)
@@ -832,7 +882,7 @@ bool findCompactPhrase(const CatalogSearchEntry& se, const QString& qc, bool all
 }
 
 /** Every non-stop query word is some title word, in any order. Returns a bonus, 0 if not. */
-int matchAnyOrder(const CatalogSearchEntry& se, const QueryForm& q, bool allowPrefix, bool* inOrder)
+int matchAnyOrder(const TokenViews& toks, const QueryForm& q, bool allowPrefix, bool* inOrder)
 {
     const int n = q.tokens.size();
     if (n == 0)
@@ -841,7 +891,7 @@ int matchAnyOrder(const CatalogSearchEntry& se, const QueryForm& q, bool allowPr
     for (int k = 0; k < n; ++k)
         nonStop += q.isStop.at(k) ? 0 : 1;
 
-    QVarLengthArray<char, 16> used(se.tokens.size());
+    QVarLengthArray<char, 16> used(toks.size());
     for (int i = 0; i < used.size(); ++i)
         used[i] = 0;
     int bonus = 0;
@@ -850,10 +900,10 @@ int matchAnyOrder(const CatalogSearchEntry& se, const QueryForm& q, bool allowPr
     for (int k = 0; k < n; ++k) {
         int bestPos = -1;
         int bestGain = 0;
-        for (int ti = 0; ti < se.tokens.size(); ++ti) {
+        for (int ti = 0; ti < toks.size(); ++ti) {
             if (used[ti])
                 continue;
-            const Hit h = tokenHit(se.tokens.at(ti), q.variants.at(k), q.isCjk.at(k), allowPrefix);
+            const Hit h = tokenHit(toks.at(ti), q.variants.at(k), q.isCjk.at(k), allowPrefix);
             // A bare two-letter start ("so" in "dark so") is too weak to pair with other words.
             const bool weakPrefix = h == Hit::Prefix && q.tokens.at(k).size() < 3;
             const int gain = h == Hit::Exact ? 1200
@@ -882,27 +932,27 @@ int matchAnyOrder(const CatalogSearchEntry& se, const QueryForm& q, bool allowPr
 }
 
 /** Tiered score for one written form of the query. 0 = no match. */
-int scoreForm(const CatalogSearchEntry& se, const QueryForm& q, bool allowPrefix)
+int scoreForm(const TokenViews& toks, const QueryForm& q, bool allowPrefix)
 {
     if (q.isEmpty())
         return 0;
     int start = 0;
     bool prefix = false;
-    if (findPhrase(se, q, allowPrefix, &start, &prefix)) {
+    if (findPhrase(toks, q, allowPrefix, &start, &prefix)) {
         const int base = start == 0 ? 80000 : 70000;
         return prefix ? base - 4000 : base;
     }
-    if (findCompactPhrase(se, q.compact, allowPrefix, &start))
+    if (findCompactPhrase(toks, q.compact, allowPrefix, &start))
         return start == 0 ? 78000 : 68000;
     bool ordered = true;
-    const int bonus = matchAnyOrder(se, q, allowPrefix, &ordered);
+    const int bonus = matchAnyOrder(toks, q, allowPrefix, &ordered);
     if (bonus > 0)
         return 50000 + bonus + (ordered ? 5000 : 0);
     return 0;
 }
 
 /** Level 1: every non-stop query word is a title word, allowing a typo in some of them. */
-int scoreTypos(const CatalogSearchEntry& se, const QueryForm& q)
+int scoreTypos(const TokenViews& toks, const QueryForm& q)
 {
     if (q.isEmpty())
         return 0;
@@ -919,7 +969,7 @@ int scoreTypos(const CatalogSearchEntry& se, const QueryForm& q)
         int bestEdits = 99;
         int bestPenalty = 0;
 
-        for (const QString& title : se.tokens) {
+        for (const QStringView title : toks) {
             const Hit h = tokenHit(title, q.variants.at(k), q.isCjk.at(k), true);
             if (h != Hit::None) {
                 found = true;
@@ -935,7 +985,7 @@ int scoreTypos(const CatalogSearchEntry& se, const QueryForm& q)
             hasDigit = hasDigit || c.isDigit();
         if (!found && !hasDigit && !q.isCjk.at(k) && qt.size() >= 4) {
             const int maxE = qt.size() >= 10 ? 2 : 1;
-            for (const QString& title : se.tokens) {
+            for (const QStringView title : toks) {
                 if (qAbs(title.size() - qt.size()) > maxE + 2)
                     continue;
                 // A typo is rarely in the very first letter; this prunes most of the catalog.
@@ -982,7 +1032,7 @@ bool hasNonLatin(const QString& token)
  * Level 2: every non-stop query word sounds like a title word (киберпанк ~ cyberpunk).
  * Only for words written in another script - a Latin word with a typo is level 1's job.
  */
-int scorePhonetic(const CatalogSearchEntry& se, const QueryForm& q)
+int scorePhonetic(const TokenViews& toks, const QueryForm& q)
 {
     if (q.isEmpty())
         return 0;
@@ -1002,7 +1052,7 @@ int scorePhonetic(const CatalogSearchEntry& se, const QueryForm& q)
             return 0;
         const int maxDiff = qMax(3, qt.size() / 2);
         bool found = false;
-        for (const QString& title : se.tokens) {
+        for (const QStringView title : toks) {
             if (qAbs(title.size() - qt.size()) > maxDiff)
                 continue;
             if (phoneticSkeleton(title) == skel) {
@@ -1028,47 +1078,60 @@ int scoreCatalogMatch(const CatalogSearchEntry& se, const CatalogEntry& rawEntry
     int score = 0;
 
     // 1. Direct AppID / EntryID match
-    if (query.isNumericOnly && !se.steamAppId.isEmpty()) {
-        if (se.steamAppId == query.compactQuery)
+    if (query.isNumericOnly && !rawEntry.steamAppId.isEmpty()) {
+        if (rawEntry.steamAppId.trimmed() == query.compactQuery)
             return 120000;
     }
-    if (!se.entryId.isEmpty()) {
+    const QString& entryId = rawEntry.id;
+    if (!entryId.isEmpty()) {
         // "steam-1328660" is found by the whole id; a bare number is matched via the app id above.
         const int n = query.compactQuery.size();
-        const int idLen = se.entryId.size();
-        if (se.entryId == query.rawQuery || se.entryId == query.cleanQuery
-            || (n >= 3 && idLen > n && se.entryId.at(idLen - n - 1) == QLatin1Char('-')
-                && se.entryId.endsWith(query.compactQuery))) {
+        const int idLen = entryId.size();
+        if (entryId == query.rawQuery || entryId == query.cleanQuery
+            || (n >= 3 && idLen > n && entryId.at(idLen - n - 1) == QLatin1Char('-')
+                && entryId.endsWith(query.compactQuery))) {
             return 110000;
         }
     }
 
     // 2. The whole title
-    if (se.titleCompact == query.compactQuery || se.titleClean == query.cleanQuery) {
+    if (compactEquals(se, query.compactQuery) || se.titleClean == query.cleanQuery) {
         score = 100000;
     } else if (!query.layoutCompactQuery.isEmpty()
-               && (se.titleCompact == query.layoutCompactQuery
+               && (compactEquals(se, query.layoutCompactQuery)
                    || se.titleClean == query.layoutCleanQuery)) {
         score = 95000;
     }
+
+    // The title's words, cut into views only when a word-level tier needs them.
+    TokenViews toks;
+    bool haveToks = false;
+    const auto words = [&]() -> const TokenViews& {
+        if (!haveToks) {
+            toks = tokensOf(se.titleClean);
+            haveToks = true;
+        }
+        return toks;
+    };
 
     // 3. Words of the query inside the title (start / phrase / any order). The last word may be
     //    unfinished ("witch" -> "witcher") from level 1 on.
     const bool allowPrefix = query.level >= 1;
     if (score == 0)
-        score = scoreForm(se, query.main, allowPrefix);
+        score = scoreForm(words(), query.main, allowPrefix);
     if (score == 0 && !query.layout.isEmpty()) {
-        const int s = scoreForm(se, query.layout, allowPrefix);
+        const int s = scoreForm(words(), query.layout, allowPrefix);
         if (s > 0)
             score = s - 3000;
     }
 
     // 4. Acronyms: "gta5", "rdr2", "fc26"
     if (score == 0 && !se.acronyms.isEmpty()) {
-        if (se.acronyms.contains(query.compactQuery) || se.acronyms.contains(query.cleanQuery))
+        if (packedContains(se.acronyms, query.compactQuery)
+            || packedContains(se.acronyms, query.cleanQuery))
             score = 45000;
         else if (!query.layoutCompactQuery.isEmpty()
-                 && se.acronyms.contains(query.layoutCompactQuery))
+                 && packedContains(se.acronyms, query.layoutCompactQuery))
             score = 42000;
     }
 
@@ -1076,7 +1139,7 @@ int scoreCatalogMatch(const CatalogSearchEntry& se, const CatalogEntry& rawEntry
     //    Taken together with the literal match: "re 4" is "Resident Evil 4", not "ReThink 4".
     if (score < 95000) {
         for (const QueryForm& alias : query.aliases) {
-            const int s = scoreForm(se, alias, allowPrefix);
+            const int s = scoreForm(words(), alias, allowPrefix);
             if (s > 0) {
                 score = qMax(score, qMin(s, 70000) - 8000);
                 break;
@@ -1086,18 +1149,18 @@ int scoreCatalogMatch(const CatalogSearchEntry& se, const CatalogEntry& rawEntry
 
     // 6. Typos, then sounds-alike: only when the caller widened the search
     if (score == 0 && query.level >= 2)
-        score = scoreTypos(se, query.main);
+        score = scoreTypos(words(), query.main);
     if (score == 0 && query.level >= 3) {
-        score = scorePhonetic(se, query.main);
+        score = scorePhonetic(words(), query.main);
         if (score == 0 && !query.layout.isEmpty())
-            score = scorePhonetic(se, query.layout);
+            score = scorePhonetic(words(), query.layout);
     }
 
     if (score == 0)
         return 0;
 
     // Length difference penalty (prefer concise matches closer in length to query)
-    const int lenDiff = se.titleCompact.length() - query.compactQuery.length();
+    const int lenDiff = se.compactLen - query.compactQuery.length();
     if (lenDiff > 0)
         score -= qMin(2000, lenDiff * 15);
 
