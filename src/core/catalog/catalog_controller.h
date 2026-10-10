@@ -38,6 +38,8 @@ public:
         std::function<void()> rebuildIdIndex;
         std::function<void(const QString&)> applyFilter;
         std::function<void()> rebuildGenres;
+        /** The merged cache now holds different rows (any size). */
+        std::function<void()> cacheReplaced;
         std::function<void()> warmCovers;
         std::function<void()> catalogReady;
     };
@@ -48,6 +50,8 @@ public:
     void setMergedCacheLock(QReadWriteLock* lock) { m_mergedCacheLock = lock; }
 
     bool catalogLoading() const;
+    /** True while the list shows only the first rows of a first-ever download (count is not final). */
+    bool catalogPartial() const { return m_previewActive && catalogLoading(); }
     QString catalogStatus() const;
     QString activeCatalogSourceId() const;
     QStringList activeCatalogSourceIds() const;
@@ -99,6 +103,7 @@ public:
 
 signals:
     void catalogLoadingChanged(bool loading);
+    void catalogPartialChanged();
     void catalogStatusChanged(const QString& status);
     void activeCatalogSourcesChanged();
     void catalogCountsChanged();
@@ -116,11 +121,15 @@ private:
     void loadCatalogSourceNowFromNetwork(const QString& sourceId);
     void applyMergedCatalogResult(quint64 generation, QVector<CatalogEntry> merged,
                                   QHash<QString, QVector<CatalogEntry>> installOffers,
-                                  QHash<QString, QString> entryIdToOfferGroup);
+                                  QHash<QString, QString> entryIdToOfferGroup, bool preview = false);
+    /** First-start preview rows (see PluginSourcePreview); dropped when anything is already shown. */
+    void applyCatalogPreview(const QString& sourceId, QVector<CatalogEntry> entries);
+    void dropCatalogPreview();
     static QString offerGroupKey(const CatalogEntry& entry);
     static QString normalizeTitleKey(const QString& title);
     static int showcaseScore(const CatalogEntry& entry);
 
+    bool m_previewActive = false;
     CatalogModel* m_catalog = nullptr;
     SourcePluginModel* m_sources = nullptr;
     PluginHost* m_pluginHost = nullptr;

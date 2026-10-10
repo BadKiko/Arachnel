@@ -64,14 +64,14 @@ bool containsCjk(const QString& text);
  * maxDist + 1 as soon as the distance is known to exceed maxDist, so it is cheap to call on
  * every title of a large catalog.
  */
-int boundedEditDistance(const QString& a, const QString& b, int maxDist);
+int boundedEditDistance(QStringView a, QStringView b, int maxDist);
 
 /**
  * Cross-script phonetic key of one token: Cyrillic is transliterated, then c/k/q, ph/f, ck, sh,
  * ch... are folded and vowels dropped. "киберпанк" and "cyberpunk" both give "kbrpnk".
  * Returns an empty string when the result would be too short to mean anything.
  */
-QString phoneticSkeleton(const QString& token);
+QString phoneticSkeleton(QStringView token);
 
 /** One way of writing the query (as typed, keyboard-layout converted, or an alias expansion). */
 struct QueryForm {
@@ -129,14 +129,16 @@ struct ParsedSearchQuery {
     }
 };
 
-/** Precomputed search data stored per entry in the SoA filter table. */
+/**
+ * Precomputed search data stored per entry in the SoA filter table. Kept small on purpose: there
+ * is one per catalog row (~125k), so every extra QString / QStringList is tens of MB. The words
+ * of the title are not stored - they are the space-separated parts of `titleClean` and are cut
+ * into views while scoring - and the ids are read from the entry itself.
+ */
 struct CatalogSearchEntry {
     QString titleClean;
-    QString titleCompact;
-    QStringList tokens;
-    QStringList acronyms;
-    QString steamAppId;
-    QString entryId;
+    QString acronyms;      ///< space-separated: "gta5 gtav gta"
+    quint16 compactLen = 0; ///< length of titleClean without its spaces
 
     static CatalogSearchEntry fromEntry(const CatalogEntry& entry);
 };

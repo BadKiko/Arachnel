@@ -69,6 +69,7 @@ class CoreController : public QObject
     Q_PROPERTY(QString userNotice READ userNotice NOTIFY userNoticeChanged)
     Q_PROPERTY(int userNoticeSerial READ userNoticeSerial NOTIFY userNoticeChanged)
     Q_PROPERTY(bool catalogLoading READ catalogLoading NOTIFY catalogLoadingChanged)
+    Q_PROPERTY(bool catalogPartial READ catalogPartial NOTIFY catalogPartialChanged)
     Q_PROPERTY(QString catalogStatus READ catalogStatus NOTIFY catalogStatusChanged)
     Q_PROPERTY(QString activeCatalogSourceId READ activeCatalogSourceId NOTIFY activeCatalogSourceIdChanged)
     Q_PROPERTY(QStringList activeCatalogSourceIds READ activeCatalogSourceIds NOTIFY activeCatalogSourceIdsChanged)
@@ -130,6 +131,12 @@ public:
     QString userNotice() const { return m_userNotice; }
     int userNoticeSerial() const { return m_userNoticeSerial; }
     bool catalogLoading() const;
+    bool catalogPartial() const;
+    /**
+     * Starts loading the active catalogs now instead of on the first event-loop turn. main() calls
+     * it before the QML engine is created, so the download / snapshot read runs while the UI loads.
+     */
+    void startCatalogLoadEarly();
     QString catalogStatus() const;
     QString activeCatalogSourceId() const;
     QStringList activeCatalogSourceIds() const;
@@ -183,6 +190,7 @@ signals:
     void deepLinkRequested(const QString& gameId);
     void activationRequested();
     void catalogLoadingChanged();
+    void catalogPartialChanged();
     void catalogStatusChanged();
     void activeCatalogSourceIdChanged();
     void activeCatalogSourceIdsChanged();

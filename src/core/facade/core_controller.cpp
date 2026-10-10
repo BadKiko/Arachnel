@@ -143,6 +143,19 @@ bool CoreController::catalogLoading() const
     return m_catalogController && m_catalogController->catalogLoading();
 }
 
+void CoreController::startCatalogLoadEarly()
+{
+    if (!m_catalogController)
+        return;
+    pruneDisabledCatalogSources();
+    m_catalogController->ensureActiveSourceCatalogs();
+}
+
+bool CoreController::catalogPartial() const
+{
+    return m_catalogController && m_catalogController->catalogPartial();
+}
+
 QString CoreController::catalogStatus() const
 {
     return m_catalogController ? m_catalogController->catalogStatus() : QString();

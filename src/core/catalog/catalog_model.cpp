@@ -302,20 +302,22 @@ void CatalogModel::replaceVisibleIndices(QVector<int> indices, bool alreadySorte
 
     const int oldCount = m_indices.size();
     const int newCount = indices.size();
-    // GridView/ListView + required-property delegates crash in Qt6QmlMeta on a
-    // 100k-row insert/remove. Unbind first (see CatalogScrollViews), then swap
-    // indices without beginInsertRows while the view model is null.
+    // GridView/ListView + required-property delegates crash in Qt6QmlMeta on a 100k-row
+    // insert/remove, so large swaps are a model reset: the view throws its delegates away and
+    // rebuilds only the visible ones, starting from the top. (This used to unbind the view's
+    // model around the swap instead; the view then reused pooled delegates from the old model
+    // without refreshing their roles, so after a search the cards still showed the old rows.)
     const bool bulky = std::max(oldCount, newCount) >= 4096;
     if (bulky) {
-        beginBulkUpdate();
+        beginResetModel();
         m_indices = std::move(indices);
         if (m_indices.isEmpty())
             m_idToRow.clear();
         else
             rebuildIdMap();
+        endResetModel();
         emit countChanged();
         invalidateScrubStops();
-        endBulkUpdate();
         return;
     }
 

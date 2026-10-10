@@ -344,7 +344,7 @@ A plugin can instead let the **host** do that work. Export four extra functions 
 | `arachnel_plugin_normalize_rows(plugin, rows, len, &json, &len)` | turn a JSON array of raw rows into `{"schema":"arachnel.plugin.catalog.v1","entries":[...],"supersedes":[...]}` |
 | `arachnel_plugin_source_free(ptr)` | free what the two functions above returned |
 
-The host then does the conditional GET (ETag, gzip), keeps the raw feed on disk, scans rows without a document tree, calls `normalize_rows` on batches (concurrently when `parallel` is true) and stores a binary snapshot. `supersedes` lists entry ids made redundant by another row (e.g. a DLC row also listed under its game); the host applies it across batches.
+The host then does the conditional GET (ETag, gzip), keeps the raw feed on disk, scans rows without a document tree, calls `normalize_rows` on batches (concurrently when `parallel` is true) and stores a binary snapshot. On the very first start (no cached copy) it also decodes the first ~1000 rows of the feed as soon as they arrive and shows them while the rest downloads, so keep the feed newest-first if the order matters. `supersedes` lists entry ids made redundant by another row (e.g. a DLC row also listed under its game); the host applies it across batches.
 
 **Compatibility rules (this is what keeps old launchers working):**
 

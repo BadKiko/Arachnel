@@ -108,6 +108,10 @@ void CoreController::initializeServices()
             m_catalogCovers->clearFailedCoverHints();
         }
     };
+    catalogHooks.cacheReplaced = [this]() {
+        if (m_catalogFilters)
+            m_catalogFilters->invalidateTable();
+    };
     catalogHooks.applyFilter = [this](const QString& query) { applyCatalogFilter(query); };
     catalogHooks.rebuildGenres = [this]() { rebuildAvailableCatalogGenres(); };
     catalogHooks.warmCovers = [this]() {
@@ -137,6 +141,8 @@ void CoreController::initializeServices()
     }
     connect(m_catalogController, &CatalogController::catalogLoadingChanged, this,
             [this](bool) { emit catalogLoadingChanged(); });
+    connect(m_catalogController, &CatalogController::catalogPartialChanged, this,
+            &CoreController::catalogPartialChanged);
     connect(m_catalogController, &CatalogController::catalogStatusChanged, this,
             [this](const QString&) { emit catalogStatusChanged(); });
     connect(m_catalogController, &CatalogController::activeCatalogSourcesChanged, this,

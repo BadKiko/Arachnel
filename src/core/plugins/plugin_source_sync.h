@@ -6,6 +6,8 @@
 #include <QString>
 #include <QVector>
 
+#include <functional>
+
 namespace arachnel::core {
 
 class PluginHost;
@@ -22,6 +24,9 @@ struct PluginSourceSyncResult {
     QString error;
 };
 
+/** Rows decoded from the first part of a first-ever download (see syncPluginCatalogSource). */
+using PluginSourcePreview = std::function<void(QVector<CatalogEntry>)>;
+
 /**
  * Catalog-source extension (see plugin_api.h): the host downloads the plugin's raw catalog
  * (conditional GET, gzip, TTL, on-disk raw copy), scans its rows without building a document
@@ -29,9 +34,15 @@ struct PluginSourceSyncResult {
  *
  * Never throws and never leaves the catalog cache half written: any failure returns
  * Status::Failed and the caller keeps using the plugin's catalog_json path.
+ *
+ * `onPreview`: when there is no cached copy at all (first start) the whole feed has to come over
+ * the network. The first rows of the feed are decoded as soon as they arrive and handed to
+ * `onPreview` (called once, from this thread, before the download finishes) so the caller can show
+ * something while the rest downloads. Entries are parser output, before prepareEntry.
  */
 PluginSourceSyncResult syncPluginCatalogSource(const PluginHost& host, const QString& sourceId,
-                                               const QByteArray& knownKey, bool force = false);
+                                               const QByteArray& knownKey, bool force = false,
+                                               const PluginSourcePreview& onPreview = {});
 
 /**
  * Suffix ("|<plugin version>|x<ext>") that keys written by syncPluginCatalogSource end with;

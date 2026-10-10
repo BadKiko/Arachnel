@@ -39,8 +39,7 @@ Item {
     }
 
     function resetScroll() {
-        catalogScrollViews.gridContentY = 0
-        catalogScrollViews.listContentY = 0
+        catalogScrollViews.scrollToTop()
         discoveryFlick.contentY = 0
     }
 

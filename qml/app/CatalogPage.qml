@@ -296,8 +296,8 @@ Item {
 
     Connections {
         target: Core.catalog
-        function onBulkUpdatingChanged() {
-            if (Core.catalog.bulkUpdating || !root.resetScrollOnResults)
+        function onModelReset() {
+            if (!root.resetScrollOnResults)
                 return
             root.resetScrollOnResults = false
             Qt.callLater(catalogContent.resetScroll)

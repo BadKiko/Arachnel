@@ -146,6 +146,15 @@ Item {
         return true
     }
 
+    // The true top of a view with a header is a negative contentY (minus the header height), so
+    // "contentY = 0" leaves the header scrolled away.
+    function scrollToTop() {
+        indexScrollAnim.stop()
+        scrubLerp.running = false
+        grid.positionViewAtBeginning()
+        list.positionViewAtBeginning()
+    }
+
     function restoreContentY(y) {
         const view = activeView()
         if (!view || view.height < 8)

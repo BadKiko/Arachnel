@@ -414,5 +414,10 @@ void remove(const QString& sourceId)
     QFile::remove(snapshotPath(sourceId));
 }
 
+bool exists(const QString& sourceId)
+{
+    return QFileInfo::exists(snapshotPath(sourceId));
+}
+
 } // namespace CatalogSnapshot
 } // namespace arachnel::core

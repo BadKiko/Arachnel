@@ -367,7 +367,9 @@ MD.ApplicationWindow {
                 property bool keepAlive: false
                 active: mainPages.pageIndex === 1 || keepAlive
                 asynchronous: true
-                visible: status === Loader.Ready
+                // A faded-out page must not stay visible: its shimmer animations would keep the
+                // scene graph rendering ~140 frames/s while the app is idle.
+                visible: status === Loader.Ready && opacity > 0
                 opacity: mainPages.pageIndex === 1 ? 1 : 0
                 onLoaded: keepAlive = true
                 sourceComponent: Component {
@@ -400,7 +402,9 @@ MD.ApplicationWindow {
                 property bool keepAlive: false
                 active: mainPages.pageIndex === 2 || keepAlive
                 asynchronous: true
-                visible: status === Loader.Ready
+                // A faded-out page must not stay visible: its shimmer animations would keep the
+                // scene graph rendering ~140 frames/s while the app is idle.
+                visible: status === Loader.Ready && opacity > 0
                 opacity: mainPages.pageIndex === 2 ? 1 : 0
                 onLoaded: keepAlive = true
                 sourceComponent: Component {
@@ -421,6 +425,17 @@ MD.ApplicationWindow {
                         easing: AppMotion.emphasizedDecelerate
                     }
                 }
+            }
+
+            // Building a CatalogPage takes over a second (async, time-sliced), so a first click on
+            // the Catalog tab used to show an empty page for that long. Build that page in the
+            // background shortly after startup instead; it only binds the model once enabled.
+            // Discover stays lazy: its shelves load covers, which costs ~25 MB nobody asked for.
+            Timer {
+                id: catalogPreloadTimer
+                interval: 1500
+                running: true
+                onTriggered: catalogBrowseLoader.keepAlive = true
             }
 
             BookmarksPage {

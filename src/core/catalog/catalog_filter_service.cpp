@@ -226,7 +226,13 @@ void CatalogFilterService::rebuildFilterTable()
     m_searchEntries = std::move(built.searchEntries);
     m_sourceIdsBySlot = std::move(built.sourceIdsBySlot);
     m_presentGenreBits = built.presentGenreBits;
+    m_builtEpoch = m_tableEpoch;
     refreshAvailableGenres();
+}
+
+void CatalogFilterService::invalidateTable()
+{
+    ++m_tableEpoch;
 }
 
 void CatalogFilterService::rebuildPresentGenresOnly()
@@ -340,6 +346,8 @@ void CatalogFilterService::applyFilter(const QString& query)
     } else {
         needRebuild = m_rows.size() != m_cache->size() || m_searchEntries.size() != m_cache->size();
     }
+    needRebuild = needRebuild || m_builtEpoch != m_tableEpoch;
+    const quint64 tableEpoch = m_tableEpoch;
 
     m_activeQuery = query;
     m_filterCutoffDay = 0;
@@ -375,7 +383,7 @@ void CatalogFilterService::applyFilter(const QString& query)
     const QStringList hiddenIds = m_hiddenSourceIds;
 
     QThreadPool::globalInstance()->start(
-        [this, generation, snap, cachePtr, lock, needRebuild, hiddenIds]() {
+        [this, generation, snap, cachePtr, lock, needRebuild, hiddenIds, tableEpoch]() {
             QElapsedTimer timer;
             timer.start();
 
@@ -605,7 +613,7 @@ void CatalogFilterService::applyFilter(const QString& query)
             QTimer::singleShot(
                 0, this,
                 [this, generation, indices = std::move(indices), ms, cacheSize, queryStr, commitSoA,
-                 rebuilt = std::move(rebuilt)]() mutable {
+                 rebuilt = std::move(rebuilt), tableEpoch]() mutable {
                     if (generation != m_filterGeneration.load(std::memory_order_relaxed))
                         return;
                     if (commitSoA) {
@@ -613,6 +621,7 @@ void CatalogFilterService::applyFilter(const QString& query)
                         m_searchEntries = std::move(rebuilt.searchEntries);
                         m_sourceIdsBySlot = std::move(rebuilt.sourceIdsBySlot);
                         m_presentGenreBits = rebuilt.presentGenreBits;
+                        m_builtEpoch = tableEpoch;
                         refreshAvailableGenres();
                     }
                     applyFilterResult(generation, std::move(indices), ms, cacheSize, queryStr);
