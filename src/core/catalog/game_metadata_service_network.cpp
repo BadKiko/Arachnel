@@ -259,7 +259,13 @@ void GameMetadataService::handleDetailsFinished(QNetworkReply* reply)
         {
             if (appRoot.value(QStringLiteral("success")).toBool()) {
                 const QJsonObject data = appRoot.value(QStringLiteral("data")).toObject();
+                // Steam sends the short description HTML-escaped ("choice &amp; consequence").
                 metadata.description = data.value(QStringLiteral("short_description")).toString();
+                metadata.description.replace(QStringLiteral("&quot;"), QStringLiteral("\""))
+                    .replace(QStringLiteral("&#39;"), QStringLiteral("'"))
+                    .replace(QStringLiteral("&lt;"), QStringLiteral("<"))
+                    .replace(QStringLiteral("&gt;"), QStringLiteral(">"))
+                    .replace(QStringLiteral("&amp;"), QStringLiteral("&"));
                 QStringList genres;
                 for (const QJsonValue& genreValue : data.value(QStringLiteral("genres")).toArray())
                     genres.append(genreValue.toObject().value(QStringLiteral("description")).toString());
