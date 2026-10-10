@@ -5,7 +5,7 @@ Source plugins are **separate repositories**. Arachnel ships only the host (`Plu
 Reference implementations:
 
 - [arachnel-plugin-freetp](https://github.com/PetWork/arachnel-plugin-freetp) — torrent download (API v4 JSON catalog; still loads on host as v2+ for older builds)
-- [arachnel-plugin-steamidra](https://gitlab.com/BadKiko/arachnel-plugin-steamidra) — plugin-owned download (API v4, `owns_download`)
+- [arachnel_plugin_steamidra](https://github.com/BadKikoSecond/arachnel_plugin_steamidra) — plugin-owned download (API v4, `owns_download`)
 
 ---
 
