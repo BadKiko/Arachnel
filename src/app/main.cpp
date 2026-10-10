@@ -9,6 +9,9 @@
 #include <QString>
 #include <QTimer>
 #include <cstdio>
+#if defined(Q_OS_WIN)
+#include <windows.h>
+#endif
 
 #if !defined(Q_OS_WIN)
 #include <QApplication>
@@ -170,6 +173,24 @@ int main(int argc, char* argv[])
                 QObject* root = engine.rootObjects().first();
                 arachnel::installSnapLayoutsFilter(qobject_cast<QWindow*>(root),
                                                    root->findChild<QObject*>(QStringLiteral("appTitleBar")));
+#if defined(Q_OS_WIN)
+                // A minimized launcher is not being looked at: hand its idle pages (the catalog
+                // rows, decoded covers, QML caches) back to the OS. They fault back in on demand.
+                if (auto* window = qobject_cast<QWindow*>(root)) {
+                    QObject::connect(window, &QWindow::visibilityChanged, window,
+                                     [window](QWindow::Visibility visibility) {
+                                         if (visibility != QWindow::Minimized)
+                                             return;
+                                         QTimer::singleShot(3000, window, [window]() {
+                                             if (window->visibility() == QWindow::Minimized) {
+                                                 SetProcessWorkingSetSize(GetCurrentProcess(),
+                                                                          static_cast<SIZE_T>(-1),
+                                                                          static_cast<SIZE_T>(-1));
+                                             }
+                                         });
+                                     });
+                }
+#endif
             }
             applyTranslations(engine, app);
             QTimer::singleShot(0, &app, []() { arachnel::startHangWatchdog(); });
