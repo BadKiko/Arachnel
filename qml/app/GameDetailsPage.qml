@@ -53,6 +53,16 @@ Item {
     }
 
     Connections {
+        target: Core
+        // The poster is a local file; it arrives after the page opens when the card was never
+        // scrolled into view.
+        function onCatalogCoverChanged(entryId) {
+            if (entryId === root.gameId)
+                root.detailsRevision++
+        }
+    }
+
+    Connections {
         target: Core.library
         function onLibraryChanged() { root.detailsRevision++ }
     }
@@ -247,6 +257,7 @@ Item {
             if (!root.hasCachedMedia)
                 root.mediaLoading = true
             Core.enrichCatalogEntry(gameId)
+            Core.requestCatalogCover(gameId)
         }
     }
 

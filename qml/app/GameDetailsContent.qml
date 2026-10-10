@@ -116,6 +116,7 @@ Item {
                         Layout.preferredHeight: 293
                         Layout.alignment: Qt.AlignTop
                         source: page.info.coverUrl ?? ""
+                        awaiting: !String(page.info.coverUrl ?? "").startsWith("file:")
                         fallbackText: (page.info.title ?? "?").charAt(0)
                         cornerRadius: MD.Token.shape.corner.extra_large
                     }

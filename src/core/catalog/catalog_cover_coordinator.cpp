@@ -155,6 +155,15 @@ void CatalogCoverCoordinator::applyCoverToEntry(const QString& entryId, const QS
             return;
         if (!coverUrl.isEmpty() && !coverUrl.startsWith(QStringLiteral("file:")))
             return;
+        // A cover that is already on screen is never taken away: a later "no cover" answer (a
+        // failed rung, empty store metadata) used to blank the card until the next request.
+        if (coverUrl.isEmpty() && entry->coverUrl.startsWith(QStringLiteral("file:"))) {
+            if (entry->metadataPending == pending)
+                return;
+            entry->metadataPending = pending;
+            notify = true;
+            return;
+        }
         if (entry->coverUrl == coverUrl && entry->metadataPending == pending)
             return;
 
@@ -182,6 +191,10 @@ void CatalogCoverCoordinator::applyCover(const QString& entryId, const QString& 
 {
     applyCoverToEntry(entryId, coverUrl, false);
     CoverPlan& plan = m_plans[entryId];
+    if (coverUrl.isEmpty() && plan.appliedLocal.startsWith(QStringLiteral("file:"))) {
+        plan.phase = PlanPhase::Done;
+        return;
+    }
     plan.phase = coverUrl.isEmpty() ? PlanPhase::Failed : PlanPhase::Done;
 }
 
@@ -288,18 +301,19 @@ void CatalogCoverCoordinator::buildPlanUrls(CatalogEntry* entry, CoverPlan& plan
         plan.urls.append(url);
     };
 
-    // The feed's own cover first (about three quarters of them exist). When it is missing, the
-    // small header image is shown quickly and the larger portrait is tried as an upgrade.
+    // Portrait art only, so the card never shows one picture and then swaps to a different one.
+    // The feed's own cover first (about three quarters of them exist), then the other portrait
+    // sizes; the landscape header is the last resort for games that have no portrait at all.
     appendUnique(catalogRemote);
 
     const GameMetadata metadata = m_metadataService->metadataForTitle(entry->title);
     appendUnique(metadata.coverUrl);
 
     if (!entry->steamAppId.isEmpty()) {
-        appendUnique(steamHeaderUrl(entry->steamAppId));
-        appendUnique(steamHqUrl(entry->steamAppId));
         if (!isHqUrl(catalogRemote))
             appendUnique(steamThumbUrl(entry->steamAppId));
+        appendUnique(steamHqUrl(entry->steamAppId));
+        appendUnique(steamHeaderUrl(entry->steamAppId));
     }
 }
 
@@ -412,7 +426,7 @@ void CatalogCoverCoordinator::startOrContinuePlan(const QString& entryId, CoverP
     QStringList probe;
     if (!entry->steamAppId.isEmpty()) {
         probe << steamHqUrl(entry->steamAppId) << steamThumbUrl(entry->steamAppId)
-              << steamHeaderUrl(entry->steamAppId);
+              << steamHeaderUrl(entry->steamAppId);  // header last: only a fallback
     }
     if (!catalogRemote.isEmpty())
         probe.prepend(catalogRemote);
@@ -558,6 +572,12 @@ void CatalogCoverCoordinator::ensureDiskCover(const QString& entryId, const QStr
         return;
     }
     if (!isHttpUrl(remoteUrl))
+        return;
+
+    // The card already shows a local cover: keep it (store metadata can point at a different
+    // artwork, which made the picture change when a game was opened or hovered).
+    if (CatalogEntry* shown = m_findEntry ? m_findEntry(entryId) : nullptr;
+        shown && shown->coverUrl.startsWith(QStringLiteral("file:")))
         return;
 
     CoverPlan& plan = m_plans[entryId];

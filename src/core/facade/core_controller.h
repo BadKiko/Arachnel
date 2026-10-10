@@ -212,6 +212,8 @@ signals:
     void availableProtonsChanged();
     void entryMetadataChanged(const QString&);
     void catalogHeroCoverChanged(const QString& entryId);
+    /** A local card cover was applied for this entry (the details page refreshes its poster). */
+    void catalogCoverChanged(const QString& entryId);
     void catalogFiltersChanged();
     void availableCatalogGenresChanged();
     /** Fired when ensureCatalogAddons finished (or was already complete). */

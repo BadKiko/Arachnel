@@ -68,6 +68,7 @@ void CoreController::initializeServices()
                 // Persist only local cached covers into the library store.
                 if (!coverUrl.startsWith(QStringLiteral("file:")))
                     return;
+                emit catalogCoverChanged(entryId);
 
                 const LibraryGame* existing = m_libraryStore.gameById(entryId);
                 if (!existing || existing->coverUrl == coverUrl)
