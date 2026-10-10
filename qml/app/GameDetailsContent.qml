@@ -88,37 +88,56 @@ Item {
             Layout.fillHeight: true
             visible: page.gameFound
             contentWidth: width
-            contentHeight: contentCol.implicitHeight + MD.Token.spacing.large
+            contentHeight: contentCol.implicitHeight + MD.Token.spacing.extra_large * 2
             clip: true
             boundsBehavior: Flickable.StopAtBounds
+            pixelAligned: true
 
+            // The cover, blurred, drifts at half speed so the page has depth while it scrolls.
             HeroBackdrop {
+                id: backdrop
                 width: flick.width
-                height: 380
+                height: 520
+                y: flick.contentY * 0.5
                 z: -1
                 source: page.info.coverUrl ?? ""
             }
 
             ColumnLayout {
                 id: contentCol
-                width: flick.width
+                // A comfortable reading column on wide windows; the backdrop stays full width.
+                width: Math.min(flick.width - MD.Token.spacing.large * 2, 1120)
+                x: Math.round((flick.width - width) / 2)
                 spacing: MD.Token.spacing.large
 
+                // ---------- Hero: poster, title, facts, actions ----------
                 RowLayout {
+                    id: heroRow
                     Layout.fillWidth: true
-                    Layout.leftMargin: MD.Token.spacing.large
-                    Layout.rightMargin: MD.Token.spacing.large
-                    Layout.topMargin: 92 // clears the floating back button
-                    spacing: MD.Token.spacing.large
+                    Layout.topMargin: 84 // clears the floating back button
+                    spacing: MD.Token.spacing.extra_large
 
-                    GamePoster {
-                        Layout.preferredWidth: 220
-                        Layout.preferredHeight: 293
+                    MD.ElevationRectangle {
+                        id: posterCard
+                        Layout.preferredWidth: 240
+                        Layout.preferredHeight: 320
                         Layout.alignment: Qt.AlignTop
-                        source: page.info.coverUrl ?? ""
-                        awaiting: !String(page.info.coverUrl ?? "").startsWith("file:")
-                        fallbackText: (page.info.title ?? "?").charAt(0)
-                        cornerRadius: MD.Token.shape.corner.extra_large
+                        radius: MD.Token.shape.corner.extra_large
+                        color: MD.Token.color.surface_container
+                        elevation: MD.Token.elevation.level3
+                        transformOrigin: Item.Center
+
+                        GamePoster {
+                            anchors.fill: parent
+                            source: page.info.coverUrl ?? ""
+                            awaiting: !String(page.info.coverUrl ?? "").startsWith("file:")
+                            fallbackText: (page.info.title ?? "?").charAt(0)
+                            cornerRadius: MD.Token.shape.corner.extra_large
+                            decodeWidth: 480
+                            decodeHeight: 640
+                        }
+
+                        RevealIn { delay: 0; rise: 0.9 }
                     }
 
                     ColumnLayout {
@@ -126,14 +145,29 @@ Item {
                         Layout.alignment: Qt.AlignTop
                         spacing: MD.Token.spacing.medium
 
+                        // Where it comes from: a small overline above the title.
+                        MD.Label {
+                            Layout.fillWidth: true
+                            text: (page.sourceLabel || "").toUpperCase()
+                            visible: text.length > 0
+                            typescale: MD.Token.typescale.label_large
+                            color: MD.Token.color.primary
+                            elide: Text.ElideRight
+                            maximumLineCount: 1
+                            RevealIn { delay: 40 }
+                        }
+
                         MD.Label {
                             Layout.fillWidth: true
                             text: page.info.title ?? ""
-                            typescale: MD.Token.typescale.headline_medium
+                            typescale: MD.Token.typescale.headline_large
                             wrapMode: Text.WordWrap
+                            maximumLineCount: 3
+                            elide: Text.ElideRight
+                            RevealIn { delay: 80 }
                         }
 
-                        // Genres/categories as a single-row chip strip (Steam dumps dozens of tags).
+                        // Genres as one scrolling strip (Steam dumps dozens of tags).
                         Flickable {
                             id: genreStrip
                             Layout.fillWidth: true
@@ -153,9 +187,9 @@ Item {
                                 const out = []
                                 for (let i = 0; i < raw.length; ++i) {
                                     const t = raw[i].trim()
-                                    // DRM has its own status chip below.
+                                    // DRM has its own badge below.
                                     if (t.length && t.toLowerCase() !== "drm")
-                                    out.push(t)
+                                        out.push(t)
                                 }
                                 return out
                             }
@@ -166,7 +200,7 @@ Item {
 
                                 Repeater {
                                     model: genreStrip.expanded ? genreStrip.genreTokens
-                                                        : genreStrip.genreTokens.slice(0, genreStrip.collapsedCount)
+                                                               : genreStrip.genreTokens.slice(0, genreStrip.collapsedCount)
 
                                     DetailsChip {
                                         required property var modelData
@@ -174,103 +208,120 @@ Item {
                                     }
                                 }
 
-                            DetailsChip {
-                                visible: genreStrip.genreTokens.length > genreStrip.collapsedCount
-                                text: genreStrip.expanded
-                                      ? qsTr("Less")
-                                      : "+" + (genreStrip.genreTokens.length - genreStrip.collapsedCount)
-                                onClicked: genreStrip.expanded = !genreStrip.expanded
+                                DetailsChip {
+                                    visible: genreStrip.genreTokens.length > genreStrip.collapsedCount
+                                    text: genreStrip.expanded
+                                          ? qsTr("Less")
+                                          : "+" + (genreStrip.genreTokens.length - genreStrip.collapsedCount)
+                                    onClicked: genreStrip.expanded = !genreStrip.expanded
+                                }
                             }
+
+                            RevealIn { target: genreStrip; delay: 120 }
+                        }
+
+                        // Facts as tiles: easier to scan than a row of chips.
+                        GridLayout {
+                            id: factGrid
+                            Layout.fillWidth: true
+                            columns: width >= 640 ? 4 : 2
+                            columnSpacing: MD.Token.spacing.small
+                            rowSpacing: MD.Token.spacing.small
+
+                            DetailsStatTile {
+                                Layout.fillWidth: true
+                                iconName: MD.Token.icon.storefront
+                                label: qsTr("Source")
+                                value: page.sourceLabel
+                                RevealIn { delay: 160 }
+                            }
+                            DetailsStatTile {
+                                Layout.fillWidth: true
+                                iconName: MD.Token.icon.tag
+                                label: qsTr("Version")
+                                value: "v" + (page.info.version ?? "")
+                                tip: qsTr("Build number of the game files. A higher number means a newer build.")
+                                RevealIn { delay: 200 }
+                            }
+                            DetailsStatTile {
+                                Layout.fillWidth: true
+                                visible: !!(page.info.sizeLabel)
+                                iconName: MD.Token.icon.hard_drive
+                                label: qsTr("Size")
+                                value: page.info.sizeLabel ?? ""
+                                RevealIn { delay: 240 }
+                            }
+                            DetailsStatTile {
+                                Layout.fillWidth: true
+                                visible: (page.info.installKindLabel ?? "").length > 0
+                                iconName: MD.Token.icon.install_desktop
+                                label: qsTr("Install")
+                                value: page.info.installKindLabel ?? ""
+                                accent: MD.Token.color.secondary_container
+                                onAccent: MD.Token.color.on_secondary_container
+                                tip: {
+                                    switch (page.info.installKind) {
+                                        case 0: return qsTr("Portable: Arachnel unpacks the game into your library folder. No installer to run.")
+                                        case 1: return qsTr("Installer: after the download you click Install and follow the game's own setup.")
+                                        case 2: return qsTr("Bundled fix: the files needed to run the game are already included in the download.")
+                                        case 3: return qsTr("Separate fix: the game and the files needed to run it are downloaded separately.")
+                                    }
+                                    return ""
+                                }
+                                RevealIn { delay: 280 }
                             }
                         }
 
+                        // Status badges: only the ones that apply.
                         Flow {
-                            id: chipFlow
+                            id: badgeFlow
                             Layout.fillWidth: true
                             spacing: MD.Token.spacing.small
+                            visible: !!(page.info.hasDrm) || addonsVisible || !!(page.info.hasWorkshop)
+                                     || trustVisible || !!(page.info.hasUpdate)
 
-                            // Main facts stay visible; the rest folds under a "+N" chip.
-                            property bool chipsExpanded: false
-                            readonly property bool addonsChipVisible: !!(page.info.hasAddons)
+                            readonly property bool addonsVisible: !!(page.info.hasAddons)
                                 || ((page.info.installedComponentCount ?? 0) > 0)
                                 || ((page.info.componentCount ?? 0) > 0)
-                            readonly property bool workshopChipVisible: !!(page.info.hasWorkshop)
-                            readonly property bool trustChipVisible: page.installSourceCount <= 1
+                            readonly property bool trustVisible: page.installSourceCount <= 1
                                 && (page.info.sourceId ?? "") === "steamidra"
-                            readonly property int secondaryCount: (addonsChipVisible ? 1 : 0) + (workshopChipVisible ? 1 : 0)
-                                + 1 + (trustChipVisible ? 1 : 0)
 
                             DetailsChip {
-                                text: page.sourceLabel
-                                icon.name: MD.Token.icon.storefront
-                            }
-                            DetailsChip {
-                                text: "v" + (page.info.version ?? "")
-                                icon.name: MD.Token.icon.tag
-
-                                MD.ToolTip {
-                                    visible: parent.hovered
-                                    text: qsTr("Build number of the game files. A higher number means a newer build.")
-                                }
-                            }
-                            DetailsChip {
-                                visible: !!(page.info.sizeLabel)
-                                text: page.info.sizeLabel ?? ""
-                                icon.name: MD.Token.icon.hard_drive
-                            }
-                            DetailsChip {
+                                id: drmBadge
                                 visible: !!(page.info.hasDrm)
                                 text: qsTr("DRM")
                                 icon.name: MD.Token.icon.shield
-                                elevated: true
                                 mdState.backgroundColor: MD.Token.color.error_container
                                 mdState.textColor: MD.Token.color.on_error_container
                                 mdState.iconColor: MD.Token.color.on_error_container
                                 mdState.outlineColor: MD.Token.color.error_container
                             }
                             DetailsChip {
-                                visible: chipFlow.chipsExpanded && chipFlow.addonsChipVisible
+                                id: addonsBadge
+                                visible: badgeFlow.addonsVisible
                                 text: {
-                                    const installed = page.info.installedComponentCount ?? 0
                                     const total = page.info.componentCount ?? 0
                                     if (page.playable && total > 0)
-                                    return qsTr("%n add-ons", "", total)
+                                        return qsTr("%n add-ons", "", total)
                                     return qsTr("%n add-ons", "", page.info.addonCount ?? total)
                                 }
                                 icon.name: MD.Token.icon.extension
                                 onClicked: {
                                     if (page.playable)
-                                    gameSettingsSheet.openForGame(page.gameId)
+                                        gameSettingsSheet.openForGame(page.gameId)
                                 }
                             }
                             DetailsChip {
-                                visible: chipFlow.chipsExpanded && chipFlow.workshopChipVisible
+                                id: workshopBadge
+                                visible: !!(page.info.hasWorkshop)
                                 text: qsTr("Workshop")
                                 icon.name: MD.Token.icon.handyman
                             }
                             DetailsChip {
-                                visible: chipFlow.chipsExpanded
-                            text: page.info.installKindLabel ?? ""
-                                icon.name: MD.Token.icon.install_desktop
-
-                                MD.ToolTip {
-                                    visible: parent.hovered
-                                    text: {
-                                        switch (page.info.installKind) {
-                                            case 0: return qsTr("Portable: Arachnel unpacks the game into your library folder. No installer to run.")
-                                            case 1: return qsTr("Installer: after the download you click Install and follow the game's own setup.")
-                                            case 2: return qsTr("Bundled fix: the files needed to run the game are already included in the download.")
-                                            case 3: return qsTr("Separate fix: the game and the files needed to run it are downloaded separately.")
-                                        }
-                                        return ""
-                                    }
-                                }
-                            }
-                            DetailsChip {
-                                visible: chipFlow.chipsExpanded && chipFlow.trustChipVisible
+                                id: trustBadge
+                                visible: badgeFlow.trustVisible
                                 text: qsTr("Steam CDN · Online Fix")
                                 icon.name: MD.Token.icon.check_circle
-                                elevated: true
                                 mdState.backgroundColor: MD.Token.color.tertiary_container
                                 mdState.textColor: MD.Token.color.on_tertiary_container
                                 mdState.iconColor: MD.Token.color.on_tertiary_container
@@ -278,23 +329,39 @@ Item {
                                 onClicked: page.openSteamidraTrust()
                             }
                             DetailsChip {
+                                id: updateBadge
                                 visible: !!(page.info.hasUpdate)
                                 text: qsTr("Update available")
                                 icon.name: MD.Token.icon.update
-                                elevated: true
                                 mdState.backgroundColor: MD.Token.color.tertiary_container
                                 mdState.textColor: MD.Token.color.on_tertiary_container
                                 mdState.iconColor: MD.Token.color.on_tertiary_container
                                 mdState.outlineColor: MD.Token.color.tertiary_container
                             }
-                        DetailsChip {
-                            text: chipFlow.chipsExpanded
-                                  ? qsTr("Less")
-                                  : "+" + chipFlow.secondaryCount
-                            onClicked: chipFlow.chipsExpanded = !chipFlow.chipsExpanded
+                            RevealIn { delay: 320 }
                         }
-                        }
+                    }
+                }
 
+                // ---------- Action dock ----------
+                MD.ElevationRectangle {
+                    id: actionDock
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: dockCol.implicitHeight + 2 * MD.Token.spacing.medium
+                    radius: MD.Token.shape.corner.extra_large
+                    color: MD.Token.color.surface_container_high
+                    elevation: MD.Token.elevation.level1
+                    transformOrigin: Item.Top
+
+                    ColumnLayout {
+                        id: dockCol
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.top: parent.top
+                        anchors.margins: MD.Token.spacing.medium
+                        spacing: MD.Token.spacing.small
+
+                        // Messages that explain the state the buttons are in.
                         MD.Label {
                             Layout.fillWidth: true
                             visible: !page.playable
@@ -302,65 +369,6 @@ Item {
                             wrapMode: Text.WordWrap
                             color: MD.Token.color.on_surface_variant
                             typescale: MD.Token.typescale.body_small
-                        }
-
-                        RowLayout {
-                            Layout.fillWidth: true
-                            spacing: MD.Token.spacing.small
-                            visible: (page.info.sourcePageUrl ?? "").length > 0
-                                     || (page.info.sourceWebsiteUrl ?? "").length > 0
-                                     || (page.info.steamStoreUrl ?? "").length > 0
-                                     || (Core.sources.repositoryUrlFor(page.info.sourceId ?? "") || "").length > 0
-                                     || (Core.sources.catalogUrlFor(page.info.sourceId ?? "") || "").length > 0
-                                     || (page.gameId || "").length > 0
-
-                            MD.Button {
-                                visible: (page.gameId || "").length > 0
-                                text: qsTr("Share")
-                                icon.name: MD.Token.icon.share
-                                mdState.type: MD.Enum.BtText
-                                onClicked: shareDialog.open()
-                            }
-
-                            MD.Button {
-                                visible: (page.info.sourcePageUrl ?? "").length > 0
-                                         || (page.info.sourceWebsiteUrl ?? "").length > 0
-                                text: (page.info.sourcePageUrl ?? "").length > 0
-                                      ? qsTr("Source page")
-                                      : qsTr("Source website")
-                                icon.name: MD.Token.icon.open_in_new
-                                mdState.type: MD.Enum.BtText
-                                onClicked: Core.openExternalUrl(
-                                    (page.info.sourcePageUrl ?? "").length > 0
-                                        ? page.info.sourcePageUrl
-                                        : page.info.sourceWebsiteUrl)
-                            }
-
-                            MD.Button {
-                                visible: (page.info.steamStoreUrl ?? "").length > 0
-                                text: qsTr("Steam")
-                                icon.name: MD.Token.icon.open_in_new
-                                mdState.type: MD.Enum.BtText
-                                onClicked: Core.openExternalUrl(page.info.steamStoreUrl)
-                            }
-
-                            MD.Button {
-                                visible: (Core.sources.repositoryUrlFor(page.info.sourceId ?? "") || "").length > 0
-                                text: qsTr("Plugin source")
-                                icon.name: MD.Token.icon.open_in_new
-                                mdState.type: MD.Enum.BtText
-                                onClicked: Core.openExternalUrl(
-                                    Core.sources.repositoryUrlFor(page.info.sourceId ?? ""))
-                            }
-
-                            MD.Button {
-                                visible: (Core.sources.catalogUrlFor(page.info.sourceId ?? "") || "").length > 0
-                                text: qsTr("Catalog URL")
-                                icon.name: MD.Token.icon.open_in_new
-                                mdState.type: MD.Enum.BtText
-                                onClicked: Core.openExternalUrl(
-                                    Core.sources.catalogUrlFor(page.info.sourceId ?? ""))
-                            }
                         }
 
                         MD.Label {
@@ -403,8 +411,9 @@ Item {
                             typescale: MD.Token.typescale.body_medium
                         }
 
-                        ColumnLayout {
-                            spacing: MD.Token.spacing.extra_small
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: MD.Token.spacing.medium
 
                             Flow {
                                 Layout.fillWidth: true
@@ -415,11 +424,11 @@ Item {
                                     enabled: !page.runtimeSetupActive
                                     text: {
                                         if (page.isRunning)
-                                        return qsTr("Stop")
+                                            return qsTr("Stop")
                                         if (page.runtimeSetupActive)
-                                        return Core.runtimeSetupStatus.length > 0
-                                               ? Core.runtimeSetupStatus
-                                               : qsTr("Preparing…")
+                                            return Core.runtimeSetupStatus.length > 0
+                                                   ? Core.runtimeSetupStatus
+                                                   : qsTr("Preparing…")
                                         return qsTr("Play")
                                     }
                                     icon.name: page.isRunning || page.runtimeSetupActive
@@ -454,80 +463,14 @@ Item {
                                     onActivated: {
                                         // Prefer retryInstall when files are already on disk.
                                         if (page.installFailed || page.readyToInstall)
-                                        Core.retryInstall(page.downloadJob.jobId)
+                                            Core.retryInstall(page.downloadJob.jobId)
                                         else if (page.downloadFailed)
-                                        Core.retryJob(page.downloadJob.jobId)
+                                            Core.retryJob(page.downloadJob.jobId)
                                         else
-                                        page.beginInstall()
+                                            page.beginInstall()
                                     }
                                     onPauseToggleRequested: Core.toggleJobPause(page.downloadJob.jobId)
                                     onCancelRequested: Core.cancelJob(page.downloadJob.jobId)
-                                }
-
-                                MD.IconButton {
-                                    visible: page.canManualInstall
-                                    mdState.type: MD.Enum.IBtStandard
-                                    icon.name: MD.Token.icon.folder_open
-                                    onClicked: Core.confirmManualInstall(page.downloadJob.jobId)
-
-                                    MD.ToolTip {
-                                        visible: parent.hovered
-                                        text: qsTr("Pick the folder you installed into.")
-                                    }
-                                }
-
-                                MD.IconButton {
-                                    readonly property bool favorited: {
-                                        const ids = Core.settings.bookmarkedEntryIds
-                                        return ids.indexOf(page.gameId) >= 0
-                                    }
-                                    checked: favorited
-                                    mdState.type: MD.Enum.IBtOutlined
-                                    icon.name: MD.Token.icon.favorite
-                                    Accessible.name: favorited
-                                                     ? qsTr("Remove from favorites")
-                                                     : qsTr("Add to favorites")
-                                    onClicked: Core.toggleBookmark(page.gameId)
-                                }
-
-                                MD.IconButton {
-                                    visible: hasLaunchLog
-                                    mdState.type: MD.Enum.IBtOutlined
-                                    icon.name: MD.Token.icon.receipt_long
-                                    Accessible.name: qsTr("Launch log")
-                                    onClicked: openLaunchLog()
-                                }
-
-                                MD.IconButton {
-                                    id: moreActions
-                                    visible: page.playable
-                                             || page.downloadComplete
-                                             || page.inLibrary
-                                    mdState.type: MD.Enum.IBtOutlined
-                                    icon.name: MD.Token.icon.more_vert
-                                    Accessible.name: qsTr("More actions")
-                                    onClicked: moreMenu.open()
-
-                                    MD.Menu {
-                                        id: moreMenu
-                                        y: parent.height
-                                        autoClose: true
-
-                                        MD.MenuItem {
-                                            text: qsTr("Delete")
-                                            icon.name: MD.Token.icon.delete
-                                            onTriggered: removeDialog.open()
-                                        }
-                                    }
-                                }
-
-                                MD.IconButton {
-                                    visible: page.playable
-                                             || page.downloadComplete
-                                             || page.inLibrary
-                                    mdState.type: MD.Enum.IBtOutlined
-                                    icon.name: MD.Token.icon.settings
-                                    onClicked: gameSettingsSheet.openForGame(page.gameId)
                                 }
 
                                 MD.Button {
@@ -537,83 +480,327 @@ Item {
                                     mdState.type: MD.Enum.BtFilledTonal
                                     onClicked: {
                                         if (Core.catalogUpdateHasDlcRisk(page.gameId))
-                                        dlcUpdateRiskDialog.openForGame(page.gameId)
+                                            dlcUpdateRiskDialog.openForGame(page.gameId)
                                         else
-                                        Core.updateCatalogEntry(page.gameId)
+                                            Core.updateCatalogEntry(page.gameId)
                                     }
                                 }
                             }
 
-                            MD.Label {
-                                Layout.fillWidth: true
-                                visible: downloadAction.visible && downloadAction.transferDetailVisible
-                                text: downloadAction.transferLine
-                                color: MD.Token.color.primary
-                                typescale: MD.Token.typescale.label_large
-                                elide: Text.ElideRight
-                                maximumLineCount: 1
+                            // Secondary actions live in one rounded rail.
+                            Rectangle {
+                                Layout.alignment: Qt.AlignVCenter
+                                implicitWidth: railRow.implicitWidth + MD.Token.spacing.small * 2
+                                implicitHeight: railRow.implicitHeight + MD.Token.spacing.extra_small * 2
+                                radius: MD.Token.shape.corner.full
+                                color: MD.Token.color.surface_container_highest
+
+                                Row {
+                                    id: railRow
+                                    anchors.centerIn: parent
+                                    spacing: 0
+
+                                    MD.IconButton {
+                                        visible: page.canManualInstall
+                                        mdState.type: MD.Enum.IBtStandard
+                                        icon.name: MD.Token.icon.folder_open
+                                        onClicked: Core.confirmManualInstall(page.downloadJob.jobId)
+
+                                        MD.ToolTip {
+                                            visible: parent.hovered
+                                            text: qsTr("Pick the folder you installed into.")
+                                        }
+                                    }
+
+                                    MD.IconButton {
+                                        readonly property bool favorited: {
+                                            const ids = Core.settings.bookmarkedEntryIds
+                                            return ids.indexOf(page.gameId) >= 0
+                                        }
+                                        checked: favorited
+                                        mdState.type: MD.Enum.IBtStandard
+                                        icon.name: MD.Token.icon.favorite
+                                        Accessible.name: favorited
+                                                         ? qsTr("Remove from favorites")
+                                                         : qsTr("Add to favorites")
+                                        onClicked: Core.toggleBookmark(page.gameId)
+                                    }
+
+                                    MD.IconButton {
+                                        visible: hasLaunchLog
+                                        mdState.type: MD.Enum.IBtStandard
+                                        icon.name: MD.Token.icon.receipt_long
+                                        Accessible.name: qsTr("Launch log")
+                                        onClicked: openLaunchLog()
+                                    }
+
+                                    MD.IconButton {
+                                        visible: page.playable
+                                                 || page.downloadComplete
+                                                 || page.inLibrary
+                                        mdState.type: MD.Enum.IBtStandard
+                                        icon.name: MD.Token.icon.settings
+                                        Accessible.name: qsTr("Game settings")
+                                        onClicked: gameSettingsSheet.openForGame(page.gameId)
+                                    }
+
+                                    MD.IconButton {
+                                        id: moreActions
+                                        visible: page.playable
+                                                 || page.downloadComplete
+                                                 || page.inLibrary
+                                        mdState.type: MD.Enum.IBtStandard
+                                        icon.name: MD.Token.icon.more_vert
+                                        Accessible.name: qsTr("More actions")
+                                        onClicked: moreMenu.open()
+
+                                        MD.Menu {
+                                            id: moreMenu
+                                            y: parent.height
+                                            autoClose: true
+
+                                            MD.MenuItem {
+                                                text: qsTr("Delete")
+                                                icon.name: MD.Token.icon.delete
+                                                onTriggered: removeDialog.open()
+                                            }
+                                        }
+                                    }
+                                }
                             }
-                        }
-                    }
-                }
-
-                MD.ElevationRectangle {
-                    Layout.fillWidth: true
-                    Layout.leftMargin: MD.Token.spacing.large
-                    Layout.rightMargin: MD.Token.spacing.large
-                    Layout.preferredHeight: aboutCol.implicitHeight + 2 * MD.Token.spacing.large
-                    radius: MD.Token.shape.corner.extra_large
-                    color: MD.Token.color.surface_container
-                    elevation: MD.Token.elevation.level0
-
-                    ColumnLayout {
-                        id: aboutCol
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.top: parent.top
-                        anchors.margins: MD.Token.spacing.large
-                        spacing: MD.Token.spacing.medium
-
-                        MD.Label {
-                            text: qsTr("Description")
-                            typescale: MD.Token.typescale.title_medium
                         }
 
                         MD.Label {
                             Layout.fillWidth: true
+                            visible: downloadAction.visible && downloadAction.transferDetailVisible
+                            text: downloadAction.transferLine
+                            color: MD.Token.color.primary
+                            typescale: MD.Token.typescale.label_large
+                            elide: Text.ElideRight
+                            maximumLineCount: 1
+                        }
+                    }
+
+                    RevealIn { delay: 360 }
+                }
+
+                // ---------- Description ----------
+                DetailsSection {
+                    id: aboutCard
+                    Layout.fillWidth: true
+                    title: qsTr("Description")
+                    iconName: MD.Token.icon.description
+                    transformOrigin: Item.Top
+
+                    property bool expanded: false
+                    // Four lines until the reader asks for more; the height eases between the two.
+                    readonly property real collapsedHeight: aboutText.lineCount > 0
+                        ? aboutText.implicitHeight / aboutText.lineCount * 4 : 96
+                    readonly property bool canExpand: aboutText.lineCount > 4
+                    property real shownHeight: expanded || !canExpand ? aboutText.implicitHeight
+                                                                      : collapsedHeight
+
+                    Behavior on shownHeight {
+                        NumberAnimation {
+                            duration: AppMotion.medium
+                            easing: AppMotion.emphasizedDecelerate
+                        }
+                    }
+
+                    Item {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: aboutCard.shownHeight
+                        clip: true
+
+                        MD.Label {
+                            id: aboutText
+                            width: parent.width
                             text: page.info.description || qsTr("Description is not available yet.")
                             typescale: MD.Token.typescale.body_large
                             wrapMode: Text.WordWrap
                             color: MD.Token.color.on_surface_variant
                         }
                     }
+
+                    MD.Button {
+                        visible: aboutCard.canExpand
+                        text: aboutCard.expanded ? qsTr("Show less") : qsTr("Show more")
+                        icon.name: aboutCard.expanded ? MD.Token.icon.expand_less : MD.Token.icon.expand_more
+                        mdState.type: MD.Enum.BtText
+                        onClicked: aboutCard.expanded = !aboutCard.expanded
+                    }
+
+                    RevealIn { target: aboutCard; delay: 400 }
                 }
 
-                MD.ElevationRectangle {
+                // ---------- Media ----------
+                DetailsSection {
+                    id: mediaCard
                     Layout.fillWidth: true
-                    Layout.leftMargin: MD.Token.spacing.large
-                    Layout.rightMargin: MD.Token.spacing.large
-                    Layout.preferredHeight: mediaSection.showSection
-                                            ? mediaSection.implicitHeight + 2 * MD.Token.spacing.large
-                                            : 0
                     visible: mediaSection.showSection
-                    radius: MD.Token.shape.corner.extra_large
-                    color: MD.Token.color.surface_container
-                    elevation: MD.Token.elevation.level0
+                    transformOrigin: Item.Top
 
                     GameDetailsMediaSection {
                         id: mediaSection
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.top: parent.top
-                        anchors.margins: MD.Token.spacing.large
+                        Layout.fillWidth: true
                         screenshotUrls: page.info.screenshotUrls ?? []
                         trailerUrl: page.info.trailerUrl ?? ""
                         trailerThumbnailUrl: page.info.trailerThumbnailUrl ?? ""
                         loading: page.mediaLoading
                     }
+
+                    RevealIn { target: mediaCard; delay: 440 }
+                }
+
+                // ---------- Links ----------
+                DetailsSection {
+                    id: linksCard
+                    Layout.fillWidth: true
+                    title: qsTr("Links")
+                    iconName: MD.Token.icon.link
+                    transformOrigin: Item.Top
+                    visible: (page.gameId || "").length > 0
+                             || (page.info.sourcePageUrl ?? "").length > 0
+                             || (page.info.sourceWebsiteUrl ?? "").length > 0
+                             || (page.info.steamStoreUrl ?? "").length > 0
+                             || (Core.sources.repositoryUrlFor(page.info.sourceId ?? "") || "").length > 0
+                             || (Core.sources.catalogUrlFor(page.info.sourceId ?? "") || "").length > 0
+
+                    Flow {
+                        Layout.fillWidth: true
+                        spacing: MD.Token.spacing.small
+
+                        MD.Button {
+                            id: shareButton
+                            visible: (page.gameId || "").length > 0
+                            text: qsTr("Share")
+                            icon.name: MD.Token.icon.share
+                            mdState.type: MD.Enum.BtFilledTonal
+                            onClicked: shareDialog.open()
+                        }
+
+                        MD.Button {
+                            id: sourceButton
+                            visible: (page.info.sourcePageUrl ?? "").length > 0
+                                     || (page.info.sourceWebsiteUrl ?? "").length > 0
+                            text: (page.info.sourcePageUrl ?? "").length > 0
+                                  ? qsTr("Source page")
+                                  : qsTr("Source website")
+                            icon.name: MD.Token.icon.open_in_new
+                            mdState.type: MD.Enum.BtOutlined
+                            onClicked: Core.openExternalUrl(
+                                (page.info.sourcePageUrl ?? "").length > 0
+                                    ? page.info.sourcePageUrl
+                                    : page.info.sourceWebsiteUrl)
+                        }
+
+                        MD.Button {
+                            id: steamButton
+                            visible: (page.info.steamStoreUrl ?? "").length > 0
+                            text: qsTr("Steam")
+                            icon.name: MD.Token.icon.open_in_new
+                            mdState.type: MD.Enum.BtOutlined
+                            onClicked: Core.openExternalUrl(page.info.steamStoreUrl)
+                        }
+
+                        MD.Button {
+                            id: pluginButton
+                            visible: (Core.sources.repositoryUrlFor(page.info.sourceId ?? "") || "").length > 0
+                            text: qsTr("Plugin source")
+                            icon.name: MD.Token.icon.open_in_new
+                            mdState.type: MD.Enum.BtOutlined
+                            onClicked: Core.openExternalUrl(
+                                Core.sources.repositoryUrlFor(page.info.sourceId ?? ""))
+                        }
+
+                        MD.Button {
+                            id: catalogButton
+                            visible: (Core.sources.catalogUrlFor(page.info.sourceId ?? "") || "").length > 0
+                            text: qsTr("Catalog URL")
+                            icon.name: MD.Token.icon.open_in_new
+                            mdState.type: MD.Enum.BtOutlined
+                            onClicked: Core.openExternalUrl(
+                                Core.sources.catalogUrlFor(page.info.sourceId ?? ""))
+                        }
+                    }
+
+                    RevealIn { target: linksCard; delay: 480 }
                 }
             }
+        }
+    }
+
+    // Once the hero has scrolled away a slim bar keeps the title and the favorite toggle in reach.
+    Rectangle {
+        id: compactBar
+        readonly property bool shown: page.gameFound && flick.contentY > 280
+        anchors.left: parent.left
+        anchors.right: parent.right
+        y: shown ? 0 : -height
+        height: 64
+        z: 9
+        color: MD.Token.color.surface_container
+        opacity: shown ? 1 : 0
+        visible: opacity > 0
+
+        Behavior on y {
+            NumberAnimation {
+                duration: AppMotion.medium
+                easing: AppMotion.emphasizedDecelerate
+            }
+        }
+        Behavior on opacity { NumberAnimation { duration: AppMotion.short } }
+
+        Rectangle {
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            height: 1
+            color: MD.Token.color.outline_variant
+            opacity: 0.5
+        }
+
+        RowLayout {
+            anchors.fill: parent
+            anchors.leftMargin: MD.Token.spacing.large * 2 + 40
+            anchors.rightMargin: MD.Token.spacing.large
+            spacing: MD.Token.spacing.medium
+
+            MD.Label {
+                Layout.fillWidth: true
+                text: page.info.title ?? ""
+                typescale: MD.Token.typescale.title_medium
+                elide: Text.ElideRight
+                maximumLineCount: 1
+            }
+
+            MD.IconButton {
+                readonly property bool favorited: {
+                    const ids = Core.settings.bookmarkedEntryIds
+                    return ids.indexOf(page.gameId) >= 0
+                }
+                checked: favorited
+                mdState.type: MD.Enum.IBtStandard
+                icon.name: MD.Token.icon.favorite
+                Accessible.name: favorited ? qsTr("Remove from favorites") : qsTr("Add to favorites")
+                onClicked: Core.toggleBookmark(page.gameId)
+            }
+
+            MD.IconButton {
+                mdState.type: MD.Enum.IBtStandard
+                icon.name: MD.Token.icon.keyboard_arrow_up
+                Accessible.name: qsTr("Back to top")
+                onClicked: topScroll.restart()
+            }
+        }
+
+        NumberAnimation {
+            id: topScroll
+            target: flick
+            property: "contentY"
+            to: 0
+            duration: AppMotion.long
+            easing: AppMotion.emphasized
         }
     }
 

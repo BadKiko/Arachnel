@@ -71,6 +71,14 @@ void GameMetadataService::loadCache()
             GameMetadata metadata;
             metadata.coverUrl = obj.value(QStringLiteral("coverUrl")).toString();
             metadata.description = obj.value(QStringLiteral("description")).toString();
+            // Older caches kept Steam's HTML-escaped text.
+            if (metadata.description.contains(QLatin1Char('&'))) {
+                metadata.description.replace(QStringLiteral("&quot;"), QStringLiteral("\""))
+                    .replace(QStringLiteral("&#39;"), QStringLiteral("'"))
+                    .replace(QStringLiteral("&lt;"), QStringLiteral("<"))
+                    .replace(QStringLiteral("&gt;"), QStringLiteral(">"))
+                    .replace(QStringLiteral("&amp;"), QStringLiteral("&"));
+            }
             metadata.descriptionLanguage = obj.value(QStringLiteral("descriptionLanguage")).toString();
             metadata.genres = obj.value(QStringLiteral("genres")).toString();
             metadata.sizeLabel = obj.value(QStringLiteral("sizeLabel")).toString();
