@@ -6,12 +6,15 @@ import Arachnel.Core 1.0
 import Qcm.Material as MD
 
 // Installing a game without leaving the page. It replaces the chain of three bottom sheets (source,
-// DLC, drive) with one card that grows out of the action dock: everything that decides the install
-// is on screen at once, the total size counts up as DLC is ticked, and the drive is one tap.
+// DLC, drive) with one panel that opens under the hero: DLC on the left, a summary on the right
+// with the total size, the drive and the Install button.
 Item {
     id: root
 
     required property var page
+    property color accent: MD.Token.color.primary
+    property color accentContainer: MD.Token.color.secondary_container
+    property color accentInk: MD.Token.color.on_primary
 
     property bool open: false
 
@@ -135,7 +138,7 @@ Item {
                 continue
             const id = String(a.id)
             let cover = String(a.coverUrl || "")
-            if (!cover.length && id.indexOf("steam-") === 0) {
+            if (!/^(https?|file):/.test(cover) && id.indexOf("steam-") === 0) {
                 const appId = id.slice(6)
                 if (/^\d+$/.test(appId))
                     cover = "https://cdn.akamai.steamstatic.com/steam/apps/" + appId + "/header.jpg"
@@ -167,12 +170,11 @@ Item {
             if (ticked[addons[i].id])
                 ids.push(addons[i].id)
         }
-        const lib = needsLocation ? libraryId : ""
         if (needsLocation) {
             if (sourceId.length)
-                Core.installCatalogEntryFromSource(installId, sourceId, lib, ids)
+                Core.installCatalogEntryFromSource(installId, sourceId, libraryId, ids)
             else
-                Core.installCatalogEntry(installId, lib, ids)
+                Core.installCatalogEntry(installId, libraryId, ids)
         } else if (sourceId.length) {
             Core.installCatalogEntryFromSource(page.gameId, sourceId, "", ids)
         } else {
@@ -195,526 +197,445 @@ Item {
         }
     }
 
-    // ---- Geometry: the card grows out of the dock ----
+    // ---- Opening: the panel unfolds downwards ----
     property real reveal: open ? 1 : 0
     Behavior on reveal {
         NumberAnimation {
-            duration: AppMotion.scaled(open ? 640 : 380)
-            easing: open ? AppMotion.emphasizedDecelerate : AppMotion.emphasizedAccelerate
+            duration: AppMotion.scaled(root.open ? 560 : 320)
+            easing: root.open ? AppMotion.emphasizedDecelerate : AppMotion.emphasizedAccelerate
         }
     }
 
     visible: reveal > 0.001
     clip: true
-    implicitHeight: Math.round(card.implicitHeight * reveal)
+    implicitHeight: Math.round(panel.implicitHeight * reveal)
     Layout.preferredHeight: implicitHeight
 
-    Rectangle {
-        id: card
-        width: parent.width
-        implicitHeight: body.implicitHeight + MD.Token.spacing.extra_large * 2
-        // The corners start tight, like the dock, and soften as the card opens.
-        radius: 12 + 16 * root.reveal
-        color: MD.Token.color.surface_container_high
-        border.width: 1
-        border.color: MD.Token.color.outline_variant
-        opacity: Math.min(1, root.reveal * 1.6)
-        transform: Translate { y: (1 - root.reveal) * -28 }
+    readonly property bool wide: width >= 860
 
-        ColumnLayout {
+    Rectangle {
+        id: panel
+        width: parent.width
+        implicitHeight: body.implicitHeight + 2 * MD.Token.spacing.large
+        radius: 28
+        color: MD.Token.color.surface_container
+        opacity: Math.min(1, root.reveal * 1.5)
+
+        GridLayout {
             id: body
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.top: parent.top
-            anchors.margins: MD.Token.spacing.extra_large
-            spacing: MD.Token.spacing.large
+            anchors.margins: MD.Token.spacing.large
+            columns: root.wide ? 2 : 1
+            columnSpacing: MD.Token.spacing.large
+            rowSpacing: MD.Token.spacing.large
 
-            // ---------- Header ----------
-            RowLayout {
-                Layout.fillWidth: true
-                spacing: MD.Token.spacing.medium
-
-                ColumnLayout {
-                    Layout.fillWidth: true
-                    spacing: 2
-
-                    MD.Label {
-                        text: qsTr("Install").toUpperCase()
-                        typescale: MD.Token.typescale.label_large
-                        font.letterSpacing: 2
-                        color: MD.Token.color.primary
-                    }
-                    MD.Label {
-                        Layout.fillWidth: true
-                        text: page.info.title ?? ""
-                        typescale: MD.Token.typescale.title_large
-                        elide: Text.ElideRight
-                        maximumLineCount: 1
-                    }
-                }
-
-                ColumnLayout {
-                    spacing: 0
-                    Layout.alignment: Qt.AlignRight
-
-                    MD.Label {
-                        Layout.alignment: Qt.AlignRight
-                        text: root.formatBytes(root.shownBytes)
-                        typescale: MD.Token.typescale.headline_large
-                        color: MD.Token.color.on_surface
-                    }
-                    MD.Label {
-                        Layout.alignment: Qt.AlignRight
-                        text: qsTr("on disk")
-                        typescale: MD.Token.typescale.label_medium
-                        color: MD.Token.color.on_surface_variant
-                    }
-                }
-
-                MD.IconButton {
-                    mdState.type: MD.Enum.IBtStandard
-                    icon.name: MD.Token.icon.close
-                    Accessible.name: qsTr("Cancel")
-                    onClicked: root.close()
-                }
-            }
-
-            // ---------- Size bar: game and DLC ----------
+            // ================= Left: what to download =================
             ColumnLayout {
                 Layout.fillWidth: true
-                spacing: MD.Token.spacing.extra_small
-                visible: root.totalBytes > 0
-
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 12
-                    radius: 6
-                    color: MD.Token.color.surface_container_highest
-                    clip: true
-
-                    Rectangle {
-                        id: gameSeg
-                        height: parent.height
-                        radius: 6
-                        color: MD.Token.color.primary
-                        width: root.totalBytes > 0 ? parent.width * (root.baseBytes / root.totalBytes) : 0
-                        Behavior on width {
-                            NumberAnimation { duration: AppMotion.scaled(520); easing: AppMotion.emphasizedDecelerate }
-                        }
-                    }
-                    Rectangle {
-                        height: parent.height
-                        radius: 6
-                        x: gameSeg.width - 6
-                        width: root.totalBytes > 0 ? parent.width * (root.dlcBytes / root.totalBytes) + 6 : 0
-                        color: MD.Token.color.tertiary
-                        Behavior on width {
-                            NumberAnimation { duration: AppMotion.scaled(520); easing: AppMotion.emphasizedDecelerate }
-                        }
-                    }
-                }
+                Layout.alignment: Qt.AlignTop
+                spacing: MD.Token.spacing.medium
 
                 RowLayout {
                     Layout.fillWidth: true
-                    spacing: MD.Token.spacing.large
+                    spacing: MD.Token.spacing.small
 
-                    RowLayout {
-                        spacing: MD.Token.spacing.extra_small
-                        Rectangle { width: 10; height: 10; radius: 5; color: MD.Token.color.primary }
-                        MD.Label {
-                            text: qsTr("Game %1").arg(root.formatBytes(root.baseBytes))
-                            typescale: MD.Token.typescale.label_medium
-                            color: MD.Token.color.on_surface_variant
-                        }
+                    MD.Label {
+                        Layout.fillWidth: true
+                        text: qsTr("Installation")
+                        typescale: MD.Token.typescale.title_large
                     }
-                    RowLayout {
-                        visible: root.tickedCount > 0
-                        spacing: MD.Token.spacing.extra_small
-                        Rectangle { width: 10; height: 10; radius: 5; color: MD.Token.color.tertiary }
-                        MD.Label {
-                            text: qsTr("DLC %1").arg(root.formatBytes(root.dlcBytes))
-                            typescale: MD.Token.typescale.label_medium
-                            color: MD.Token.color.on_surface_variant
-                        }
+                    MD.IconButton {
+                        visible: !root.wide
+                        mdState.type: MD.Enum.IBtStandard
+                        icon.name: MD.Token.icon.close
+                        Accessible.name: qsTr("Cancel")
+                        onClicked: root.close()
                     }
-                    Item { Layout.fillWidth: true }
-                }
-            }
-
-            // ---------- Source ----------
-            ColumnLayout {
-                Layout.fillWidth: true
-                spacing: MD.Token.spacing.small
-                visible: root.offers.length > 1
-
-                MD.Label {
-                    text: qsTr("Download source")
-                    typescale: MD.Token.typescale.title_small
-                    color: MD.Token.color.on_surface_variant
                 }
 
+                // Source, only when the game is offered by more than one.
                 Flow {
                     Layout.fillWidth: true
                     spacing: MD.Token.spacing.small
+                    visible: root.offers.length > 1
 
                     Repeater {
                         model: root.offers
 
-                        delegate: Rectangle {
-                            id: offerCard
+                        delegate: MD.FilterChip {
                             required property var modelData
                             required property int index
-                            readonly property bool picked: root.offerIndex === index
-
-                            implicitWidth: offerRow.implicitWidth + MD.Token.spacing.large * 2
-                            implicitHeight: 64
-                            radius: picked ? 16 : 28
-                            color: picked ? MD.Token.color.secondary_container
-                                          : MD.Token.color.surface_container_highest
-                            border.width: picked ? 2 : 1
-                            border.color: picked ? MD.Token.color.primary : MD.Token.color.outline_variant
-                            scale: tap.pressed ? 0.97 : 1
-
-                            Behavior on radius { NumberAnimation { duration: AppMotion.medium; easing: AppMotion.emphasizedDecelerate } }
-                            Behavior on color { ColorAnimation { duration: AppMotion.short } }
-                            Behavior on scale { NumberAnimation { duration: AppMotion.fast } }
-
-                            RowLayout {
-                                id: offerRow
-                                anchors.centerIn: parent
-                                spacing: MD.Token.spacing.small
-
-                                MD.Icon {
-                                    name: offerCard.picked ? MD.Token.icon.check_circle : MD.Token.icon.storefront
-                                    size: 22
-                                    color: offerCard.picked ? MD.Token.color.primary : MD.Token.color.on_surface_variant
-                                }
-                                ColumnLayout {
-                                    spacing: 0
-                                    MD.Label {
-                                        text: offerCard.modelData.sourceName || offerCard.modelData.sourceId
-                                              || qsTr("Unknown source")
-                                        typescale: MD.Token.typescale.title_small
-                                    }
-                                    MD.Label {
-                                        visible: !!(offerCard.modelData.sizeLabel)
-                                        text: offerCard.modelData.sizeLabel || ""
-                                        typescale: MD.Token.typescale.label_small
-                                        color: MD.Token.color.on_surface_variant
-                                    }
-                                }
-                            }
-
-                            HoverHandler { cursorShape: Qt.PointingHandCursor }
-                            TapHandler {
-                                id: tap
-                                onTapped: root.selectOffer(offerCard.index)
-                            }
+                            text: (modelData.sourceName || modelData.sourceId || qsTr("Unknown source"))
+                                  + ((modelData.sizeLabel || "").length ? "  ·  " + modelData.sizeLabel : "")
+                            checkable: false
+                            checked: root.offerIndex === index
+                            onClicked: root.selectOffer(index)
                         }
                     }
                 }
-            }
 
-            // ---------- DLC ----------
-            ColumnLayout {
-                Layout.fillWidth: true
-                spacing: MD.Token.spacing.small
-                visible: root.addonsLoading || root.addons.length > 0
-
+                // DLC header.
                 RowLayout {
                     Layout.fillWidth: true
+                    visible: root.addonsLoading || root.addons.length > 0
+                    spacing: MD.Token.spacing.small
 
                     MD.Label {
                         Layout.fillWidth: true
                         text: root.addonsLoading
-                              ? qsTr("Loading DLC from Steam…")
-                              : qsTr("DLC · %1 of %2").arg(root.tickedCount).arg(root.addons.length)
+                              ? qsTr("Loading DLC…")
+                              : qsTr("DLC: %1 of %2").arg(root.tickedCount).arg(root.addons.length)
                         typescale: MD.Token.typescale.title_small
                         color: MD.Token.color.on_surface_variant
                     }
                     MD.Button {
                         visible: !root.addonsLoading && root.addons.length > 1
-                        text: root.tickedCount === root.addons.length ? qsTr("None") : qsTr("All")
+                        text: root.tickedCount === root.addons.length ? qsTr("Clear all") : qsTr("Select all")
                         mdState.type: MD.Enum.BtText
                         onClicked: root.setAll(root.tickedCount !== root.addons.length)
                     }
                 }
 
-                ListView {
-                    id: dlcList
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 176
-                    orientation: ListView.Horizontal
-                    spacing: MD.Token.spacing.small
-                    clip: true
-                    boundsBehavior: Flickable.StopAtBounds
-                    model: root.addonsLoading ? 4 : root.addons
-                    // Wheel scrolls the strip sideways, like a carousel.
-                    WheelHandler {
-                        acceptedDevices: PointerDevice.Mouse
-                        onWheel: function (e) {
-                            dlcList.contentX = Math.max(0, Math.min(dlcList.contentWidth - dlcList.width,
-                                                                    dlcList.contentX - e.angleDelta.y))
-                        }
-                    }
-                    ScrollBar.horizontal: ScrollBar { policy: ScrollBar.AlwaysOff }
-
-                    delegate: Item {
-                        id: dlc
-                        required property var modelData
-                        required property int index
-                        readonly property bool skeleton: root.addonsLoading
-                        readonly property bool on: !skeleton && !!root.ticked[modelData.id]
-
-                        width: 232
-                        height: dlcList.height
-
-                        Rectangle {
-                            id: dlcCard
-                            anchors.fill: parent
-                            radius: dlc.on ? 20 : 28
-                            color: dlc.on ? MD.Token.color.secondary_container
-                                          : MD.Token.color.surface_container_highest
-                            border.width: dlc.on ? 2 : 1
-                            border.color: dlc.on ? MD.Token.color.primary : MD.Token.color.outline_variant
-                            scale: dlcTap.pressed ? 0.97 : 1
-
-                            Behavior on radius { NumberAnimation { duration: AppMotion.medium; easing: AppMotion.emphasizedDecelerate } }
-                            Behavior on color { ColorAnimation { duration: AppMotion.short } }
-                            Behavior on scale { NumberAnimation { duration: AppMotion.fast } }
-
-                            Item {
-                                id: art
-                                x: 8
-                                y: 8
-                                width: parent.width - 16
-                                height: 100
-                                layer.enabled: true
-                                layer.effect: MD.RoundClip { radius: 16 }
-
-                                Rectangle {
-                                    anchors.fill: parent
-                                    color: MD.Token.color.surface_container
-                                }
-                                MD.Icon {
-                                    anchors.centerIn: parent
-                                    visible: !dlc.skeleton && art_img.status !== Image.Ready
-                                    name: MD.Token.icon.extension
-                                    size: 36
-                                    color: MD.Token.color.on_surface_variant
-                                    opacity: 0.6
-                                }
-                                Image {
-                                    id: art_img
-                                    anchors.fill: parent
-                                    visible: !dlc.skeleton
-                                    source: dlc.skeleton ? "" : dlc.modelData.coverUrl
-                                    sourceSize: Qt.size(464, 200)
-                                    fillMode: Image.PreserveAspectCrop
-                                    asynchronous: true
-                                    cache: true
-                                    scale: dlcTap.pressed ? 1.0 : (dlcHover.hovered ? 1.06 : 1.0)
-                                    Behavior on scale { NumberAnimation { duration: AppMotion.medium; easing: AppMotion.emphasizedDecelerate } }
-                                }
-                                CatalogShimmerBox {
-                                    anchors.fill: parent
-                                    visible: dlc.skeleton
-                                    cornerRadius: 0
-                                    running: dlc.skeleton && root.open
-                                }
-                            }
-
-                            // Tick badge: the check pops in with a little overshoot.
-                            Rectangle {
-                                visible: !dlc.skeleton
-                                x: parent.width - width - 16
-                                y: 16
-                                width: 30
-                                height: 30
-                                radius: 15
-                                color: dlc.on ? MD.Token.color.primary : Qt.rgba(0, 0, 0, 0.45)
-                                border.width: dlc.on ? 0 : 2
-                                border.color: "white"
-                                Behavior on color { ColorAnimation { duration: AppMotion.short } }
-
-                                MD.Icon {
-                                    anchors.centerIn: parent
-                                    name: MD.Token.icon.check
-                                    size: 20
-                                    color: MD.Token.color.on_primary
-                                    scale: dlc.on ? 1 : 0
-                                    Behavior on scale {
-                                        NumberAnimation { duration: AppMotion.medium; easing.type: Easing.OutBack; easing.overshoot: 2.4 }
-                                    }
-                                }
-                            }
-
-                            ColumnLayout {
-                                anchors.left: parent.left
-                                anchors.right: parent.right
-                                anchors.top: art.bottom
-                                anchors.margins: MD.Token.spacing.small
-                                anchors.topMargin: MD.Token.spacing.small
-                                spacing: 2
-
-                                MD.Label {
-                                    Layout.fillWidth: true
-                                    text: dlc.skeleton ? "" : dlc.modelData.title
-                                    typescale: MD.Token.typescale.title_small
-                                    wrapMode: Text.WordWrap
-                                    maximumLineCount: 2
-                                    elide: Text.ElideRight
-                                }
-                                MD.Label {
-                                    Layout.fillWidth: true
-                                    text: dlc.skeleton || root.parseBytes(dlc.modelData.fileSize) <= 0
-                                          ? "" : dlc.modelData.fileSize
-                                    typescale: MD.Token.typescale.label_small
-                                    color: MD.Token.color.on_surface_variant
-                                }
-                            }
-
-                            HoverHandler { id: dlcHover; cursorShape: dlc.skeleton ? Qt.ArrowCursor : Qt.PointingHandCursor }
-                            TapHandler {
-                                id: dlcTap
-                                enabled: !dlc.skeleton
-                                onTapped: root.toggle(dlc.modelData.id)
-                            }
-                        }
-                    }
-
-                    // Cards settle in one after another when the card opens.
-                    add: Transition {
-                        NumberAnimation { property: "opacity"; from: 0; to: 1; duration: AppMotion.medium }
-                        NumberAnimation { property: "y"; from: 24; to: 0; duration: AppMotion.long; easing: AppMotion.emphasizedDecelerate }
-                    }
-                }
-            }
-
-            // ---------- Drive ----------
-            ColumnLayout {
-                Layout.fillWidth: true
-                spacing: MD.Token.spacing.small
-                visible: root.needsLocation
-
                 MD.Label {
-                    text: qsTr("Install to")
-                    typescale: MD.Token.typescale.title_small
+                    Layout.fillWidth: true
+                    visible: !root.addonsLoading && root.addons.length === 0
+                    text: qsTr("This game has no DLC to choose. Everything is included.")
+                    typescale: MD.Token.typescale.body_medium
                     color: MD.Token.color.on_surface_variant
+                    wrapMode: Text.WordWrap
                 }
 
-                Flow {
+                // DLC list: tidy rows with a thumbnail; the whole row toggles.
+                Rectangle {
                     Layout.fillWidth: true
-                    spacing: MD.Token.spacing.small
+                    visible: root.addonsLoading || root.addons.length > 0
+                    Layout.preferredHeight: Math.min(dlcList.contentHeight, 5 * 68) + 8
+                    radius: 20
+                    color: MD.Token.color.surface_container_low
+                    clip: true
 
-                    Repeater {
-                        model: Core.settings.storageLibraries
+                    ListView {
+                        id: dlcList
+                        anchors.fill: parent
+                        anchors.margins: 4
+                        clip: true
+                        boundsBehavior: Flickable.StopAtBounds
+                        model: root.addonsLoading ? 3 : root.addons
+                        spacing: 2
 
-                        delegate: Rectangle {
-                            id: lib
-                            required property string libraryId
-                            required property string label
-                            required property string path
-                            required property bool isDefault
-                            readonly property bool picked: root.libraryId === libraryId
+                        ScrollBar.vertical: MD.ScrollBar { policy: ScrollBar.AsNeeded }
 
-                            implicitWidth: Math.max(240, libRow.implicitWidth + MD.Token.spacing.large * 2)
-                            implicitHeight: 72
-                            radius: picked ? 16 : 28
-                            color: picked ? MD.Token.color.secondary_container
-                                          : MD.Token.color.surface_container_highest
-                            border.width: picked ? 2 : 1
-                            border.color: picked ? MD.Token.color.primary : MD.Token.color.outline_variant
-                            scale: libTap.pressed ? 0.97 : 1
+                        delegate: Item {
+                            id: row
+                            required property var modelData
+                            required property int index
+                            readonly property bool skeleton: root.addonsLoading
+                            readonly property bool on: !skeleton && !!root.ticked[modelData.id]
 
-                            Behavior on radius { NumberAnimation { duration: AppMotion.medium; easing: AppMotion.emphasizedDecelerate } }
-                            Behavior on color { ColorAnimation { duration: AppMotion.short } }
-                            Behavior on scale { NumberAnimation { duration: AppMotion.fast } }
+                            width: dlcList.width - (dlcList.contentHeight > dlcList.height ? 12 : 0)
+                            height: 66
+
+                            Rectangle {
+                                anchors.fill: parent
+                                radius: 16
+                                color: row.on ? root.accentContainer
+                                     : (rowHover.hovered ? MD.Token.color.surface_container_high : "transparent")
+                                Behavior on color { ColorAnimation { duration: AppMotion.short } }
+                            }
 
                             RowLayout {
-                                id: libRow
                                 anchors.fill: parent
-                                anchors.leftMargin: MD.Token.spacing.large
-                                anchors.rightMargin: MD.Token.spacing.large
+                                anchors.leftMargin: MD.Token.spacing.small
+                                anchors.rightMargin: MD.Token.spacing.medium
                                 spacing: MD.Token.spacing.medium
 
+                                // Check that pops in.
                                 Rectangle {
-                                    Layout.preferredWidth: 40
-                                    Layout.preferredHeight: 40
-                                    radius: lib.picked ? 12 : 20
-                                    color: lib.picked ? MD.Token.color.primary : MD.Token.color.surface_container
+                                    Layout.preferredWidth: 24
+                                    Layout.preferredHeight: 24
+                                    visible: !row.skeleton
+                                    radius: row.on ? 8 : 12
+                                    color: row.on ? root.accent : "transparent"
+                                    border.width: row.on ? 0 : 2
+                                    border.color: MD.Token.color.outline
                                     Behavior on radius { NumberAnimation { duration: AppMotion.medium; easing: AppMotion.emphasizedDecelerate } }
                                     Behavior on color { ColorAnimation { duration: AppMotion.short } }
 
                                     MD.Icon {
                                         anchors.centerIn: parent
-                                        name: MD.Token.icon.hard_drive
-                                        size: 22
-                                        color: lib.picked ? MD.Token.color.on_primary : MD.Token.color.on_surface_variant
+                                        name: MD.Token.icon.check
+                                        size: 18
+                                        color: root.accentInk
+                                        scale: row.on ? 1 : 0
+                                        Behavior on scale {
+                                            NumberAnimation { duration: AppMotion.medium; easing.type: Easing.OutBack; easing.overshoot: 2.2 }
+                                        }
                                     }
                                 }
 
-                                ColumnLayout {
+                                Item {
+                                    Layout.preferredWidth: 104
+                                    Layout.preferredHeight: 48
+
+                                    Rectangle {
+                                        anchors.fill: parent
+                                        radius: 10
+                                        color: MD.Token.color.surface_container_highest
+                                    }
+                                    MD.Image {
+                                        anchors.fill: parent
+                                        radius: 10
+                                        visible: !row.skeleton
+                                        source: row.skeleton ? "" : row.modelData.coverUrl
+                                        sourceSize: Qt.size(230, 108)
+                                        asynchronous: true
+                                    }
+                                    CatalogShimmerBox {
+                                        anchors.fill: parent
+                                        visible: row.skeleton
+                                        cornerRadius: 10
+                                        running: row.skeleton && root.open
+                                    }
+                                }
+
+                                MD.Label {
                                     Layout.fillWidth: true
-                                    spacing: 0
+                                    text: row.skeleton ? "" : row.modelData.title
+                                    typescale: MD.Token.typescale.body_large
+                                    elide: Text.ElideRight
+                                    maximumLineCount: 1
+                                }
 
-                                    RowLayout {
-                                        spacing: MD.Token.spacing.extra_small
-                                        MD.Label {
-                                            text: lib.label
-                                            typescale: MD.Token.typescale.title_small
-                                        }
-                                        MD.Icon {
-                                            visible: lib.isDefault
-                                            name: MD.Token.icon.star
-                                            size: 16
-                                            color: MD.Token.color.primary
-                                        }
-                                    }
-                                    MD.Label {
-                                        Layout.fillWidth: true
-                                        Layout.maximumWidth: 260
-                                        text: lib.path
-                                        typescale: MD.Token.typescale.label_small
-                                        color: MD.Token.color.on_surface_variant
-                                        elide: Text.ElideMiddle
-                                    }
+                                MD.Label {
+                                    text: row.skeleton || root.parseBytes(row.modelData.fileSize) <= 0
+                                          ? "" : row.modelData.fileSize
+                                    typescale: MD.Token.typescale.label_large
+                                    color: MD.Token.color.on_surface_variant
                                 }
                             }
 
-                            HoverHandler { cursorShape: Qt.PointingHandCursor }
+                            HoverHandler { id: rowHover; cursorShape: row.skeleton ? Qt.ArrowCursor : Qt.PointingHandCursor }
                             TapHandler {
-                                id: libTap
-                                onTapped: root.libraryId = lib.libraryId
+                                enabled: !row.skeleton
+                                onTapped: root.toggle(row.modelData.id)
                             }
+                        }
+
+                        add: Transition {
+                            NumberAnimation { property: "opacity"; from: 0; to: 1; duration: AppMotion.medium }
+                            NumberAnimation { property: "x"; from: 24; to: 0; duration: AppMotion.long; easing: AppMotion.emphasizedDecelerate }
                         }
                     }
                 }
             }
 
-            // ---------- Footer ----------
-            RowLayout {
-                Layout.fillWidth: true
-                spacing: MD.Token.spacing.medium
+            // ================= Right: summary =================
+            Rectangle {
+                Layout.fillWidth: !root.wide
+                Layout.preferredWidth: root.wide ? 340 : -1
+                Layout.alignment: Qt.AlignTop
+                implicitHeight: summary.implicitHeight + 2 * MD.Token.spacing.large
+                radius: 24
+                color: MD.Token.color.surface_container_high
 
-                Item { Layout.fillWidth: true }
+                ColumnLayout {
+                    id: summary
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    anchors.margins: MD.Token.spacing.large
+                    spacing: MD.Token.spacing.medium
 
-                MD.Button {
-                    text: qsTr("Cancel")
-                    mdState.type: MD.Enum.BtText
-                    onClicked: root.close()
-                }
+                    RowLayout {
+                        Layout.fillWidth: true
 
-                MD.Button {
-                    text: root.totalBytes > 0
-                          ? qsTr("Install · %1").arg(root.formatBytes(root.totalBytes))
-                          : qsTr("Install")
-                    icon.name: MD.Token.icon.download
-                    mdState.type: MD.Enum.BtFilled
-                    mdState.size: MD.Enum.L
-                    enabled: !root.addonsLoading
-                             && (!root.needsLocation || root.libraryId.length > 0)
-                    onClicked: root.confirm()
+                        MD.Label {
+                            Layout.fillWidth: true
+                            text: qsTr("Space needed")
+                            typescale: MD.Token.typescale.label_large
+                            color: MD.Token.color.on_surface_variant
+                        }
+                        MD.IconButton {
+                            visible: root.wide
+                            mdState.type: MD.Enum.IBtStandard
+                            icon.name: MD.Token.icon.close
+                            Accessible.name: qsTr("Cancel")
+                            onClicked: root.close()
+                        }
+                    }
+
+                    Text {
+                        text: root.formatBytes(root.shownBytes)
+                        color: MD.Token.color.on_surface
+                        font.family: sizeFont.font.family
+                        font.pixelSize: 40
+                        font.weight: Font.DemiBold
+
+                        MD.Label { id: sizeFont; visible: false }
+                    }
+
+                    // Game and DLC share of the total.
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 10
+                        radius: 5
+                        color: MD.Token.color.surface_container_highest
+                        visible: root.totalBytes > 0
+
+                        Rectangle {
+                            id: gameSeg
+                            height: parent.height
+                            radius: 5
+                            color: root.accent
+                            width: root.totalBytes > 0 ? parent.width * (root.baseBytes / root.totalBytes) : 0
+                            Behavior on width { NumberAnimation { duration: AppMotion.scaled(520); easing: AppMotion.emphasizedDecelerate } }
+                        }
+                        Rectangle {
+                            height: parent.height
+                            radius: 5
+                            x: gameSeg.width + (root.dlcBytes > 0 ? 3 : 0)
+                            width: root.totalBytes > 0 ? Math.max(0, parent.width * (root.dlcBytes / root.totalBytes) - 3) : 0
+                            color: Qt.rgba(root.accent.r, root.accent.g, root.accent.b, 0.45)
+                            Behavior on width { NumberAnimation { duration: AppMotion.scaled(520); easing: AppMotion.emphasizedDecelerate } }
+                        }
+                    }
+
+                    GridLayout {
+                        Layout.fillWidth: true
+                        columns: 2
+                        columnSpacing: MD.Token.spacing.small
+                        rowSpacing: 2
+
+                        RowLayout {
+                            spacing: 6
+                            Rectangle { width: 8; height: 8; radius: 4; color: root.accent }
+                            MD.Label { text: qsTr("Game"); typescale: MD.Token.typescale.body_medium; color: MD.Token.color.on_surface_variant }
+                        }
+                        MD.Label {
+                            Layout.alignment: Qt.AlignRight
+                            text: root.formatBytes(root.baseBytes)
+                            typescale: MD.Token.typescale.body_medium
+                        }
+                        RowLayout {
+                            visible: root.addons.length > 0
+                            spacing: 6
+                            Rectangle { width: 8; height: 8; radius: 4; color: Qt.rgba(root.accent.r, root.accent.g, root.accent.b, 0.45) }
+                            MD.Label { text: qsTr("DLC"); typescale: MD.Token.typescale.body_medium; color: MD.Token.color.on_surface_variant }
+                        }
+                        MD.Label {
+                            visible: root.addons.length > 0
+                            Layout.alignment: Qt.AlignRight
+                            text: root.tickedCount > 0 ? root.formatBytes(root.dlcBytes) : "0"
+                            typescale: MD.Token.typescale.body_medium
+                        }
+                    }
+
+                    // Drive picker.
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        Layout.topMargin: MD.Token.spacing.small
+                        visible: root.needsLocation
+                        spacing: 4
+
+                        MD.Label {
+                            text: qsTr("Install to")
+                            typescale: MD.Token.typescale.label_large
+                            color: MD.Token.color.on_surface_variant
+                        }
+
+                        Repeater {
+                            model: Core.settings.storageLibraries
+
+                            delegate: Rectangle {
+                                id: lib
+                                required property string libraryId
+                                required property string label
+                                required property string path
+                                required property bool isDefault
+                                readonly property bool picked: root.libraryId === libraryId
+
+                                Layout.fillWidth: true
+                                implicitHeight: 56
+                                radius: 16
+                                color: picked ? root.accentContainer
+                                     : (libHover.hovered ? MD.Token.color.surface_container_highest : "transparent")
+                                Behavior on color { ColorAnimation { duration: AppMotion.short } }
+
+                                RowLayout {
+                                    anchors.fill: parent
+                                    anchors.leftMargin: MD.Token.spacing.small
+                                    anchors.rightMargin: MD.Token.spacing.small
+                                    spacing: MD.Token.spacing.small
+
+                                    // Radio dot.
+                                    Rectangle {
+                                        Layout.preferredWidth: 20
+                                        Layout.preferredHeight: 20
+                                        radius: 10
+                                        color: "transparent"
+                                        border.width: 2
+                                        border.color: lib.picked ? root.accent : MD.Token.color.outline
+
+                                        Rectangle {
+                                            anchors.centerIn: parent
+                                            width: 10
+                                            height: 10
+                                            radius: 5
+                                            color: root.accent
+                                            scale: lib.picked ? 1 : 0
+                                            Behavior on scale {
+                                                NumberAnimation { duration: AppMotion.medium; easing.type: Easing.OutBack; easing.overshoot: 2.0 }
+                                            }
+                                        }
+                                    }
+
+                                    ColumnLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 0
+
+                                        RowLayout {
+                                            spacing: 4
+                                            MD.Label {
+                                                text: lib.label
+                                                typescale: MD.Token.typescale.title_small
+                                            }
+                                            MD.Icon {
+                                                visible: lib.isDefault
+                                                name: MD.Token.icon.star
+                                                size: 14
+                                                color: root.accent
+                                            }
+                                        }
+                                        MD.Label {
+                                            Layout.fillWidth: true
+                                            text: lib.path
+                                            typescale: MD.Token.typescale.label_small
+                                            color: MD.Token.color.on_surface_variant
+                                            elide: Text.ElideMiddle
+                                        }
+                                    }
+                                }
+
+                                HoverHandler { id: libHover; cursorShape: Qt.PointingHandCursor }
+                                TapHandler { onTapped: root.libraryId = lib.libraryId }
+                            }
+                        }
+                    }
+
+                    MD.Button {
+                        Layout.fillWidth: true
+                        Layout.topMargin: MD.Token.spacing.small
+                        text: qsTr("Install")
+                        icon.name: MD.Token.icon.download
+                        mdState.type: MD.Enum.BtFilled
+                        mdState.size: MD.Enum.M
+                        mdState.backgroundColor: root.accent
+                        mdState.textColor: root.accentInk
+                        enabled: !root.addonsLoading && (!root.needsLocation || root.libraryId.length > 0)
+                        onClicked: root.confirm()
+                    }
                 }
             }
         }

@@ -9,6 +9,7 @@ Rectangle {
 
     property string title: ""
     property string iconName: ""
+    property color iconColor: MD.Token.color.primary
     default property alias content: body.data
 
     implicitHeight: column.implicitHeight + 2 * MD.Token.spacing.large
@@ -32,7 +33,7 @@ Rectangle {
                 visible: root.iconName.length > 0
                 name: root.iconName
                 size: 22
-                color: MD.Token.color.primary
+                color: root.iconColor
             }
 
             MD.Label {
