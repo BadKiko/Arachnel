@@ -4697,22 +4697,22 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+70"/>
+        <location line="+3"/>
+        <source>App colour</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Each circle shows the colours the app will use.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+27"/>
         <source>Missing your language? Help translate Arachnel on Weblate.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-67"/>
-        <source>Palette</source>
-        <translation>Palette</translation>
-    </message>
-    <message>
-        <location line="+26"/>
-        <source>Primary</source>
-        <translation>Primary</translation>
-    </message>
-    <message>
-        <location line="+26"/>
+        <location line="-15"/>
         <source>Language</source>
         <translation>Language</translation>
     </message>
@@ -4727,7 +4727,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>Community translations</translation>
     </message>
     <message>
-        <location line="-80"/>
+        <location line="-41"/>
         <source>Reduce motion</source>
         <translation>Reduce motion</translation>
     </message>
@@ -5543,6 +5543,99 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <location line="-12"/>
         <source>Suggested by %1</source>
         <translation>Suggested by %1</translation>
+    </message>
+</context>
+<context>
+    <name>ThemeColorPicker</name>
+    <message>
+        <location filename="../qml/settings/ThemeColorPicker.qml" line="+51"/>
+        <source>Calm</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Soft, balanced tones</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Vibrant</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Rich, saturated colour</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Expressive</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Playful contrasting accents</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Rainbow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Bright accents, neutral surfaces</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Fruit salad</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Warm shifted hues</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Muted</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Barely tinted greys</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Monochrome</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Black, white and grey</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>True colour</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Keeps your colour as is</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+105"/>
+        <source>Custom colour</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>Style</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

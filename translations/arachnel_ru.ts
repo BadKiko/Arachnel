@@ -4708,22 +4708,22 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>Цвета</translation>
     </message>
     <message>
-        <location line="+70"/>
+        <location line="+3"/>
+        <source>App colour</source>
+        <translation>Цвет приложения</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Each circle shows the colours the app will use.</source>
+        <translation>В каждом круге — цвета, которые получит приложение.</translation>
+    </message>
+    <message>
+        <location line="+27"/>
         <source>Missing your language? Help translate Arachnel on Weblate.</source>
         <translation>Нет вашего языка? Помогите перевести Arachnel на Weblate.</translation>
     </message>
     <message>
-        <location line="-67"/>
-        <source>Palette</source>
-        <translation>Палитра</translation>
-    </message>
-    <message>
-        <location line="+26"/>
-        <source>Primary</source>
-        <translation>Основной</translation>
-    </message>
-    <message>
-        <location line="+26"/>
+        <location line="-15"/>
         <source>Language</source>
         <translation>Язык</translation>
     </message>
@@ -4738,7 +4738,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>Переводы сообщества</translation>
     </message>
     <message>
-        <location line="-80"/>
+        <location line="-41"/>
         <source>Reduce motion</source>
         <translation>Уменьшить анимации</translation>
     </message>
@@ -5554,6 +5554,99 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <location line="-12"/>
         <source>Suggested by %1</source>
         <translation>Предложил %1</translation>
+    </message>
+</context>
+<context>
+    <name>ThemeColorPicker</name>
+    <message>
+        <location filename="../qml/settings/ThemeColorPicker.qml" line="+51"/>
+        <source>Calm</source>
+        <translation>Спокойный</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Soft, balanced tones</source>
+        <translation>Мягкие, сбалансированные тона</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Vibrant</source>
+        <translation>Яркий</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Rich, saturated colour</source>
+        <translation>Насыщенные цвета</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Expressive</source>
+        <translation>Выразительный</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Playful contrasting accents</source>
+        <translation>Игривые контрастные акценты</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Rainbow</source>
+        <translation>Радуга</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Bright accents, neutral surfaces</source>
+        <translation>Яркие акценты, нейтральный фон</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Fruit salad</source>
+        <translation>Фруктовый</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Warm shifted hues</source>
+        <translation>Тёплые смещённые оттенки</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Muted</source>
+        <translation>Приглушённый</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Barely tinted greys</source>
+        <translation>Чуть окрашенные серые</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Monochrome</source>
+        <translation>Монохром</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Black, white and grey</source>
+        <translation>Чёрный, белый и серый</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>True colour</source>
+        <translation>Точный цвет</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Keeps your colour as is</source>
+        <translation>Цвет как есть, без изменений</translation>
+    </message>
+    <message>
+        <location line="+105"/>
+        <source>Custom colour</source>
+        <translation>Свой цвет</translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>Style</source>
+        <translation>Стиль</translation>
     </message>
 </context>
 <context>

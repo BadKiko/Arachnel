@@ -26,11 +26,12 @@ Item {
     implicitWidth: 360
 
     readonly property real outer: 24
-    readonly property real inner: root.selected ? root.outer : (tap.pressed ? 16 : (hover.hovered ? 10 : 4))
+    // The chosen row stays part of its group: tinted, with slightly softer corners.
+    readonly property real inner: root.selected ? 12 : (tap.pressed ? 16 : (hover.hovered ? 10 : 4))
 
     Rectangle {
         anchors.fill: parent
-        color: root.selected ? MD.Token.color.secondary_container
+        color: root.selected ? MD.Util.transparent(MD.Token.color.secondary_container, 0.6)
              : tap.pressed ? MD.Token.color.surface_container_highest
              : hover.hovered ? MD.Token.color.surface_container_high
              : MD.Token.color.surface_container

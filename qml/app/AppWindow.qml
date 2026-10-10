@@ -630,6 +630,7 @@ MD.ApplicationWindow {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 Layout.topMargin: MD.Token.spacing.small
+                Layout.leftMargin: MD.Token.spacing.small
                 Layout.rightMargin: MD.Token.spacing.small
                 Layout.bottomMargin: MD.Token.spacing.small
                 spacing: 0

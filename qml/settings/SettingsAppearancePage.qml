@@ -64,53 +64,14 @@ Flickable {
             title: qsTr("Colors")
 
             SettingsRow {
-                title: qsTr("Palette")
+                title: qsTr("App colour")
+                subtitle: qsTr("Each circle shows the colours the app will use.")
                 iconName: MD.Token.icon.palette
 
-                below: Flow {
+                below: ThemeColorPicker {
                     Layout.fillWidth: true
-                    spacing: MD.Token.spacing.small
-
-                    Repeater {
-                        model: MD.PaletteModel {}
-
-                        delegate: MD.FilterChip {
-                            required property int index
-                            required property var model
-                            text: model.name
-                            checkable: false
-                            checked: Appearance.paletteType === index
-                            onClicked: {
-                                if (!root.applying)
-                                    Appearance.setPaletteType(index)
-                            }
-                        }
-                    }
-                }
-            }
-
-            SettingsRow {
-                title: qsTr("Primary")
-                iconName: MD.Token.icon.colorize
-
-                below: Flow {
-                    Layout.fillWidth: true
-                    spacing: MD.Token.spacing.medium
-
-                    Repeater {
-                        model: AccentColors.palette
-
-                        MD.ColorRadio {
-                            required property var modelData
-                            size: 36
-                            color: modelData.color
-                            checked: Appearance.accentColor === modelData.color
-                            onClicked: {
-                                if (!root.applying)
-                                    Appearance.setAccentColor(modelData.color)
-                            }
-                        }
-                    }
+                    Layout.topMargin: MD.Token.spacing.small
+                    applying: root.applying
                 }
             }
         }
