@@ -95,7 +95,7 @@ private:
                             const QString& languageCode = QStringLiteral("en"));
     void requestAppDetails(const QString& entryId, const QString& title, const QString& appId,
                            const QString& coverUrl, MetadataFetchMode mode,
-                           const QString& languageCode);
+                           const QString& languageCode, bool usRegion = true);
     void requestDepotSize(const QString& entryId, const QString& title, const QString& appId);
     void requestCurrentPlayers(const QString& entryId, const QString& title, const QString& appId);
     void startKnownAppFetch(const QString& entryId, const QString& title, const QString& appId,
