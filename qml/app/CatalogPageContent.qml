@@ -191,13 +191,20 @@ Item {
                     id: discoveryColumn
                     width: discoveryFlick.width - page.pageMargin * 2
                     x: page.pageMargin
-                    topPadding: MD.Token.spacing.large
+                    topPadding: 0
                     bottomPadding: MD.Token.spacing.extra_large * 2
                     spacing: MD.Token.spacing.extra_large
 
                     Column {
                         width: parent.width
                         spacing: MD.Token.spacing.large
+
+                        CatalogDiscoveryHeader {
+                            width: parent.width
+                            page: content.page
+                            onBrowseAllRequested: page.openFullCatalog("")
+                            onSurpriseRequested: content.pickRandomFromShelves()
+                        }
 
                         CatalogDiscoveryHero {
                             width: parent.width
@@ -216,12 +223,6 @@ Item {
                             page: content.page
                         }
 
-                        CatalogDiscoveryHeader {
-                            width: parent.width
-                            page: content.page
-                            onBrowseAllRequested: page.openFullCatalog("")
-                            onSurpriseRequested: content.pickRandomFromShelves()
-                        }
 
                         Column {
                             width: parent.width

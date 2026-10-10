@@ -556,7 +556,7 @@
 <context>
     <name>CatalogPageContent</name>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="+293"/>
+        <location filename="../qml/app/CatalogPageContent.qml" line="+294"/>
         <source>With friends</source>
         <translation>With friends</translation>
     </message>
@@ -2853,7 +2853,8 @@
 <context>
     <name>FriendsPage</name>
     <message>
-        <location filename="../qml/app/FriendsPage.qml" line="+230"/>
+        <location filename="../qml/app/FriendsPage.qml" line="+32"/>
+        <location line="+207"/>
         <source>Friends</source>
         <translation>Friends</translation>
     </message>

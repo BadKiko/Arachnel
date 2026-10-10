@@ -331,8 +331,23 @@ Item {
             requestTimer.stop()
     }
 
+    // List rows: a tonal container that lights up under the pointer, corners softening.
+    Rectangle {
+        anchors.fill: parent
+        visible: root.compactRow
+        radius: rowHover.hovered ? 24 : 16
+        color: rowHover.hovered ? MD.Token.color.surface_container_high : MD.Token.color.surface_container_low
+        Behavior on radius { NumberAnimation { duration: AppMotion.medium; easing.type: Easing.OutBack } }
+        Behavior on color { ColorAnimation { duration: AppMotion.short } }
+
+        HoverHandler { id: rowHover; enabled: root.compactRow }
+        TapHandler { enabled: root.compactRow; onTapped: root.openDetails(root.entryId) }
+    }
+
     RowLayout {
         anchors.fill: parent
+        anchors.leftMargin: MD.Token.spacing.small
+        anchors.rightMargin: MD.Token.spacing.medium
         visible: root.compactRow
         spacing: MD.Token.spacing.medium
 

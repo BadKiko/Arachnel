@@ -557,7 +557,7 @@
 <context>
     <name>CatalogPageContent</name>
     <message>
-        <location filename="../qml/app/CatalogPageContent.qml" line="+293"/>
+        <location filename="../qml/app/CatalogPageContent.qml" line="+294"/>
         <source>With friends</source>
         <translation>С друзьями</translation>
     </message>
@@ -2854,7 +2854,8 @@
 <context>
     <name>FriendsPage</name>
     <message>
-        <location filename="../qml/app/FriendsPage.qml" line="+230"/>
+        <location filename="../qml/app/FriendsPage.qml" line="+32"/>
+        <location line="+207"/>
         <source>Friends</source>
         <translation>Друзья</translation>
     </message>
@@ -3719,17 +3720,29 @@
     <message numerus="yes">
         <location line="+8"/>
         <source>%n source(s)</source>
-        <translation><numerusform>%n источник</numerusform><numerusform>%n источника</numerusform><numerusform>%n источников</numerusform></translation>
+        <translation>
+            <numerusform>%n источник</numerusform>
+            <numerusform>%n источника</numerusform>
+            <numerusform>%n источников</numerusform>
+        </translation>
     </message>
     <message numerus="yes">
         <location line="+1"/>
         <source>%n task(s)</source>
-        <translation><numerusform>%n задача</numerusform><numerusform>%n задачи</numerusform><numerusform>%n задач</numerusform></translation>
+        <translation>
+            <numerusform>%n задача</numerusform>
+            <numerusform>%n задачи</numerusform>
+            <numerusform>%n задач</numerusform>
+        </translation>
     </message>
     <message numerus="yes">
         <location line="+1"/>
         <source>%n update(s)</source>
-        <translation><numerusform>%n обновление</numerusform><numerusform>%n обновления</numerusform><numerusform>%n обновлений</numerusform></translation>
+        <translation>
+            <numerusform>%n обновление</numerusform>
+            <numerusform>%n обновления</numerusform>
+            <numerusform>%n обновлений</numerusform>
+        </translation>
     </message>
     <message>
         <location line="+124"/>

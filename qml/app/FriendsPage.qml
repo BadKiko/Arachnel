@@ -23,6 +23,15 @@ Item {
         listAddPin.text = ""
     }
 
+    // v2: the same big title as every other page; the empty-state content stays centered below.
+    DisplayTitle {
+        x: root.pageMargin
+        y: root.pageMargin
+        z: 2
+        visible: root.emptyState
+        text: qsTr("Friends")
+    }
+
     Item {
         anchors.fill: parent
         opacity: root.emptyState ? 1 : 0
