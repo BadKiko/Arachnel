@@ -129,7 +129,7 @@ private:
     int m_recentWrite = 0;
 
     // Viewport covers first; keep queue short so scroll-churn cannot bury them.
-    static constexpr int kMaxConcurrent = 8;
+    static constexpr int kMaxConcurrent = 16;
     static constexpr int kMaxPending = 48;
     static constexpr int kLatencyWindow = 64;
     // Soft negative TTL - catalog refresh also clears via clearAllFailed().

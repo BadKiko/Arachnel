@@ -61,7 +61,9 @@ QString CatalogCoverCoordinator::steamThumbUrl(const QString& steamAppId) const
 {
     if (steamAppId.isEmpty())
         return {};
-    return QStringLiteral("https://cdn.akamai.steamstatic.com/steam/apps/%1/library_capsule.jpg")
+    // The portrait cover the feed normally points at. (This used to be library_capsule.jpg, which
+    // does not exist for Steam apps: every cover paid a 404 round trip before its real URL.)
+    return QStringLiteral("https://cdn.akamai.steamstatic.com/steam/apps/%1/library_600x900.jpg")
         .arg(steamAppId);
 }
 
@@ -286,19 +288,15 @@ void CatalogCoverCoordinator::buildPlanUrls(CatalogEntry* entry, CoverPlan& plan
         plan.urls.append(url);
     };
 
-    // Fast paint: capsule before heavy HQ when we have an app id.
-    if (!entry->steamAppId.isEmpty()) {
-        const bool remoteIsHq = isHqUrl(catalogRemote) || catalogRemote.isEmpty();
-        if (remoteIsHq)
-            appendUnique(steamThumbUrl(entry->steamAppId));
-    }
-
+    // The feed's own cover first (about three quarters of them exist). When it is missing, the
+    // small header image is shown quickly and the larger portrait is tried as an upgrade.
     appendUnique(catalogRemote);
 
     const GameMetadata metadata = m_metadataService->metadataForTitle(entry->title);
     appendUnique(metadata.coverUrl);
 
     if (!entry->steamAppId.isEmpty()) {
+        appendUnique(steamHeaderUrl(entry->steamAppId));
         appendUnique(steamHqUrl(entry->steamAppId));
         if (!isHqUrl(catalogRemote))
             appendUnique(steamThumbUrl(entry->steamAppId));
