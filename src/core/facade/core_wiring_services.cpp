@@ -108,6 +108,10 @@ void CoreController::initializeServices()
             m_catalogCovers->clearFailedCoverHints();
         }
     };
+    catalogHooks.cacheReplaced = [this]() {
+        if (m_catalogFilters)
+            m_catalogFilters->invalidateTable();
+    };
     catalogHooks.applyFilter = [this](const QString& query) { applyCatalogFilter(query); };
     catalogHooks.rebuildGenres = [this]() { rebuildAvailableCatalogGenres(); };
     catalogHooks.warmCovers = [this]() {

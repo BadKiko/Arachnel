@@ -614,6 +614,8 @@ void CatalogController::applyMergedCatalogResult(
             *m_mergedCache = std::move(merged);
         }
     }
+    if (m_hooks.cacheReplaced)
+        m_hooks.cacheReplaced();
 
     int enabledActiveCount = 0;
     QString singleEnabledId;

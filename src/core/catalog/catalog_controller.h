@@ -38,6 +38,8 @@ public:
         std::function<void()> rebuildIdIndex;
         std::function<void(const QString&)> applyFilter;
         std::function<void()> rebuildGenres;
+        /** The merged cache now holds different rows (any size). */
+        std::function<void()> cacheReplaced;
         std::function<void()> warmCovers;
         std::function<void()> catalogReady;
     };
