@@ -283,6 +283,20 @@ void CoreController::syncCatalogInstallKind(const QString& entryId, InstallKind 
     syncEntryToCatalogModel(entryId);
 }
 
+QString CoreController::trailerSource(const QString& remoteUrl)
+{
+    if (!m_trailerCache)
+        return remoteUrl;
+    const QString local = m_trailerCache->localUrlFor(remoteUrl);
+    return local.isEmpty() ? remoteUrl : local;
+}
+
+void CoreController::prefetchTrailer(const QString& remoteUrl)
+{
+    if (m_trailerCache)
+        m_trailerCache->prefetch(remoteUrl);
+}
+
 void CoreController::requestCatalogCover(const QString& entryId)
 {
     if (m_catalogCovers)

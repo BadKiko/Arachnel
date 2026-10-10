@@ -131,6 +131,10 @@
     Q_INVOKABLE void consumePendingDeepLink();
     Q_INVOKABLE void forceActivateMainWindow();
     Q_INVOKABLE void requestCatalogCover(const QString&);
+    /** Local file URL of a store trailer when it is already downloaded, else the remote URL. */
+    Q_INVOKABLE QString trailerSource(const QString& remoteUrl);
+    /** Downloads a store trailer in the background so playing it later starts at once. */
+    Q_INVOKABLE void prefetchTrailer(const QString& remoteUrl);
     Q_INVOKABLE void cancelCatalogCover(const QString&);
     Q_INVOKABLE void invalidateCatalogCover(const QString&);
     Q_INVOKABLE void requestCatalogHeroCover(const QString& entryId);

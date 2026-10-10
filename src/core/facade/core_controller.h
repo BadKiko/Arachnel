@@ -39,6 +39,7 @@ class CatalogController;
 class CatalogCoverCoordinator;
 class CatalogFeedLoader;
 class CoverImageCache;
+class TrailerCache;
 class FriendsModel;
 class GameMetadataService;
 class HttpDownloadSession;

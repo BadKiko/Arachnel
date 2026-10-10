@@ -32,6 +32,7 @@ void CoreController::initializeServices()
         }
     }
     m_coverCache = new CoverImageCache(this);
+    m_trailerCache = new TrailerCache(this);
     m_catalogCovers = new CatalogCoverCoordinator(
         m_coverCache, m_metadataService, &m_settings, &m_catalog,
         [this](const QString& entryId) -> CatalogEntry* {

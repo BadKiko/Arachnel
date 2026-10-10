@@ -9,6 +9,7 @@
 #include "catalog_discovery_service.h"
 #include "catalog_parser.h"
 #include "cover_image_cache.h"
+#include "trailer_cache.h"
 #include "file_utils.h"
 #include "i18n.h"
 #include "install_analyzer.h"

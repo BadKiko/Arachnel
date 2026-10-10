@@ -86,6 +86,7 @@
     CatalogFeedLoader* m_catalogValidateLoader = nullptr;
     GameMetadataService* m_metadataService = nullptr;
     CoverImageCache* m_coverCache = nullptr;
+    TrailerCache* m_trailerCache = nullptr;
     CatalogCoverCoordinator* m_catalogCovers = nullptr;
     CatalogController* m_catalogController = nullptr;
     TorrentSession* m_torrentSession = nullptr;

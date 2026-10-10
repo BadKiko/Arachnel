@@ -47,6 +47,7 @@ set(ARACHNEL_APP_SOURCES
     src/core/catalog/game_metadata_service_network.cpp
     src/core/social/presence_service.cpp
     src/core/catalog/cover_image_cache.cpp
+    src/core/catalog/trailer_cache.cpp
     src/core/torrent/torrent_session.cpp
     src/core/torrent/torrent_session_poll.cpp
     src/core/torrent/torrent_settings.cpp

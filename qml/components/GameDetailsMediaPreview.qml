@@ -13,6 +13,16 @@ Item {
     required property string trailerUrl
     property real mediaCornerRadius: MD.Token.shape.corner.large
 
+    // Fetch the clip while the page is being read: the player then starts from a local file.
+    onTrailerUrlChanged: {
+        if (root.trailerUrl.length)
+            Core.prefetchTrailer(root.trailerUrl)
+    }
+    Component.onCompleted: {
+        if (root.trailerUrl.length)
+            Core.prefetchTrailer(root.trailerUrl)
+    }
+
     function openScreenshotPreview(index) {
         if (!root.screenshotUrls || !root.screenshotUrls.length)
             return
@@ -162,7 +172,7 @@ Item {
                                 id: trailerDialogPlayer
                                 videoOutput: trailerVideoOutput
                                 audioOutput: trailerDialogAudio
-                                source: root.trailerUrl
+                                source: Core.trailerSource(root.trailerUrl)
                                 loops: MediaPlayer.Infinite
                                 autoPlay: true
 
