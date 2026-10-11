@@ -289,7 +289,11 @@ QString CoreController::trailerSource(const QString& remoteUrl)
     if (!m_trailerCache)
         return remoteUrl;
     const QString local = m_trailerCache->localUrlFor(remoteUrl);
-    return local.isEmpty() ? remoteUrl : local;
+    if (!local.isEmpty())
+        return local;
+    // A stream is never opened from the network (slow start, and closing it mid-load blocks the
+    // window): the caller waits for trailerReady after prefetchTrailer.
+    return TrailerCache::isHls(remoteUrl) ? QString() : remoteUrl;
 }
 
 QString CoreController::trailerPreviewUrl(const QString& remoteUrl) const

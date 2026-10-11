@@ -283,7 +283,9 @@ void GameMetadataService::handleDetailsFinished(QNetworkReply* reply)
                 const QJsonArray movies = data.value(QStringLiteral("movies")).toArray();
                 const QString moviesTrailer = pickTrailerFromMovies(movies);
                 if (!moviesTrailer.isEmpty()) {
-                    if (metadata.trailerUrl.isEmpty())
+                    // A full trailer beats the 6-10 s microtrailer; a plain mp4 beats a stream.
+                    if (metadata.trailerUrl.isEmpty()
+                        || metadata.trailerUrl.contains(QStringLiteral("/microtrailer.")))
                         metadata.trailerUrl = moviesTrailer;
                     else if (moviesTrailer.contains(QStringLiteral(".mp4"))
                              && !metadata.trailerUrl.contains(QStringLiteral(".mp4")))

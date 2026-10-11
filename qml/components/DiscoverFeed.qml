@@ -273,6 +273,18 @@ FocusScope {
                     required property string entryId
 
                     readonly property bool current: ListView.isCurrentItem
+                    // The player lives only while the card is still: it is made once the card has
+                    // arrived and dropped once the next one has, so no player is created or
+                    // destroyed during the slide.
+                    property bool live: false
+                    onCurrentChanged: liveTimer.restart()
+                    Component.onCompleted: if (current) liveTimer.restart()
+
+                    Timer {
+                        id: liveTimer
+                        interval: view.highlightMoveDuration + 80
+                        onTriggered: card.live = card.current
+                    }
                     readonly property var info: {
                         void root.revision
                         return Core.entryDetails(card.entryId)
@@ -308,7 +320,9 @@ FocusScope {
                             anchors.fill: parent
                             radius: 32
                             source: card.banner
-                            sourceSize: Qt.size(1280, 720)
+                            // Wide hero banners are cropped to the card, not stretched into it.
+                            sourceSize.width: 1600
+                            fillMode: Image.PreserveAspectCrop
                             asynchronous: true
                         }
 
@@ -348,9 +362,40 @@ FocusScope {
                         // The trailer, muted, looping - only for the card in view.
                         Loader {
                             anchors.fill: parent
-                            active: card.current && card.trailer.length > 0 && root.visible && !AppMotion.reduceMotion
+                            asynchronous: true
+                            active: card.live && card.trailer.length > 0 && root.visible && !AppMotion.reduceMotion
                             sourceComponent: Component {
                                 Item {
+                                    id: clipHost
+                                    // Only a downloaded file is played: a player opening a network
+                                    // stream blocks the window when it is destroyed mid-load.
+                                    property string wanted: Core.trailerPreviewUrl(card.trailer)
+                                    property string clip: ""
+
+                                    function resolve() {
+                                        const local = Core.trailerSource(wanted)
+                                        if (local.startsWith("file:"))
+                                            clip = local
+                                        else
+                                            Core.prefetchTrailer(wanted)
+                                    }
+                                    Component.onCompleted: resolve()
+
+                                    Connections {
+                                        target: Core
+                                        function onTrailerReady(remoteUrl, localUrl) {
+                                            if (remoteUrl === clipHost.wanted)
+                                                clipHost.clip = localUrl
+                                        }
+                                        // No short clip next to this trailer: take the full one.
+                                        function onTrailerFailed(remoteUrl) {
+                                            if (remoteUrl === clipHost.wanted && clipHost.wanted !== card.trailer) {
+                                                clipHost.wanted = card.trailer
+                                                clipHost.resolve()
+                                            }
+                                        }
+                                    }
+
                                     layer.enabled: true
                                     layer.effect: MD.RoundClip {
                                         corners: MD.Util.corners(32)
@@ -359,16 +404,22 @@ FocusScope {
 
                                     MediaPlayer {
                                         id: player
-                                        source: Core.trailerSource(Core.trailerPreviewUrl(card.trailer))
+                                        source: clipHost.clip
                                         loops: MediaPlayer.Infinite
                                         videoOutput: videoOut
                                         audioOutput: AudioOutput { muted: root.muted; volume: 0.6 }
-                                        Component.onCompleted: play()
-                                        // No short clip next to this trailer: play the full one.
-                                        onErrorOccurred: {
-                                            if (String(source) !== card.trailer) {
-                                                source = card.trailer
-                                                play()
+                                        onSourceChanged: if (clipHost.clip.length && card.current) play()
+                                    }
+
+                                    // Leaving: stop on the frame and fade out with the slide.
+                                    Connections {
+                                        target: card
+                                        function onCurrentChanged() {
+                                            if (card.current) {
+                                                if (clipHost.clip.length)
+                                                    player.play()
+                                            } else {
+                                                player.pause()
                                             }
                                         }
                                     }
@@ -376,7 +427,7 @@ FocusScope {
                                         id: videoOut
                                         anchors.fill: parent
                                         fillMode: VideoOutput.PreserveAspectCrop
-                                        opacity: player.playbackState === MediaPlayer.PlayingState ? 1 : 0
+                                        opacity: card.current && player.playbackState === MediaPlayer.PlayingState ? 1 : 0
                                         Behavior on opacity { NumberAnimation { duration: AppMotion.long } }
                                     }
                                 }
@@ -572,7 +623,15 @@ FocusScope {
                         }
 
                         visible: entryId.length > 0
-                        onEntryIdChanged: if (entryId.length) Qt.callLater(Core.requestCatalogCover, entryId)
+                        // Later, not inside the binding. Each row its own call: Qt.callLater folds calls to
+                        // the same function into one, which left all but one row without a cover.
+                        function askCover() {
+                            const id = entryId
+                            if (id.length)
+                                Qt.callLater(() => Core.requestCatalogCover(id))
+                        }
+                        onEntryIdChanged: askCover()
+                        Component.onCompleted: askCover()
                         radius: 20
                         color: rowHover.hovered ? MD.Token.color.surface_container_high : MD.Token.color.surface_container
                         Behavior on color { ColorAnimation { duration: AppMotion.short } }

@@ -35,6 +35,36 @@ Item {
             trailerPreview.open()
     }
 
+    // The player only opens the downloaded trailer; until then the dialog shows the progress.
+    property string trailerLocal: ""
+    property real trailerProgress: 0
+    property bool trailerFailed: false
+
+    function resolveTrailer() {
+        root.trailerFailed = false
+        root.trailerProgress = 0
+        const local = Core.trailerSource(root.trailerUrl)
+        root.trailerLocal = local.startsWith("file:") ? local : ""
+        if (!root.trailerLocal.length)
+            Core.prefetchTrailer(root.trailerUrl)
+    }
+
+    Connections {
+        target: Core
+        function onTrailerReady(remoteUrl, localUrl) {
+            if (remoteUrl === root.trailerUrl)
+                root.trailerLocal = localUrl
+        }
+        function onTrailerProgress(remoteUrl, fraction) {
+            if (remoteUrl === root.trailerUrl)
+                root.trailerProgress = fraction
+        }
+        function onTrailerFailed(remoteUrl) {
+            if (remoteUrl === root.trailerUrl)
+                root.trailerFailed = true
+        }
+    }
+
     function formatTime(ms) {
         const total = Math.max(0, Math.floor((ms || 0) / 1000))
         const m = Math.floor(total / 60)
@@ -77,7 +107,10 @@ Item {
 
         readonly property var dialogPlayer: trailerPlayerLoader.item?.player
 
-        onOpened: trailerPlayerLoader.active = true
+        onOpened: {
+            root.resolveTrailer()
+            trailerPlayerLoader.active = true
+        }
         onClosed: {
             const player = trailerPlayerLoader.item?.player
             if (player && player.playbackState !== MediaPlayer.StoppedState)
@@ -184,9 +217,10 @@ Item {
                                 id: trailerDialogPlayer
                                 videoOutput: trailerVideoOutput
                                 audioOutput: trailerDialogAudio
-                                source: Core.trailerSource(root.trailerUrl)
+                                source: root.trailerLocal
                                 loops: MediaPlayer.Infinite
-                                autoPlay: true
+                                onSourceChanged: if (root.trailerLocal.length) play()
+                                Component.onCompleted: if (root.trailerLocal.length) play()
 
                                 onErrorOccurred: (error, errorString) => {
                                     console.warn("Trailer playback failed:", errorString,
@@ -217,12 +251,65 @@ Item {
                                 onClicked: root.toggleTrailerPlayback()
                             }
 
+                            readonly property bool loading: !root.trailerFailed
+                                && (!root.trailerLocal.length
+                                    || trailerDialogPlayer.mediaStatus === MediaPlayer.LoadingMedia
+                                    || trailerDialogPlayer.mediaStatus === MediaPlayer.BufferingMedia
+                                    || trailerDialogPlayer.mediaStatus === MediaPlayer.StalledMedia)
+
                             MD.IconButton {
                                 anchors.centerIn: parent
-                                visible: trailerDialogPlayer.playbackState !== MediaPlayer.PlayingState
+                                visible: !trailerPlayerRoot.loading && !root.trailerFailed
+                                         && trailerDialogPlayer.playbackState !== MediaPlayer.PlayingState
                                 mdState.type: MD.Enum.IBtFilled
                                 icon.name: MD.Token.icon.play_arrow
                                 onClicked: root.toggleTrailerPlayback()
+                            }
+
+                            ColumnLayout {
+                                anchors.centerIn: parent
+                                spacing: MD.Token.spacing.small
+                                visible: trailerPlayerRoot.loading
+
+                                MD.BusyIndicator {
+                                    Layout.alignment: Qt.AlignHCenter
+                                    visible: trailerPlayerRoot.loading
+                                    running: visible
+                                    indicatorSize: 48
+                                }
+                                MD.Label {
+                                    Layout.alignment: Qt.AlignHCenter
+                                    visible: root.trailerProgress > 0 && !root.trailerLocal.length
+                                    text: Math.round(root.trailerProgress * 100) + "%"
+                                    typescale: MD.Token.typescale.label_large
+                                    color: Qt.rgba(1, 1, 1, 0.8)
+                                }
+                            }
+
+                            ColumnLayout {
+                                anchors.centerIn: parent
+                                spacing: MD.Token.spacing.medium
+                                visible: root.trailerFailed
+
+                                MD.Icon {
+                                    Layout.alignment: Qt.AlignHCenter
+                                    name: MD.Token.icon.videocam_off
+                                    size: 40
+                                    color: Qt.rgba(1, 1, 1, 0.7)
+                                }
+                                MD.Label {
+                                    Layout.alignment: Qt.AlignHCenter
+                                    text: qsTr("Couldn't load the video")
+                                    typescale: MD.Token.typescale.title_medium
+                                    color: Qt.rgba(1, 1, 1, 0.85)
+                                }
+                                MD.Button {
+                                    Layout.alignment: Qt.AlignHCenter
+                                    mdState.type: MD.Enum.BtFilledTonal
+                                    text: qsTr("Try again")
+                                    icon.name: MD.Token.icon.refresh
+                                    onClicked: root.resolveTrailer()
+                                }
                             }
 
                             Component.onDestruction: {
