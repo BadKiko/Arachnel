@@ -113,7 +113,7 @@ FocusScope {
             Core.requestCatalogCover(id)
             const trailer = Core.entryDetails(id).trailerUrl || ""
             if (trailer.length)
-                Core.prefetchTrailer(trailer)
+                Core.prefetchTrailer(Core.trailerPreviewUrl(trailer))
         }
     }
 
@@ -359,11 +359,18 @@ FocusScope {
 
                                     MediaPlayer {
                                         id: player
-                                        source: Core.trailerSource(card.trailer)
+                                        source: Core.trailerSource(Core.trailerPreviewUrl(card.trailer))
                                         loops: MediaPlayer.Infinite
                                         videoOutput: videoOut
                                         audioOutput: AudioOutput { muted: root.muted; volume: 0.6 }
                                         Component.onCompleted: play()
+                                        // No short clip next to this trailer: play the full one.
+                                        onErrorOccurred: {
+                                            if (String(source) !== card.trailer) {
+                                                source = card.trailer
+                                                play()
+                                            }
+                                        }
                                     }
                                     VideoOutput {
                                         id: videoOut

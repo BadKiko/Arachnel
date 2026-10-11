@@ -36,7 +36,8 @@ Item {
                 Layout.leftMargin: page.pageMargin
                 Layout.rightMargin: page.pageMargin
                 Layout.topMargin: page.pageMargin
-                readonly property bool oneRow: contentCol.width >= 1000
+                readonly property bool oneRow: contentCol.width - 2 * page.pageMargin
+                                               >= libraryTitle.implicitWidth + headerChips.rowWidth + 24
                 columns: oneRow ? 2 : 1
                 columnSpacing: MD.Token.spacing.medium
                 rowSpacing: MD.Token.spacing.small
@@ -49,7 +50,20 @@ Item {
 
                 Flow {
                     id: headerChips
+                    // Width of the chips in one line, from their own sizes (not the Flow's width).
+                    readonly property real rowWidth: {
+                        let w = 0, n = 0
+                        for (let i = 0; i < children.length; ++i) {
+                            const c = children[i]
+                            if (c.visible && c.implicitWidth > 0) {
+                                w += c.implicitWidth
+                                ++n
+                            }
+                        }
+                        return w + Math.max(0, n - 1) * spacing
+                    }
                     Layout.fillWidth: !libraryHeader.oneRow
+                    Layout.preferredWidth: libraryHeader.oneRow ? rowWidth : -1
                     Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
                     spacing: MD.Token.spacing.small
 

@@ -21,6 +21,14 @@ bool isHttpUrl(const QString& url)
     return url.startsWith(QStringLiteral("http://"), Qt::CaseInsensitive)
         || url.startsWith(QStringLiteral("https://"), Qt::CaseInsensitive);
 }
+
+// HLS / DASH: a playlist, not a file. Saving it would leave a broken ".mp4"; it streams instead.
+bool isStream(const QString& url)
+{
+    const QString path = QUrl(url).path();
+    return path.endsWith(QStringLiteral(".m3u8"), Qt::CaseInsensitive)
+        || path.endsWith(QStringLiteral(".mpd"), Qt::CaseInsensitive);
+}
 } // namespace
 
 TrailerCache::TrailerCache(QObject* parent)
@@ -46,7 +54,7 @@ QString TrailerCache::filePathFor(const QString& remoteUrl) const
 
 QString TrailerCache::localUrlFor(const QString& remoteUrl) const
 {
-    if (!isHttpUrl(remoteUrl))
+    if (!isHttpUrl(remoteUrl) || isStream(remoteUrl))
         return {};
     const QString path = filePathFor(remoteUrl);
     return QFileInfo(path).size() > 0 ? QUrl::fromLocalFile(path).toString() : QString();
@@ -54,7 +62,7 @@ QString TrailerCache::localUrlFor(const QString& remoteUrl) const
 
 void TrailerCache::prefetch(const QString& remoteUrl)
 {
-    if (!isHttpUrl(remoteUrl) || m_inFlight.contains(remoteUrl) || !localUrlFor(remoteUrl).isEmpty())
+    if (!isHttpUrl(remoteUrl) || isStream(remoteUrl) || m_inFlight.contains(remoteUrl) || !localUrlFor(remoteUrl).isEmpty())
         return;
 
     m_inFlight.insert(remoteUrl);

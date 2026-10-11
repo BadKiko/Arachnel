@@ -238,6 +238,8 @@ Item {
                 MD.Slider {
                     id: seekSlider
                     Layout.fillWidth: true
+                    // Its value is in milliseconds; the time is already shown on both sides.
+                    labelBehavior: MD.Enum.SliderLabelGone
                     focusPolicy: Qt.NoFocus
                     from: 0
                     to: Math.max(1, trailerPreview.dialogPlayer ? trailerPreview.dialogPlayer.duration : 1)
