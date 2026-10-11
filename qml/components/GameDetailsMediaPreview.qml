@@ -50,9 +50,7 @@ Item {
     }
 
     function toggleTrailerMute() {
-        const audio = trailerPlayerLoader.item?.audio
-        if (audio)
-            audio.muted = !audio.muted
+        Appearance.setTrailerMuted(!Appearance.trailerMuted)
     }
 
     function toggleTrailerPlayback() {
@@ -136,18 +134,31 @@ Item {
                 Layout.rightMargin: MD.Token.spacing.large
                 Layout.topMargin: MD.Token.spacing.small
                 Layout.bottomMargin: MD.Token.spacing.small
-                clip: true
 
-                layer.enabled: true
-                layer.effect: MD.RoundClip {
-                    corners: MD.Util.corners(root.mediaCornerRadius)
-                    size: Qt.vector2d(videoFrame.width, videoFrame.height)
-                }
+                // The box takes the video's shape, so the rounded corners are on the picture itself
+                // and not on the letterbox around it.
+                readonly property rect sourceRect: trailerPlayerLoader.item
+                                                   ? trailerPlayerLoader.item.videoOut.sourceRect
+                                                   : Qt.rect(0, 0, 16, 9)
+                readonly property real aspect: sourceRect.width > 0 && sourceRect.height > 0
+                                               ? sourceRect.width / sourceRect.height : 16 / 9
 
-                Rectangle {
-                    anchors.fill: parent
-                    color: Qt.rgba(0, 0, 0, 0.55)
-                }
+                Item {
+                    id: videoBox
+                    anchors.centerIn: parent
+                    width: Math.min(parent.width, parent.height * videoFrame.aspect)
+                    height: width / videoFrame.aspect
+
+                    layer.enabled: true
+                    layer.effect: MD.RoundClip {
+                        corners: MD.Util.corners(root.mediaCornerRadius)
+                        size: Qt.vector2d(videoBox.width, videoBox.height)
+                    }
+
+                    Rectangle {
+                        anchors.fill: parent
+                        color: Qt.rgba(1, 1, 1, 0.06)
+                    }
 
                 Loader {
                     id: trailerPlayerLoader
@@ -161,6 +172,7 @@ Item {
 
                             property alias player: trailerDialogPlayer
                             property alias audio: trailerDialogAudio
+                            property alias videoOut: trailerVideoOutput
 
                             VideoOutput {
                                 id: trailerVideoOutput
@@ -185,6 +197,7 @@ Item {
                             AudioOutput {
                                 id: trailerDialogAudio
                                 volume: 0.85
+                                muted: Appearance.trailerMuted
                             }
 
                             Rectangle {
@@ -218,6 +231,7 @@ Item {
                             }
                         }
                     }
+                }
                 }
             }
 
@@ -290,17 +304,10 @@ Item {
 
                 MD.IconButton {
                     mdState.type: MD.Enum.IBtStandard
-                    icon.name: trailerPlayerLoader.item && trailerPlayerLoader.item.audio.muted
+                    icon.name: Appearance.trailerMuted
                                ? MD.Token.icon.volume_off
                                : MD.Token.icon.volume_up
                     onClicked: root.toggleTrailerMute()
-                }
-
-                MD.Label {
-                    text: qsTr("Space - pause, ← → - seek, M - mute")
-                    color: Qt.rgba(1, 1, 1, 0.55)
-                    typescale: MD.Token.typescale.label_small
-                    visible: parent.width > 640
                 }
 
                 Item { Layout.fillWidth: true }
@@ -391,16 +398,27 @@ Item {
                 Layout.leftMargin: MD.Token.spacing.large
                 Layout.rightMargin: MD.Token.spacing.large
 
-                MD.Image {
-                    id: previewImage
+                Item {
+                    id: shotArea
                     anchors.fill: parent
                     anchors.topMargin: MD.Token.spacing.small
                     anchors.bottomMargin: MD.Token.spacing.small
-                    source: screenshotPreview.currentUrl
-                    radius: root.mediaCornerRadius
-                    elevation: MD.Token.elevation.level0
-                    fillMode: Image.PreserveAspectFit
-                    asynchronous: true
+
+                    // Sized to the picture so its corners are the rounded ones.
+                    readonly property real aspect: previewImage.implicitWidth > 0 && previewImage.implicitHeight > 0
+                                                   ? previewImage.implicitWidth / previewImage.implicitHeight : 16 / 9
+
+                    MD.Image {
+                        id: previewImage
+                        anchors.centerIn: parent
+                        width: Math.min(parent.width, parent.height * shotArea.aspect)
+                        height: width / shotArea.aspect
+                        source: screenshotPreview.currentUrl
+                        radius: root.mediaCornerRadius
+                        elevation: MD.Token.elevation.level0
+                        fillMode: Image.PreserveAspectCrop
+                        asynchronous: true
+                    }
                 }
 
                 MD.IconButton {

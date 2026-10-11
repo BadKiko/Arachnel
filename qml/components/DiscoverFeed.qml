@@ -25,7 +25,7 @@ FocusScope {
         { key: "solo", label: qsTr("Solo") }
     ]
     property int feedIndex: 0
-    property bool muted: true
+    readonly property bool muted: Appearance.trailerMuted
     property int revision: 0
     property var hidden: ({})
 
@@ -150,7 +150,7 @@ FocusScope {
         case Qt.Key_PageUp:
             root.go(-1); event.accepted = true; break
         case Qt.Key_M:
-            root.muted = !root.muted; event.accepted = true; break
+            Appearance.setTrailerMuted(!root.muted); event.accepted = true; break
         case Qt.Key_Return:
         case Qt.Key_Enter:
             if (view.currentItem)
@@ -501,7 +501,7 @@ FocusScope {
                             visible: card.trailer.length > 0
                             iconName: root.muted ? MD.Token.icon.volume_off : MD.Token.icon.volume_up
                             label: root.muted ? qsTr("Sound") : qsTr("Mute")
-                            onTriggered: root.muted = !root.muted
+                            onTriggered: Appearance.setTrailerMuted(!root.muted)
                         }
                         FeedAction {
                             iconName: MD.Token.icon.thumb_down
