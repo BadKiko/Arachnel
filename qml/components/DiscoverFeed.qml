@@ -518,12 +518,22 @@ FocusScope {
                     }
                 }
 
-                Repeater {
-                    model: 6
+                // Fills the column down to the bottom of the card.
+                ListView {
+                    id: upNext
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    clip: true
+                    spacing: MD.Token.spacing.small
+                    interactive: contentHeight > height
+                    boundsBehavior: Flickable.StopAtBounds
+                    model: Math.max(0, Math.min(20, feedModel.count - view.currentIndex - 1))
 
                     delegate: Rectangle {
                         id: nextRow
                         required property int index
+                        width: upNext.width
+                        height: 72
                         readonly property int target: view.currentIndex + 1 + index
                         readonly property string entryId: target < feedModel.count ? feedModel.get(target).entryId : ""
                         readonly property var info: {
@@ -532,10 +542,8 @@ FocusScope {
                             return entryId.length ? Core.entryDetails(entryId) : ({})
                         }
 
-                        Layout.fillWidth: true
-                        implicitHeight: 72
                         visible: entryId.length > 0
-                        onEntryIdChanged: if (entryId.length) Core.requestCatalogCover(entryId)
+                        onEntryIdChanged: if (entryId.length) Qt.callLater(Core.requestCatalogCover, entryId)
                         radius: 20
                         color: rowHover.hovered ? MD.Token.color.surface_container_high : MD.Token.color.surface_container
                         Behavior on color { ColorAnimation { duration: AppMotion.short } }
@@ -578,15 +586,6 @@ FocusScope {
                     }
                 }
 
-                Item { Layout.fillHeight: true }
-
-                MD.Label {
-                    Layout.fillWidth: true
-                    text: qsTr("Wheel or ↑ ↓ to browse · Enter opens · M sound")
-                    typescale: MD.Token.typescale.label_small
-                    color: MD.Token.color.on_surface_variant
-                    wrapMode: Text.WordWrap
-                }
             }
         }
     }

@@ -166,8 +166,7 @@ Rectangle {
                 // the icon, like the rail.
                 Rectangle {
                     id: pill
-                    anchors.verticalCenter: root.expanded ? parent.verticalCenter : undefined
-                    y: root.expanded ? 0 : 4
+                    y: root.expanded ? (parent.height - height) / 2 : 6
                     x: root.expanded ? 0 : (parent.width - width) / 2
                     height: root.expanded ? 56 : 32
                     width: root.expanded
@@ -224,22 +223,26 @@ Rectangle {
                     }
                 }
 
-                // Collapsed layout: icon in the pill, short label below.
-                Column {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    y: 8
-                    spacing: 6
+                // Collapsed layout: the icon centred in the pill, a short label under it.
+                MD.Icon {
+                    anchors.centerIn: pill
+                    visible: !root.expanded
+                    name: entry.modelData.icon
+                    fill: entry.selected
+                    size: 24
+                    color: entry.selected ? MD.Token.color.on_secondary_container
+                                          : MD.Token.color.on_surface_variant
+                }
+                Item {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.top: pill.bottom
+                    anchors.topMargin: 4
+                    height: collapsedLabel.implicitHeight
                     visible: !root.expanded
 
-                    MD.Icon {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        name: entry.modelData.icon
-                        fill: entry.selected
-                        size: 24
-                        color: entry.selected ? MD.Token.color.on_secondary_container
-                                              : MD.Token.color.on_surface_variant
-                    }
                     MD.Label {
+                        id: collapsedLabel
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: entry.modelData.name
                         typescale: MD.Token.typescale.label_small

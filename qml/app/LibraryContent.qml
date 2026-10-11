@@ -73,7 +73,7 @@ Item {
                 // Nothing played yet: a compact invitation instead of a big empty card.
                 readonly property bool hasHero: page.heroHasRecentPlay || page.showRunningHero
                                                || page.featuredShowJobStatus
-                Layout.preferredHeight: hasHero ? 248 : 200
+                Layout.preferredHeight: hasHero ? 248 : 196
                 Behavior on Layout.preferredHeight {
                     NumberAnimation { duration: AppMotion.medium; easing: AppMotion.emphasizedDecelerate }
                 }
@@ -125,11 +125,14 @@ Item {
 
                         ColumnLayout {
                             Layout.fillWidth: true
-                            Layout.fillHeight: true
+                            // Compact banner: the text block sits centred next to the shape.
+                            Layout.fillHeight: heroHost.hasHero
+                            Layout.alignment: Qt.AlignVCenter
                             spacing: MD.Token.spacing.small
 
                             MD.Label {
                                 Layout.fillWidth: true
+                                visible: heroHost.hasHero
                                 text: page.heroEyebrow
                                 color: MD.Token.color.primary
                                 typescale: MD.Token.typescale.label_large
@@ -202,10 +205,11 @@ Item {
                                 }
                             }
 
-                            Item { Layout.fillHeight: true }
+                            Item { Layout.fillHeight: true; visible: heroHost.hasHero }
 
                             RowLayout {
                                 Layout.fillWidth: true
+                                Layout.topMargin: heroHost.hasHero ? 0 : MD.Token.spacing.small
                                 spacing: MD.Token.spacing.small
 
                                 MD.Button {
