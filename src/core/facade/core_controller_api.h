@@ -135,6 +135,8 @@
     Q_INVOKABLE void requestCatalogCover(const QString&);
     /** Local file URL of a store trailer when it is already downloaded, else the remote URL. */
     Q_INVOKABLE QString trailerSource(const QString& remoteUrl);
+    /** The short looping clip next to a full Steam trailer (the feed); the URL itself otherwise. */
+    Q_INVOKABLE QString trailerPreviewUrl(const QString& remoteUrl) const;
     /** Downloads a store trailer in the background so playing it later starts at once. */
     Q_INVOKABLE void prefetchTrailer(const QString& remoteUrl);
     Q_INVOKABLE void cancelCatalogCover(const QString&);

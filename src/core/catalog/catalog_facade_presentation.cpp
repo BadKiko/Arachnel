@@ -2,6 +2,7 @@
 
 #include "catalog_genre_normalize.h"
 
+#include <QUrl>
 #include <QDate>
 #include <QWriteLocker>
 
@@ -288,7 +289,26 @@ QString CoreController::trailerSource(const QString& remoteUrl)
     if (!m_trailerCache)
         return remoteUrl;
     const QString local = m_trailerCache->localUrlFor(remoteUrl);
-    return local.isEmpty() ? remoteUrl : local;
+    if (!local.isEmpty())
+        return local;
+    // A stream is never opened from the network (slow start, and closing it mid-load blocks the
+    // window): the caller waits for trailerReady after prefetchTrailer.
+    return TrailerCache::isHls(remoteUrl) ? QString() : remoteUrl;
+}
+
+QString CoreController::trailerPreviewUrl(const QString& remoteUrl) const
+{
+    // Steam keeps microtrailer.mp4 in the same folder as the HLS / DASH manifests.
+    const QUrl url(remoteUrl);
+    const QString path = url.path();
+    if (url.host() != QStringLiteral("video.akamai.steamstatic.com")
+        || !path.startsWith(QStringLiteral("/store_trailers/"))
+        || !(path.endsWith(QStringLiteral(".m3u8")) || path.endsWith(QStringLiteral(".mpd"))))
+        return remoteUrl;
+    QUrl preview(url);
+    preview.setPath(path.left(path.lastIndexOf(QLatin1Char('/')) + 1)
+                    + QStringLiteral("microtrailer.mp4"));
+    return preview.toString();
 }
 
 void CoreController::prefetchTrailer(const QString& remoteUrl)

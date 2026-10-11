@@ -214,6 +214,10 @@ signals:
     void catalogHeroCoverChanged(const QString& entryId);
     /** A local card cover was applied for this entry (the details page refreshes its poster). */
     void catalogCoverChanged(const QString& entryId);
+    /** A trailer finished downloading; localUrl is what the player opens. */
+    void trailerReady(const QString& remoteUrl, const QString& localUrl);
+    void trailerProgress(const QString& remoteUrl, double fraction);
+    void trailerFailed(const QString& remoteUrl);
     void catalogFiltersChanged();
     void availableCatalogGenresChanged();
     /** Fired when ensureCatalogAddons finished (or was already complete). */

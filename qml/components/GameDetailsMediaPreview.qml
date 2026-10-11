@@ -35,6 +35,36 @@ Item {
             trailerPreview.open()
     }
 
+    // The player only opens the downloaded trailer; until then the dialog shows the progress.
+    property string trailerLocal: ""
+    property real trailerProgress: 0
+    property bool trailerFailed: false
+
+    function resolveTrailer() {
+        root.trailerFailed = false
+        root.trailerProgress = 0
+        const local = Core.trailerSource(root.trailerUrl)
+        root.trailerLocal = local.startsWith("file:") ? local : ""
+        if (!root.trailerLocal.length)
+            Core.prefetchTrailer(root.trailerUrl)
+    }
+
+    Connections {
+        target: Core
+        function onTrailerReady(remoteUrl, localUrl) {
+            if (remoteUrl === root.trailerUrl)
+                root.trailerLocal = localUrl
+        }
+        function onTrailerProgress(remoteUrl, fraction) {
+            if (remoteUrl === root.trailerUrl)
+                root.trailerProgress = fraction
+        }
+        function onTrailerFailed(remoteUrl) {
+            if (remoteUrl === root.trailerUrl)
+                root.trailerFailed = true
+        }
+    }
+
     function formatTime(ms) {
         const total = Math.max(0, Math.floor((ms || 0) / 1000))
         const m = Math.floor(total / 60)
@@ -50,9 +80,7 @@ Item {
     }
 
     function toggleTrailerMute() {
-        const audio = trailerPlayerLoader.item?.audio
-        if (audio)
-            audio.muted = !audio.muted
+        Appearance.setTrailerMuted(!Appearance.trailerMuted)
     }
 
     function toggleTrailerPlayback() {
@@ -79,7 +107,10 @@ Item {
 
         readonly property var dialogPlayer: trailerPlayerLoader.item?.player
 
-        onOpened: trailerPlayerLoader.active = true
+        onOpened: {
+            root.resolveTrailer()
+            trailerPlayerLoader.active = true
+        }
         onClosed: {
             const player = trailerPlayerLoader.item?.player
             if (player && player.playbackState !== MediaPlayer.StoppedState)
@@ -136,18 +167,31 @@ Item {
                 Layout.rightMargin: MD.Token.spacing.large
                 Layout.topMargin: MD.Token.spacing.small
                 Layout.bottomMargin: MD.Token.spacing.small
-                clip: true
 
-                layer.enabled: true
-                layer.effect: MD.RoundClip {
-                    corners: MD.Util.corners(root.mediaCornerRadius)
-                    size: Qt.vector2d(videoFrame.width, videoFrame.height)
-                }
+                // The box takes the video's shape, so the rounded corners are on the picture itself
+                // and not on the letterbox around it.
+                readonly property rect sourceRect: trailerPlayerLoader.item
+                                                   ? trailerPlayerLoader.item.videoOut.sourceRect
+                                                   : Qt.rect(0, 0, 16, 9)
+                readonly property real aspect: sourceRect.width > 0 && sourceRect.height > 0
+                                               ? sourceRect.width / sourceRect.height : 16 / 9
 
-                Rectangle {
-                    anchors.fill: parent
-                    color: Qt.rgba(0, 0, 0, 0.55)
-                }
+                Item {
+                    id: videoBox
+                    anchors.centerIn: parent
+                    width: Math.min(parent.width, parent.height * videoFrame.aspect)
+                    height: width / videoFrame.aspect
+
+                    layer.enabled: true
+                    layer.effect: MD.RoundClip {
+                        corners: MD.Util.corners(root.mediaCornerRadius)
+                        size: Qt.vector2d(videoBox.width, videoBox.height)
+                    }
+
+                    Rectangle {
+                        anchors.fill: parent
+                        color: Qt.rgba(1, 1, 1, 0.06)
+                    }
 
                 Loader {
                     id: trailerPlayerLoader
@@ -161,6 +205,7 @@ Item {
 
                             property alias player: trailerDialogPlayer
                             property alias audio: trailerDialogAudio
+                            property alias videoOut: trailerVideoOutput
 
                             VideoOutput {
                                 id: trailerVideoOutput
@@ -172,9 +217,10 @@ Item {
                                 id: trailerDialogPlayer
                                 videoOutput: trailerVideoOutput
                                 audioOutput: trailerDialogAudio
-                                source: Core.trailerSource(root.trailerUrl)
+                                source: root.trailerLocal
                                 loops: MediaPlayer.Infinite
-                                autoPlay: true
+                                onSourceChanged: if (root.trailerLocal.length) play()
+                                Component.onCompleted: if (root.trailerLocal.length) play()
 
                                 onErrorOccurred: (error, errorString) => {
                                     console.warn("Trailer playback failed:", errorString,
@@ -185,6 +231,7 @@ Item {
                             AudioOutput {
                                 id: trailerDialogAudio
                                 volume: 0.85
+                                muted: Appearance.trailerMuted
                             }
 
                             Rectangle {
@@ -204,12 +251,65 @@ Item {
                                 onClicked: root.toggleTrailerPlayback()
                             }
 
+                            readonly property bool loading: !root.trailerFailed
+                                && (!root.trailerLocal.length
+                                    || trailerDialogPlayer.mediaStatus === MediaPlayer.LoadingMedia
+                                    || trailerDialogPlayer.mediaStatus === MediaPlayer.BufferingMedia
+                                    || trailerDialogPlayer.mediaStatus === MediaPlayer.StalledMedia)
+
                             MD.IconButton {
                                 anchors.centerIn: parent
-                                visible: trailerDialogPlayer.playbackState !== MediaPlayer.PlayingState
+                                visible: !trailerPlayerRoot.loading && !root.trailerFailed
+                                         && trailerDialogPlayer.playbackState !== MediaPlayer.PlayingState
                                 mdState.type: MD.Enum.IBtFilled
                                 icon.name: MD.Token.icon.play_arrow
                                 onClicked: root.toggleTrailerPlayback()
+                            }
+
+                            ColumnLayout {
+                                anchors.centerIn: parent
+                                spacing: MD.Token.spacing.small
+                                visible: trailerPlayerRoot.loading
+
+                                MD.BusyIndicator {
+                                    Layout.alignment: Qt.AlignHCenter
+                                    visible: trailerPlayerRoot.loading
+                                    running: visible
+                                    indicatorSize: 48
+                                }
+                                MD.Label {
+                                    Layout.alignment: Qt.AlignHCenter
+                                    visible: root.trailerProgress > 0 && !root.trailerLocal.length
+                                    text: Math.round(root.trailerProgress * 100) + "%"
+                                    typescale: MD.Token.typescale.label_large
+                                    color: Qt.rgba(1, 1, 1, 0.8)
+                                }
+                            }
+
+                            ColumnLayout {
+                                anchors.centerIn: parent
+                                spacing: MD.Token.spacing.medium
+                                visible: root.trailerFailed
+
+                                MD.Icon {
+                                    Layout.alignment: Qt.AlignHCenter
+                                    name: MD.Token.icon.videocam_off
+                                    size: 40
+                                    color: Qt.rgba(1, 1, 1, 0.7)
+                                }
+                                MD.Label {
+                                    Layout.alignment: Qt.AlignHCenter
+                                    text: qsTr("Couldn't load the video")
+                                    typescale: MD.Token.typescale.title_medium
+                                    color: Qt.rgba(1, 1, 1, 0.85)
+                                }
+                                MD.Button {
+                                    Layout.alignment: Qt.AlignHCenter
+                                    mdState.type: MD.Enum.BtFilledTonal
+                                    text: qsTr("Try again")
+                                    icon.name: MD.Token.icon.refresh
+                                    onClicked: root.resolveTrailer()
+                                }
                             }
 
                             Component.onDestruction: {
@@ -218,6 +318,7 @@ Item {
                             }
                         }
                     }
+                }
                 }
             }
 
@@ -238,6 +339,8 @@ Item {
                 MD.Slider {
                     id: seekSlider
                     Layout.fillWidth: true
+                    // Its value is in milliseconds; the time is already shown on both sides.
+                    labelBehavior: MD.Enum.SliderLabelGone
                     focusPolicy: Qt.NoFocus
                     from: 0
                     to: Math.max(1, trailerPreview.dialogPlayer ? trailerPreview.dialogPlayer.duration : 1)
@@ -288,17 +391,10 @@ Item {
 
                 MD.IconButton {
                     mdState.type: MD.Enum.IBtStandard
-                    icon.name: trailerPlayerLoader.item && trailerPlayerLoader.item.audio.muted
+                    icon.name: Appearance.trailerMuted
                                ? MD.Token.icon.volume_off
                                : MD.Token.icon.volume_up
                     onClicked: root.toggleTrailerMute()
-                }
-
-                MD.Label {
-                    text: qsTr("Space - pause, ← → - seek, M - mute")
-                    color: Qt.rgba(1, 1, 1, 0.55)
-                    typescale: MD.Token.typescale.label_small
-                    visible: parent.width > 640
                 }
 
                 Item { Layout.fillWidth: true }
@@ -389,16 +485,27 @@ Item {
                 Layout.leftMargin: MD.Token.spacing.large
                 Layout.rightMargin: MD.Token.spacing.large
 
-                MD.Image {
-                    id: previewImage
+                Item {
+                    id: shotArea
                     anchors.fill: parent
                     anchors.topMargin: MD.Token.spacing.small
                     anchors.bottomMargin: MD.Token.spacing.small
-                    source: screenshotPreview.currentUrl
-                    radius: root.mediaCornerRadius
-                    elevation: MD.Token.elevation.level0
-                    fillMode: Image.PreserveAspectFit
-                    asynchronous: true
+
+                    // Sized to the picture so its corners are the rounded ones.
+                    readonly property real aspect: previewImage.implicitWidth > 0 && previewImage.implicitHeight > 0
+                                                   ? previewImage.implicitWidth / previewImage.implicitHeight : 16 / 9
+
+                    MD.Image {
+                        id: previewImage
+                        anchors.centerIn: parent
+                        width: Math.min(parent.width, parent.height * shotArea.aspect)
+                        height: width / shotArea.aspect
+                        source: screenshotPreview.currentUrl
+                        radius: root.mediaCornerRadius
+                        elevation: MD.Token.elevation.level0
+                        fillMode: Image.PreserveAspectCrop
+                        asynchronous: true
+                    }
                 }
 
                 MD.IconButton {

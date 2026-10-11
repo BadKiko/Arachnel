@@ -134,8 +134,20 @@ QString buildSteamTrailerUrl(const QString& cdnPath)
     return QStringLiteral("https://video.akamai.steamstatic.com/store_trailers/") + cdnPath;
 }
 
+// The full trailer: the HLS stream (Qt plays it straight from the CDN). The microtrailer is a 6-10 s
+// loop for previews; it is only the fallback here, the feed derives it from the full URL.
 QString pickTrailerFromStoreHighlight(const QJsonObject& highlight)
 {
+    const QJsonArray adaptive = highlight.value(QStringLiteral("adaptive_trailers")).toArray();
+    for (const QJsonValue& entry : adaptive) {
+        const QJsonObject obj = entry.toObject();
+        if (obj.value(QStringLiteral("encoding")).toString() != QStringLiteral("hls_h264"))
+            continue;
+        const QString url = buildSteamTrailerUrl(obj.value(QStringLiteral("cdn_path")).toString());
+        if (!url.isEmpty())
+            return url;
+    }
+
     const QJsonArray micro = highlight.value(QStringLiteral("microtrailer")).toArray();
     for (const QJsonValue& entry : micro) {
         const QJsonObject obj = entry.toObject();
@@ -150,16 +162,6 @@ QString pickTrailerFromStoreHighlight(const QJsonObject& highlight)
         if (obj.value(QStringLiteral("type")).toString() != QStringLiteral("video/webm"))
             continue;
         const QString url = buildSteamTrailerUrl(obj.value(QStringLiteral("filename")).toString());
-        if (!url.isEmpty())
-            return url;
-    }
-
-    const QJsonArray adaptive = highlight.value(QStringLiteral("adaptive_trailers")).toArray();
-    for (const QJsonValue& entry : adaptive) {
-        const QJsonObject obj = entry.toObject();
-        if (obj.value(QStringLiteral("encoding")).toString() != QStringLiteral("hls_h264"))
-            continue;
-        const QString url = buildSteamTrailerUrl(obj.value(QStringLiteral("cdn_path")).toString());
         if (!url.isEmpty())
             return url;
     }
@@ -236,6 +238,9 @@ bool needsMediaRefresh(const GameMetadata& metadata)
     // Older builds cached microtrailers on the image CDN (404).
     if (metadata.trailerUrl.contains(QStringLiteral("shared.akamai.steamstatic.com"))
         && metadata.trailerUrl.contains(QStringLiteral("microtrailer")))
+        return true;
+    // Older builds kept the 6-10 s microtrailer as the trailer; fetch the full one.
+    if (metadata.trailerUrl.contains(QStringLiteral("/microtrailer.")))
         return true;
     return !metadata.trailerUrl.isEmpty() && metadata.trailerThumbnailUrl.isEmpty();
 }
