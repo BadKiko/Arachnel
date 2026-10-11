@@ -11,8 +11,12 @@ Item {
     readonly property int digitCount: 6
     readonly property string digits: String(text).replace(/[^0-9]/g, "").slice(0, digitCount)
     readonly property bool complete: digits.length === digitCount
-    readonly property int cellSize: MD.Token.spacing.extra_large
+    // Cells shrink to fit when the card is narrow (small window).
+    property real maxWidth: 0
     readonly property int cellGap: MD.Token.spacing.small
+    readonly property int cellSize: maxWidth > 0
+        ? Math.max(30, Math.min(MD.Token.spacing.extra_large, Math.floor((maxWidth - (digitCount - 1) * cellGap) / digitCount)))
+        : MD.Token.spacing.extra_large
 
     signal accepted()
 

@@ -28,19 +28,30 @@ Item {
             width: flick.width
             spacing: MD.Token.spacing.medium
 
-            // v2 page header: a big title and the library at a glance as small chips.
-            RowLayout {
+            // v2 page header: a big title and the library at a glance as small chips. The chips go
+            // under the title when the window is too narrow for one row.
+            GridLayout {
+                id: libraryHeader
                 Layout.fillWidth: true
                 Layout.leftMargin: page.pageMargin
                 Layout.rightMargin: page.pageMargin
                 Layout.topMargin: page.pageMargin
-                spacing: MD.Token.spacing.medium
+                readonly property bool oneRow: contentCol.width >= 1000
+                columns: oneRow ? 2 : 1
+                columnSpacing: MD.Token.spacing.medium
+                rowSpacing: MD.Token.spacing.small
 
                 DisplayTitle {
+                    id: libraryTitle
+                    Layout.fillWidth: true
                     text: qsTr("Library")
                 }
 
-                Item { Layout.fillWidth: true }
+                Flow {
+                    id: headerChips
+                    Layout.fillWidth: !libraryHeader.oneRow
+                    Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                    spacing: MD.Token.spacing.small
 
                 Repeater {
                     model: [
@@ -61,6 +72,7 @@ Item {
                                 page.addSourceRequested()
                         }
                     }
+                }
                 }
             }
 

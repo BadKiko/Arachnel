@@ -11,6 +11,8 @@ Item {
 
     readonly property bool onLinux: Qt.platform.os === "linux"
     readonly property int pageMargin: Appearance.pageMargin
+    // Narrow window: the section list shrinks to icons so the section keeps its room.
+    readonly property bool compactNav: width < 1000
 
     readonly property var sections: {
         const all = [
@@ -43,7 +45,10 @@ Item {
 
         // ---------- Sections ----------
         Flickable {
-            Layout.preferredWidth: 300
+            Layout.preferredWidth: root.compactNav ? 64 : 300
+            Behavior on Layout.preferredWidth {
+                NumberAnimation { duration: AppMotion.medium; easing: AppMotion.emphasizedDecelerate }
+            }
             Layout.fillHeight: true
             contentWidth: width
             contentHeight: navCol.implicitHeight
@@ -56,6 +61,7 @@ Item {
                 spacing: MD.Token.spacing.small
 
                 DisplayTitle {
+                    visible: !root.compactNav
                     Layout.bottomMargin: MD.Token.spacing.medium
                     text: qsTr("Settings")
                 }
@@ -78,6 +84,7 @@ Item {
                         visible: rows.length > 0
 
                         MD.Label {
+                            visible: !root.compactNav
                             Layout.leftMargin: MD.Token.spacing.medium
                             Layout.bottomMargin: MD.Token.spacing.extra_small
                             text: groupBlock.modelData.label
@@ -99,6 +106,7 @@ Item {
                                 iconName: modelData.icon
                                 shapeKind: modelData.shape
                                 showChevron: false
+                                compact: root.compactNav
                                 selected: page.currentSection === modelData.id
                                 onClicked: root.open(modelData.id, false)
                             }

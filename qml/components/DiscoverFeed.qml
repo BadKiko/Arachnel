@@ -165,7 +165,10 @@ FocusScope {
         anchors.fill: parent
         spacing: MD.Token.spacing.medium
 
-        // Title and feed switcher.
+        // Title and feed switcher. On a narrow window the switcher moves to its own row and
+        // "All games" shrinks to an icon, so nothing is pushed off screen.
+        readonly property bool wideHeader: root.width >= 1050
+
         RowLayout {
             Layout.fillWidth: true
             spacing: MD.Token.spacing.large
@@ -173,6 +176,7 @@ FocusScope {
             DisplayTitle { text: qsTr("Discover") }
 
             ConnectedTextToggle {
+                visible: parent.parent.wideHeader
                 labels: root.feeds.map(f => f.label)
                 currentIndex: root.feedIndex
                 onPicked: function (index) {
@@ -184,9 +188,17 @@ FocusScope {
             Item { Layout.fillWidth: true }
 
             MD.Button {
+                visible: parent.parent.wideHeader
                 mdState.type: MD.Enum.BtOutlined
                 text: qsTr("All games")
                 icon.name: MD.Token.icon.arrow_forward
+                onClicked: root.page.openFullCatalog("")
+            }
+            MD.IconButton {
+                visible: !parent.parent.wideHeader
+                mdState.type: MD.Enum.IBtStandard
+                icon.name: MD.Token.icon.storefront
+                Accessible.name: qsTr("All games")
                 onClicked: root.page.openFullCatalog("")
             }
 
@@ -198,6 +210,16 @@ FocusScope {
                     Core.catalogDiscovery.refresh()
                     root.rebuild()
                 }
+            }
+        }
+
+        ConnectedTextToggle {
+            visible: !parent.wideHeader
+            labels: root.feeds.map(f => f.label)
+            currentIndex: root.feedIndex
+            onPicked: function (index) {
+                root.feedIndex = index
+                root.forceActiveFocus()
             }
         }
 

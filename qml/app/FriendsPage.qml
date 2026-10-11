@@ -93,8 +93,8 @@ Item {
                         anchors.left: parent.left
                         anchors.right: parent.right
                         anchors.verticalCenter: parent.verticalCenter
-                        anchors.leftMargin: MD.Token.spacing.extra_large
-                        anchors.rightMargin: MD.Token.spacing.extra_large
+                        anchors.leftMargin: root.width < 1000 ? MD.Token.spacing.large : MD.Token.spacing.extra_large
+                        anchors.rightMargin: root.width < 1000 ? MD.Token.spacing.large : MD.Token.spacing.extra_large
                         spacing: MD.Token.spacing.medium
 
                         ShapeIcon {
@@ -116,6 +116,7 @@ Item {
                         }
 
                         FriendCodePin {
+                            maxWidth: parent.width
                             Layout.alignment: Qt.AlignHCenter
                             visible: (Core.social.pendingInviteCode || "").length > 0
                             text: Core.social.pendingInviteCode
@@ -158,8 +159,8 @@ Item {
                         anchors.left: parent.left
                         anchors.right: parent.right
                         anchors.verticalCenter: parent.verticalCenter
-                        anchors.leftMargin: MD.Token.spacing.extra_large
-                        anchors.rightMargin: MD.Token.spacing.extra_large
+                        anchors.leftMargin: root.width < 1000 ? MD.Token.spacing.large : MD.Token.spacing.extra_large
+                        anchors.rightMargin: root.width < 1000 ? MD.Token.spacing.large : MD.Token.spacing.extra_large
                         spacing: MD.Token.spacing.medium
 
                         ShapeIcon {
@@ -182,6 +183,7 @@ Item {
 
                         FriendCodePin {
                             id: emptyAddPin
+                            maxWidth: parent.width
                             Layout.alignment: Qt.AlignHCenter
                             onAccepted: root.submitInvite(emptyAddPin.text)
                         }

@@ -18,6 +18,8 @@ Item {
     property bool last: false
     property bool showChevron: true
     property bool selected: false
+    // Icon only (narrow windows): the title becomes a tooltip.
+    property bool compact: false
     default property alias trailing: trailingSlot.data
 
     signal clicked()
@@ -31,14 +33,15 @@ Item {
 
     Rectangle {
         anchors.fill: parent
+        // Compact rows are a plain rail of icons; only the chosen one gets a pill.
         color: root.selected ? MD.Util.transparent(MD.Token.color.secondary_container, 0.6)
              : tap.pressed ? MD.Token.color.surface_container_highest
              : hover.hovered ? MD.Token.color.surface_container_high
-             : MD.Token.color.surface_container
-        topLeftRadius: root.first ? root.outer : root.inner
-        topRightRadius: root.first ? root.outer : root.inner
-        bottomLeftRadius: root.last ? root.outer : root.inner
-        bottomRightRadius: root.last ? root.outer : root.inner
+             : root.compact ? "transparent" : MD.Token.color.surface_container
+        topLeftRadius: root.compact ? 20 : root.first ? root.outer : root.inner
+        topRightRadius: root.compact ? 20 : root.first ? root.outer : root.inner
+        bottomLeftRadius: root.compact ? 20 : root.last ? root.outer : root.inner
+        bottomRightRadius: root.compact ? 20 : root.last ? root.outer : root.inner
 
         Behavior on color { ColorAnimation { duration: AppMotion.short } }
         Behavior on topLeftRadius { NumberAnimation { duration: AppMotion.medium; easing.type: Easing.OutBack } }
@@ -50,12 +53,14 @@ Item {
     RowLayout {
         id: row
         anchors.fill: parent
-        anchors.leftMargin: MD.Token.spacing.medium
-        anchors.rightMargin: MD.Token.spacing.medium
+        anchors.leftMargin: root.compact ? 0 : MD.Token.spacing.medium
+        anchors.rightMargin: root.compact ? 0 : MD.Token.spacing.medium
         spacing: MD.Token.spacing.medium
 
         ShapeIcon {
             visible: root.iconName.length > 0
+            Layout.alignment: root.compact ? Qt.AlignHCenter : Qt.AlignVCenter
+            Layout.fillWidth: false
             Layout.preferredWidth: 44
             Layout.preferredHeight: 44
             iconName: root.iconName
@@ -67,6 +72,7 @@ Item {
         }
 
         ColumnLayout {
+            visible: !root.compact
             Layout.fillWidth: true
             spacing: 2
 
@@ -94,7 +100,7 @@ Item {
         }
 
         MD.Icon {
-            visible: root.showChevron
+            visible: root.showChevron && !root.compact
             name: MD.Token.icon.chevron_right
             size: 24
             color: MD.Token.color.on_surface_variant
@@ -110,5 +116,10 @@ Item {
     TapHandler {
         id: tap
         onTapped: root.clicked()
+    }
+
+    MD.ToolTip {
+        visible: root.compact && hover.hovered
+        text: root.title
     }
 }
