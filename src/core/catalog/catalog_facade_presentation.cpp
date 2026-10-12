@@ -1,5 +1,6 @@
 #include "core_controller_impl.h"
 
+#include "adult_list_service.h"
 #include "catalog_genre_normalize.h"
 
 #include <QUrl>
@@ -529,6 +530,23 @@ void CoreController::scheduleCatalogRefilter()
 {
     if (m_catalogFilters)
         m_catalogFilters->scheduleRefilter();
+}
+
+void CoreController::markAdultFromList()
+{
+    if (!m_adultList || m_adultList->isEmpty())
+        return;
+    QWriteLocker locker(&m_catalogCacheLock);
+    for (CatalogEntry& entry : m_catalogCache) {
+        if (entry.adult)
+            continue;
+        const bool hit = !entry.steamAppId.isEmpty()
+                             ? m_adultList->contains(entry.steamAppId)
+                             : (entry.id.startsWith(QLatin1String("steam-"))
+                                && m_adultList->contains(entry.id.mid(6)));
+        if (hit)
+            entry.adult = true;
+    }
 }
 
 void CoreController::rebuildAvailableCatalogGenres()

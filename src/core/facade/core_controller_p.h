@@ -17,6 +17,7 @@
     void applyCatalogFilter(const QString&);
     void rebuildCatalogIdIndex();
     void rebuildAvailableCatalogGenres();
+    void markAdultFromList();
     void scheduleCatalogRefilter();
     void warmActiveCatalogCovers();
 
@@ -116,6 +117,7 @@
     QHash<QString, int> m_catalogIdToCacheIndex;
     CatalogFilterService* m_catalogFilters = nullptr;
     CatalogDiscoveryService* m_catalogDiscovery = nullptr;
+    AdultListService* m_adultList = nullptr;
     QString m_userNotice;
     int m_userNoticeSerial = 0;
     QString m_pendingDeepLinkGameId;

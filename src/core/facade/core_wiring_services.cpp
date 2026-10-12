@@ -114,6 +114,7 @@ void CoreController::initializeServices()
         }
     };
     catalogHooks.cacheReplaced = [this]() {
+        markAdultFromList();
         if (m_catalogFilters)
             m_catalogFilters->invalidateTable();
     };

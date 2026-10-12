@@ -4,6 +4,7 @@
 
 #include <QDesktopServices>
 
+#include "adult_list_service.h"
 #include "catalog_feed_loader.h"
 #include "catalog_controller.h"
 #include "catalog_cover_coordinator.h"
@@ -271,12 +272,26 @@ CoreController::CoreController(QObject* parent)
         m_catalogDiscovery->setIdIndex(&m_catalogIdToCacheIndex);
     }
     {
+        // The list of 18+ apps is built on the server; here it is only downloaded and cached.
+        m_adultList = new AdultListService(this);
+        m_adultList->loadCache();
+        connect(m_adultList, &AdultListService::changed, this, [this]() {
+            markAdultFromList();
+            if (m_catalogFilters) {
+                m_catalogFilters->invalidateTable();
+                m_catalogFilters->scheduleRefilter();
+            }
+            if (m_catalogDiscovery)
+                m_catalogDiscovery->onAdultFlagsChanged();
+        });
         const auto applyAdultPreference = [this]() {
             const bool hide = !m_settings.showAdultContent();
             if (m_catalogFilters)
                 m_catalogFilters->setHideAdult(hide);
             if (m_catalogDiscovery)
                 m_catalogDiscovery->setHideAdult(hide);
+            if (hide && m_adultList)
+                m_adultList->refresh();
         };
         applyAdultPreference();
         connect(&m_settings, &SettingsStore::showAdultContentChanged, this, applyAdultPreference);
