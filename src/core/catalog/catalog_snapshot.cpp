@@ -20,7 +20,7 @@ constexpr quint32 kMagic = 0x4E534341; // "ACSN" (host byte order: snapshots nev
 constexpr quint32 kEndMarker = 0xA11C0DED;
 // Bump when the layout below changes. Adding a field to CatalogEntry/CatalogComponent also
 // requires updating write/readEntry; the struct-size check in the header catches the rest.
-constexpr quint32 kFormatVersion = 2;
+constexpr quint32 kFormatVersion = 3; // 3: + adult flag
 constexpr int kBlockCount = 16; // independent blocks: encoded and decoded in parallel
 
 QString snapshotPath(const QString& sourceId)
@@ -193,6 +193,7 @@ void writeEntry(Writer& w, const CatalogEntry& e)
     w.put(static_cast<quint32>(e.genreBits));
     w.put(static_cast<quint8>(e.playModeMask));
     w.put(static_cast<quint8>(e.hasDrm));
+    w.put(static_cast<quint8>(e.adult));
     w.put(static_cast<qint32>(e.recommendationsTotal));
     w.put(static_cast<qint32>(e.metacriticScore));
     w.put(static_cast<qint64>(e.releaseDay));
@@ -239,6 +240,7 @@ bool readEntry(Reader& r, CatalogEntry& e)
     e.genreBits = r.get<quint32>();
     e.playModeMask = r.get<quint8>();
     e.hasDrm = r.get<quint8>() != 0;
+    e.adult = r.get<quint8>() != 0;
     e.recommendationsTotal = r.get<qint32>();
     e.metacriticScore = r.get<qint32>();
     e.releaseDay = r.get<qint64>();

@@ -347,6 +347,18 @@
         <source>Only games with add-ons</source>
         <translation>Only games with add-ons</translation>
     </message>
+    <message>
+        <source>Content</source>
+        <translation>Content</translation>
+    </message>
+    <message>
+        <source>Show adult games</source>
+        <translation>Show adult games</translation>
+    </message>
+    <message>
+        <source>Games with nudity or sexual content (Steam labels, 18+ markers in the title).</source>
+        <translation>Games with nudity or sexual content (Steam labels, 18+ markers in the title).</translation>
+    </message>
 </context>
 <context>
     <name>CatalogGameCard</name>
@@ -4277,6 +4289,30 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <location line="+31"/>
         <source>Primary</source>
         <translation>Primary</translation>
+    </message>
+    <message>
+        <source>Adult games</source>
+        <translation>Adult games</translation>
+    </message>
+    <message>
+        <source>Some games contain nudity or sexual content. They are recognised by Steam's content labels and clear 18+ markers in the title, not by a word like "sex" alone. You can change this any time in the catalog filters.</source>
+        <translation>Some games contain nudity or sexual content. They are recognised by Steam's content labels and clear 18+ markers in the title, not by a word like "sex" alone. You can change this any time in the catalog filters.</translation>
+    </message>
+    <message>
+        <source>Hide adult games</source>
+        <translation>Hide adult games</translation>
+    </message>
+    <message>
+        <source>Keep them out of the catalog, search and Discover.</source>
+        <translation>Keep them out of the catalog, search and Discover.</translation>
+    </message>
+    <message>
+        <source>Show adult games</source>
+        <translation>Show adult games</translation>
+    </message>
+    <message>
+        <source>Show everything, including 18+ games.</source>
+        <translation>Show everything, including 18+ games.</translation>
     </message>
 </context>
 <context>

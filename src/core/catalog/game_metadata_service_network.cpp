@@ -1,5 +1,7 @@
 #include "game_metadata_service.h"
 
+#include "catalog_types.h"
+
 #include <QDateTime>
 #include <QDir>
 #include <QFile>
@@ -275,6 +277,20 @@ void GameMetadataService::handleDetailsFinished(QNetworkReply* reply)
                         catValue.toObject().value(QStringLiteral("description")).toString().trimmed();
                     if (!desc.isEmpty() && !genres.contains(desc))
                         genres.append(desc);
+                }
+                // Store content descriptors: 1 some nudity or sexual content, 3 adult only
+                // sexual content, 4 frequent nudity or sexual content. Steam's genre list rarely
+                // carries Nudity / Sexual Content even for obviously adult games.
+                for (const QJsonValue& id : data.value(QStringLiteral("content_descriptors"))
+                                                .toObject()
+                                                .value(QStringLiteral("ids"))
+                                                .toArray()) {
+                    const int v = id.toInt();
+                    if (v == 1 || v == 3 || v == 4) {
+                        if (!genres.contains(adultContentGenreToken()))
+                            genres.append(adultContentGenreToken());
+                        break;
+                    }
                 }
                 metadata.genres = genres.join(QStringLiteral(", "));
                 metadata.screenshotUrls =

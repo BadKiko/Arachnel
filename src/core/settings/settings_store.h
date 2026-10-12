@@ -34,6 +34,8 @@ class SettingsStore : public QObject
     Q_PROPERTY(QString uiLanguage READ uiLanguage WRITE setUiLanguage NOTIFY uiLanguageChanged)
     Q_PROPERTY(bool onboardingCompleted READ onboardingCompleted WRITE setOnboardingCompleted NOTIFY
                    onboardingCompletedChanged)
+    Q_PROPERTY(bool showAdultContent READ showAdultContent WRITE setShowAdultContent NOTIFY
+                   showAdultContentChanged)
     Q_PROPERTY(QString globalLaunchArgs READ globalLaunchArgs WRITE setGlobalLaunchArgs NOTIFY
                    globalLaunchArgsChanged)
     Q_PROPERTY(QString defaultProtonId READ defaultProtonId WRITE setDefaultProtonId NOTIFY
@@ -55,6 +57,8 @@ public:
     bool includeAppPreReleases() const { return m_includeAppPreReleases; }
     QString uiLanguage() const { return m_uiLanguage; }
     bool onboardingCompleted() const { return m_onboardingCompleted; }
+    /** Show games with nudity / sexual content in the catalog. Off for new installs. */
+    bool showAdultContent() const { return m_showAdultContent; }
     QString globalLaunchArgs() const { return m_globalLaunchArgs; }
     QString defaultProtonId() const { return m_defaultProtonId; }
     QStringList protonPriority() const { return m_protonPriority; }
@@ -91,6 +95,7 @@ public:
     void setIncludeAppPreReleases(bool enabled);
     void setUiLanguage(const QString& languageCode);
     void setOnboardingCompleted(bool completed);
+    void setShowAdultContent(bool show);
     void setGlobalLaunchArgs(const QString& args);
     void setDefaultProtonId(const QString& id);
     void setProtonPriority(const QStringList& ids);
@@ -123,6 +128,7 @@ signals:
     void includeAppPreReleasesChanged();
     void uiLanguageChanged();
     void onboardingCompletedChanged();
+    void showAdultContentChanged();
     void globalLaunchArgsChanged();
     void defaultProtonIdChanged();
     void protonPriorityChanged();
@@ -141,6 +147,7 @@ private:
     bool m_includeAppPreReleases = false;
     QString m_uiLanguage = QStringLiteral("en");
     bool m_onboardingCompleted = false;
+    bool m_showAdultContent = false;
     QString m_globalLaunchArgs;
     QString m_defaultProtonId;
     QStringList m_protonPriority;

@@ -349,6 +349,18 @@
         <source>Only games with add-ons</source>
         <translation>Только игры с дополнениями</translation>
     </message>
+    <message>
+        <source>Content</source>
+        <translation>Контент</translation>
+    </message>
+    <message>
+        <source>Show adult games</source>
+        <translation>Показывать игры для взрослых</translation>
+    </message>
+    <message>
+        <source>Games with nudity or sexual content (Steam labels, 18+ markers in the title).</source>
+        <translation>Игры с наготой или сексуальным контентом (метки Steam, маркеры 18+ в названии).</translation>
+    </message>
 </context>
 <context>
     <name>CatalogGameCard</name>
@@ -4290,6 +4302,30 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <location line="+31"/>
         <source>Primary</source>
         <translation>Основной</translation>
+    </message>
+    <message>
+        <source>Adult games</source>
+        <translation>Взрослые игры</translation>
+    </message>
+    <message>
+        <source>Some games contain nudity or sexual content. They are recognised by Steam's content labels and clear 18+ markers in the title, not by a word like "sex" alone. You can change this any time in the catalog filters.</source>
+        <translation>Некоторые игры содержат наготу или сексуальный контент. Они определяются по меткам контента Steam и явным маркерам 18+ в названии, а не по одному слову вроде «sex». Это можно изменить в любой момент в фильтрах каталога.</translation>
+    </message>
+    <message>
+        <source>Hide adult games</source>
+        <translation>Скрыть игры для взрослых</translation>
+    </message>
+    <message>
+        <source>Keep them out of the catalog, search and Discover.</source>
+        <translation>Не показывать их в каталоге, поиске и рекомендациях.</translation>
+    </message>
+    <message>
+        <source>Show adult games</source>
+        <translation>Показывать игры для взрослых</translation>
+    </message>
+    <message>
+        <source>Show everything, including 18+ games.</source>
+        <translation>Показывать всё, включая игры 18+.</translation>
     </message>
 </context>
 <context>

@@ -83,6 +83,15 @@ void CatalogDiscoveryService::setFriendEntryIds(QStringList entryIds)
     reapplyFeed();
 }
 
+void CatalogDiscoveryService::setHideAdult(bool hide)
+{
+    if (m_hideAdult == hide)
+        return;
+    m_hideAdult = hide;
+    if (m_feedLoaded)
+        reapplyFeed();
+}
+
 void CatalogDiscoveryService::onEntryMetadataChanged(const QString& entryId)
 {
     // Update card fields only. Never reshuffle shelf membership.
@@ -149,6 +158,8 @@ QVector<int> CatalogDiscoveryService::indicesForEntryIds(const QStringList& entr
     for (const QString& id : entryIds) {
         const int index = resolveIndex(id);
         if (index < 0 || seen.contains(index))
+            continue;
+        if (m_hideAdult && index < m_cache->size() && m_cache->at(index).adult)
             continue;
         seen.insert(index);
         indices.append(index);

@@ -183,6 +183,9 @@ CatalogEntry parseRyuuEntryObject(const QJsonObject& obj, const QString& sourceI
     entry.itemKind = CatalogItemKind::Game;
     entry.metadataPending = false;
     entry.hasWorkshop = obj.value(QStringLiteral("hasWorkshop")).toBool(false);
+    // Optional feed flag: the builder knows the store's content descriptors, the host does not
+    // until a game's metadata is fetched.
+    entry.adult = obj.value(QStringLiteral("adult")).toBool(false);
     entry.dlcCount = obj.value(QStringLiteral("dlcCount")).toInt(0);
     if (entry.dlcCount <= 0) {
         if (obj.value(QStringLiteral("dlc")).isArray())

@@ -50,6 +50,8 @@ public:
     void onEntryMetadataChanged(const QString& entryId);
     void onCatalogCacheRebuilt();
     void setFriendEntryIds(QStringList entryIds);
+    /** Keep adult games off the shelves (follows the "show adult content" setting). */
+    void setHideAdult(bool hide);
 
 signals:
     void loadingChanged();
@@ -74,6 +76,7 @@ private:
     QStringList m_friendEntryIds;
     bool m_loading = false;
     bool m_feedLoaded = false;
+    bool m_hideAdult = false;
     quint64 m_requestSerial = 0;
 
     QNetworkAccessManager* m_network = nullptr;

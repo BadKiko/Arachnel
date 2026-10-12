@@ -239,6 +239,15 @@ void SettingsStore::setOnboardingCompleted(bool completed)
     save();
 }
 
+void SettingsStore::setShowAdultContent(bool show)
+{
+    if (m_showAdultContent == show)
+        return;
+    m_showAdultContent = show;
+    emit showAdultContentChanged();
+    save();
+}
+
 void SettingsStore::setLastLaunchedAppVersion(const QString& version)
 {
     if (m_lastLaunchedAppVersion == version)

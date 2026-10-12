@@ -16,7 +16,8 @@ ColumnLayout {
     Layout.leftMargin: MD.Token.spacing.large
     Layout.rightMargin: MD.Token.spacing.large
     spacing: MD.Token.spacing.small
-    visible: root.stepId === "welcome" || root.stepId === "language" || root.stepId === "theme"
+    visible: root.stepId === "welcome" || root.stepId === "language" || root.stepId === "content"
+             || root.stepId === "theme"
 
     ColumnLayout {
         Layout.fillWidth: true
@@ -68,6 +69,40 @@ ColumnLayout {
                               ? MD.Enum.BtFilled : MD.Enum.BtOutlined
                 onClicked: Core.settings.uiLanguage = modelData.code
             }
+        }
+    }
+
+    ColumnLayout {
+        Layout.fillWidth: true
+        visible: root.stepId === "content"
+        spacing: MD.Token.spacing.small
+
+        MD.Label {
+            Layout.fillWidth: true
+            text: qsTr("Adult games")
+            typescale: MD.Token.typescale.headline_small
+        }
+        MD.Label {
+            Layout.fillWidth: true
+            text: qsTr("Some games contain nudity or sexual content. They are recognised by Steam's content labels and clear 18+ markers in the title, not by a word like \"sex\" alone. You can change this any time in the catalog filters.")
+            wrapMode: Text.WordWrap
+            color: MD.Token.color.on_surface_variant
+            typescale: MD.Token.typescale.body_medium
+        }
+        OnboardingChoiceCard {
+            Layout.topMargin: MD.Token.spacing.small
+            iconName: MD.Token.icon.visibility_off
+            title: qsTr("Hide adult games")
+            description: qsTr("Keep them out of the catalog, search and Discover.")
+            selected: !Core.settings.showAdultContent
+            onClicked: Core.settings.showAdultContent = false
+        }
+        OnboardingChoiceCard {
+            iconName: MD.Token.icon.visibility
+            title: qsTr("Show adult games")
+            description: qsTr("Show everything, including 18+ games.")
+            selected: Core.settings.showAdultContent
+            onClicked: Core.settings.showAdultContent = true
         }
     }
 

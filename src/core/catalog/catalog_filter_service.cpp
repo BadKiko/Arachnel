@@ -125,6 +125,9 @@ bool CatalogFilterService::rowMatches(const CatalogFilterRow& row, const FilterS
     if (snap.hasAddonsFilter && (row.flags & kFilterFlagHasAddons) == 0)
         return false;
 
+    if (snap.hideAdult && (row.flags & kFilterFlagAdult) != 0)
+        return false;
+
     if (snap.genreBit && (row.genreBits & snap.genreBit) == 0)
         return false;
 
@@ -375,8 +378,10 @@ void CatalogFilterService::applyFilter(const QString& query)
     // Source mask is resolved on the worker after SoA slots are known.
     snap.sourceMask = 0;
     snap.checkSource = !m_hiddenSourceIds.isEmpty();
+    snap.hideAdult = m_hideAdult;
     snap.anySideFilter = m_typeFilter >= 0 || m_sizeFilter > 0 || m_recencyFilter > 0
-        || m_hasAddonsFilter || snap.genreBit != 0 || m_playModeFilter > 0 || snap.checkSource;
+        || m_hasAddonsFilter || snap.genreBit != 0 || m_playModeFilter > 0 || snap.checkSource
+        || snap.hideAdult;
 
     QVector<CatalogEntry>* cachePtr = m_cache;
     QReadWriteLock* lock = m_cacheLock;
@@ -443,7 +448,7 @@ void CatalogFilterService::applyFilter(const QString& query)
                 localSnap.anySideFilter = localSnap.typeFilter >= 0 || localSnap.sizeFilter > 0
                     || localSnap.recencyFilter > 0 || localSnap.hasAddonsFilter
                     || localSnap.genreBit != 0 || localSnap.playModeFilter > 0
-                    || localSnap.checkSource;
+                    || localSnap.checkSource || localSnap.hideAdult;
             }
 
             struct ScoredIndex {
@@ -693,6 +698,14 @@ void CatalogFilterService::setPlayModeFilter(int filter)
     if (m_playModeFilter == next)
         return;
     m_playModeFilter = next;
+    notifyFiltersChanged();
+}
+
+void CatalogFilterService::setHideAdult(bool hide)
+{
+    if (m_hideAdult == hide)
+        return;
+    m_hideAdult = hide;
     notifyFiltersChanged();
 }
 

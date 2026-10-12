@@ -128,6 +128,8 @@ QJsonObject entryToJson(const CatalogEntry& e)
     o.insert(QStringLiteral("installKind"), static_cast<int>(e.installKind));
     o.insert(QStringLiteral("metadataPending"), e.metadataPending);
     o.insert(QStringLiteral("hasWorkshop"), e.hasWorkshop);
+    if (e.adult)
+        o.insert(QStringLiteral("adult"), true);
     o.insert(QStringLiteral("dlcCount"), e.dlcCount);
     o.insert(QStringLiteral("recommendationsTotal"), e.recommendationsTotal);
     o.insert(QStringLiteral("metacriticScore"), e.metacriticScore);
@@ -187,6 +189,7 @@ CatalogEntry entryFromJson(const QJsonObject& o, const QString& defaultSourceId)
     e.itemKind = itemKindFromString(o.value(QStringLiteral("kind")).toString());
     e.metadataPending = o.value(QStringLiteral("metadataPending")).toBool(false);
     e.hasWorkshop = o.value(QStringLiteral("hasWorkshop")).toBool(false);
+    e.adult = o.value(QStringLiteral("adult")).toBool(false);
     e.dlcCount = o.value(QStringLiteral("dlcCount")).toInt(0);
     e.recommendationsTotal = o.value(QStringLiteral("recommendationsTotal")).toInt(0);
     e.metacriticScore = o.value(QStringLiteral("metacriticScore")).toInt(0);

@@ -22,6 +22,8 @@ void SettingsStore::load()
     if (!file.open(QIODevice::ReadOnly)) {
         m_sources.clear();
         m_onboardingCompleted = false;
+        m_showAdultContent = false;
+        emit showAdultContentChanged();
         emit libraryRootChanged();
         emit downloadsRootChanged();
         emit maxConcurrentDownloadsChanged();
@@ -50,6 +52,11 @@ void SettingsStore::load()
     m_onboardingCompleted = obj.contains(QStringLiteral("onboardingCompleted"))
                                 ? obj.value(QStringLiteral("onboardingCompleted")).toBool(false)
                                 : true;
+    // Installs from before the setting existed keep seeing everything they saw; only a true first
+    // launch (the wizard asks) starts with adult games hidden.
+    m_showAdultContent = obj.contains(QStringLiteral("showAdultContent"))
+                             ? obj.value(QStringLiteral("showAdultContent")).toBool(false)
+                             : true;
     m_globalLaunchArgs = obj.value(QStringLiteral("globalLaunchArgs")).toString();
     m_defaultProtonId = obj.value(QStringLiteral("defaultProtonId")).toString();
     m_legacyProtonPath = obj.value(QStringLiteral("protonPath")).toString();
@@ -168,6 +175,7 @@ void SettingsStore::load()
     emit includeAppPreReleasesChanged();
     emit uiLanguageChanged();
     emit onboardingCompletedChanged();
+    emit showAdultContentChanged();
     emit globalLaunchArgsChanged();
     emit defaultProtonIdChanged();
     emit protonPriorityChanged();
@@ -187,6 +195,7 @@ void SettingsStore::save()
     obj.insert(QStringLiteral("includeAppPreReleases"), m_includeAppPreReleases);
     obj.insert(QStringLiteral("uiLanguage"), m_uiLanguage);
     obj.insert(QStringLiteral("onboardingCompleted"), m_onboardingCompleted);
+    obj.insert(QStringLiteral("showAdultContent"), m_showAdultContent);
     obj.insert(QStringLiteral("globalLaunchArgs"), m_globalLaunchArgs);
     obj.insert(QStringLiteral("defaultProtonId"), m_defaultProtonId);
     obj.insert(QStringLiteral("lastLaunchedAppVersion"), m_lastLaunchedAppVersion);

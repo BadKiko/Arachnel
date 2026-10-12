@@ -13,6 +13,7 @@ MD.BottomSheet {
     property int draftSize: 0
     property int draftRecency: 0
     property bool draftHasAddons: false
+    property bool draftShowAdult: false
     property string draftGenre: ""
     property int draftPlayMode: 0
     property var draftHiddenSources: []
@@ -130,6 +131,7 @@ MD.BottomSheet {
         draftSize = Core.catalogSizeFilter
         draftRecency = Core.catalogRecencyFilter
         draftHasAddons = Core.catalogHasAddonsFilter
+        draftShowAdult = Core.settings.showAdultContent
         draftGenre = Core.catalogGenreFilter
         draftPlayMode = Core.catalogPlayModeFilter
         draftHiddenSources = Core.hiddenCatalogSourceIds.slice()
@@ -139,6 +141,7 @@ MD.BottomSheet {
 
     function applyAndClose() {
         Core.setHiddenCatalogSourceIds(root.draftHiddenSources)
+        Core.settings.showAdultContent = root.draftShowAdult
         Core.applyCatalogPresentation(Core.catalog.sortMode, -1, draftSize, draftRecency,
                                       draftHasAddons, draftGenre, draftPlayMode)
         close()
@@ -278,6 +281,39 @@ MD.BottomSheet {
                         hiddenIds: root.draftHiddenSources
                         onSourceToggled: function (sourceId) {
                             root.toggleSource(sourceId)
+                        }
+                    }
+                }
+
+                CatalogFilterSection {
+                    title: qsTr("Content")
+                    iconName: MD.Token.icon.explicit
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: MD.Token.spacing.small
+
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: 2
+
+                            MD.Label {
+                                Layout.fillWidth: true
+                                text: qsTr("Show adult games")
+                                typescale: MD.Token.typescale.body_large
+                            }
+                            MD.Label {
+                                Layout.fillWidth: true
+                                text: qsTr("Games with nudity or sexual content (Steam labels, 18+ markers in the title).")
+                                typescale: MD.Token.typescale.body_small
+                                color: MD.Token.color.on_surface_variant
+                                wrapMode: Text.WordWrap
+                            }
+                        }
+
+                        MD.Switch {
+                            checked: root.draftShowAdult
+                            onToggled: root.draftShowAdult = checked
                         }
                     }
                 }

@@ -94,6 +94,12 @@ struct CatalogEntry {
     quint8 playModeMask = 0;
     /** Ryuu/DRM token - not a genre bit. */
     bool hasDrm = false;
+    /**
+     * Adult content (nudity / sexual content). Sticky: set from the feed, Steam's own
+     * Nudity / Sexual Content tags, store content descriptors or unmistakable title markers,
+     * and never cleared by a later prepareCatalogEntry().
+     */
+    bool adult = false;
 
     // Steam-enrichment discovery signals (any catalog source; keyed by steamAppId).
     int recommendationsTotal = 0;
@@ -111,6 +117,7 @@ constexpr quint8 kPlayModeTogether = kPlayModeCoop | kPlayModeMulti;
 
 constexpr quint8 kFilterFlagGame = 0x01;
 constexpr quint8 kFilterFlagHasAddons = 0x02;
+constexpr quint8 kFilterFlagAdult = 0x04;
 
 /** Tight row for the 100k filter worker (filled at merge, not from CatalogEntry). */
 struct CatalogFilterRow {
@@ -136,6 +143,8 @@ inline CatalogFilterRow catalogFilterRowFromEntry(const CatalogEntry& entry, qui
         row.flags |= kFilterFlagGame;
     if (entry.dlcCount > 0 || !entry.addons.isEmpty())
         row.flags |= kFilterFlagHasAddons;
+    if (entry.adult)
+        row.flags |= kFilterFlagAdult;
     return row;
 }
 
@@ -147,6 +156,19 @@ bool catalogEntryHasOnlineFixAddon(const CatalogEntry& entry);
 QString catalogItemKindLabel(CatalogItemKind kind);
 QString repairCatalogEntryId(const QString& entryId);
 QString slugifyCatalogId(const QString& title, const QString& sourceId);
+
+/** Steam genre / store-descriptor tokens that mark nudity or sexual content (lower case). */
+bool isAdultGenreToken(const QString& tokenLower);
+/**
+ * Token the metadata service appends to a game's genres when the store lists a nudity / sexual
+ * content descriptor, so the flag travels through the existing genre cache.
+ */
+QString adultContentGenreToken();
+/**
+ * Unmistakable adult markers in a title (hentai, 18+, R18, NSFW, a 18+ emoji, ...). Deliberately
+ * does not look at words like "sex" or "sexy": plenty of ordinary games carry them.
+ */
+bool titleHasAdultMarker(const QString& titleLower);
 
 /** Parse FreeTP-style size labels ("2.71 GB", "512 MB") into bytes; 0 if unknown. */
 qint64 parseSizeLabelBytes(const QString& label);

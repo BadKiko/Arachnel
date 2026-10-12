@@ -22,7 +22,7 @@ Item {
 
     // Step ids in display order (Proton only on Linux).
     readonly property var steps: {
-        const list = ["language", "storage", "plugins"]
+        const list = ["language", "content", "storage", "plugins"]
         if (root.onLinux)
             list.push("proton")
         list.push("done")

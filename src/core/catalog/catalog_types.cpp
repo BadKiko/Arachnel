@@ -29,7 +29,84 @@ double computeHypeScore(const CatalogEntry& entry)
     return score;
 }
 
+bool isAsciiAlnum(QChar c)
+{
+    const ushort u = c.unicode();
+    return (u >= '0' && u <= '9') || (u >= 'a' && u <= 'z') || (u >= 'A' && u <= 'Z');
+}
+
+/**
+ * `needle` occurs in `hay` with the requested boundaries: `leftWord` means it must not follow an
+ * ASCII letter/digit, `rightWord` that it must not be followed by one ("xxx" != "xxxl",
+ * "milf" != "milford").
+ */
+bool containsToken(const QString& hay, QLatin1String needle, bool leftWord, bool rightWord)
+{
+    const qsizetype n = needle.size();
+    qsizetype from = 0;
+    while (true) {
+        const qsizetype at = hay.indexOf(needle, from, Qt::CaseSensitive);
+        if (at < 0)
+            return false;
+        const bool leftOk = !leftWord || at == 0 || !isAsciiAlnum(hay.at(at - 1));
+        const bool rightOk = !rightWord || at + n >= hay.size() || !isAsciiAlnum(hay.at(at + n));
+        if (leftOk && rightOk)
+            return true;
+        from = at + 1;
+    }
+}
+
 } // namespace
+
+QString adultContentGenreToken()
+{
+    return QStringLiteral("Adult Content");
+}
+
+bool isAdultGenreToken(const QString& tokenLower)
+{
+    return tokenLower == QLatin1String("nudity") || tokenLower == QLatin1String("sexual content")
+        || tokenLower == QLatin1String("adult content") || tokenLower == QLatin1String("hentai")
+        || tokenLower == QLatin1String("nsfw");
+}
+
+bool titleHasAdultMarker(const QString& titleLower)
+{
+    if (titleLower.isEmpty())
+        return false;
+    // 🔞 and the CJK "18 prohibited" mark.
+    if (titleLower.contains(QStringLiteral("\U0001F51E")) || titleLower.contains(QStringLiteral("18禁")))
+        return true;
+    // Long, unambiguous stems match anywhere ("HentaiNYA", "Hentaimon", "pornstar").
+    static const QLatin1String stems[] = {
+        QLatin1String("hentai"),   QLatin1String("futanari"), QLatin1String("porn"),
+        QLatin1String("nsfw"),     QLatin1String("erotic"),   QLatin1String("ecchi"),
+        QLatin1String("nympho"),   QLatin1String("bdsm"),
+    };
+    // Must start a word ("nudes", "fetishes", "brothels" are fine; "denude" is not).
+    static const QLatin1String prefixes[] = {
+        QLatin1String("nude"),   QLatin1String("lewd"),       QLatin1String("fetish"),
+        QLatin1String("brothel"), QLatin1String("uncensored"), QLatin1String("milf"),
+    };
+    // Short tokens that only count as a whole word.
+    static const QLatin1String exact[] = {
+        QLatin1String("xxx"), QLatin1String("futa"), QLatin1String("r18"),
+        QLatin1String("r-18"), QLatin1String("18+"),
+    };
+    for (const QLatin1String& w : stems) {
+        if (titleLower.contains(w))
+            return true;
+    }
+    for (const QLatin1String& w : prefixes) {
+        if (containsToken(titleLower, w, true, false))
+            return true;
+    }
+    for (const QLatin1String& w : exact) {
+        if (containsToken(titleLower, w, true, true))
+            return true;
+    }
+    return false;
+}
 
 void prepareCatalogEntry(CatalogEntry& entry)
 {
@@ -42,10 +119,13 @@ void prepareCatalogEntry(CatalogEntry& entry)
     const QStringList raw = entry.genres.split(QLatin1Char(','), Qt::SkipEmptyParts);
     tokens.reserve(raw.size());
     bool hasDrm = entry.hasDrm;
+    bool adult = entry.adult;
     for (QString token : raw) {
         token = token.trimmed();
         if (token.isEmpty())
             continue;
+        if (isAdultGenreToken(token.toLower()))
+            adult = true;
         if (token.compare(QLatin1String("DRM"), Qt::CaseInsensitive) == 0)
             hasDrm = true;
         tokens.append(token);
@@ -55,6 +135,7 @@ void prepareCatalogEntry(CatalogEntry& entry)
     if (entry.genreBits & curatedGenreBit(QStringLiteral("Massively Multiplayer")))
         entry.playModeMask |= kPlayModeMulti;
     entry.hasDrm = hasDrm;
+    entry.adult = adult || titleHasAdultMarker(entry.titleLower);
     entry.hypeScore = computeHypeScore(entry);
 
     // List-resident row: drop cold fields (enriched again on open).

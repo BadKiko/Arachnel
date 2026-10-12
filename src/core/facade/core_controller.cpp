@@ -270,6 +270,17 @@ CoreController::CoreController(QObject* parent)
         m_catalogDiscovery->setCache(&m_catalogCache);
         m_catalogDiscovery->setIdIndex(&m_catalogIdToCacheIndex);
     }
+    {
+        const auto applyAdultPreference = [this]() {
+            const bool hide = !m_settings.showAdultContent();
+            if (m_catalogFilters)
+                m_catalogFilters->setHideAdult(hide);
+            if (m_catalogDiscovery)
+                m_catalogDiscovery->setHideAdult(hide);
+        };
+        applyAdultPreference();
+        connect(&m_settings, &SettingsStore::showAdultContentChanged, this, applyAdultPreference);
+    }
     if (m_socialController)
         m_socialController->initialize();
 

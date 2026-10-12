@@ -46,6 +46,14 @@ public:
     void setHiddenSourceIds(QStringList ids);
     void setSourceHidden(const QString& sourceId, bool hidden);
 
+    /**
+     * Keep adult games (nudity / sexual content) out of the list and out of search. A standing
+     * preference rather than a filter: it is not counted in activeFilterCount() and clearFilters()
+     * leaves it alone.
+     */
+    bool hideAdult() const { return m_hideAdult; }
+    void setHideAdult(bool hide);
+
     int activeFilterCount() const;
     QStringList availableGenres() const { return m_availableGenres; }
 
@@ -88,6 +96,7 @@ private:
         int playModeFilter = 0;
         quint32 sourceMask = 0;
         bool checkSource = false;
+        bool hideAdult = false;
         int sortMode = 0;
         bool anySideFilter = false;
     };
@@ -122,6 +131,7 @@ private:
     QString m_genreFilter;
     int m_playModeFilter = 0;
     QStringList m_hiddenSourceIds;
+    bool m_hideAdult = false;
 };
 
 } // namespace arachnel::core
