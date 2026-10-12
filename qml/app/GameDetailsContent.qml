@@ -396,10 +396,12 @@ Item {
                                 visible: !!(page.info.hasUpdate)
                                 text: qsTr("Update available")
                                 icon.name: MD.Token.icon.update
-                                mdState.backgroundColor: detailsRoot.accentContainer
-                                mdState.textColor: MD.Token.color.on_surface
-                                mdState.iconColor: detailsRoot.accent
-                                mdState.outlineColor: detailsRoot.accentContainer
+                                // Solid accent like the Play button: the old 20% tint with grey text
+                                // read as a disabled chip.
+                                mdState.backgroundColor: detailsRoot.accent
+                                mdState.textColor: detailsRoot.accentInk
+                                mdState.iconColor: detailsRoot.accentInk
+                                mdState.outlineColor: detailsRoot.accent
                             }
                             RevealIn { delay: 160 }
                         }
