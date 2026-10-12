@@ -16,7 +16,7 @@
     <message>
         <location filename="../qml/app/AppUpdateProgressOverlay.qml" line="80"/>
         <source>Starting…</source>
-        <translation type="unfinished"></translation>
+        <translation>Старт…</translation>
     </message>
 </context>
 <context>
@@ -24,7 +24,7 @@
     <message>
         <location filename="../qml/components/AppUpdateSheet.qml" line="31"/>
         <source>Update available</source>
-        <translation type="unfinished"></translation>
+        <translation>Оновлення доступне</translation>
     </message>
     <message>
         <location filename="../qml/components/AppUpdateSheet.qml" line="39"/>
