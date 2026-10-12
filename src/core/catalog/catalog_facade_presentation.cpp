@@ -1,6 +1,5 @@
 #include "core_controller_impl.h"
 
-#include "adult_scan_service.h"
 #include "catalog_genre_normalize.h"
 
 #include <QUrl>
@@ -530,28 +529,6 @@ void CoreController::scheduleCatalogRefilter()
 {
     if (m_catalogFilters)
         m_catalogFilters->scheduleRefilter();
-}
-
-void CoreController::markAdultFromScan()
-{
-    if (!m_adultScan || !m_adultScan->hasAdult())
-        return;
-    QWriteLocker locker(&m_catalogCacheLock);
-    for (CatalogEntry& entry : m_catalogCache) {
-        if (entry.adult)
-            continue;
-        QString app = entry.steamAppId;
-        if (app.isEmpty() && entry.id.startsWith(QLatin1String("steam-")))
-            app = entry.id.mid(6);
-        if (app.isEmpty())
-            continue;
-        // Store content descriptors; or, for apps the store does not list at all, a title that
-        // is very likely adult.
-        if (m_adultScan->contains(app)
-            || (m_adultScan->isUnlisted(app) && titleHasWeakAdultMarker(entry.titleLower))) {
-            entry.adult = true;
-        }
-    }
 }
 
 void CoreController::rebuildAvailableCatalogGenres()

@@ -186,18 +186,6 @@ void GameMetadataService::handleAssetsFinished(QNetworkReply* reply)
                 const QJsonObject storeItem = storeItems.first().toObject();
                 const QJsonObject assets = storeItem.value(QStringLiteral("assets")).toObject();
                 metadata.coverUrl = pickLibraryCover(assets);
-                // Same item, same request: the store's content descriptors (1 some nudity or
-                // sexual content, 3 adult only sexual content, 4 frequent nudity or sexual content).
-                for (const QJsonValue& id :
-                     storeItem.value(QStringLiteral("content_descriptorids")).toArray()) {
-                    const int v = id.toInt();
-                    if (v == 1 || v == 3 || v == 4) {
-                        if (!metadata.genres.contains(adultContentGenreToken()))
-                            metadata.genres += (metadata.genres.isEmpty() ? QString() : QStringLiteral(", "))
-                                               + adultContentGenreToken();
-                        break;
-                    }
-                }
                 if (mode == MetadataFetchMode::Full) {
                     const QJsonObject trailers = storeItem.value(QStringLiteral("trailers")).toObject();
                     const QString trailer = pickTrailerFromStoreTrailers(trailers);

@@ -108,20 +108,6 @@ bool titleHasAdultMarker(const QString& titleLower)
     return false;
 }
 
-bool titleHasWeakAdultMarker(const QString& titleLower)
-{
-    static const QLatin1String words[] = {
-        QLatin1String("sex"),   QLatin1String("sexy"),  QLatin1String("sexual"),
-        QLatin1String("incest"), QLatin1String("slut"),  QLatin1String("sluts"),
-        QLatin1String("whore"), QLatin1String("horny"), QLatin1String("orgy"),
-    };
-    for (const QLatin1String& w : words) {
-        if (containsToken(titleLower, w, true, true))
-            return true;
-    }
-    return false;
-}
-
 void prepareCatalogEntry(CatalogEntry& entry)
 {
     entry.titleLower = entry.title.trimmed().toLower();
