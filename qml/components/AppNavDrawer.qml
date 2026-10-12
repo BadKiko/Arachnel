@@ -165,23 +165,38 @@ Rectangle {
                 Accessible.role: Accessible.Button
                 Accessible.name: modelData.name
 
-                // Expanded: full-width pill growing from the left. Collapsed: a 56 x 32 pill under
-                // the icon, like the rail.
+                // Hover: a fixed-size state layer that only fades. It used to be the same pill as the
+                // selection one, so every pass of the pointer made it spring wider and back.
+                Rectangle {
+                    id: hoverLayer
+                    y: pill.y
+                    x: root.expanded ? 0 : (parent.width - width) / 2
+                    width: root.expanded ? parent.width : 56
+                    height: pill.height
+                    radius: height / 2
+                    color: MD.Util.transparent(MD.Token.color.on_surface, 0.08)
+                    opacity: entry.hovered && !entry.selected ? 1 : 0
+                    scale: entryTap.pressed ? 0.96 : 1
+                    Behavior on opacity { NumberAnimation { duration: AppMotion.short } }
+                    Behavior on scale { NumberAnimation { duration: AppMotion.fast } }
+                }
+
+                // Selection: expanded, a full-width pill growing from the left; collapsed, a
+                // 56 x 32 pill under the icon, like the rail. Only this one springs.
                 Rectangle {
                     id: pill
                     y: root.expanded ? (parent.height - height) / 2 : 6
                     x: root.expanded ? 0 : (parent.width - width) / 2
                     height: root.expanded ? 56 : 32
                     width: root.expanded
-                           ? (entry.selected ? parent.width : (entry.hovered ? parent.width : parent.width * 0.4))
-                           : (entry.selected ? 56 : (entry.hovered ? 48 : 32))
+                           ? (entry.selected ? parent.width : parent.width * 0.4)
+                           : (entry.selected ? 56 : 32)
                     radius: height / 2
-                    color: entry.selected ? MD.Token.color.secondary_container
-                         : MD.Util.transparent(MD.Token.color.on_surface, entry.hovered ? 0.08 : 0)
+                    color: entry.selected ? MD.Token.color.secondary_container : "transparent"
                     scale: entryTap.pressed ? 0.96 : 1
 
                     Behavior on width {
-                        NumberAnimation { duration: AppMotion.scaled(420); easing.type: Easing.OutBack; easing.overshoot: 1.4 }
+                        NumberAnimation { duration: AppMotion.scaled(420); easing.type: Easing.OutBack; easing.overshoot: 1.2 }
                     }
                     Behavior on color { ColorAnimation { duration: AppMotion.short } }
                     Behavior on scale { NumberAnimation { duration: AppMotion.fast } }
@@ -259,8 +274,15 @@ Rectangle {
                 HoverHandler { id: entryHover; cursorShape: Qt.PointingHandCursor }
                 TapHandler { id: entryTap; onTapped: root.activated(entry.index) }
 
+                // The collapsed item already carries its name; the tooltip is only for names that
+                // had to be elided. It sits beside the item: above it, it covered the previous
+                // entry, which then lost hover as the pointer moved up, and the pill and tooltip
+                // flickered.
                 MD.ToolTip {
-                    visible: !root.expanded && entry.hovered
+                    visible: !root.expanded && entry.hovered && collapsedLabel.truncated
+                    delay: 500
+                    x: parent.width + 8
+                    y: (parent.height - height) / 2
                     text: entry.modelData.name
                 }
             }
@@ -295,7 +317,7 @@ Rectangle {
                     size: 24
                     color: MD.Token.color.on_surface_variant
                     rotation: settingsHover.hovered ? 60 : 0
-                    Behavior on rotation { NumberAnimation { duration: AppMotion.scaled(500); easing.type: Easing.OutBack } }
+                    Behavior on rotation { NumberAnimation { duration: AppMotion.scaled(400); easing.type: Easing.OutCubic } }
                 }
                 MD.Label {
                     Layout.fillWidth: true
