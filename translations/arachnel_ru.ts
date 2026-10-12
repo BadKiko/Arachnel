@@ -14,14 +14,13 @@
         <translation>Развернуть</translation>
     </message>
     <message>
-        <location line="+33"/>
-        <source>Search games</source>
-        <translation>Поиск игр</translation>
-    </message>
-    <message>
         <location line="+167"/>
         <source>Settings</source>
         <translation>Настройки</translation>
+    </message>
+    <message>
+        <source>Search</source>
+        <translation>Поиск</translation>
     </message>
 </context>
 <context>
@@ -158,11 +157,6 @@
         <translation>Загрузка…</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Found: %1</source>
-        <translation>Найдено: %1</translation>
-    </message>
-    <message>
         <location line="+54"/>
         <source>Grid</source>
         <translation>Сетка</translation>
@@ -171,6 +165,14 @@
         <location line="+0"/>
         <source>List</source>
         <translation>Список</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n game(s)</source>
+        <translation>
+            <numerusform>%n игра</numerusform>
+            <numerusform>%n игры</numerusform>
+            <numerusform>%n игр</numerusform>
+        </translation>
     </message>
 </context>
 <context>
@@ -279,26 +281,6 @@
         <translation>20+ ГБ</translation>
     </message>
     <message>
-        <location line="+5"/>
-        <source>Last 7 days</source>
-        <translation>За 7 дней</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Last 30 days</source>
-        <translation>За 30 дней</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Last 90 days</source>
-        <translation>За 90 дней</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Last year</source>
-        <translation>За год</translation>
-    </message>
-    <message>
         <location line="+145"/>
         <source>Players</source>
         <translation>Игроки</translation>
@@ -307,16 +289,6 @@
         <location line="-24"/>
         <source>Filters</source>
         <translation>Фильтры</translation>
-    </message>
-    <message>
-        <location line="+105"/>
-        <source>Less</source>
-        <translation>Меньше</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>More</source>
-        <translation>Ещё</translation>
     </message>
     <message>
         <location line="+15"/>
@@ -332,11 +304,6 @@
         <location line="+29"/>
         <source>Added</source>
         <translation>Добавлено</translation>
-    </message>
-    <message>
-        <location line="+30"/>
-        <source>Has add-ons</source>
-        <translation>Есть дополнения</translation>
     </message>
     <message>
         <location line="-143"/>
@@ -358,6 +325,30 @@
         <source>Apply</source>
         <translation>Применить</translation>
     </message>
+    <message>
+        <source>7 days</source>
+        <translation>7 дней</translation>
+    </message>
+    <message>
+        <source>30 days</source>
+        <translation>30 дней</translation>
+    </message>
+    <message>
+        <source>90 days</source>
+        <translation>90 дней</translation>
+    </message>
+    <message>
+        <source>1 year</source>
+        <translation>1 год</translation>
+    </message>
+    <message>
+        <source>Add-ons</source>
+        <translation>Дополнения</translation>
+    </message>
+    <message>
+        <source>Only games with add-ons</source>
+        <translation>Только игры с дополнениями</translation>
+    </message>
 </context>
 <context>
     <name>CatalogGameCard</name>
@@ -375,6 +366,10 @@
         <location filename="../qml/components/CatalogGenreTile.qml" line="+40"/>
         <source>Any</source>
         <translation>Любой</translation>
+    </message>
+    <message>
+        <source>All genres</source>
+        <translation>Все жанры</translation>
     </message>
 </context>
 <context>
@@ -562,11 +557,6 @@
         <translation>Загрузка каталога…</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Found: %1</source>
-        <translation>Найдено: %1</translation>
-    </message>
-    <message>
         <location line="+50"/>
         <source>Grid</source>
         <translation>Сетка</translation>
@@ -575,6 +565,14 @@
         <location line="+0"/>
         <source>List</source>
         <translation>Список</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n game(s)</source>
+        <translation>
+            <numerusform>%n игра</numerusform>
+            <numerusform>%n игры</numerusform>
+            <numerusform>%n игр</numerusform>
+        </translation>
     </message>
 </context>
 <context>
@@ -5798,6 +5796,80 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <location line="+120"/>
         <source>Friend</source>
         <translation>Друг</translation>
+    </message>
+</context>
+<context>
+    <name>CatalogSortButton</name>
+    <message>
+        <source>Date added</source>
+        <translation>Дата добавления</translation>
+    </message>
+    <message>
+        <source>Title</source>
+        <translation>Название</translation>
+    </message>
+    <message>
+        <source>Size</source>
+        <translation>Размер</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation>Тип</translation>
+    </message>
+    <message>
+        <source>Newest</source>
+        <translation>Новые</translation>
+    </message>
+    <message>
+        <source>Oldest</source>
+        <translation>Старые</translation>
+    </message>
+    <message>
+        <source>A → Z</source>
+        <translation>А → Я</translation>
+    </message>
+    <message>
+        <source>Z → A</source>
+        <translation>Я → А</translation>
+    </message>
+    <message>
+        <source>Largest</source>
+        <translation>Крупные</translation>
+    </message>
+    <message>
+        <source>Smallest</source>
+        <translation>Мелкие</translation>
+    </message>
+    <message>
+        <source>Portable</source>
+        <translation>Портативные</translation>
+    </message>
+    <message>
+        <source>Installer</source>
+        <translation>Установщики</translation>
+    </message>
+    <message>
+        <source>Sort by</source>
+        <translation>Сортировка</translation>
+    </message>
+    <message>
+        <source>Sort: %1</source>
+        <translation>Сортировка: %1</translation>
+    </message>
+</context>
+<context>
+    <name>CatalogFilterButton</name>
+    <message>
+        <source>Filters</source>
+        <translation>Фильтры</translation>
+    </message>
+    <message numerus="yes">
+        <source>Filters, %n active</source>
+        <translation>
+            <numerusform>Фильтры: %n активен</numerusform>
+            <numerusform>Фильтры: %n активно</numerusform>
+            <numerusform>Фильтры: %n активно</numerusform>
+        </translation>
     </message>
 </context>
 </TS>

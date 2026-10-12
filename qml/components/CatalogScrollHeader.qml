@@ -66,7 +66,8 @@ Item {
                 Layout.fillWidth: true
                 text: Core.catalogPartial || (Core.catalogLoading && Core.catalog.count === 0)
                     ? qsTr("Loading catalog…")
-                    : qsTr("Found: %1").arg(Core.catalog.count)
+                    : qsTr("%n game(s)", "", Core.catalog.count)
+                  .replace(String(Core.catalog.count), Core.catalog.count.toLocaleString(Qt.locale(), "f", 0))
                 color: MD.Token.color.on_surface_variant
                 typescale: MD.Token.typescale.label_large
                 elide: Text.ElideRight
@@ -78,40 +79,8 @@ Item {
                 onSortModeChosen: function (mode) { root.sortModeRequested(mode) }
             }
 
-            Item {
-                Layout.preferredWidth: filterBtn.implicitWidth
-                Layout.preferredHeight: filterBtn.implicitHeight
-
-                MD.IconButton {
-                    id: filterBtn
-                    anchors.centerIn: parent
-                    mdState.type: Core.catalogActiveFilterCount > 0
-                                  ? MD.Enum.IBtFilledTonal
-                                  : MD.Enum.IBtStandard
-                    icon.name: MD.Token.icon.filter_list
-                    onClicked: root.filterRequested()
-                }
-
-                Rectangle {
-                    visible: Core.catalogActiveFilterCount > 0
-                    anchors.right: parent.right
-                    anchors.top: parent.top
-                    anchors.rightMargin: 2
-                    anchors.topMargin: 2
-                    width: Math.max(18, badgeLabel.implicitWidth + 6)
-                    height: 18
-                    radius: 9
-                    color: MD.Token.color.error
-                    z: 2
-
-                    MD.Label {
-                        id: badgeLabel
-                        anchors.centerIn: parent
-                        text: Core.catalogActiveFilterCount
-                        color: MD.Token.color.on_error
-                        typescale: MD.Token.typescale.label_small
-                    }
-                }
+            CatalogFilterButton {
+                onClicked: root.filterRequested()
             }
 
             ConnectedIconToggle {

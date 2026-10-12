@@ -17,7 +17,6 @@ MD.BottomSheet {
     property int draftPlayMode: 0
     property var draftHiddenSources: []
     property string genreSearch: ""
-    property bool moreOpen: false
 
     readonly property var playModeOptions: [
         { value: 0, label: qsTr("Any") },
@@ -35,11 +34,19 @@ MD.BottomSheet {
 
     readonly property var recencyOptions: [
         { value: 0, label: qsTr("Any") },
-        { value: 1, label: qsTr("Last 7 days") },
-        { value: 2, label: qsTr("Last 30 days") },
-        { value: 3, label: qsTr("Last 90 days") },
-        { value: 4, label: qsTr("Last year") }
+        { value: 1, label: qsTr("7 days") },
+        { value: 2, label: qsTr("30 days") },
+        { value: 3, label: qsTr("90 days") },
+        { value: 4, label: qsTr("1 year") }
     ]
+
+    readonly property bool draftActive: draftSize > 0 || draftRecency > 0 || draftHasAddons
+                                        || draftGenre.length > 0 || draftPlayMode > 0
+                                        || draftHiddenSources.length > 0
+
+    function labelsOf(options) {
+        return options.map(function (o) { return o.label })
+    }
 
     readonly property var visibleGenres: {
         const needle = root.genreSearch.trim().toLowerCase()
@@ -127,8 +134,6 @@ MD.BottomSheet {
         draftPlayMode = Core.catalogPlayModeFilter
         draftHiddenSources = Core.hiddenCatalogSourceIds.slice()
         genreSearch = ""
-        moreOpen = draftSize > 0 || draftRecency > 0 || draftHasAddons
-                   || draftHiddenSources.length > 0
         open()
     }
 
@@ -153,19 +158,30 @@ MD.BottomSheet {
         width: root.sheetWidth
         spacing: 0
 
-        MD.Label {
+        RowLayout {
             Layout.fillWidth: true
             Layout.leftMargin: MD.Token.spacing.large
-            Layout.rightMargin: MD.Token.spacing.large
-            Layout.topMargin: MD.Token.spacing.medium
+            Layout.rightMargin: MD.Token.spacing.medium
+            Layout.topMargin: MD.Token.spacing.small
             Layout.bottomMargin: MD.Token.spacing.small
-            text: qsTr("Filters")
-            typescale: MD.Token.typescale.headline_medium
+
+            MD.Label {
+                Layout.fillWidth: true
+                text: qsTr("Filters")
+                typescale: MD.Token.typescale.headline_small
+            }
+
+            MD.Button {
+                mdState.type: MD.Enum.BtText
+                text: qsTr("Clear all")
+                enabled: root.draftActive
+                onClicked: root.clearDraft()
+            }
         }
 
         Flickable {
             Layout.fillWidth: true
-            Layout.preferredHeight: Math.min(contentCol.implicitHeight, 620)
+            Layout.preferredHeight: Math.min(contentCol.implicitHeight, 560)
             contentWidth: width
             contentHeight: contentCol.implicitHeight
             clip: true
@@ -174,50 +190,24 @@ MD.BottomSheet {
             ColumnLayout {
                 id: contentCol
                 width: parent.width
-                spacing: MD.Token.spacing.medium
+                spacing: MD.Token.spacing.large
 
-                ColumnLayout {
-                    Layout.fillWidth: true
-                    Layout.leftMargin: MD.Token.spacing.large
-                    Layout.rightMargin: MD.Token.spacing.large
-                    spacing: MD.Token.spacing.small
+                CatalogFilterSection {
+                    title: qsTr("Players")
+                    iconName: MD.Token.icon.group
+                    modified: root.draftPlayMode > 0
 
-                    MD.Label {
-                        text: qsTr("Players")
-                        typescale: MD.Token.typescale.label_large
-                        color: MD.Token.color.primary
-                    }
-
-                    Flow {
-                        Layout.fillWidth: true
-                        spacing: MD.Token.spacing.small
-
-                        Repeater {
-                            model: root.playModeOptions
-
-                            MD.FilterChip {
-                                required property var modelData
-                                text: modelData.label
-                                checkable: false
-                                checked: root.draftPlayMode === modelData.value
-                                elevated: root.draftPlayMode !== modelData.value
-                                onClicked: root.draftPlayMode = modelData.value
-                            }
-                        }
+                    ConnectedTextToggle {
+                        labels: root.labelsOf(root.playModeOptions)
+                        currentIndex: root.draftPlayMode
+                        onPicked: function (index) { root.draftPlayMode = index }
                     }
                 }
 
-                ColumnLayout {
-                    Layout.fillWidth: true
-                    Layout.leftMargin: MD.Token.spacing.large
-                    Layout.rightMargin: MD.Token.spacing.large
-                    spacing: MD.Token.spacing.small
-
-                    MD.Label {
-                        text: qsTr("Genre")
-                        typescale: MD.Token.typescale.label_large
-                        color: MD.Token.color.primary
-                    }
+                CatalogFilterSection {
+                    title: qsTr("Genre")
+                    iconName: MD.Token.icon.category
+                    modified: root.draftGenre.length > 0
 
                     AppTextField {
                         Layout.fillWidth: true
@@ -227,14 +217,12 @@ MD.BottomSheet {
                         onTextEdited: root.genreSearch = text
                     }
 
-                    GridLayout {
+                    Flow {
                         Layout.fillWidth: true
-                        columns: Math.max(3, Math.floor(width / 140))
-                        rowSpacing: MD.Token.spacing.small
-                        columnSpacing: MD.Token.spacing.small
+                        spacing: MD.Token.spacing.small
 
                         CatalogGenreTile {
-                            Layout.fillWidth: true
+                            visible: root.genreSearch.trim().length === 0
                             genreKey: ""
                             selected: root.draftGenre.length === 0
                             iconName: MD.Token.icon.apps
@@ -246,7 +234,6 @@ MD.BottomSheet {
 
                             CatalogGenreTile {
                                 required property string modelData
-                                Layout.fillWidth: true
                                 genreKey: modelData
                                 selected: root.draftGenre === modelData
                                 iconName: root.genreIcon(modelData)
@@ -256,115 +243,65 @@ MD.BottomSheet {
                     }
                 }
 
-                ColumnLayout {
-                    Layout.fillWidth: true
-                    Layout.leftMargin: MD.Token.spacing.large
-                    Layout.rightMargin: MD.Token.spacing.large
-                    spacing: MD.Token.spacing.small
+                CatalogFilterSection {
+                    title: qsTr("Size")
+                    iconName: MD.Token.icon.hard_drive
+                    modified: root.draftSize > 0
 
-                    MD.Button {
-                        mdState.type: MD.Enum.BtText
-                        text: root.moreOpen ? qsTr("Less") : qsTr("More")
-                        onClicked: root.moreOpen = !root.moreOpen
+                    ConnectedTextToggle {
+                        labels: root.labelsOf(root.sizeOptions)
+                        currentIndex: root.draftSize
+                        onPicked: function (index) { root.draftSize = index }
                     }
+                }
 
-                    ColumnLayout {
+                CatalogFilterSection {
+                    title: qsTr("Added")
+                    iconName: MD.Token.icon.schedule
+                    modified: root.draftRecency > 0
+
+                    ConnectedTextToggle {
+                        labels: root.labelsOf(root.recencyOptions)
+                        currentIndex: root.draftRecency
+                        onPicked: function (index) { root.draftRecency = index }
+                    }
+                }
+
+                CatalogFilterSection {
+                    visible: Core.sources.enabledCount > 0
+                    title: qsTr("Source")
+                    iconName: MD.Token.icon.storefront
+                    modified: root.draftHiddenSources.length > 0
+
+                    CatalogSourceChips {
                         Layout.fillWidth: true
-                        spacing: MD.Token.spacing.medium
-                        visible: root.moreOpen
+                        hiddenIds: root.draftHiddenSources
+                        onSourceToggled: function (sourceId) {
+                            root.toggleSource(sourceId)
+                        }
+                    }
+                }
 
-                        ColumnLayout {
+                CatalogFilterSection {
+                    title: qsTr("Add-ons")
+                    iconName: MD.Token.icon.extension
+                    modified: root.draftHasAddons
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: MD.Token.spacing.small
+
+                        MD.Label {
                             Layout.fillWidth: true
-                            spacing: MD.Token.spacing.small
-                            visible: Core.sources.enabledCount > 0
-
-                            MD.Label {
-                                text: qsTr("Source")
-                                typescale: MD.Token.typescale.label_large
-                                color: MD.Token.color.primary
-                            }
-
-                            CatalogSourceChips {
-                                Layout.fillWidth: true
-                                hiddenIds: root.draftHiddenSources
-                                onSourceToggled: function (sourceId) {
-                                    root.toggleSource(sourceId)
-                                }
-                            }
+                            text: qsTr("Only games with add-ons")
+                            typescale: MD.Token.typescale.body_large
+                            color: MD.Token.color.on_surface_variant
+                            wrapMode: Text.WordWrap
                         }
 
-                        ColumnLayout {
-                            Layout.fillWidth: true
-                            spacing: MD.Token.spacing.small
-
-                            MD.Label {
-                                text: qsTr("Size")
-                                typescale: MD.Token.typescale.label_large
-                                color: MD.Token.color.primary
-                            }
-
-                            Flow {
-                                Layout.fillWidth: true
-                                spacing: MD.Token.spacing.small
-
-                                Repeater {
-                                    model: root.sizeOptions
-
-                                    MD.FilterChip {
-                                        required property var modelData
-                                        text: modelData.label
-                                        checkable: false
-                                        checked: root.draftSize === modelData.value
-                                        elevated: root.draftSize !== modelData.value
-                                        onClicked: root.draftSize = modelData.value
-                                    }
-                                }
-                            }
-                        }
-
-                        ColumnLayout {
-                            Layout.fillWidth: true
-                            spacing: MD.Token.spacing.small
-
-                            MD.Label {
-                                text: qsTr("Added")
-                                typescale: MD.Token.typescale.label_large
-                                color: MD.Token.color.primary
-                            }
-
-                            Flow {
-                                Layout.fillWidth: true
-                                spacing: MD.Token.spacing.small
-
-                                Repeater {
-                                    model: root.recencyOptions
-
-                                    MD.FilterChip {
-                                        required property var modelData
-                                        text: modelData.label
-                                        checkable: false
-                                        checked: root.draftRecency === modelData.value
-                                        elevated: root.draftRecency !== modelData.value
-                                        onClicked: root.draftRecency = modelData.value
-                                    }
-                                }
-                            }
-                        }
-
-                        RowLayout {
-                            Layout.fillWidth: true
-                            spacing: MD.Token.spacing.small
-
-                            MD.Label {
-                                Layout.fillWidth: true
-                                text: qsTr("Has add-ons")
-                                typescale: MD.Token.typescale.body_large
-                            }
-
-                            MD.Switch {
-                                checked: root.draftHasAddons
-                                onToggled: root.draftHasAddons = checked
-                            }
+                        MD.Switch {
+                            checked: root.draftHasAddons
+                            onToggled: root.draftHasAddons = checked
                         }
                     }
                 }
@@ -375,27 +312,15 @@ MD.BottomSheet {
             }
         }
 
-        RowLayout {
+        MD.Button {
             Layout.fillWidth: true
             Layout.leftMargin: MD.Token.spacing.large
             Layout.rightMargin: MD.Token.spacing.large
             Layout.topMargin: MD.Token.spacing.medium
             Layout.bottomMargin: MD.Token.spacing.medium
-            spacing: MD.Token.spacing.small
-
-            MD.Button {
-                Layout.fillWidth: true
-                mdState.type: MD.Enum.BtText
-                text: qsTr("Clear all")
-                onClicked: root.clearDraft()
-            }
-
-            MD.Button {
-                Layout.fillWidth: true
-                mdState.type: MD.Enum.BtFilled
-                text: qsTr("Apply")
-                onClicked: root.applyAndClose()
-            }
+            mdState.type: MD.Enum.BtFilled
+            text: qsTr("Apply")
+            onClicked: root.applyAndClose()
         }
     }
 }

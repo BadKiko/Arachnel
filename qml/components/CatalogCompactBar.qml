@@ -16,6 +16,8 @@ Rectangle {
     color: MD.Token.color.surface
     opacity: barOpacity
     visible: barOpacity > 0.01
+    // The page overrides `visible`, so the faded-out bar must not stay clickable on top of the real toolbar.
+    enabled: barOpacity > 0.05
     scale: 0.97 + 0.03 * barOpacity
     transformOrigin: Item.Top
     layer.enabled: visible
@@ -114,7 +116,8 @@ Rectangle {
             Layout.fillWidth: true
             text: Core.catalogPartial || (Core.catalogLoading && Core.catalog.count === 0)
                 ? qsTr("Loading…")
-                : qsTr("Found: %1").arg(Core.catalog.count)
+                : qsTr("%n game(s)", "", Core.catalog.count)
+                  .replace(String(Core.catalog.count), Core.catalog.count.toLocaleString(Qt.locale(), "f", 0))
             color: MD.Token.color.on_surface_variant
             typescale: MD.Token.typescale.label_large
             elide: Text.ElideRight
@@ -128,41 +131,9 @@ Rectangle {
             onSortModeChosen: function (mode) { page.applySortMode(mode) }
         }
 
-        Item {
-            Layout.preferredWidth: compactFilterBtn.implicitWidth
-            Layout.preferredHeight: compactFilterBtn.implicitHeight
+        CatalogFilterButton {
             opacity: 0.4 + 0.6 * root.barOpacity
-
-            MD.IconButton {
-                id: compactFilterBtn
-                anchors.centerIn: parent
-                mdState.type: Core.catalogActiveFilterCount > 0
-                              ? MD.Enum.IBtFilledTonal
-                              : MD.Enum.IBtStandard
-                icon.name: MD.Token.icon.filter_list
-                onClicked: page.openFilterSheet()
-            }
-
-            Rectangle {
-                visible: Core.catalogActiveFilterCount > 0
-                anchors.right: parent.right
-                anchors.top: parent.top
-                anchors.rightMargin: 2
-                anchors.topMargin: 2
-                width: Math.max(18, compactBadgeLabel.implicitWidth + 6)
-                height: 18
-                radius: 9
-                color: MD.Token.color.error
-                z: 2
-
-                MD.Label {
-                    id: compactBadgeLabel
-                    anchors.centerIn: parent
-                    text: Core.catalogActiveFilterCount
-                    color: MD.Token.color.on_error
-                    typescale: MD.Token.typescale.label_small
-                }
-            }
+            onClicked: page.openFilterSheet()
         }
 
         ConnectedIconToggle {

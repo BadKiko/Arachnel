@@ -73,7 +73,8 @@ Item {
         const parts = []
         if (root.playersLabel.length > 0)
             parts.push(root.playersLabel)
-        if ((root.version || "").length > 0)
+        // Only human versions ("1.4.2"); store build ids are noise.
+        if (/^\d{1,3}(\.\d+){1,3}[A-Za-z0-9]{0,4}$/.test(root.version || ""))
             parts.push("v" + root.version)
         else if ((root.uploadDate || "").length >= 10)
             parts.push(root.uploadDate.substring(0, 10))

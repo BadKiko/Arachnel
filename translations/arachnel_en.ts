@@ -14,14 +14,13 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+33"/>
-        <source>Search games</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location line="+167"/>
         <source>Settings</source>
         <translation type="unfinished">Settings</translation>
+    </message>
+    <message>
+        <source>Search</source>
+        <translation>Search</translation>
     </message>
 </context>
 <context>
@@ -157,11 +156,6 @@
         <translation>Loading…</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Found: %1</source>
-        <translation>Found: %1</translation>
-    </message>
-    <message>
         <location line="+54"/>
         <source>Grid</source>
         <translation type="unfinished"></translation>
@@ -170,6 +164,13 @@
         <location line="+0"/>
         <source>List</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message numerus="yes">
+        <source>%n game(s)</source>
+        <translation>
+            <numerusform>%n game</numerusform>
+            <numerusform>%n games</numerusform>
+        </translation>
     </message>
 </context>
 <context>
@@ -278,26 +279,6 @@
         <translation>20+ GB</translation>
     </message>
     <message>
-        <location line="+5"/>
-        <source>Last 7 days</source>
-        <translation>Last 7 days</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Last 30 days</source>
-        <translation>Last 30 days</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Last 90 days</source>
-        <translation>Last 90 days</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Last year</source>
-        <translation>Last year</translation>
-    </message>
-    <message>
         <location line="+145"/>
         <source>Players</source>
         <translation>Players</translation>
@@ -308,16 +289,6 @@
         <translation>Filters</translation>
     </message>
     <message>
-        <location line="+105"/>
-        <source>Less</source>
-        <translation>Less</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>More</source>
-        <translation>More</translation>
-    </message>
-    <message>
         <location line="+34"/>
         <source>Size</source>
         <translation>Size</translation>
@@ -326,11 +297,6 @@
         <location line="+29"/>
         <source>Added</source>
         <translation>Added</translation>
-    </message>
-    <message>
-        <location line="+30"/>
-        <source>Has add-ons</source>
-        <translation>Has add-ons</translation>
     </message>
     <message>
         <location line="-143"/>
@@ -357,6 +323,30 @@
         <source>Apply</source>
         <translation>Apply</translation>
     </message>
+    <message>
+        <source>7 days</source>
+        <translation>7 days</translation>
+    </message>
+    <message>
+        <source>30 days</source>
+        <translation>30 days</translation>
+    </message>
+    <message>
+        <source>90 days</source>
+        <translation>90 days</translation>
+    </message>
+    <message>
+        <source>1 year</source>
+        <translation>1 year</translation>
+    </message>
+    <message>
+        <source>Add-ons</source>
+        <translation>Add-ons</translation>
+    </message>
+    <message>
+        <source>Only games with add-ons</source>
+        <translation>Only games with add-ons</translation>
+    </message>
 </context>
 <context>
     <name>CatalogGameCard</name>
@@ -374,6 +364,10 @@
         <location filename="../qml/components/CatalogGenreTile.qml" line="+40"/>
         <source>Any</source>
         <translation>Any</translation>
+    </message>
+    <message>
+        <source>All genres</source>
+        <translation>All genres</translation>
     </message>
 </context>
 <context>
@@ -561,11 +555,6 @@
         <translation>Loading catalog…</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Found: %1</source>
-        <translation>Found: %1</translation>
-    </message>
-    <message>
         <location line="+50"/>
         <source>Grid</source>
         <translation type="unfinished"></translation>
@@ -574,6 +563,13 @@
         <location line="+0"/>
         <source>List</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message numerus="yes">
+        <source>%n game(s)</source>
+        <translation>
+            <numerusform>%n game</numerusform>
+            <numerusform>%n games</numerusform>
+        </translation>
     </message>
 </context>
 <context>
@@ -3785,17 +3781,17 @@
     <message numerus="yes">
         <location line="+1"/>
         <source>%n task(s)</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>%n task</numerusform>
+            <numerusform>%n tasks</numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <location line="+1"/>
         <source>%n update(s)</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>%n update</numerusform>
+            <numerusform>%n updates</numerusform>
         </translation>
     </message>
     <message>
@@ -5787,6 +5783,79 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <location line="+120"/>
         <source>Friend</source>
         <translation>Friend</translation>
+    </message>
+</context>
+<context>
+    <name>CatalogSortButton</name>
+    <message>
+        <source>Date added</source>
+        <translation>Date added</translation>
+    </message>
+    <message>
+        <source>Title</source>
+        <translation>Title</translation>
+    </message>
+    <message>
+        <source>Size</source>
+        <translation>Size</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation>Type</translation>
+    </message>
+    <message>
+        <source>Newest</source>
+        <translation>Newest</translation>
+    </message>
+    <message>
+        <source>Oldest</source>
+        <translation>Oldest</translation>
+    </message>
+    <message>
+        <source>A → Z</source>
+        <translation>A → Z</translation>
+    </message>
+    <message>
+        <source>Z → A</source>
+        <translation>Z → A</translation>
+    </message>
+    <message>
+        <source>Largest</source>
+        <translation>Largest</translation>
+    </message>
+    <message>
+        <source>Smallest</source>
+        <translation>Smallest</translation>
+    </message>
+    <message>
+        <source>Portable</source>
+        <translation>Portable</translation>
+    </message>
+    <message>
+        <source>Installer</source>
+        <translation>Installer</translation>
+    </message>
+    <message>
+        <source>Sort by</source>
+        <translation>Sort by</translation>
+    </message>
+    <message>
+        <source>Sort: %1</source>
+        <translation>Sort: %1</translation>
+    </message>
+</context>
+<context>
+    <name>CatalogFilterButton</name>
+    <message>
+        <source>Filters</source>
+        <translation>Filters</translation>
+    </message>
+    <message numerus="yes">
+        <source>Filters, %n active</source>
+        <translation>
+            <numerusform>Filters, %n active</numerusform>
+            <numerusform>Filters, %n active</numerusform>
+        </translation>
     </message>
 </context>
 </TS>
