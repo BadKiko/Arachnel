@@ -114,6 +114,7 @@ void CoreController::initializeServices()
         }
     };
     catalogHooks.cacheReplaced = [this]() {
+        markAdultFromScan();
         if (m_catalogFilters)
             m_catalogFilters->invalidateTable();
     };
@@ -632,6 +633,7 @@ void CoreController::initializeServices()
     connect(m_metadataService, &GameMetadataService::metadataReady, this,
             [this](const QString& entryId, const GameMetadata& metadata) {
                 bool applied = false;
+                bool becameAdult = false;
                 {
                     QWriteLocker locker(&m_catalogCacheLock);
                     // Index lookup instead of scanning ~125k rows per metadata result.
@@ -639,7 +641,10 @@ void CoreController::initializeServices()
                     if (idxIt != m_catalogIdToCacheIndex.cend() && idxIt.value() >= 0
                         && idxIt.value() < m_catalogCache.size()
                         && m_catalogCache.at(idxIt.value()).id == entryId) {
-                        applyMetadataToEntry(m_catalogCache[idxIt.value()], metadata);
+                        CatalogEntry& target = m_catalogCache[idxIt.value()];
+                        const bool wasAdult = target.adult;
+                        applyMetadataToEntry(target, metadata);
+                        becameAdult = !wasAdult && target.adult;
                         applied = true;
                     }
                 }
@@ -648,6 +653,14 @@ void CoreController::initializeServices()
                     const int cacheIndex = m_catalogIdToCacheIndex.value(entryId, -1);
                     if (m_catalogFilters && cacheIndex >= 0)
                         m_catalogFilters->syncFilterRow(cacheIndex);
+                    // A game the store says is adult: drop it from the list now, not at the next
+                    // search (the filter rows were just patched; this is a debounced re-run).
+                    if (becameAdult && !m_settings.showAdultContent()) {
+                        if (m_catalogFilters)
+                            m_catalogFilters->scheduleRefilter();
+                        if (m_catalogDiscovery)
+                            m_catalogDiscovery->onAdultFlagsChanged();
+                    }
                 }
                 if (!metadata.coverUrl.isEmpty())
                     m_catalogCovers->ensureDiskCover(entryId, metadata.coverUrl);

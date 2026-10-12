@@ -4,6 +4,7 @@
 
 #include <QDesktopServices>
 
+#include "adult_scan_service.h"
 #include "catalog_feed_loader.h"
 #include "catalog_controller.h"
 #include "catalog_cover_coordinator.h"
@@ -271,12 +272,50 @@ CoreController::CoreController(QObject* parent)
         m_catalogDiscovery->setIdIndex(&m_catalogIdToCacheIndex);
     }
     {
+        // Adult games: the feeds don't say which they are, so the store's content descriptors are
+        // looked up for the games about to be shown (cached) while adult games are hidden.
+        m_adultScan = new AdultScanService(this);
+        m_adultScan->loadCache();
+        connect(m_adultScan, &AdultScanService::foundAdult, this, [this]() {
+            markAdultFromScan();
+            if (m_catalogFilters) {
+                m_catalogFilters->invalidateTable();
+                m_catalogFilters->scheduleRefilter();
+            }
+            if (m_catalogDiscovery)
+                m_catalogDiscovery->onAdultFlagsChanged();
+        });
+        connect(m_catalogFilters, &CatalogFilterService::visibleHeadReady, this,
+                [this](const QVector<int>& head) {
+                    if (m_settings.showAdultContent() || !m_adultScan)
+                        return;
+                    QVector<quint32> appIds;
+                    appIds.reserve(head.size());
+                    {
+                        QReadLocker locker(&m_catalogCacheLock);
+                        for (int index : head) {
+                            if (index < 0 || index >= m_catalogCache.size())
+                                continue;
+                            const CatalogEntry& entry = m_catalogCache.at(index);
+                            QString app = entry.steamAppId;
+                            if (app.isEmpty() && entry.id.startsWith(QLatin1String("steam-")))
+                                app = entry.id.mid(6);
+                            bool ok = false;
+                            const uint id = app.toUInt(&ok);
+                            if (ok && !entry.adult)
+                                appIds.append(id);
+                        }
+                    }
+                    m_adultScan->setWanted(appIds);
+                });
         const auto applyAdultPreference = [this]() {
             const bool hide = !m_settings.showAdultContent();
             if (m_catalogFilters)
                 m_catalogFilters->setHideAdult(hide);
             if (m_catalogDiscovery)
                 m_catalogDiscovery->setHideAdult(hide);
+            if (!hide && m_adultScan)
+                m_adultScan->cancel();
         };
         applyAdultPreference();
         connect(&m_settings, &SettingsStore::showAdultContentChanged, this, applyAdultPreference);

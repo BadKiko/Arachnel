@@ -52,6 +52,8 @@ public:
     void setFriendEntryIds(QStringList entryIds);
     /** Keep adult games off the shelves (follows the "show adult content" setting). */
     void setHideAdult(bool hide);
+    /** Entries were flagged adult after the shelves were built: rebuild them. */
+    void onAdultFlagsChanged();
 
 signals:
     void loadingChanged();

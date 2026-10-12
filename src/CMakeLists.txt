@@ -41,6 +41,7 @@ set(ARACHNEL_APP_SOURCES
     src/core/catalog/catalog_genre_normalize.cpp
     src/core/catalog/catalog_search_utils.cpp
     src/core/catalog/catalog_shelf_model.cpp
+    src/core/catalog/adult_scan_service.cpp
     src/core/catalog/catalog_discovery_service.cpp
     src/core/social/invite_service.cpp
     src/core/catalog/game_metadata_service.cpp

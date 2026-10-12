@@ -92,6 +92,12 @@ void CatalogDiscoveryService::setHideAdult(bool hide)
         reapplyFeed();
 }
 
+void CatalogDiscoveryService::onAdultFlagsChanged()
+{
+    if (m_hideAdult && m_feedLoaded)
+        reapplyFeed();
+}
+
 void CatalogDiscoveryService::onEntryMetadataChanged(const QString& entryId)
 {
     // Update card fields only. Never reshuffle shelf membership.

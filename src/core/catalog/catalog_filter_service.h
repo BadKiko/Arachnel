@@ -82,6 +82,8 @@ public:
 
 signals:
     void filtersChanged();
+    /** The first rows of a new result list (cache indices), for background lookups. */
+    void visibleHeadReady(const QVector<int>& head);
     void availableGenresChanged();
 
 private:

@@ -169,6 +169,11 @@ QString adultContentGenreToken();
  * does not look at words like "sex" or "sexy": plenty of ordinary games carry them.
  */
 bool titleHasAdultMarker(const QString& titleLower);
+/**
+ * Words that say little on their own ("sex", "incest", "horny"). Only used for apps the store
+ * does not list at all, where there is no better evidence either way.
+ */
+bool titleHasWeakAdultMarker(const QString& titleLower);
 
 /** Parse FreeTP-style size labels ("2.71 GB", "512 MB") into bytes; 0 if unknown. */
 qint64 parseSizeLabelBytes(const QString& label);
