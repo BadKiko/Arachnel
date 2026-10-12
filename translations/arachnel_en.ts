@@ -5869,4 +5869,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>Remove filter: %1</translation>
     </message>
 </context>
+<context>
+    <name>CatalogLoadingState</name>
+    <message>
+        <source>Loading the catalog</source>
+        <translation>Loading the catalog</translation>
+    </message>
+    <message>
+        <source>Getting the list of games ready. The first start takes longer; after that the catalog opens from the saved copy.</source>
+        <translation>Getting the list of games ready. The first start takes longer; after that the catalog opens from the saved copy.</translation>
+    </message>
+</context>
 </TS>

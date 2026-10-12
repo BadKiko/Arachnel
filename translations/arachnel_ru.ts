@@ -5883,4 +5883,15 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <translation>Убрать фильтр: %1</translation>
     </message>
 </context>
+<context>
+    <name>CatalogLoadingState</name>
+    <message>
+        <source>Loading the catalog</source>
+        <translation>Загрузка каталога</translation>
+    </message>
+    <message>
+        <source>Getting the list of games ready. The first start takes longer; after that the catalog opens from the saved copy.</source>
+        <translation>Готовим список игр. При первом запуске это дольше, потом каталог открывается из сохранённой копии.</translation>
+    </message>
+</context>
 </TS>

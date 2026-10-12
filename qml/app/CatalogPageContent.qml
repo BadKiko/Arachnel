@@ -214,6 +214,13 @@ Item {
                 }
             }
 
+            CatalogLoadingState {
+                anchors.fill: parent
+                z: 1
+                visible: !page.discoveryMode && Core.catalogLoading && Core.catalog.count === 0
+                         && !Core.catalogPartial
+            }
+
             CatalogScrollViews {
                 id: catalogScrollViews
                 anchors.fill: parent
