@@ -6,12 +6,12 @@
     <message>
         <location filename="../qml/app/AppUpdateProgressOverlay.qml" line="42"/>
         <source>Downloading Arachnel update…</source>
-        <translation type="unfinished"></translation>
+        <translation>Завантаження оновлення Arachnel…</translation>
     </message>
     <message>
         <location filename="../qml/app/AppUpdateProgressOverlay.qml" line="48"/>
         <source>Please wait. The installer will open automatically.</source>
-        <translation type="unfinished"></translation>
+        <translation>Будь ласка, зачекайте. Інсталятор відкриється автоматично.</translation>
     </message>
     <message>
         <location filename="../qml/app/AppUpdateProgressOverlay.qml" line="80"/>
@@ -4183,6 +4183,18 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <location filename="../qml/settings/SteamidraTrustSheet.qml" line="59"/>
         <source>Got it</source>
         <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>AppNavDrawer</name>
+    <message>
+        <location line="+167"/>
+        <source>Settings</source>
+        <translation>Налаштування</translation>
+    </message>
+    <message>
+        <source>Search</source>
+        <translation>Пошук</translation>
     </message>
 </context>
 </TS>
