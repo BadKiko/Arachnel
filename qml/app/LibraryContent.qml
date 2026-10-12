@@ -69,14 +69,15 @@ Item {
 
                 Repeater {
                     model: [
-                        { icon: MD.Token.icon.sports_esports, text: qsTr("%n game(s)", "", Core.library.count), act: "" },
-                        { icon: MD.Token.icon.storefront, text: qsTr("%n source(s)", "", Core.sources.enabledCount), act: "sources" },
-                        { icon: MD.Token.icon.downloading, text: qsTr("%n task(s)", "", Core.jobs.count), act: "downloads" },
-                        { icon: MD.Token.icon.update, text: qsTr("%n update(s)", "", (void page.libraryRevision, Core.library.updateCount())), act: "" }
+                        { icon: MD.Token.icon.storefront, text: qsTr("%n source(s)", "", Core.sources.enabledCount), act: "sources", show: true },
+                        // Zero counts are noise: tasks and updates only appear when there is something.
+                        { icon: MD.Token.icon.downloading, text: qsTr("%n task(s)", "", Core.jobs.count), act: "downloads", show: Core.jobs.count > 0 },
+                        { icon: MD.Token.icon.update, text: qsTr("%n update(s)", "", (void page.libraryRevision, Core.library.updateCount())), act: "", show: (void page.libraryRevision, Core.library.updateCount()) > 0 }
                     ]
 
                     delegate: DetailsChip {
                         required property var modelData
+                        visible: modelData.show
                         text: modelData.text
                         icon.name: modelData.icon
                         onClicked: {

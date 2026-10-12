@@ -10,6 +10,8 @@ Item {
 
     property bool shown: true
     property string title
+    // Page name kept at the top-left so an empty page still reads as the same screen.
+    property string pageTitle
     property string message
     property string actionText
     property string iconName: MD.Token.icon.sports_esports
@@ -29,10 +31,17 @@ Item {
         }
     }
 
+    DisplayTitle {
+        visible: root.pageTitle.length > 0
+        x: root.margin
+        y: root.margin
+        text: root.pageTitle
+    }
+
     ColumnLayout {
         anchors.centerIn: parent
         spacing: MD.Token.spacing.medium
-        width: Math.min(root.width - root.margin * 2, 440)
+        width: Math.min(root.width - root.margin * 2, 520)
 
         ShapeIcon {
             id: hero

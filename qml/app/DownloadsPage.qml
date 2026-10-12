@@ -100,6 +100,7 @@ Item {
     signal openCatalog()
 
     EmptyState {
+        pageTitle: qsTr("Downloads")
         shown: root.downloadsEmpty
         title: qsTr("No downloads")
         iconName: MD.Token.icon.download

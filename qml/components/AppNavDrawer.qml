@@ -127,14 +127,17 @@ Rectangle {
                 MD.Label {
                     Layout.fillWidth: true
                     visible: root.expanded
-                    text: qsTr("Search games")
+                    text: qsTr("Search")
                     typescale: MD.Token.typescale.body_large
                     color: MD.Token.color.on_surface_variant
                     elide: Text.ElideRight
+                    wrapMode: Text.NoWrap
+                    maximumLineCount: 1
                 }
                 MD.Label {
                     visible: root.expanded
                     Layout.rightMargin: 16
+                    wrapMode: Text.NoWrap
                     text: "Ctrl K"
                     typescale: MD.Token.typescale.label_medium
                     color: MD.Token.color.outline

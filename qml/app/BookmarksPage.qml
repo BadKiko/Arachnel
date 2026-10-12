@@ -134,6 +134,7 @@ Item {
     Component.onCompleted: refreshFavorites()
 
     EmptyState {
+        pageTitle: qsTr("Favorites")
         shown: root.favoritesEmpty
         title: qsTr("No favorites")
         iconName: MD.Token.icon.favorite

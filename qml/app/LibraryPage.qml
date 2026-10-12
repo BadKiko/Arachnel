@@ -41,8 +41,13 @@ Item {
     readonly property string heroCoverUrl: root.heroGame?.coverUrl ?? ""
     readonly property string heroGameId: root.heroGame?.gameId ?? ""
     readonly property string heroSubtitle: {
-        if (root.showRunningHero || root.heroHasRecentPlay)
-            return (root.heroGame?.sourceName ?? "") + " · v" + (root.heroGame?.version ?? "")
+        if (root.showRunningHero || root.heroHasRecentPlay) {
+            const name = root.heroGame?.sourceName ?? ""
+            const src = name.length ? name.charAt(0).toUpperCase() + name.slice(1) : ""
+            const ver = root.heroGame?.version ?? ""
+            // Store build ids ("16828311") are noise; show only human versions.
+            return /^\d{1,3}(\.\d+){1,3}[A-Za-z0-9]{0,4}$/.test(ver) ? src + " · v" + ver : src
+        }
         return qsTr("Launch a game from your library - it will appear here.")
     }
     readonly property bool heroHasUpdate: !!(root.heroGame?.hasUpdate)

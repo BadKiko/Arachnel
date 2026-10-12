@@ -19,10 +19,13 @@ Item {
     property int componentCount: 0
     property int installedComponentCount: 0
 
-    // "Steam · v123" without a dangling "v" when the version is unknown.
+    // Only human versions ("1.4.2") are worth showing; store build ids ("14892031") are noise.
+    readonly property bool readableVersion: /^\d{1,3}(\.\d+){1,3}[A-Za-z0-9]{0,4}$/.test(root.version)
+
+    // "Steam · v1.4" - the version is dropped when it is missing or just a build id.
     readonly property string metaText: {
         const src = root.sourceName.length ? root.sourceName.charAt(0).toUpperCase() + root.sourceName.slice(1) : ""
-        return root.version.length ? src + " · v" + root.version : src
+        return root.readableVersion ? src + " · v" + root.version : src
     }
 
     readonly property bool hasAddons: componentCount > 0
