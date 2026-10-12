@@ -28,17 +28,17 @@
     <message>
         <location filename="../qml/app/AppUpdateProgressOverlay.qml" line="+42"/>
         <source>Downloading Arachnel update…</source>
-        <translation>Скачивание обновления Arachnel…</translation>
+        <translation type="unfinished">Скачивание обновления Arachnel…</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Please wait. The installer will open automatically.</source>
-        <translation>Подождите. Установщик откроется автоматически.</translation>
+        <translation type="unfinished">Подождите. Установщик откроется автоматически.</translation>
     </message>
     <message>
         <location line="+24"/>
         <source>Starting…</source>
-        <translation>Запуск…</translation>
+        <translation type="unfinished">Запуск…</translation>
     </message>
 </context>
 <context>
@@ -46,37 +46,37 @@
     <message>
         <location filename="../qml/components/AppUpdateSheet.qml" line="+31"/>
         <source>Update available</source>
-        <translation>Доступно обновление</translation>
+        <translation type="unfinished">Доступно обновление</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Arachnel %1 is ready to install. Update now to get the latest fixes and features.</source>
-        <translation>Arachnel %1 готов к установке. Обновитесь, чтобы получить последние исправления и возможности.</translation>
+        <translation type="unfinished">Arachnel %1 готов к установке. Обновитесь, чтобы получить последние исправления и возможности.</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Current version: %1</source>
-        <translation>Текущая версия: %1</translation>
+        <translation type="unfinished">Текущая версия: %1</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Later</source>
-        <translation>Позже</translation>
+        <translation type="unfinished">Позже</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Release page</source>
-        <translation>Страница релиза</translation>
+        <translation type="unfinished">Страница релиза</translation>
     </message>
     <message>
         <location line="+12"/>
         <source>Downloading… %1%</source>
-        <translation>Скачивание… %1%</translation>
+        <translation type="unfinished">Скачивание… %1%</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Update now</source>
-        <translation>Обновить</translation>
+        <translation type="unfinished">Обновить</translation>
     </message>
 </context>
 <context>
@@ -84,22 +84,22 @@
     <message>
         <location filename="../qml/app/AppWindow.qml" line="+20"/>
         <source>Arachnel</source>
-        <translation>Arachnel</translation>
+        <translation type="unfinished">Arachnel</translation>
     </message>
     <message>
         <location line="+254"/>
         <source>Library</source>
-        <translation>Библиотека</translation>
+        <translation type="unfinished">Библиотека</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Discover</source>
-        <translation>Подборки</translation>
+        <translation type="unfinished">Подборки</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Catalog</source>
-        <translation>Каталог</translation>
+        <translation type="unfinished">Каталог</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -114,7 +114,7 @@
     <message>
         <location line="+4"/>
         <source>Downloads</source>
-        <translation>Загрузки</translation>
+        <translation type="unfinished">Загрузки</translation>
     </message>
 </context>
 <context>
@@ -149,12 +149,12 @@
     <message>
         <location filename="../qml/components/CatalogCompactBar.qml" line="+79"/>
         <source>Catalog</source>
-        <translation>Каталог</translation>
+        <translation type="unfinished">Каталог</translation>
     </message>
     <message>
         <location line="+37"/>
         <source>Loading…</source>
-        <translation>Загрузка…</translation>
+        <translation type="unfinished">Загрузка…</translation>
     </message>
     <message>
         <location line="+54"/>
@@ -185,12 +185,12 @@
     <message>
         <location line="+22"/>
         <source>All games</source>
-        <translation>Все игры</translation>
+        <translation type="unfinished">Все игры</translation>
     </message>
     <message>
         <location line="-16"/>
         <source>Surprise me</source>
-        <translation>Удиви меня</translation>
+        <translation type="unfinished">Удиви меня</translation>
     </message>
 </context>
 <context>
@@ -200,22 +200,22 @@
         <location line="+2"/>
         <location line="+1"/>
         <source>playing now</source>
-        <translation>играют сейчас</translation>
+        <translation type="unfinished">играют сейчас</translation>
     </message>
     <message>
         <location line="+76"/>
         <source>Tonight&apos;s pick</source>
-        <translation>Выбор на вечер</translation>
+        <translation type="unfinished">Выбор на вечер</translation>
     </message>
     <message>
         <location line="+33"/>
         <source>Open game</source>
-        <translation>Открыть игру</translation>
+        <translation type="unfinished">Открыть игру</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Another pick</source>
-        <translation>Другой вариант</translation>
+        <translation type="unfinished">Другой вариант</translation>
     </message>
 </context>
 <context>
@@ -223,22 +223,22 @@
     <message>
         <location filename="../qml/components/CatalogEmptyResults.qml" line="+53"/>
         <source>Select sources</source>
-        <translation>Выберите источники</translation>
+        <translation type="unfinished">Выберите источники</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Nothing found</source>
-        <translation>Ничего не найдено</translation>
+        <translation type="unfinished">Ничего не найдено</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Try another search or refresh the catalog.</source>
-        <translation>Попробуйте другой запрос или обновите каталог.</translation>
+        <translation type="unfinished">Попробуйте другой запрос или обновите каталог.</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Refresh</source>
-        <translation>Обновить</translation>
+        <translation type="unfinished">Обновить</translation>
     </message>
 </context>
 <context>
@@ -248,42 +248,42 @@
         <location line="+6"/>
         <location line="+8"/>
         <source>Any</source>
-        <translation>Любой</translation>
+        <translation type="unfinished">Любой</translation>
     </message>
     <message>
         <location line="-13"/>
         <source>Single-player</source>
-        <translation>Одиночная</translation>
+        <translation type="unfinished">Одиночная</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Multiplayer</source>
-        <translation>Мультиплеер</translation>
+        <translation type="unfinished">Мультиплеер</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>&lt; 1 GB</source>
-        <translation>&lt; 1 ГБ</translation>
+        <translation type="unfinished">&lt; 1 ГБ</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>1-5 GB</source>
-        <translation>1-5 ГБ</translation>
+        <translation type="unfinished">1-5 ГБ</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>5-20 GB</source>
-        <translation>5-20 ГБ</translation>
+        <translation type="unfinished">5-20 ГБ</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>20+ GB</source>
-        <translation>20+ ГБ</translation>
+        <translation type="unfinished">20+ ГБ</translation>
     </message>
     <message>
         <location line="+145"/>
         <source>Players</source>
-        <translation>Игроки</translation>
+        <translation type="unfinished">Игроки</translation>
     </message>
     <message>
         <location line="-24"/>
@@ -298,32 +298,32 @@
     <message>
         <location line="+19"/>
         <source>Size</source>
-        <translation>Размер</translation>
+        <translation type="unfinished">Размер</translation>
     </message>
     <message>
         <location line="+29"/>
         <source>Added</source>
-        <translation>Добавлено</translation>
+        <translation type="unfinished">Добавлено</translation>
     </message>
     <message>
         <location line="-143"/>
         <source>Genre</source>
-        <translation>Жанр</translation>
+        <translation type="unfinished">Жанр</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Search genres</source>
-        <translation>Поиск жанров</translation>
+        <translation type="unfinished">Поиск жанров</translation>
     </message>
     <message>
         <location line="+165"/>
         <source>Clear all</source>
-        <translation>Сбросить всё</translation>
+        <translation type="unfinished">Сбросить всё</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Apply</source>
-        <translation>Применить</translation>
+        <translation type="unfinished">Применить</translation>
     </message>
     <message>
         <source>7 days</source>
@@ -357,7 +357,7 @@
         <location line="+2"/>
         <location line="+1"/>
         <source>playing</source>
-        <translation>играют</translation>
+        <translation type="unfinished">играют</translation>
     </message>
 </context>
 <context>
@@ -377,12 +377,12 @@
     <message>
         <location filename="../qml/components/CatalogIntroHeader.qml" line="+26"/>
         <source>Browse the catalog</source>
-        <translation>Каталог игр</translation>
+        <translation type="unfinished">Каталог игр</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Search and filter every game from your enabled sources.</source>
-        <translation>Поиск и фильтры по всем играм из включённых источников.</translation>
+        <translation type="unfinished">Поиск и фильтры по всем играм из включённых источников.</translation>
     </message>
 </context>
 <context>
@@ -408,7 +408,7 @@
     <message>
         <location filename="../qml/components/CatalogNoSourcesPanel.qml" line="+31"/>
         <source>No games</source>
-        <translation>Нет игр</translation>
+        <translation type="unfinished">Нет игр</translation>
     </message>
     <message>
         <location line="+18"/>
@@ -418,7 +418,7 @@
     <message>
         <location line="+7"/>
         <source>Settings</source>
-        <translation>Настройки</translation>
+        <translation type="unfinished">Настройки</translation>
     </message>
 </context>
 <context>
@@ -426,127 +426,127 @@
     <message>
         <location filename="../qml/app/CatalogPage.qml" line="+52"/>
         <source>Newest first</source>
-        <translation>Сначала новые</translation>
+        <translation type="unfinished">Сначала новые</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Oldest first</source>
-        <translation>Сначала старые</translation>
+        <translation type="unfinished">Сначала старые</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Portable first</source>
-        <translation>Сначала портабл</translation>
+        <translation type="unfinished">Сначала портабл</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Non-portable first</source>
-        <translation>Сначала не портабл</translation>
+        <translation type="unfinished">Сначала не портабл</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>All</source>
-        <translation>Все</translation>
+        <translation type="unfinished">Все</translation>
     </message>
     <message>
         <location line="-5"/>
         <source>Largest first</source>
-        <translation>Сначала большие</translation>
+        <translation type="unfinished">Сначала большие</translation>
     </message>
     <message>
         <location line="-4"/>
         <source>Title A-Z</source>
-        <translation>Название А-Я</translation>
+        <translation type="unfinished">Название А-Я</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Title Z-A</source>
-        <translation>Название Я-А</translation>
+        <translation type="unfinished">Название Я-А</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Smallest first</source>
-        <translation>Сначала маленькие</translation>
+        <translation type="unfinished">Сначала маленькие</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Portable</source>
-        <translation>Портабл</translation>
+        <translation type="unfinished">Портабл</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Installer</source>
-        <translation>Установщик</translation>
+        <translation type="unfinished">Установщик</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Online fix</source>
-        <translation>Онлайн-фикс</translation>
+        <translation type="unfinished">Онлайн-фикс</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Any size</source>
-        <translation>Любой размер</translation>
+        <translation type="unfinished">Любой размер</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>&lt; 1 GB</source>
-        <translation>&lt; 1 ГБ</translation>
+        <translation type="unfinished">&lt; 1 ГБ</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>1-5 GB</source>
-        <translation>1-5 ГБ</translation>
+        <translation type="unfinished">1-5 ГБ</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>5-20 GB</source>
-        <translation>5-20 ГБ</translation>
+        <translation type="unfinished">5-20 ГБ</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>20+ GB</source>
-        <translation>20+ ГБ</translation>
+        <translation type="unfinished">20+ ГБ</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Any time</source>
-        <translation>Любое время</translation>
+        <translation type="unfinished">Любое время</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Last 7 days</source>
-        <translation>За 7 дней</translation>
+        <translation type="unfinished">За 7 дней</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Last 30 days</source>
-        <translation>За 30 дней</translation>
+        <translation type="unfinished">За 30 дней</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Last 90 days</source>
-        <translation>За 90 дней</translation>
+        <translation type="unfinished">За 90 дней</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Last year</source>
-        <translation>За год</translation>
+        <translation type="unfinished">За год</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Any players</source>
-        <translation>Любые игроки</translation>
+        <translation type="unfinished">Любые игроки</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Single-player</source>
-        <translation>Одиночная</translation>
+        <translation type="unfinished">Одиночная</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Multiplayer</source>
-        <translation>Мультиплеер</translation>
+        <translation type="unfinished">Мультиплеер</translation>
     </message>
 </context>
 <context>
@@ -554,7 +554,7 @@
     <message>
         <location filename="../qml/components/CatalogScrollHeader.qml" line="+68"/>
         <source>Loading catalog…</source>
-        <translation>Загрузка каталога…</translation>
+        <translation type="unfinished">Загрузка каталога…</translation>
     </message>
     <message>
         <location line="+50"/>
@@ -580,7 +580,7 @@
     <message>
         <location filename="../qml/components/CatalogSourceChips.qml" line="+30"/>
         <source>%1 · %2</source>
-        <translation>%1 · %2</translation>
+        <translation type="unfinished">%1 · %2</translation>
     </message>
 </context>
 <context>
@@ -593,27 +593,27 @@
     <message>
         <location line="+61"/>
         <source>Type</source>
-        <translation>Тип</translation>
+        <translation type="unfinished">Тип</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Size</source>
-        <translation>Размер</translation>
+        <translation type="unfinished">Размер</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Added</source>
-        <translation>Добавлено</translation>
+        <translation type="unfinished">Добавлено</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Has add-ons</source>
-        <translation>Есть дополнения</translation>
+        <translation type="unfinished">Есть дополнения</translation>
     </message>
     <message>
         <location line="+14"/>
         <source>Players</source>
-        <translation>Игроки</translation>
+        <translation type="unfinished">Игроки</translation>
     </message>
     <message>
         <source>Hidden: %1</source>
@@ -625,17 +625,17 @@
     <message>
         <location filename="../src/core/catalog/catalog_types.cpp" line="+212"/>
         <source>Game</source>
-        <translation>Игра</translation>
+        <translation type="unfinished">Игра</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Add-on</source>
-        <translation>Дополнение</translation>
+        <translation type="unfinished">Дополнение</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Component</source>
-        <translation>Компонент</translation>
+        <translation type="unfinished">Компонент</translation>
     </message>
     <message>
         <location filename="../src/core/facade/share_facade.cpp" line="+37"/>
@@ -645,73 +645,73 @@
     <message>
         <location filename="../src/core/catalog/catalog_types.cpp" line="+7"/>
         <source>Direct</source>
-        <translation>Прямая</translation>
+        <translation type="unfinished">Прямая</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Torrent</source>
-        <translation>Торрент</translation>
+        <translation type="unfinished">Торрент</translation>
     </message>
     <message>
         <location filename="../src/core/jobs/job_kind.cpp" line="+11"/>
         <location filename="../src/core/catalog/catalog_types.cpp" line="+2"/>
         <source>Download</source>
-        <translation>Загрузка</translation>
+        <translation type="unfinished">Загрузка</translation>
     </message>
     <message>
         <location filename="../src/core/install/install_kind.cpp" line="+11"/>
         <location filename="../src/core/catalog/catalog_model.cpp" line="+624"/>
         <source>Portable</source>
-        <translation>Портабл</translation>
+        <translation type="unfinished">Портабл</translation>
     </message>
     <message>
         <location line="+2"/>
         <location filename="../src/core/catalog/catalog_model.cpp" line="+2"/>
         <source>Installer</source>
-        <translation>Установщик</translation>
+        <translation type="unfinished">Установщик</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Bundled fix</source>
-        <translation>Встроенный фикс</translation>
+        <translation type="unfinished">Встроенный фикс</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Separate fix</source>
-        <translation>Отдельный фикс</translation>
+        <translation type="unfinished">Отдельный фикс</translation>
     </message>
     <message>
         <location line="+2"/>
         <location filename="../src/core/catalog/catalog_model.cpp" line="+56"/>
         <source>Unknown</source>
-        <translation>Неизвестно</translation>
+        <translation type="unfinished">Неизвестно</translation>
     </message>
     <message>
         <location filename="../src/core/jobs/job_display.cpp" line="+48"/>
         <location line="+149"/>
         <location line="+2"/>
         <source>Install failed: %1</source>
-        <translation>Ошибка установки: %1</translation>
+        <translation type="unfinished">Ошибка установки: %1</translation>
     </message>
     <message>
         <location line="-186"/>
         <source>Download complete</source>
-        <translation>Загрузка завершена</translation>
+        <translation type="unfinished">Загрузка завершена</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Installation required</source>
-        <translation>Требуется установка</translation>
+        <translation type="unfinished">Требуется установка</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Downloading…</source>
-        <translation>Загрузка…</translation>
+        <translation type="unfinished">Загрузка…</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Connecting…</source>
-        <translation>Подключение…</translation>
+        <translation type="unfinished">Подключение…</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -731,94 +731,94 @@
     <message>
         <location line="+1"/>
         <source>Installing…</source>
-        <translation>Установка…</translation>
+        <translation type="unfinished">Установка…</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Installing add-on…</source>
-        <translation>Установка дополнения…</translation>
+        <translation type="unfinished">Установка дополнения…</translation>
     </message>
     <message>
         <location line="+1"/>
         <location filename="../src/core/facade/core_wiring_services.cpp" line="+278"/>
         <source>Preparing…</source>
-        <translation>Подготовка…</translation>
+        <translation type="unfinished">Подготовка…</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Preparing Steam…</source>
-        <translation>Подготовка Steam…</translation>
+        <translation type="unfinished">Подготовка Steam…</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Downloading from Steam CDN…</source>
-        <translation>Загрузка с Steam CDN…</translation>
+        <translation type="unfinished">Загрузка с Steam CDN…</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Getting game info…</source>
-        <translation>Получение данных об игре…</translation>
+        <translation type="unfinished">Получение данных об игре…</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Finishing…</source>
-        <translation>Завершение…</translation>
+        <translation type="unfinished">Завершение…</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>This game is not available for download right now. Try another title.</source>
-        <translation>Эта игра сейчас недоступна для загрузки. Попробуйте другую.</translation>
+        <translation type="unfinished">Эта игра сейчас недоступна для загрузки. Попробуйте другую.</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Could not prepare this game for download. Try again later or pick another title.</source>
-        <translation>Не удалось подготовить игру к загрузке. Попробуйте позже или выберите другую.</translation>
+        <translation type="unfinished">Не удалось подготовить игру к загрузке. Попробуйте позже или выберите другую.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Download failed. Try again or pick another game.</source>
-        <translation>Ошибка загрузки. Попробуйте снова или выберите другую игру.</translation>
+        <translation type="unfinished">Ошибка загрузки. Попробуйте снова или выберите другую игру.</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Steam blocked downloading game files (need a packaged manifest). Try another title, or set hubcapApiKey in plugin settings.</source>
-        <translation>Steam заблокировал загрузку файлов (нужен готовый манифест). Попробуйте другую игру или укажите hubcapApiKey в настройках плагина.</translation>
+        <translation type="unfinished">Steam заблокировал загрузку файлов (нужен готовый манифест). Попробуйте другую игру или укажите hubcapApiKey в настройках плагина.</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Resuming…</source>
-        <translation>Возобновление…</translation>
+        <translation type="unfinished">Возобновление…</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Failed to start torrent</source>
-        <translation>Не удалось начать торрент</translation>
+        <translation type="unfinished">Не удалось начать торрент</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Failed to start HTTP download</source>
-        <translation>Не удалось начать HTTP-загрузку</translation>
+        <translation type="unfinished">Не удалось начать HTTP-загрузку</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Downloading %1</source>
-        <translation>Загрузка %1</translation>
+        <translation type="unfinished">Загрузка %1</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Installing %1</source>
-        <translation>Установка %1</translation>
+        <translation type="unfinished">Установка %1</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Updating %1</source>
-        <translation>Обновление %1</translation>
+        <translation type="unfinished">Обновление %1</translation>
     </message>
     <message>
         <location line="+1"/>
         <location line="+170"/>
         <source>Installing (%1/%2)</source>
-        <translation>Установка (%1/%2)</translation>
+        <translation type="unfinished">Установка (%1/%2)</translation>
     </message>
     <message>
         <location line="-169"/>
@@ -840,24 +840,24 @@
         <location line="+175"/>
         <location line="+2"/>
         <source>Error: %1</source>
-        <translation>Ошибка: %1</translation>
+        <translation type="unfinished">Ошибка: %1</translation>
     </message>
     <message>
         <location line="-176"/>
         <location line="+52"/>
         <location line="+11"/>
         <source>Add-on %1 - %2</source>
-        <translation>Дополнение %1 - %2</translation>
+        <translation type="unfinished">Дополнение %1 - %2</translation>
     </message>
     <message>
         <location filename="../src/core/jobs/job_kind.cpp" line="+2"/>
         <source>Install</source>
-        <translation>Установить</translation>
+        <translation type="unfinished">Установить</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Update</source>
-        <translation>Обновление</translation>
+        <translation type="unfinished">Обновление</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -867,22 +867,22 @@
     <message>
         <location line="+2"/>
         <source>Task</source>
-        <translation>Задача</translation>
+        <translation type="unfinished">Задача</translation>
     </message>
     <message>
         <location filename="../src/core/jobs/job_status.cpp" line="+10"/>
         <source>Queued</source>
-        <translation>В очереди</translation>
+        <translation type="unfinished">В очереди</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Starting</source>
-        <translation>Запуск</translation>
+        <translation type="unfinished">Запуск</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Checking</source>
-        <translation>Проверка</translation>
+        <translation type="unfinished">Проверка</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -892,12 +892,12 @@
     <message>
         <location line="+2"/>
         <source>Downloading</source>
-        <translation>Загрузка</translation>
+        <translation type="unfinished">Загрузка</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Installing</source>
-        <translation>Установка</translation>
+        <translation type="unfinished">Установка</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -907,30 +907,30 @@
     <message>
         <location line="+2"/>
         <source>Seeding</source>
-        <translation>Раздача</translation>
+        <translation type="unfinished">Раздача</translation>
     </message>
     <message>
         <location filename="../src/core/jobs/job_display.cpp" line="-77"/>
         <location filename="../src/core/jobs/job_status.cpp" line="+2"/>
         <source>Paused</source>
-        <translation>Пауза</translation>
+        <translation type="unfinished">Пауза</translation>
     </message>
     <message>
         <location line="+5"/>
         <location filename="../src/core/jobs/job_status.cpp" line="+2"/>
         <source>Completed</source>
-        <translation>Завершено</translation>
+        <translation type="unfinished">Завершено</translation>
     </message>
     <message>
         <location filename="../src/core/jobs/job_status.cpp" line="+2"/>
         <source>Failed</source>
-        <translation>Ошибка</translation>
+        <translation type="unfinished">Ошибка</translation>
     </message>
     <message>
         <location filename="../src/core/jobs/job_display.cpp" line="-4"/>
         <location filename="../src/core/jobs/job_status.cpp" line="+2"/>
         <source>Cancelled</source>
-        <translation>Отменено</translation>
+        <translation type="unfinished">Отменено</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -938,28 +938,28 @@
         <location filename="../src/core/catalog/catalog_facade_install.cpp" line="+263"/>
         <location filename="../src/core/library/library_facade_sync.cpp" line="+233"/>
         <source>Install failed</source>
-        <translation>Ошибка установки</translation>
+        <translation type="unfinished">Ошибка установки</translation>
     </message>
     <message>
         <location filename="../src/core/catalog/catalog_controller.cpp" line="+182"/>
         <source>Catalog error: %1</source>
-        <translation>Ошибка каталога: %1</translation>
+        <translation type="unfinished">Ошибка каталога: %1</translation>
     </message>
     <message>
         <location filename="../src/core/facade/core_wiring_services.cpp" line="+437"/>
         <source>Game not found for add-on</source>
-        <translation>Игра не найдена для дополнения</translation>
+        <translation type="unfinished">Игра не найдена для дополнения</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Add-on not found in catalog</source>
-        <translation>Дополнение не найдено в каталоге</translation>
+        <translation type="unfinished">Дополнение не найдено в каталоге</translation>
     </message>
     <message>
         <location line="-55"/>
         <location line="+66"/>
         <source>Could not find game to install: %1</source>
-        <translation>Не удалось найти игру для установки: %1</translation>
+        <translation type="unfinished">Не удалось найти игру для установки: %1</translation>
     </message>
     <message>
         <location line="-457"/>
@@ -980,67 +980,67 @@
     <message>
         <location line="+377"/>
         <source>Download complete - install manually</source>
-        <translation>Загрузка завершена - установите вручную</translation>
+        <translation type="unfinished">Загрузка завершена - установите вручную</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Download error: %1</source>
-        <translation>Ошибка загрузки: %1</translation>
+        <translation type="unfinished">Ошибка загрузки: %1</translation>
     </message>
     <message>
         <location filename="../src/core/install/install_session_service.cpp" line="+40"/>
         <source>Installation of %1 is already in progress</source>
-        <translation>Установка %1 уже выполняется</translation>
+        <translation type="unfinished">Установка %1 уже выполняется</translation>
     </message>
     <message>
         <location line="+33"/>
         <source>Can&apos;t install %1 - install a plugin for this source</source>
-        <translation>Нельзя установить %1 - установите плагин для этого источника</translation>
+        <translation type="unfinished">Нельзя установить %1 - установите плагин для этого источника</translation>
     </message>
     <message>
         <location line="+30"/>
         <source>Install failed for %1: %2</source>
-        <translation>Ошибка установки %1: %2</translation>
+        <translation type="unfinished">Ошибка установки %1: %2</translation>
     </message>
     <message>
         <location line="+32"/>
         <source>Update installed: %1</source>
-        <translation>Обновление установлено: %1</translation>
+        <translation type="unfinished">Обновление установлено: %1</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Installed: %1</source>
-        <translation>Установлено: %1</translation>
+        <translation type="unfinished">Установлено: %1</translation>
     </message>
     <message>
         <location filename="../src/core/install/install_session_service_install.cpp" line="+101"/>
         <source>Add-on installation is already in progress</source>
-        <translation>Установка дополнения уже выполняется</translation>
+        <translation type="unfinished">Установка дополнения уже выполняется</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Install the game first</source>
-        <translation>Сначала установите игру</translation>
+        <translation type="unfinished">Сначала установите игру</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Plugin not found for %1 - install it in Settings → Plugins</source>
-        <translation>Плагин для %1 не найден - установите в Настройки → Плагины</translation>
+        <translation type="unfinished">Плагин для %1 не найден - установите в Настройки → Плагины</translation>
     </message>
     <message>
         <location line="+51"/>
         <source>Add-on install failed for %1: %2</source>
-        <translation>Ошибка установки дополнения %1: %2</translation>
+        <translation type="unfinished">Ошибка установки дополнения %1: %2</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Add-on installed: %1</source>
-        <translation>Дополнение установлено: %1</translation>
+        <translation type="unfinished">Дополнение установлено: %1</translation>
     </message>
     <message>
         <location filename="../src/core/runtime/proton_facade.cpp" line="+34"/>
         <source>Preparing runtime environment…</source>
-        <translation>Подготовка среды выполнения…</translation>
+        <translation type="unfinished">Подготовка среды выполнения…</translation>
     </message>
     <message>
         <location filename="../src/core/library/library_controller.cpp" line="+83"/>
@@ -1049,18 +1049,18 @@
         <location line="+39"/>
         <location line="+37"/>
         <source>Game not found</source>
-        <translation>Игра не найдена</translation>
+        <translation type="unfinished">Игра не найдена</translation>
     </message>
     <message>
         <location filename="../src/core/catalog/catalog_facade_install.cpp" line="+41"/>
         <location filename="../src/core/jobs/job_facade_lifecycle.cpp" line="+6"/>
         <source>Add-on not found</source>
-        <translation>Дополнение не найдено</translation>
+        <translation type="unfinished">Дополнение не найдено</translation>
     </message>
     <message>
         <location filename="../src/core/jobs/job_facade_lifecycle.cpp" line="+6"/>
         <source>Download the add-on first</source>
-        <translation>Сначала скачайте дополнение</translation>
+        <translation type="unfinished">Сначала скачайте дополнение</translation>
     </message>
     <message>
         <location line="+299"/>
@@ -1070,33 +1070,33 @@
     <message>
         <location filename="../src/core/library/library_facade_sync.cpp" line="+174"/>
         <source>%1 update(s) available</source>
-        <translation>Доступно обновлений: %1</translation>
+        <translation type="unfinished">Доступно обновлений: %1</translation>
     </message>
     <message>
         <location filename="../src/core/runtime/proton_facade.cpp" line="+205"/>
         <source>Install Proton-GE in Settings → Launch before downloading games</source>
-        <translation>Установите Proton-GE в Настройки → Запуск перед скачиванием игр</translation>
+        <translation type="unfinished">Установите Proton-GE в Настройки → Запуск перед скачиванием игр</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Install %1 (Proton-GE) in Settings → Launch before downloading games</source>
-        <translation>Установите %1 (Proton-GE) в Настройки → Запуск перед скачиванием игр</translation>
+        <translation type="unfinished">Установите %1 (Proton-GE) в Настройки → Запуск перед скачиванием игр</translation>
     </message>
     <message>
         <location filename="../src/core/catalog/catalog_facade_install.cpp" line="-147"/>
         <source>No download link for %1</source>
-        <translation>Нет ссылки для загрузки: %1</translation>
+        <translation type="unfinished">Нет ссылки для загрузки: %1</translation>
     </message>
     <message>
         <location filename="../src/core/library/library_facade_ops.cpp" line="-172"/>
         <location line="+24"/>
         <source>Choose library folder</source>
-        <translation>Выберите папку библиотеки</translation>
+        <translation type="unfinished">Выберите папку библиотеки</translation>
     </message>
     <message>
         <location filename="../src/core/jobs/job_facade_manual.cpp" line="+225"/>
         <source>Choose game install folder</source>
-        <translation>Выберите папку с игрой</translation>
+        <translation type="unfinished">Выберите папку с игрой</translation>
     </message>
     <message>
         <location line="+7"/>
@@ -1106,43 +1106,43 @@
     <message>
         <location line="+22"/>
         <source>No game executable found in %1</source>
-        <translation>В %1 не найден исполняемый файл игры</translation>
+        <translation type="unfinished">В %1 не найден исполняемый файл игры</translation>
     </message>
     <message>
         <location filename="../src/core/jobs/job_display.cpp" line="-26"/>
         <location filename="../src/core/jobs/job_facade_manual.cpp" line="+16"/>
         <source>Installed</source>
-        <translation>Установлен</translation>
+        <translation type="unfinished">Установлен</translation>
     </message>
     <message>
         <location filename="../src/core/jobs/job_facade_manual.cpp" line="+1"/>
         <source>Manual install complete for %1</source>
-        <translation>Ручная установка завершена: %1</translation>
+        <translation type="unfinished">Ручная установка завершена: %1</translation>
     </message>
     <message>
         <location filename="../src/core/plugins/plugin_facade.cpp" line="+370"/>
         <source>Install plugin</source>
-        <translation>Установить плагин</translation>
+        <translation type="unfinished">Установить плагин</translation>
     </message>
     <message>
         <location filename="../src/core/facade/core_wiring_services.cpp" line="-237"/>
         <source>Plugin install failed</source>
-        <translation>Ошибка установки плагина</translation>
+        <translation type="unfinished">Ошибка установки плагина</translation>
     </message>
     <message>
         <location line="+14"/>
         <source>Plugin installed: %1</source>
-        <translation>Плагин установлен: %1</translation>
+        <translation type="unfinished">Плагин установлен: %1</translation>
     </message>
     <message>
         <location line="+42"/>
         <source>Proton-GE installed</source>
-        <translation>Proton-GE установлен</translation>
+        <translation type="unfinished">Proton-GE установлен</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Proton-GE download failed: %1</source>
-        <translation>Ошибка загрузки Proton-GE: %1</translation>
+        <translation type="unfinished">Ошибка загрузки Proton-GE: %1</translation>
     </message>
     <message>
         <location filename="../src/core/runtime/proton_manager_download.cpp" line="+189"/>
@@ -1163,73 +1163,73 @@
     <message>
         <location filename="../src/core/library/library_facade_ops.cpp" line="-44"/>
         <source>Choose game executable</source>
-        <translation>Выберите исполняемый файл игры</translation>
+        <translation type="unfinished">Выберите исполняемый файл игры</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Executables (*.exe *.sh *.x86_64);;All files (*)</source>
-        <translation>Исполняемые (*.exe *.sh *.x86_64);;Все файлы (*)</translation>
+        <translation type="unfinished">Исполняемые (*.exe *.sh *.x86_64);;Все файлы (*)</translation>
     </message>
     <message>
         <location line="+110"/>
         <location line="+39"/>
         <source>Shortcuts are not supported on this platform</source>
-        <translation>Ярлыки не поддерживаются на этой платформе</translation>
+        <translation type="unfinished">Ярлыки не поддерживаются на этой платформе</translation>
     </message>
     <message>
         <location line="-24"/>
         <source>Desktop folder not found</source>
-        <translation>Папка рабочего стола не найдена</translation>
+        <translation type="unfinished">Папка рабочего стола не найдена</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Failed to create desktop shortcut</source>
-        <translation>Не удалось создать ярлык на рабочем столе</translation>
+        <translation type="unfinished">Не удалось создать ярлык на рабочем столе</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Desktop shortcut created</source>
-        <translation>Ярлык на рабочем столе создан</translation>
+        <translation type="unfinished">Ярлык на рабочем столе создан</translation>
     </message>
     <message>
         <location line="+33"/>
         <source>Failed to create Start menu shortcut</source>
-        <translation>Не удалось создать ярлык в меню Пуск</translation>
+        <translation type="unfinished">Не удалось создать ярлык в меню Пуск</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Start menu shortcut created</source>
-        <translation>Ярлык в меню Пуск создан</translation>
+        <translation type="unfinished">Ярлык в меню Пуск создан</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Adding to Steam is not supported on this platform</source>
-        <translation>Добавление в Steam не поддерживается на этой платформе</translation>
+        <translation type="unfinished">Добавление в Steam не поддерживается на этой платформе</translation>
     </message>
     <message>
         <location line="+27"/>
         <source>Steam userdata not found</source>
-        <translation>Папка Steam userdata не найдена</translation>
+        <translation type="unfinished">Папка Steam userdata не найдена</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Could not parse Steam shortcuts.vdf</source>
-        <translation>Не удалось разобрать Steam shortcuts.vdf</translation>
+        <translation type="unfinished">Не удалось разобрать Steam shortcuts.vdf</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Could not read Steam shortcuts.vdf</source>
-        <translation>Не удалось прочитать Steam shortcuts.vdf</translation>
+        <translation type="unfinished">Не удалось прочитать Steam shortcuts.vdf</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Could not write Steam shortcuts.vdf</source>
-        <translation>Не удалось записать Steam shortcuts.vdf</translation>
+        <translation type="unfinished">Не удалось записать Steam shortcuts.vdf</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Added to Steam. Restart Steam to see the game and artwork.</source>
-        <translation>Добавлено в Steam. Перезапусти Steam, чтобы увидеть игру и обложки.</translation>
+        <translation type="unfinished">Добавлено в Steam. Перезапусти Steam, чтобы увидеть игру и обложки.</translation>
     </message>
     <message>
         <location filename="../src/core/install/steamless_service.cpp" line="+619"/>
@@ -1240,53 +1240,53 @@
         <location filename="../src/core/catalog/catalog_controller.cpp" line="+270"/>
         <location line="+226"/>
         <source>%1 · %2 games</source>
-        <translation>%1 · %2 игр</translation>
+        <translation type="unfinished">%1 · %2 игр</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>%1 sources · %2 games</source>
-        <translation>%1 источников · %2 игр</translation>
+        <translation type="unfinished">%1 источников · %2 игр</translation>
     </message>
     <message>
         <location line="+385"/>
         <source>Catalog empty or unavailable: %1</source>
-        <translation>Каталог пуст или недоступен: %1</translation>
+        <translation type="unfinished">Каталог пуст или недоступен: %1</translation>
     </message>
     <message>
         <location line="+42"/>
         <source>No catalog URL configured for source %1</source>
-        <translation>Для источника %1 не задан URL каталога</translation>
+        <translation type="unfinished">Для источника %1 не задан URL каталога</translation>
     </message>
     <message>
         <location filename="../src/core/catalog/catalog_facade_install.cpp" line="+141"/>
         <source>Game not found: %1</source>
-        <translation>Игра не найдена: %1</translation>
+        <translation type="unfinished">Игра не найдена: %1</translation>
     </message>
     <message>
         <location filename="../src/core/runtime/runtime_dependency_service.cpp" line="+119"/>
         <source>Steam App ID is missing</source>
-        <translation>Не указан Steam App ID</translation>
+        <translation type="unfinished">Не указан Steam App ID</translation>
     </message>
     <message>
         <location filename="../src/core/runtime/runtime_dependency_service_install.cpp" line="+123"/>
         <source>Downloading runtime: %1</source>
-        <translation>Загрузка среды: %1</translation>
+        <translation type="unfinished">Загрузка среды: %1</translation>
     </message>
     <message>
         <location line="+119"/>
         <location line="+53"/>
         <source>Installing runtime: %1</source>
-        <translation>Установка среды: %1</translation>
+        <translation type="unfinished">Установка среды: %1</translation>
     </message>
     <message>
         <location line="-47"/>
         <source>Proton is required to install runtime dependencies</source>
-        <translation>Для установки зависимостей нужен Proton</translation>
+        <translation type="unfinished">Для установки зависимостей нужен Proton</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Proton not found. Install Proton-GE in Settings → Launch.</source>
-        <translation>Proton не найден. Установите Proton-GE в Настройки → Запуск.</translation>
+        <translation type="unfinished">Proton не найден. Установите Proton-GE в Настройки → Запуск.</translation>
     </message>
     <message>
         <location line="+55"/>
@@ -1364,7 +1364,7 @@
     <message>
         <location line="+108"/>
         <source>Game is not installed yet</source>
-        <translation>Игра ещё не установлена</translation>
+        <translation type="unfinished">Игра ещё не установлена</translation>
     </message>
     <message>
         <location line="+26"/>
@@ -1527,7 +1527,7 @@
     <message>
         <location line="+13"/>
         <source>Steam is not running - Online Fix needs it for SpaceWar/overlay. Starting Steam…</source>
-        <translation>Steam не запущен - Online Fix нужен для SpaceWar/overlay. Запускаем Steam…</translation>
+        <translation type="unfinished">Steam не запущен - Online Fix нужен для SpaceWar/overlay. Запускаем Steam…</translation>
     </message>
     <message>
         <location line="+24"/>
@@ -1571,7 +1571,7 @@
         <location line="+37"/>
         <location line="+19"/>
         <source>Executable not found for %1</source>
-        <translation>Не найден исполняемый файл для %1</translation>
+        <translation type="unfinished">Не найден исполняемый файл для %1</translation>
     </message>
     <message>
         <location line="+34"/>
@@ -1597,107 +1597,107 @@
         <location line="+6"/>
         <location filename="../src/core/runtime/proton_facade.cpp" line="-188"/>
         <source>Failed to launch game</source>
-        <translation>Не удалось запустить игру</translation>
+        <translation type="unfinished">Не удалось запустить игру</translation>
     </message>
     <message>
         <location filename="../src/core/catalog/catalog_facade_query.cpp" line="+12"/>
         <source>Unknown source: %1</source>
-        <translation>Неизвестный источник: %1</translation>
+        <translation type="unfinished">Неизвестный источник: %1</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Source &quot;%1&quot; is disabled in settings</source>
-        <translation>Источник «%1» выключен в настройках</translation>
+        <translation type="unfinished">Источник «%1» выключен в настройках</translation>
     </message>
     <message>
         <location filename="../src/core/catalog/catalog_facade_install.cpp" line="-247"/>
         <source>Could not resolve application data folder</source>
-        <translation>Не удалось определить папку данных приложения</translation>
+        <translation type="unfinished">Не удалось определить папку данных приложения</translation>
     </message>
     <message>
         <location line="+22"/>
         <source>Failed to delete application data</source>
-        <translation>Не удалось удалить данные приложения</translation>
+        <translation type="unfinished">Не удалось удалить данные приложения</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Failed to reset application data</source>
-        <translation>Не удалось сбросить данные приложения</translation>
+        <translation type="unfinished">Не удалось сбросить данные приложения</translation>
     </message>
     <message>
         <location line="+12"/>
         <source>Application data deleted. Arachnel will quit now.</source>
-        <translation>Данные приложения удалены. Arachnel сейчас закроется.</translation>
+        <translation type="unfinished">Данные приложения удалены. Arachnel сейчас закроется.</translation>
     </message>
     <message>
         <location filename="../src/core/catalog/catalog_facade_query.cpp" line="+93"/>
         <source>Enter a catalog URL</source>
-        <translation>Укажите URL каталога</translation>
+        <translation type="unfinished">Укажите URL каталога</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Invalid URL - http or https required</source>
-        <translation>Некорректный URL - нужен http или https</translation>
+        <translation type="unfinished">Некорректный URL - нужен http или https</translation>
     </message>
     <message>
         <location filename="../src/core/catalog/catalog_facade_install.cpp" line="+24"/>
         <location line="+20"/>
         <location filename="../src/core/library/library_facade_sync.cpp" line="-226"/>
         <source>Catalog entry not found: %1</source>
-        <translation>Запись каталога не найдена: %1</translation>
+        <translation type="unfinished">Запись каталога не найдена: %1</translation>
     </message>
     <message>
         <location line="+27"/>
         <source>No Steam App ID for %1</source>
-        <translation>Нет Steam App ID для %1</translation>
+        <translation type="unfinished">Нет Steam App ID для %1</translation>
     </message>
     <message>
         <location line="+14"/>
         <location filename="../src/core/library/library_facade_sync.cpp" line="-6"/>
         <source>Plugin not loaded: %1</source>
-        <translation>Плагин не загружен: %1</translation>
+        <translation type="unfinished">Плагин не загружен: %1</translation>
     </message>
     <message>
         <location filename="../src/core/plugins/plugin_facade.cpp" line="-162"/>
         <source>Plugin removed</source>
-        <translation>Плагин удалён</translation>
+        <translation type="unfinished">Плагин удалён</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Could not remove plugin: %1</source>
-        <translation>Не удалось удалить плагин: %1</translation>
+        <translation type="unfinished">Не удалось удалить плагин: %1</translation>
     </message>
     <message>
         <location line="+116"/>
         <source>Plugins updated</source>
-        <translation>Плагины обновлены</translation>
+        <translation type="unfinished">Плагины обновлены</translation>
     </message>
     <message>
         <location line="+44"/>
         <source>Plugin files (*.arach)</source>
-        <translation>Файлы плагинов (*.arach)</translation>
+        <translation type="unfinished">Файлы плагинов (*.arach)</translation>
     </message>
     <message>
         <location filename="../src/core/catalog/catalog_facade_install.cpp" line="+12"/>
         <location line="+83"/>
         <source>Could not start download for %1</source>
-        <translation>Не удалось начать загрузку %1</translation>
+        <translation type="unfinished">Не удалось начать загрузку %1</translation>
     </message>
     <message>
         <location line="+39"/>
         <source>Could not start add-on download</source>
-        <translation>Не удалось начать загрузку дополнения</translation>
+        <translation type="unfinished">Не удалось начать загрузку дополнения</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Entry not found: %1</source>
-        <translation>Запись не найдена: %1</translation>
+        <translation type="unfinished">Запись не найдена: %1</translation>
     </message>
     <message>
         <location line="-133"/>
         <location line="+155"/>
         <source>Could not start update for %1</source>
-        <translation>Не удалось начать обновление %1</translation>
+        <translation type="unfinished">Не удалось начать обновление %1</translation>
     </message>
     <message>
         <location filename="../src/core/facade/core_wiring_services.cpp" line="+105"/>
@@ -1707,60 +1707,60 @@
     <message>
         <location line="-270"/>
         <source>No catalog sources enabled</source>
-        <translation>Нет включённых источников каталога</translation>
+        <translation type="unfinished">Нет включённых источников каталога</translation>
     </message>
     <message>
         <location filename="../src/core/library/library_facade_ops.cpp" line="-133"/>
         <source>Found %1 game(s) on disk</source>
-        <translation>Найдено игр на диске: %1</translation>
+        <translation type="unfinished">Найдено игр на диске: %1</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>No new games found on disk</source>
-        <translation>Новых игр на диске не найдено</translation>
+        <translation type="unfinished">Новых игр на диске не найдено</translation>
     </message>
     <message>
         <location filename="../src/core/jobs/job_facade_manual.cpp" line="-247"/>
         <source>Download not found</source>
-        <translation>Загрузка не найдена</translation>
+        <translation type="unfinished">Загрузка не найдена</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Installation is only available for completed downloads</source>
-        <translation>Установка доступна только для завершённых загрузок</translation>
+        <translation type="unfinished">Установка доступна только для завершённых загрузок</translation>
     </message>
     <message>
         <location line="+40"/>
         <source>Add-on file not found</source>
-        <translation>Файл дополнения не найден</translation>
+        <translation type="unfinished">Файл дополнения не найден</translation>
     </message>
     <message>
         <location line="+12"/>
         <location line="+164"/>
         <source>Download files not found</source>
-        <translation>Файлы загрузки не найдены</translation>
+        <translation type="unfinished">Файлы загрузки не найдены</translation>
     </message>
     <message>
         <location line="-158"/>
         <location line="+175"/>
         <source>Could not find game to install</source>
-        <translation>Не удалось найти игру для установки</translation>
+        <translation type="unfinished">Не удалось найти игру для установки</translation>
     </message>
     <message>
         <location filename="../src/core/plugins/plugin_facade.cpp" line="-209"/>
         <source>Plugin installed</source>
-        <translation>Плагин установлен</translation>
+        <translation type="unfinished">Плагин установлен</translation>
     </message>
     <message>
         <location line="+3"/>
         <location line="+2"/>
         <source>Plugin install failed: %1</source>
-        <translation>Ошибка установки плагина: %1</translation>
+        <translation type="unfinished">Ошибка установки плагина: %1</translation>
     </message>
     <message>
         <location filename="../src/core/plugins/plugin_host_packages.cpp" line="+45"/>
         <source>Invalid plugin file. Choose a plugin package (.arach)</source>
-        <translation>Неверный файл плагина. Выберите пакет плагина (.arach)</translation>
+        <translation type="unfinished">Неверный файл плагина. Выберите пакет плагина (.arach)</translation>
     </message>
     <message>
         <location filename="../src/core/install/steamless_service.cpp" line="-526"/>
@@ -1771,13 +1771,13 @@
         <location line="+30"/>
         <location filename="../src/core/plugins/plugin_host_packages.cpp" line="+30"/>
         <source>Could not start archive extraction</source>
-        <translation>Не удалось запустить распаковку архива</translation>
+        <translation type="unfinished">Не удалось запустить распаковку архива</translation>
     </message>
     <message>
         <location line="+11"/>
         <location filename="../src/core/plugins/plugin_host_packages.cpp" line="+12"/>
         <source>Archive extraction timed out</source>
-        <translation>Таймаут распаковки</translation>
+        <translation type="unfinished">Таймаут распаковки</translation>
     </message>
     <message>
         <location line="+9"/>
@@ -1898,7 +1898,7 @@
     <message>
         <location filename="../src/core/plugins/plugin_host_packages.cpp" line="+11"/>
         <source>Archive extraction failed (code %1)</source>
-        <translation>Ошибка распаковки (код %1)</translation>
+        <translation type="unfinished">Ошибка распаковки (код %1)</translation>
     </message>
     <message>
         <location line="+43"/>
@@ -1906,60 +1906,60 @@
         <location filename="../src/core/runtime/windows_runner.cpp" line="+118"/>
         <location line="+108"/>
         <source>File not found: %1</source>
-        <translation>Файл не найден: %1</translation>
+        <translation type="unfinished">Файл не найден: %1</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Only .arach packages are supported</source>
-        <translation>Поддерживаются только пакеты с расширением .arach</translation>
+        <translation type="unfinished">Поддерживаются только пакеты с расширением .arach</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Failed to create temporary folder</source>
-        <translation>Не удалось создать временную папку</translation>
+        <translation type="unfinished">Не удалось создать временную папку</translation>
     </message>
     <message>
         <location line="+12"/>
         <source>Archive has no plugin.json</source>
-        <translation>В архиве нет plugin.json</translation>
+        <translation type="unfinished">В архиве нет plugin.json</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Failed to read plugin.json</source>
-        <translation>Не удалось прочитать plugin.json</translation>
+        <translation type="unfinished">Не удалось прочитать plugin.json</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Invalid plugin.json</source>
-        <translation>Некорректный plugin.json</translation>
+        <translation type="unfinished">Некорректный plugin.json</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Package is missing library %1</source>
-        <translation>В пакете нет библиотеки %1</translation>
+        <translation type="unfinished">В пакете нет библиотеки %1</translation>
     </message>
     <message>
         <location line="+7"/>
         <location line="+12"/>
         <location line="+30"/>
         <source>Failed to create plugin folder</source>
-        <translation>Не удалось создать папку плагина</translation>
+        <translation type="unfinished">Не удалось создать папку плагина</translation>
     </message>
     <message>
         <location line="-19"/>
         <location line="+25"/>
         <source>Failed to copy %1</source>
-        <translation>Не удалось скопировать %1</translation>
+        <translation type="unfinished">Не удалось скопировать %1</translation>
     </message>
     <message>
         <location line="+28"/>
         <source>Failed to replace existing plugin</source>
-        <translation>Не удалось заменить установленный плагин</translation>
+        <translation type="unfinished">Не удалось заменить установленный плагин</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Failed to install plugin files</source>
-        <translation>Не удалось установить файлы плагина</translation>
+        <translation type="unfinished">Не удалось установить файлы плагина</translation>
     </message>
     <message>
         <location line="+22"/>
@@ -2035,32 +2035,32 @@
     <message>
         <location filename="../src/core/plugins/plugin_host_packages.cpp" line="+21"/>
         <source>Invalid plugin id</source>
-        <translation>Некорректный id плагина</translation>
+        <translation type="unfinished">Некорректный id плагина</translation>
     </message>
     <message>
         <location line="+63"/>
         <source>Plugin is not installed</source>
-        <translation>Плагин не установлен</translation>
+        <translation type="unfinished">Плагин не установлен</translation>
     </message>
     <message>
         <location line="-12"/>
         <source>Could not delete plugin files</source>
-        <translation>Не удалось удалить файлы плагина</translation>
+        <translation type="unfinished">Не удалось удалить файлы плагина</translation>
     </message>
     <message>
         <location filename="../src/core/plugins/plugin_facade.cpp" line="+215"/>
         <source>Could not open plugins folder</source>
-        <translation>Не удалось открыть папку плагинов</translation>
+        <translation type="unfinished">Не удалось открыть папку плагинов</translation>
     </message>
     <message>
         <location filename="../src/core/torrent/torrent_session.cpp" line="+139"/>
         <source>No download link</source>
-        <translation>Нет ссылки для загрузки</translation>
+        <translation type="unfinished">Нет ссылки для загрузки</translation>
     </message>
     <message>
         <location filename="../src/core/settings/app_updater.cpp" line="+52"/>
         <source>Not checked yet</source>
-        <translation>Еще не проверялось</translation>
+        <translation type="unfinished">Еще не проверялось</translation>
     </message>
     <message>
         <location line="+119"/>
@@ -2070,50 +2070,50 @@
     <message>
         <location line="+9"/>
         <source>Checking for Arachnel updates…</source>
-        <translation>Проверка обновлений Arachnel…</translation>
+        <translation type="unfinished">Проверка обновлений Arachnel…</translation>
     </message>
     <message>
         <location line="+27"/>
         <source>Update check failed: %1</source>
-        <translation>Ошибка проверки обновлений: %1</translation>
+        <translation type="unfinished">Ошибка проверки обновлений: %1</translation>
     </message>
     <message>
         <location line="+36"/>
         <location line="+48"/>
         <location line="+26"/>
         <source>Could not parse GitHub release information</source>
-        <translation>Не удалось разобрать информацию о релизе GitHub</translation>
+        <translation type="unfinished">Не удалось разобрать информацию о релизе GitHub</translation>
     </message>
     <message>
         <location line="+18"/>
         <source>Arachnel %1 (pre-release) is available</source>
-        <translation>Доступен Arachnel %1 (пререлиз)</translation>
+        <translation type="unfinished">Доступен Arachnel %1 (пререлиз)</translation>
     </message>
     <message>
         <location line="+3"/>
         <location filename="../src/core/facade/core_wiring_services.cpp" line="+136"/>
         <source>Arachnel %1 is available</source>
-        <translation>Доступен Arachnel %1</translation>
+        <translation type="unfinished">Доступен Arachnel %1</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Arachnel is up to date (%1)</source>
-        <translation>Arachnel актуален (%1)</translation>
+        <translation type="unfinished">Arachnel актуален (%1)</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Update found, but no installer package is available for this platform</source>
-        <translation>Обновление найдено, но для этой платформы нет установщика</translation>
+        <translation type="unfinished">Обновление найдено, но для этой платформы нет установщика</translation>
     </message>
     <message>
         <location line="+19"/>
         <source>Open the release page to download the latest package for your platform</source>
-        <translation>Откройте страницу релиза и скачайте пакет для вашей платформы</translation>
+        <translation type="unfinished">Откройте страницу релиза и скачайте пакет для вашей платформы</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Downloading Arachnel update…</source>
-        <translation>Скачивание обновления Arachnel…</translation>
+        <translation type="unfinished">Скачивание обновления Arachnel…</translation>
     </message>
     <message>
         <location line="+90"/>
@@ -2128,233 +2128,233 @@
     <message>
         <location filename="../src/core/plugins/plugin_catalog_service.cpp" line="+215"/>
         <source>Could not load plugin list: %1</source>
-        <translation>Не удалось загрузить список плагинов: %1</translation>
+        <translation type="unfinished">Не удалось загрузить список плагинов: %1</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Plugin list is invalid</source>
-        <translation>Список плагинов повреждён</translation>
+        <translation type="unfinished">Список плагинов повреждён</translation>
     </message>
     <message>
         <location line="+101"/>
         <source>Plugin not found in the official list</source>
-        <translation>Плагин не найден в официальном списке</translation>
+        <translation type="unfinished">Плагин не найден в официальном списке</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>No download link for this plugin</source>
-        <translation>Нет ссылки для загрузки этого плагина</translation>
+        <translation type="unfinished">Нет ссылки для загрузки этого плагина</translation>
     </message>
     <message>
         <location line="+111"/>
         <source>Download failed</source>
-        <translation>Ошибка загрузки</translation>
+        <translation type="unfinished">Ошибка загрузки</translation>
     </message>
     <message>
         <location line="+4"/>
         <location filename="../src/core/settings/app_updater.cpp" line="-128"/>
         <source>Download failed: %1</source>
-        <translation>Ошибка загрузки: %1</translation>
+        <translation type="unfinished">Ошибка загрузки: %1</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Downloaded plugin file is empty</source>
-        <translation>Скачанный файл плагина пуст</translation>
+        <translation type="unfinished">Скачанный файл плагина пуст</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Plugin file checksum mismatch</source>
-        <translation>Контрольная сумма файла плагина не совпадает</translation>
+        <translation type="unfinished">Контрольная сумма файла плагина не совпадает</translation>
     </message>
     <message>
         <location line="-84"/>
         <source>Could not save plugin file</source>
-        <translation>Не удалось сохранить файл плагина</translation>
+        <translation type="unfinished">Не удалось сохранить файл плагина</translation>
     </message>
     <message>
         <location filename="../src/core/settings/app_updater.cpp" line="-53"/>
         <location line="+65"/>
         <source>Could not save the downloaded installer</source>
-        <translation>Не удалось сохранить скачанный установщик</translation>
+        <translation type="unfinished">Не удалось сохранить скачанный установщик</translation>
     </message>
     <message>
         <location line="+141"/>
         <source>Could not start the Arachnel installer</source>
-        <translation>Не удалось запустить установщик Arachnel</translation>
+        <translation type="unfinished">Не удалось запустить установщик Arachnel</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Automatic installer launch is only available on Windows</source>
-        <translation>Автозапуск установщика доступен только на Windows</translation>
+        <translation type="unfinished">Автозапуск установщика доступен только на Windows</translation>
     </message>
     <message>
         <location filename="../src/core/install/online_fix_overlay.cpp" line="+708"/>
         <source>Not installed</source>
-        <translation>Не установлен</translation>
+        <translation type="unfinished">Не установлен</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Enabled</source>
-        <translation>Включён</translation>
+        <translation type="unfinished">Включён</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Disabled</source>
-        <translation>Отключён</translation>
+        <translation type="unfinished">Отключён</translation>
     </message>
     <message>
         <location line="-30"/>
         <source>Online Fix overlay not found in this install</source>
-        <translation>Online Fix оверлей не найден в этой установке</translation>
+        <translation type="unfinished">Online Fix оверлей не найден в этой установке</translation>
     </message>
     <message>
         <location line="-203"/>
         <source>Failed to enable Online Fix: %1</source>
-        <translation>Не удалось включить Online Fix: %1</translation>
+        <translation type="unfinished">Не удалось включить Online Fix: %1</translation>
     </message>
     <message>
         <location line="+12"/>
         <source>Failed to disable Online Fix: %1</source>
-        <translation>Не удалось отключить Online Fix: %1</translation>
+        <translation type="unfinished">Не удалось отключить Online Fix: %1</translation>
     </message>
     <message>
         <location filename="../src/core/library/storage_library.cpp" line="+34"/>
         <source>Library</source>
-        <translation>Библиотека</translation>
+        <translation type="unfinished">Библиотека</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Disk</source>
-        <translation>Диск</translation>
+        <translation type="unfinished">Диск</translation>
     </message>
     <message>
         <location filename="../src/core/util/file_utils.cpp" line="+115"/>
         <source>Failed to delete file: %1</source>
-        <translation>Не удалось удалить файл: %1</translation>
+        <translation type="unfinished">Не удалось удалить файл: %1</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Failed to delete folder: %1</source>
-        <translation>Не удалось удалить папку: %1</translation>
+        <translation type="unfinished">Не удалось удалить папку: %1</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Source not found: %1</source>
-        <translation>Источник не найден: %1</translation>
+        <translation type="unfinished">Источник не найден: %1</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Failed to replace: %1</source>
-        <translation>Не удалось заменить: %1</translation>
+        <translation type="unfinished">Не удалось заменить: %1</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Failed to copy: %1</source>
-        <translation>Не удалось скопировать: %1</translation>
+        <translation type="unfinished">Не удалось скопировать: %1</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Failed to create folder: %1</source>
-        <translation>Не удалось создать папку: %1</translation>
+        <translation type="unfinished">Не удалось создать папку: %1</translation>
     </message>
     <message>
         <location filename="../src/core/catalog/catalog_feed_loader.cpp" line="+98"/>
         <location line="+35"/>
         <source>Catalog is empty or format not recognized</source>
-        <translation>Каталог пуст или формат не распознан</translation>
+        <translation type="unfinished">Каталог пуст или формат не распознан</translation>
     </message>
     <message>
         <location filename="../src/core/catalog/catalog_parser.cpp" line="+482"/>
         <source>Empty server response</source>
-        <translation>Пустой ответ сервера</translation>
+        <translation type="unfinished">Пустой ответ сервера</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Invalid JSON</source>
-        <translation>Некорректный JSON</translation>
+        <translation type="unfinished">Некорректный JSON</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>No downloads array - not a Hydra catalog</source>
-        <translation>Нет массива downloads - это не каталог Hydra</translation>
+        <translation type="unfinished">Нет массива downloads - это не каталог Hydra</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>downloads array is empty</source>
-        <translation>Массив downloads пуст</translation>
+        <translation type="unfinished">Массив downloads пуст</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Catalog entries array is empty</source>
-        <translation>Массив записей каталога пуст</translation>
+        <translation type="unfinished">Массив записей каталога пуст</translation>
     </message>
     <message>
         <location filename="../src/core/jobs/http_download_session.cpp" line="+126"/>
         <source>Failed to save file</source>
-        <translation>Не удалось сохранить файл</translation>
+        <translation type="unfinished">Не удалось сохранить файл</translation>
     </message>
     <message>
         <location filename="../src/core/plugins/plugin_host_async.cpp" line="-160"/>
         <location line="+23"/>
         <location line="+23"/>
         <source>Plugin not found</source>
-        <translation>Плагин не найден</translation>
+        <translation type="unfinished">Плагин не найден</translation>
     </message>
     <message>
         <location filename="../src/core/launch/process_launcher.cpp" line="-7"/>
         <source>Executable is not set</source>
-        <translation>Исполняемый файл не задан</translation>
+        <translation type="unfinished">Исполняемый файл не задан</translation>
     </message>
     <message>
         <location line="-214"/>
         <location line="+260"/>
         <source>Failed to start process</source>
-        <translation>Не удалось запустить процесс</translation>
+        <translation type="unfinished">Не удалось запустить процесс</translation>
     </message>
     <message>
         <location filename="../src/core/runtime/windows_runner.cpp" line="-196"/>
         <location line="+2"/>
         <source>Failed to start: %1</source>
-        <translation>Не удалось запустить: %1</translation>
+        <translation type="unfinished">Не удалось запустить: %1</translation>
     </message>
     <message>
         <location line="+8"/>
         <location line="+120"/>
         <source>Timeout: %1</source>
-        <translation>Таймаут: %1</translation>
+        <translation type="unfinished">Таймаут: %1</translation>
     </message>
     <message>
         <location line="-112"/>
         <location line="+122"/>
         <source>%1 exited with code %2</source>
-        <translation>%1 завершился с кодом %2</translation>
+        <translation type="unfinished">%1 завершился с кодом %2</translation>
     </message>
     <message>
         <location line="-63"/>
         <source>launch cancelled (UAC)</source>
-        <translation>запуск отменён (UAC)</translation>
+        <translation type="unfinished">запуск отменён (UAC)</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>administrator rights required</source>
-        <translation>требуются права администратора</translation>
+        <translation type="unfinished">требуются права администратора</translation>
     </message>
     <message>
         <location line="+33"/>
         <source>Failed to start %1: %2</source>
-        <translation>Не удалось запустить %1: %2</translation>
+        <translation type="unfinished">Не удалось запустить %1: %2</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Could not track installer process</source>
-        <translation>Не удалось отследить процесс установки</translation>
+        <translation type="unfinished">Не удалось отследить процесс установки</translation>
     </message>
     <message>
         <location filename="../src/core/library/library_controller.cpp" line="-43"/>
         <location line="+21"/>
         <location filename="../src/core/facade/core_wiring_services.cpp" line="-301"/>
         <source>Game removed: %1</source>
-        <translation>Игра удалена: %1</translation>
+        <translation type="unfinished">Игра удалена: %1</translation>
     </message>
     <message>
         <location line="-13"/>
@@ -2397,17 +2397,17 @@
     <message>
         <location line="+98"/>
         <source>Drive removed. %1 game(s) kept on disk and listed under another drive.</source>
-        <translation>Диск убран. Игр оставлено на диске и в библиотеке (на другом диске): %1</translation>
+        <translation type="unfinished">Диск убран. Игр оставлено на диске и в библиотеке (на другом диске): %1</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Drive removed</source>
-        <translation>Диск убран</translation>
+        <translation type="unfinished">Диск убран</translation>
     </message>
     <message>
         <location filename="../src/core/settings/settings_store_persistence.cpp" line="+137"/>
         <source>FreeTP torrent catalog - magnet links and add-ons</source>
-        <translation>Торрент-каталог FreeTP - magnet-ссылки и дополнения</translation>
+        <translation type="unfinished">Торрент-каталог FreeTP - magnet-ссылки и дополнения</translation>
     </message>
     <message>
         <location filename="../src/core/jobs/job_orchestrator.cpp" line="+64"/>
@@ -2581,7 +2581,7 @@
     <message>
         <location line="+1"/>
         <source>Application crashed</source>
-        <translation>Приложение аварийно завершилось</translation>
+        <translation type="unfinished">Приложение аварийно завершилось</translation>
     </message>
 </context>
 <context>
@@ -2594,7 +2594,7 @@
     <message>
         <location line="+1"/>
         <source>Application crashed</source>
-        <translation>Приложение аварийно завершилось</translation>
+        <translation type="unfinished">Приложение аварийно завершилось</translation>
     </message>
     <message>
         <location line="+8"/>
@@ -2605,38 +2605,38 @@
         <location line="+2"/>
         <location line="+13"/>
         <source>Arachnel has crashed.</source>
-        <translation>Arachnel аварийно завершилось.</translation>
+        <translation type="unfinished">Arachnel аварийно завершилось.</translation>
     </message>
     <message>
         <location line="-12"/>
         <location line="+13"/>
         <source>Arachnel stopped unexpectedly during the last session.</source>
-        <translation>Arachnel неожиданно завершилось в прошлой сессии.</translation>
+        <translation type="unfinished">Arachnel неожиданно завершилось в прошлой сессии.</translation>
     </message>
     <message>
         <location line="+45"/>
         <source>Report file: %1</source>
-        <translation>Файл отчёта: %1</translation>
+        <translation type="unfinished">Файл отчёта: %1</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Dismiss</source>
-        <translation>Закрыть</translation>
+        <translation type="unfinished">Закрыть</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Open folder</source>
-        <translation>Открыть папку</translation>
+        <translation type="unfinished">Открыть папку</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Copy report</source>
-        <translation>Копировать отчёт</translation>
+        <translation type="unfinished">Копировать отчёт</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Create GitHub issue</source>
-        <translation>Создать issue на GitHub</translation>
+        <translation type="unfinished">Создать issue на GitHub</translation>
     </message>
 </context>
 <context>
@@ -2644,7 +2644,7 @@
     <message>
         <location filename="../qml/app/CrashReportWindow.qml" line="+16"/>
         <source>Application crashed</source>
-        <translation>Приложение аварийно завершилось</translation>
+        <translation type="unfinished">Приложение аварийно завершилось</translation>
     </message>
 </context>
 <context>
@@ -2776,12 +2776,12 @@
     <message>
         <location filename="../qml/components/DownloadJobCard.qml" line="+169"/>
         <source>Unknown download</source>
-        <translation>Неизвестная загрузка</translation>
+        <translation type="unfinished">Неизвестная загрузка</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Install failed</source>
-        <translation>Ошибка установки</translation>
+        <translation type="unfinished">Ошибка установки</translation>
     </message>
     <message>
         <location line="+73"/>
@@ -2794,22 +2794,22 @@
     <message>
         <location filename="../qml/components/DownloadJobGroupCard.qml" line="+48"/>
         <source>%1 add-ons · %2 downloading</source>
-        <translation>%1 доп. · %2 в загрузке</translation>
+        <translation type="unfinished">%1 доп. · %2 в загрузке</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>%1 add-ons · done</source>
-        <translation>%1 доп. · готово</translation>
+        <translation type="unfinished">%1 доп. · готово</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>%1 add-ons</source>
-        <translation>%1 доп.</translation>
+        <translation type="unfinished">%1 доп.</translation>
     </message>
     <message>
         <location line="+149"/>
         <source>Add-ons</source>
-        <translation>Дополнения</translation>
+        <translation type="unfinished">Дополнения</translation>
     </message>
 </context>
 <context>
@@ -2817,7 +2817,7 @@
     <message>
         <location filename="../qml/components/DownloadProgressButton.qml" line="+20"/>
         <source>Download</source>
-        <translation>Загрузка</translation>
+        <translation type="unfinished">Загрузка</translation>
     </message>
     <message>
         <location line="+71"/>
@@ -2827,12 +2827,12 @@
     <message>
         <location line="+99"/>
         <source>Installing…</source>
-        <translation>Установка…</translation>
+        <translation type="unfinished">Установка…</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Retry install</source>
-        <translation>Повторить установку</translation>
+        <translation type="unfinished">Повторить установку</translation>
     </message>
     <message>
         <location line="-2"/>
@@ -2842,17 +2842,17 @@
     <message>
         <location line="+4"/>
         <source>Install</source>
-        <translation>Установить</translation>
+        <translation type="unfinished">Установить</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Downloaded</source>
-        <translation>Загружено</translation>
+        <translation type="unfinished">Загружено</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Paused · %1%</source>
-        <translation>Пауза · %1%</translation>
+        <translation type="unfinished">Пауза · %1%</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -2862,7 +2862,7 @@
     <message>
         <location line="+2"/>
         <source>Downloading · %1%</source>
-        <translation>Загрузка · %1%</translation>
+        <translation type="unfinished">Загрузка · %1%</translation>
     </message>
 </context>
 <context>
@@ -2870,12 +2870,12 @@
     <message>
         <location filename="../qml/app/DownloadsPage.qml" line="+104"/>
         <source>No downloads</source>
-        <translation>Нет загрузок</translation>
+        <translation type="unfinished">Нет загрузок</translation>
     </message>
     <message>
         <location line="+21"/>
         <source>Downloads</source>
-        <translation>Загрузки</translation>
+        <translation type="unfinished">Загрузки</translation>
     </message>
     <message>
         <location line="+5"/>
@@ -2900,7 +2900,7 @@
     <message>
         <location line="+5"/>
         <source>Clear finished</source>
-        <translation>Очистить завершённые</translation>
+        <translation type="unfinished">Очистить завершённые</translation>
     </message>
     <message>
         <location line="-32"/>
@@ -3003,7 +3003,7 @@
     <message>
         <location filename="../qml/app/GameDetailsContent.qml" line="+152"/>
         <source>Game not found</source>
-        <translation>Игра не найдена</translation>
+        <translation type="unfinished">Игра не найдена</translation>
     </message>
     <message>
         <location line="+15"/>
@@ -3013,7 +3013,7 @@
     <message>
         <location line="+196"/>
         <source>DRM</source>
-        <translation>DRM</translation>
+        <translation type="unfinished">DRM</translation>
     </message>
     <message numerus="yes">
         <location line="+12"/>
@@ -3033,12 +3033,12 @@
     <message>
         <location line="+5"/>
         <source>Steam CDN · Online Fix</source>
-        <translation>Steam CDN · Online Fix</translation>
+        <translation type="unfinished">Steam CDN · Online Fix</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Update available</source>
-        <translation>Доступно обновление</translation>
+        <translation type="unfinished">Доступно обновление</translation>
     </message>
     <message>
         <location line="+87"/>
@@ -3080,27 +3080,27 @@
     <message>
         <location line="-182"/>
         <source>Source page</source>
-        <translation>Страница на источнике</translation>
+        <translation type="unfinished">Страница на источнике</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Source website</source>
-        <translation>Сайт источника</translation>
+        <translation type="unfinished">Сайт источника</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Steam</source>
-        <translation>Steam</translation>
+        <translation type="unfinished">Steam</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Plugin source</source>
-        <translation>Исходники плагина</translation>
+        <translation type="unfinished">Исходники плагина</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Catalog URL</source>
-        <translation>URL каталога</translation>
+        <translation type="unfinished">URL каталога</translation>
     </message>
     <message>
         <location line="-231"/>
@@ -3115,7 +3115,7 @@
     <message>
         <location line="-362"/>
         <source>Install failed</source>
-        <translation>Ошибка установки</translation>
+        <translation type="unfinished">Ошибка установки</translation>
     </message>
     <message>
         <location line="+0"/>
@@ -3125,17 +3125,17 @@
     <message>
         <location line="-138"/>
         <source>Stop</source>
-        <translation>Остановить</translation>
+        <translation type="unfinished">Остановить</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Preparing…</source>
-        <translation>Подготовка…</translation>
+        <translation type="unfinished">Подготовка…</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Play</source>
-        <translation>Играть</translation>
+        <translation type="unfinished">Играть</translation>
     </message>
     <message>
         <location line="+72"/>
@@ -3153,23 +3153,23 @@
         <location line="-322"/>
         <location line="+610"/>
         <source>Delete</source>
-        <translation>Удалить</translation>
+        <translation type="unfinished">Удалить</translation>
     </message>
     <message>
         <location line="-675"/>
         <source>Update</source>
-        <translation>Обновление</translation>
+        <translation type="unfinished">Обновление</translation>
     </message>
     <message>
         <location line="+153"/>
         <location line="+197"/>
         <source>Description</source>
-        <translation>Описание</translation>
+        <translation type="unfinished">Описание</translation>
     </message>
     <message>
         <location line="-172"/>
         <source>Description is not available yet.</source>
-        <translation>Описание пока недоступно.</translation>
+        <translation type="unfinished">Описание пока недоступно.</translation>
     </message>
     <message>
         <location line="+171"/>
@@ -3204,12 +3204,12 @@
     <message>
         <location line="+10"/>
         <source>Remove game?</source>
-        <translation>Удалить игру?</translation>
+        <translation type="unfinished">Удалить игру?</translation>
     </message>
     <message>
         <location line="+22"/>
         <source>Cancel</source>
-        <translation>Отмена</translation>
+        <translation type="unfinished">Отмена</translation>
     </message>
     <message>
         <location line="-43"/>
@@ -3219,7 +3219,7 @@
     <message>
         <location line="-517"/>
         <source>Ready to download from Steam CDN. Online Fix can be included when needed.</source>
-        <translation>Готово к загрузке с Steam CDN. При необходимости можно включить Online Fix.</translation>
+        <translation type="unfinished">Готово к загрузке с Steam CDN. При необходимости можно включить Online Fix.</translation>
     </message>
     <message>
         <location line="-265"/>
@@ -3242,29 +3242,29 @@
     <message>
         <location filename="../qml/components/GameDetailsMediaPreview.qml" line="+118"/>
         <source>Gameplay video</source>
-        <translation>Видео геймплея</translation>
+        <translation type="unfinished">Видео геймплея</translation>
     </message>
     <message>
         <location line="+158"/>
         <location line="+203"/>
         <source>Close</source>
-        <translation>Закрыть</translation>
+        <translation type="unfinished">Закрыть</translation>
     </message>
     <message>
         <location line="-170"/>
         <location line="+179"/>
         <source>Open in browser</source>
-        <translation>Открыть в браузере</translation>
+        <translation type="unfinished">Открыть в браузере</translation>
     </message>
     <message>
         <location line="-118"/>
         <source>Screenshot %1 of %2</source>
-        <translation>Скриншот %1 из %2</translation>
+        <translation type="unfinished">Скриншот %1 из %2</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Screenshots</source>
-        <translation>Скриншоты</translation>
+        <translation type="unfinished">Скриншоты</translation>
     </message>
     <message>
         <location line="-75"/>
@@ -3277,7 +3277,7 @@
     <message>
         <location filename="../qml/components/GameDetailsMediaSection.qml" line="+77"/>
         <source>Screenshots</source>
-        <translation>Скриншоты</translation>
+        <translation type="unfinished">Скриншоты</translation>
     </message>
 </context>
 <context>
@@ -3297,52 +3297,52 @@
     <message>
         <location filename="../qml/app/GameSettingsRuntimePanel.qml" line="+58"/>
         <source>Runtime container</source>
-        <translation>Контейнер среды</translation>
+        <translation type="unfinished">Контейнер среды</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Proton prefix and redistributables for this game (Linux only).</source>
-        <translation>Prefix Proton и redistributables для этой игры (только Linux).</translation>
+        <translation type="unfinished">Prefix Proton и redistributables для этой игры (только Linux).</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Container</source>
-        <translation>Контейнер</translation>
+        <translation type="unfinished">Контейнер</translation>
     </message>
     <message>
         <location line="+30"/>
         <source>Prefix</source>
-        <translation>Prefix</translation>
+        <translation type="unfinished">Prefix</translation>
     </message>
     <message>
         <location line="+12"/>
         <source>%1 (not created yet)</source>
-        <translation>%1 (ещё не создан)</translation>
+        <translation type="unfinished">%1 (ещё не создан)</translation>
     </message>
     <message>
         <location line="+16"/>
         <source>Steam App ID</source>
-        <translation>Steam App ID</translation>
+        <translation type="unfinished">Steam App ID</translation>
     </message>
     <message>
         <location line="+19"/>
         <source>No runtime dependencies detected for this game.</source>
-        <translation>Для этой игры зависимости среды не найдены.</translation>
+        <translation type="unfinished">Для этой игры зависимости среды не найдены.</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Dependencies: %1 / %2 installed</source>
-        <translation>Зависимости: %1 / %2 установлено</translation>
+        <translation type="unfinished">Зависимости: %1 / %2 установлено</translation>
     </message>
     <message>
         <location line="+22"/>
         <source>Installed</source>
-        <translation>Установлен</translation>
+        <translation type="unfinished">Установлен</translation>
     </message>
     <message>
         <location line="+0"/>
         <source>Missing</source>
-        <translation>Нет</translation>
+        <translation type="unfinished">Нет</translation>
     </message>
 </context>
 <context>
@@ -3350,32 +3350,32 @@
     <message>
         <location filename="../qml/app/GameSettingsSheet.qml" line="+148"/>
         <source>Game settings</source>
-        <translation>Настройки игры</translation>
+        <translation type="unfinished">Настройки игры</translation>
     </message>
     <message>
         <location line="+24"/>
         <source>Desktop shortcut</source>
-        <translation>Ярлык на рабочий стол</translation>
+        <translation type="unfinished">Ярлык на рабочий стол</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Start menu shortcut</source>
-        <translation>Ярлык в меню Пуск</translation>
+        <translation type="unfinished">Ярлык в меню Пуск</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Add to Steam</source>
-        <translation>Добавить в Steam</translation>
+        <translation type="unfinished">Добавить в Steam</translation>
     </message>
     <message>
         <location line="+23"/>
         <source>Auto-update this game</source>
-        <translation>Автообновление этой игры</translation>
+        <translation type="unfinished">Автообновление этой игры</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>When enabled, updates start automatically after the catalog loads.</source>
-        <translation>Если включено, обновление запускается автоматически после загрузки каталога.</translation>
+        <translation type="unfinished">Если включено, обновление запускается автоматически после загрузки каталога.</translation>
     </message>
     <message>
         <location line="+30"/>
@@ -3385,28 +3385,28 @@
     <message>
         <location line="+36"/>
         <source>Proton</source>
-        <translation>Proton</translation>
+        <translation type="unfinished">Proton</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Override Proton for this game. Default uses Settings → Launch.</source>
-        <translation>Свой Proton для этой игры. По умолчанию - из Настройки → Запуск.</translation>
+        <translation type="unfinished">Свой Proton для этой игры. По умолчанию - из Настройки → Запуск.</translation>
     </message>
     <message>
         <location line="+11"/>
         <location line="+129"/>
         <source>Default</source>
-        <translation>По умолчанию</translation>
+        <translation type="unfinished">По умолчанию</translation>
     </message>
     <message>
         <location line="-89"/>
         <source>Launch options</source>
-        <translation>Параметры запуска</translation>
+        <translation type="unfinished">Параметры запуска</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Extra launch arguments for this game</source>
-        <translation>Доп. аргументы запуска для этой игры</translation>
+        <translation type="unfinished">Доп. аргументы запуска для этой игры</translation>
     </message>
     <message>
         <location line="+12"/>
@@ -3416,7 +3416,7 @@
     <message>
         <location line="+1"/>
         <source>Custom executable (optional)</source>
-        <translation>Свой исполняемый файл (необязательно)</translation>
+        <translation type="unfinished">Свой исполняемый файл (необязательно)</translation>
     </message>
     <message>
         <location line="+22"/>
@@ -3446,22 +3446,22 @@
     <message>
         <location line="+58"/>
         <source>Information</source>
-        <translation>Информация</translation>
+        <translation type="unfinished">Информация</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Source</source>
-        <translation>Источник</translation>
+        <translation type="unfinished">Источник</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Version</source>
-        <translation>Версия</translation>
+        <translation type="unfinished">Версия</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Size</source>
-        <translation>Размер</translation>
+        <translation type="unfinished">Размер</translation>
     </message>
     <message>
         <location line="+5"/>
@@ -3471,7 +3471,7 @@
     <message>
         <location line="+2"/>
         <source>Install type</source>
-        <translation>Тип установки</translation>
+        <translation type="unfinished">Тип установки</translation>
     </message>
     <message>
         <location line="+8"/>
@@ -3481,37 +3481,37 @@
     <message>
         <location line="+6"/>
         <source>Install path</source>
-        <translation>Путь установки</translation>
+        <translation type="unfinished">Путь установки</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Installing…</source>
-        <translation>Установка…</translation>
+        <translation type="unfinished">Установка…</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Waiting to install</source>
-        <translation>Ожидает установки</translation>
+        <translation type="unfinished">Ожидает установки</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>-</source>
-        <translation>-</translation>
+        <translation type="unfinished">-</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Download</source>
-        <translation>Загрузка</translation>
+        <translation type="unfinished">Загрузка</translation>
     </message>
     <message>
         <location line="+37"/>
         <source>Done</source>
-        <translation>Готово</translation>
+        <translation type="unfinished">Готово</translation>
     </message>
     <message>
         <location line="-473"/>
         <source>Online Fix for this game</source>
-        <translation>Online Fix для этой игры</translation>
+        <translation type="unfinished">Online Fix для этой игры</translation>
     </message>
     <message>
         <location line="+406"/>
@@ -3521,19 +3521,19 @@
     <message>
         <location line="+7"/>
         <source>Online Fix</source>
-        <translation>Online Fix</translation>
+        <translation type="unfinished">Online Fix</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Not installed</source>
-        <translation>Не установлен</translation>
+        <translation type="unfinished">Не установлен</translation>
     </message>
     <message>
         <location line="+1"/>
         <location line="+5"/>
         <location line="+1"/>
         <source>Not needed</source>
-        <translation>Не нужен</translation>
+        <translation type="unfinished">Не нужен</translation>
     </message>
 </context>
 <context>
@@ -3584,7 +3584,7 @@
     <message>
         <location line="+178"/>
         <source>Cancel</source>
-        <translation>Отмена</translation>
+        <translation type="unfinished">Отмена</translation>
     </message>
     <message>
         <location line="+6"/>
@@ -3613,12 +3613,12 @@
         <location line="+44"/>
         <location line="+157"/>
         <source>Install</source>
-        <translation>Установить</translation>
+        <translation type="unfinished">Установить</translation>
     </message>
     <message>
         <location line="-149"/>
         <source>Choose a drive for installation</source>
-        <translation>Выберите диск для установки</translation>
+        <translation type="unfinished">Выберите диск для установки</translation>
     </message>
     <message numerus="yes">
         <location line="+15"/>
@@ -3637,12 +3637,12 @@
     <message>
         <location line="+22"/>
         <source>Install to:</source>
-        <translation>Установить на:</translation>
+        <translation type="unfinished">Установить на:</translation>
     </message>
     <message>
         <location line="+89"/>
         <source>Cancel</source>
-        <translation>Отмена</translation>
+        <translation type="unfinished">Отмена</translation>
     </message>
     <message>
         <location line="+0"/>
@@ -3655,22 +3655,22 @@
     <message>
         <location filename="../qml/settings/InstallSourceSheet.qml" line="+54"/>
         <source>Choose download source</source>
-        <translation>Выберите источник загрузки</translation>
+        <translation type="unfinished">Выберите источник загрузки</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Select which catalog to download from</source>
-        <translation>Выберите каталог, из которого скачать игру</translation>
+        <translation type="unfinished">Выберите каталог, из которого скачать игру</translation>
     </message>
     <message>
         <location line="+46"/>
         <source>Unknown source</source>
-        <translation>Неизвестный источник</translation>
+        <translation type="unfinished">Неизвестный источник</translation>
     </message>
     <message>
         <location line="+29"/>
         <source>Cancel</source>
-        <translation>Отмена</translation>
+        <translation type="unfinished">Отмена</translation>
     </message>
 </context>
 <context>
@@ -3812,7 +3812,7 @@
     <message>
         <location line="+124"/>
         <source>Running</source>
-        <translation>Запущена</translation>
+        <translation type="unfinished">Запущена</translation>
     </message>
     <message>
         <location line="+39"/>
@@ -3822,7 +3822,7 @@
     <message>
         <location line="+8"/>
         <source>Play</source>
-        <translation>Играть</translation>
+        <translation type="unfinished">Играть</translation>
     </message>
     <message>
         <location line="+11"/>
@@ -3832,32 +3832,32 @@
     <message>
         <location line="+9"/>
         <source>Details</source>
-        <translation>Подробнее</translation>
+        <translation type="unfinished">Подробнее</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Update</source>
-        <translation>Обновление</translation>
+        <translation type="unfinished">Обновление</translation>
     </message>
     <message>
         <location line="+61"/>
         <source>%1 active downloads</source>
-        <translation>%1 активных загрузок</translation>
+        <translation type="unfinished">%1 активных загрузок</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Downloads continue after restart</source>
-        <translation>Загрузки продолжаются после перезапуска</translation>
+        <translation type="unfinished">Загрузки продолжаются после перезапуска</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Open</source>
-        <translation>Открыть</translation>
+        <translation type="unfinished">Открыть</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>My library</source>
-        <translation>Моя библиотека</translation>
+        <translation type="unfinished">Моя библиотека</translation>
     </message>
     <message numerus="yes">
         <location line="-294"/>
@@ -3875,12 +3875,12 @@
     <message>
         <location filename="../qml/app/LibraryEmptyState.qml" line="+81"/>
         <source>Nothing here yet</source>
-        <translation>Пока тут ничего нет</translation>
+        <translation type="unfinished">Пока тут ничего нет</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Open catalog</source>
-        <translation>Открыть каталог</translation>
+        <translation type="unfinished">Открыть каталог</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -3890,7 +3890,7 @@
     <message>
         <location line="+15"/>
         <source>Settings</source>
-        <translation>Настройки</translation>
+        <translation type="unfinished">Настройки</translation>
     </message>
     <message>
         <location line="+8"/>
@@ -3900,7 +3900,7 @@
     <message>
         <location line="+16"/>
         <source>Step 1</source>
-        <translation>Шаг 1</translation>
+        <translation type="unfinished">Шаг 1</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -3910,22 +3910,22 @@
     <message>
         <location line="+5"/>
         <source>Step 2</source>
-        <translation>Шаг 2</translation>
+        <translation type="unfinished">Шаг 2</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Catalog</source>
-        <translation>Каталог</translation>
+        <translation type="unfinished">Каталог</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Step 3</source>
-        <translation>Шаг 3</translation>
+        <translation type="unfinished">Шаг 3</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Library</source>
-        <translation>Библиотека</translation>
+        <translation type="unfinished">Библиотека</translation>
     </message>
 </context>
 <context>
@@ -3943,32 +3943,32 @@
     <message>
         <location line="-1"/>
         <source>%1/%2 add-ons</source>
-        <translation>%1/%2 доп.</translation>
+        <translation type="unfinished">%1/%2 доп.</translation>
     </message>
     <message>
         <location line="+48"/>
         <source>Installing %1%</source>
-        <translation>Установка %1%</translation>
+        <translation type="unfinished">Установка %1%</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Installing…</source>
-        <translation>Установка…</translation>
+        <translation type="unfinished">Установка…</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Paused · %1%</source>
-        <translation>Пауза · %1%</translation>
+        <translation type="unfinished">Пауза · %1%</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Downloading %1%</source>
-        <translation>Загрузка %1%</translation>
+        <translation type="unfinished">Загрузка %1%</translation>
     </message>
     <message>
         <location line="+46"/>
         <source>Playing</source>
-        <translation>Играет</translation>
+        <translation type="unfinished">Играет</translation>
     </message>
     <message>
         <location line="+11"/>
@@ -3978,7 +3978,7 @@
     <message>
         <location line="+47"/>
         <source>Running</source>
-        <translation>Запущена</translation>
+        <translation type="unfinished">Запущена</translation>
     </message>
 </context>
 <context>
@@ -3986,42 +3986,42 @@
     <message>
         <location filename="../qml/app/LibraryPage.qml" line="+34"/>
         <source>Playing now</source>
-        <translation>Сейчас играете</translation>
+        <translation type="unfinished">Сейчас играете</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Recently played</source>
-        <translation>Недавно играли</translation>
+        <translation type="unfinished">Недавно играли</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Nothing played yet</source>
-        <translation>Ещё ничего не играли</translation>
+        <translation type="unfinished">Ещё ничего не играли</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Launch a game from your library - it will appear here.</source>
-        <translation>Запустите игру из библиотеки - она появится здесь.</translation>
+        <translation type="unfinished">Запустите игру из библиотеки - она появится здесь.</translation>
     </message>
     <message>
         <location line="+32"/>
         <source>Installing %1%</source>
-        <translation>Установка %1%</translation>
+        <translation type="unfinished">Установка %1%</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Installing…</source>
-        <translation>Установка…</translation>
+        <translation type="unfinished">Установка…</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Paused · %1%</source>
-        <translation>Пауза · %1%</translation>
+        <translation type="unfinished">Пауза · %1%</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Downloading %1%</source>
-        <translation>Загрузка %1%</translation>
+        <translation type="unfinished">Загрузка %1%</translation>
     </message>
 </context>
 <context>
@@ -4029,17 +4029,17 @@
     <message>
         <location filename="../qml/i18n/Messages.qml" line="+9"/>
         <source>Paste a catalog link in Settings → Hydra catalogs. Games show up in Catalog.</source>
-        <translation>Вставьте ссылку на каталог в Настройки → Каталоги Hydra. Игры появятся в Каталоге.</translation>
+        <translation type="unfinished">Вставьте ссылку на каталог в Настройки → Каталоги Hydra. Игры появятся в Каталоге.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Pick a game in Catalog to start a download.</source>
-        <translation>Выберите игру в Каталоге, чтобы начать загрузку.</translation>
+        <translation type="unfinished">Выберите игру в Каталоге, чтобы начать загрузку.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>After download and install, the game appears here - launch, updates, and details.</source>
-        <translation>После загрузки и установки игра окажется здесь - запуск, обновления и детали.</translation>
+        <translation type="unfinished">После загрузки и установки игра окажется здесь - запуск, обновления и детали.</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -4049,7 +4049,7 @@
     <message>
         <location line="+6"/>
         <source>Missing your language? Help translate Arachnel on &lt;a href=&quot;%1&quot;&gt;Weblate&lt;/a&gt;.</source>
-        <translation>Нет вашего языка? Помогите перевести Arachnel на &lt;a href=&quot;%1&quot;&gt;Weblate&lt;/a&gt;.</translation>
+        <translation type="unfinished">Нет вашего языка? Помогите перевести Arachnel на &lt;a href=&quot;%1&quot;&gt;Weblate&lt;/a&gt;.</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -4071,7 +4071,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
 - Depot **keys** and **manifests** come from the plugin relay (not the Steam Store).
 - This is **not** the same as buying the game on Steam.
 - Arachnel does **not** claim antivirus clearance or Valve endorsement.</source>
-        <translation>### Откуда берутся файлы?
+        <translation type="unfinished">### Откуда берутся файлы?
 
 Игровые **чанки** качаются с **Valve Steam CDN** - той же CDN, что Steam использует для депо.
 
@@ -4088,22 +4088,22 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location line="+6"/>
         <source>Turn on one or more sources above - or leave them all off.</source>
-        <translation>Включите один или несколько источников выше - или оставьте все выключенными.</translation>
+        <translation type="unfinished">Включите один или несколько источников выше - или оставьте все выключенными.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Libraries on disk, like Steam. You can add other drives.</source>
-        <translation>Библиотеки на дисках, как в Steam. Можно добавить другие диски.</translation>
+        <translation type="unfinished">Библиотеки на дисках, как в Steam. Можно добавить другие диски.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Add-ons are available for &quot;%1&quot; - choose what to download with the game.</source>
-        <translation>К игре «%1» доступны дополнения - выберите, что скачать вместе с игрой.</translation>
+        <translation type="unfinished">К игре «%1» доступны дополнения - выберите, что скачать вместе с игрой.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Start installing from the catalog - progress will appear here.</source>
-        <translation>Начните установку из каталога - прогресс появится здесь.</translation>
+        <translation type="unfinished">Начните установку из каталога - прогресс появится здесь.</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -4118,7 +4118,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location line="-30"/>
         <source>Pick a game in Catalog and start the download.</source>
-        <translation>Выберите игру и запустите установку - торрент скачается сам.</translation>
+        <translation type="unfinished">Выберите игру и запустите установку - торрент скачается сам.</translation>
     </message>
     <message>
         <location line="-28"/>
@@ -4153,17 +4153,17 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location line="+4"/>
         <source>Installed games live here: launch, updates, and details.</source>
-        <translation>Установленные игры живут здесь: запуск, обновления, детали.</translation>
+        <translation type="unfinished">Установленные игры живут здесь: запуск, обновления, детали.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Download finished. Click Install to set up the game.</source>
-        <translation>Загрузка завершена. Нажмите «Установить», чтобы поставить игру.</translation>
+        <translation type="unfinished">Загрузка завершена. Нажмите «Установить», чтобы поставить игру.</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Browse games from your catalogs and sources.</source>
-        <translation>Игры из ваших каталогов и источников.</translation>
+        <translation type="unfinished">Игры из ваших каталогов и источников.</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -4178,7 +4178,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location line="+4"/>
         <source>Game files will be deleted from disk. This cannot be undone.</source>
-        <translation>Файлы игры будут удалены с диска. Это действие нельзя отменить.</translation>
+        <translation type="unfinished">Файлы игры будут удалены с диска. Это действие нельзя отменить.</translation>
     </message>
     <message>
         <location line="-38"/>
@@ -4244,52 +4244,52 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location filename="../qml/onboarding/OnboardingBasicsStep.qml" line="+28"/>
         <source>A quick setup before you start</source>
-        <translation>Короткая настройка перед стартом</translation>
+        <translation type="unfinished">Короткая настройка перед стартом</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>A quick setup: language, storage, plugins, and a few defaults. Change anything later in Settings.</source>
-        <translation>Короткая настройка: язык, хранилище, плагины и несколько значений по умолчанию. Всё можно изменить потом в Настройках.</translation>
+        <translation type="unfinished">Короткая настройка: язык, хранилище, плагины и несколько значений по умолчанию. Всё можно изменить потом в Настройках.</translation>
     </message>
     <message>
         <location line="+14"/>
         <source>Language</source>
-        <translation>Язык</translation>
+        <translation type="unfinished">Язык</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Choose the interface language.</source>
-        <translation>Выберите язык интерфейса.</translation>
+        <translation type="unfinished">Выберите язык интерфейса.</translation>
     </message>
     <message>
         <location line="+28"/>
         <source>Appearance</source>
-        <translation>Оформление</translation>
+        <translation type="unfinished">Оформление</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Pick light or dark theme, palette, and accent color. Change later in Settings.</source>
-        <translation>Светлая или тёмная тема, палитра и акцентный цвет. Потом можно изменить в Настройках.</translation>
+        <translation type="unfinished">Светлая или тёмная тема, палитра и акцентный цвет. Потом можно изменить в Настройках.</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Dark</source>
-        <translation>Тёмная</translation>
+        <translation type="unfinished">Тёмная</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Light</source>
-        <translation>Светлая</translation>
+        <translation type="unfinished">Светлая</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Palette</source>
-        <translation>Палитра</translation>
+        <translation type="unfinished">Палитра</translation>
     </message>
     <message>
         <location line="+31"/>
         <source>Primary</source>
-        <translation>Основной</translation>
+        <translation type="unfinished">Основной</translation>
     </message>
 </context>
 <context>
@@ -4297,37 +4297,37 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location filename="../qml/onboarding/OnboardingFinalSteps.qml" line="+25"/>
         <source>Updates</source>
-        <translation>Обновления</translation>
+        <translation type="unfinished">Обновления</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Recommended defaults - change anytime in Settings → Updates.</source>
-        <translation>Рекомендуемые значения - потом можно изменить в Настройки → Обновления.</translation>
+        <translation type="unfinished">Рекомендуемые значения - потом можно изменить в Настройки → Обновления.</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Check for game updates</source>
-        <translation>Проверять обновления игр</translation>
+        <translation type="unfinished">Проверять обновления игр</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Notify you when a newer build is available.</source>
-        <translation>Сообщать, когда доступна более новая сборка.</translation>
+        <translation type="unfinished">Сообщать, когда доступна более новая сборка.</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Check for Arachnel updates</source>
-        <translation>Проверять обновления Arachnel</translation>
+        <translation type="unfinished">Проверять обновления Arachnel</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Check for new Arachnel versions automatically.</source>
-        <translation>Автоматически проверять новые версии Arachnel.</translation>
+        <translation type="unfinished">Автоматически проверять новые версии Arachnel.</translation>
     </message>
     <message>
         <location line="+35"/>
         <source>Proton (Linux)</source>
-        <translation>Proton (Linux)</translation>
+        <translation type="unfinished">Proton (Linux)</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -4337,37 +4337,37 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location line="+8"/>
         <source>Proton ready: %1</source>
-        <translation>Proton готов: %1</translation>
+        <translation type="unfinished">Proton готов: %1</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Downloading Proton… %1%</source>
-        <translation>Загрузка Proton… %1%</translation>
+        <translation type="unfinished">Загрузка Proton… %1%</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Proton already installed</source>
-        <translation>Proton уже установлен</translation>
+        <translation type="unfinished">Proton уже установлен</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Download Proton-GE %1</source>
-        <translation>Скачать Proton-GE %1</translation>
+        <translation type="unfinished">Скачать Proton-GE %1</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Download Proton-GE</source>
-        <translation>Скачать Proton-GE</translation>
+        <translation type="unfinished">Скачать Proton-GE</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>I&apos;ll do this later</source>
-        <translation>Сделаю позже</translation>
+        <translation type="unfinished">Сделаю позже</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>You&apos;re all set</source>
-        <translation>Готово</translation>
+        <translation type="unfinished">Готово</translation>
     </message>
     <message>
         <location line="+79"/>
@@ -4405,32 +4405,32 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location filename="../qml/onboarding/OnboardingSheet.qml" line="+142"/>
         <source>Welcome to Arachnel</source>
-        <translation>Добро пожаловать в Arachnel</translation>
+        <translation type="unfinished">Добро пожаловать в Arachnel</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Step %1 of %2</source>
-        <translation>Шаг %1 из %2</translation>
+        <translation type="unfinished">Шаг %1 из %2</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Skip</source>
-        <translation>Пропустить</translation>
+        <translation type="unfinished">Пропустить</translation>
     </message>
     <message>
         <location line="+57"/>
         <source>Back</source>
-        <translation>Назад</translation>
+        <translation type="unfinished">Назад</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Get started</source>
-        <translation>Начать</translation>
+        <translation type="unfinished">Начать</translation>
     </message>
     <message>
         <location line="+0"/>
         <source>Next</source>
-        <translation>Далее</translation>
+        <translation type="unfinished">Далее</translation>
     </message>
 </context>
 <context>
@@ -4438,17 +4438,17 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location filename="../qml/onboarding/OnboardingStoragePluginsStep.qml" line="+28"/>
         <source>Game library folder</source>
-        <translation>Папка библиотеки игр</translation>
+        <translation type="unfinished">Папка библиотеки игр</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Choose where games are installed. Downloads go to a subfolder on the same drive.</source>
-        <translation>Выберите, куда ставить игры. Загрузки попадают в подпапку на том же диске.</translation>
+        <translation type="unfinished">Выберите, куда ставить игры. Загрузки попадают в подпапку на том же диске.</translation>
     </message>
     <message>
         <location line="+58"/>
         <source>Choose folder…</source>
-        <translation>Выбрать папку…</translation>
+        <translation type="unfinished">Выбрать папку…</translation>
     </message>
     <message>
         <location line="+13"/>
@@ -4458,48 +4458,48 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location line="+27"/>
         <source>Official plugins</source>
-        <translation>Официальные плагины</translation>
+        <translation type="unfinished">Официальные плагины</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Refresh list</source>
-        <translation>Обновить список</translation>
+        <translation type="unfinished">Обновить список</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Loading official plugins…</source>
-        <translation>Загрузка официальных плагинов…</translation>
+        <translation type="unfinished">Загрузка официальных плагинов…</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>No official plugins available for this platform.</source>
-        <translation>Для этой платформы нет официальных плагинов.</translation>
+        <translation type="unfinished">Для этой платформы нет официальных плагинов.</translation>
     </message>
     <message>
         <location line="+89"/>
         <location line="+68"/>
         <source>Delete</source>
-        <translation>Удалить</translation>
+        <translation type="unfinished">Удалить</translation>
     </message>
     <message>
         <location line="-30"/>
         <source>Remove plugin?</source>
-        <translation>Удалить плагин?</translation>
+        <translation type="unfinished">Удалить плагин?</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Remove &quot;%1&quot;? Catalogs from this plugin will stop working until you install it again.</source>
-        <translation>Удалить «%1»? Каталоги этого плагина перестанут работать, пока вы не установите его снова.</translation>
+        <translation type="unfinished">Удалить «%1»? Каталоги этого плагина перестанут работать, пока вы не установите его снова.</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Cancel</source>
-        <translation>Отмена</translation>
+        <translation type="unfinished">Отмена</translation>
     </message>
     <message>
         <location line="-107"/>
         <source>Or install a plugin file you already have.</source>
-        <translation>Или установите файл плагина, если он уже есть.</translation>
+        <translation type="unfinished">Или установите файл плагина, если он уже есть.</translation>
     </message>
     <message>
         <location line="-89"/>
@@ -4509,17 +4509,17 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location line="+126"/>
         <source>v%1 · %2</source>
-        <translation>v%1 · %2</translation>
+        <translation type="unfinished">v%1 · %2</translation>
     </message>
     <message>
         <location line="+21"/>
         <source>Install plugin…</source>
-        <translation>Установить плагин…</translation>
+        <translation type="unfinished">Установить плагин…</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Skip for now</source>
-        <translation>Пока пропустить</translation>
+        <translation type="unfinished">Пока пропустить</translation>
     </message>
 </context>
 <context>
@@ -4527,12 +4527,12 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location filename="../qml/app/PluginInstallOverlay.qml" line="+46"/>
         <source>Updating plugins…</source>
-        <translation>Обновление плагинов…</translation>
+        <translation type="unfinished">Обновление плагинов…</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Installing plugins…</source>
-        <translation>Установка плагинов…</translation>
+        <translation type="unfinished">Установка плагинов…</translation>
     </message>
     <message>
         <location line="-2"/>
@@ -4545,47 +4545,47 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location filename="../qml/components/ProtonRequiredDialog.qml" line="+13"/>
         <source>Proton required</source>
-        <translation>Нужен Proton</translation>
+        <translation type="unfinished">Нужен Proton</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>latest Proton-GE</source>
-        <translation>последний Proton-GE</translation>
+        <translation type="unfinished">последний Proton-GE</translation>
     </message>
     <message>
         <location line="+14"/>
         <source>Games run through Proton on Linux. Install %1 before downloading.</source>
-        <translation>На Linux игры запускаются через Proton. Установите %1 перед скачиванием.</translation>
+        <translation type="unfinished">На Linux игры запускаются через Proton. Установите %1 перед скачиванием.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Games run through Proton on Linux. Install Proton-GE before downloading.</source>
-        <translation>На Linux игры запускаются через Proton. Установите Proton-GE перед скачиванием.</translation>
+        <translation type="unfinished">На Linux игры запускаются через Proton. Установите Proton-GE перед скачиванием.</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Currently installed: %1</source>
-        <translation>Сейчас установлено: %1</translation>
+        <translation type="unfinished">Сейчас установлено: %1</translation>
     </message>
     <message>
         <location line="+18"/>
         <source>Cancel</source>
-        <translation>Отмена</translation>
+        <translation type="unfinished">Отмена</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Settings</source>
-        <translation>Настройки</translation>
+        <translation type="unfinished">Настройки</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Downloading…</source>
-        <translation>Загрузка…</translation>
+        <translation type="unfinished">Загрузка…</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Download %1</source>
-        <translation>Скачать %1</translation>
+        <translation type="unfinished">Скачать %1</translation>
     </message>
 </context>
 <context>
@@ -4593,12 +4593,12 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location filename="../qml/components/RunningGameBar.qml" line="+49"/>
         <source>Playing now</source>
-        <translation>Сейчас играете</translation>
+        <translation type="unfinished">Сейчас играете</translation>
     </message>
     <message>
         <location line="+18"/>
         <source>Stop</source>
-        <translation>Остановить</translation>
+        <translation type="unfinished">Остановить</translation>
     </message>
 </context>
 <context>
@@ -4639,82 +4639,82 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location filename="../qml/settings/SettingsAboutPage.qml" line="+16"/>
         <source>Windows</source>
-        <translation>Windows</translation>
+        <translation type="unfinished">Windows</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Linux</source>
-        <translation>Linux</translation>
+        <translation type="unfinished">Linux</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>macOS</source>
-        <translation>macOS</translation>
+        <translation type="unfinished">macOS</translation>
     </message>
     <message>
         <location line="+58"/>
         <source>Browse catalogs, download games, and launch from your library.</source>
-        <translation>Каталоги, загрузка игр и запуск из библиотеки.</translation>
+        <translation type="unfinished">Каталоги, загрузка игр и запуск из библиотеки.</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Application</source>
-        <translation>Приложение</translation>
+        <translation type="unfinished">Приложение</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Version</source>
-        <translation>Версия</translation>
+        <translation type="unfinished">Версия</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Unknown</source>
-        <translation>Неизвестно</translation>
+        <translation type="unfinished">Неизвестно</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Platform</source>
-        <translation>Платформа</translation>
+        <translation type="unfinished">Платформа</translation>
     </message>
     <message>
         <location line="+12"/>
         <source>Danger zone</source>
-        <translation>Опасная зона</translation>
+        <translation type="unfinished">Опасная зона</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Delete application data</source>
-        <translation>Удалить данные приложения</translation>
+        <translation type="unfinished">Удалить данные приложения</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Deletes settings, download history, caches, plugins, and Proton from the app folder. Game files on your disks stay. Arachnel will quit afterward.</source>
-        <translation>Удаляет настройки, историю загрузок, кэши, плагины и Proton из папки приложения. Файлы игр на дисках остаются. После этого Arachnel закроется.</translation>
+        <translation type="unfinished">Удаляет настройки, историю загрузок, кэши, плагины и Proton из папки приложения. Файлы игр на дисках остаются. После этого Arachnel закроется.</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Delete application data…</source>
-        <translation>Удалить данные приложения…</translation>
+        <translation type="unfinished">Удалить данные приложения…</translation>
     </message>
     <message>
         <location line="+12"/>
         <source>Delete application data?</source>
-        <translation>Удалить данные приложения?</translation>
+        <translation type="unfinished">Удалить данные приложения?</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>This cannot be undone. Settings, plugins, caches, and library records will be removed. Game files on disk stay in place.</source>
-        <translation>Это нельзя отменить. Настройки, плагины, кэши и записи библиотеки будут удалены. Файлы игр на диске останутся.</translation>
+        <translation type="unfinished">Это нельзя отменить. Настройки, плагины, кэши и записи библиотеки будут удалены. Файлы игр на диске останутся.</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Cancel</source>
-        <translation>Отмена</translation>
+        <translation type="unfinished">Отмена</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Delete and quit</source>
-        <translation>Удалить и выйти</translation>
+        <translation type="unfinished">Удалить и выйти</translation>
     </message>
 </context>
 <context>
@@ -4722,12 +4722,12 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location filename="../qml/settings/SettingsAppearancePage.qml" line="+14"/>
         <source>English</source>
-        <translation>English</translation>
+        <translation type="unfinished">English</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Russian</source>
-        <translation>Русский</translation>
+        <translation type="unfinished">Русский</translation>
     </message>
     <message>
         <location line="+24"/>
@@ -4737,12 +4737,12 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location line="+1"/>
         <source>Theme and colors apply across the app.</source>
-        <translation>Тема и цвета применяются ко всему приложению.</translation>
+        <translation type="unfinished">Тема и цвета применяются ко всему приложению.</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Dark theme</source>
-        <translation>Тёмная тема</translation>
+        <translation type="unfinished">Тёмная тема</translation>
     </message>
     <message>
         <location line="+21"/>
@@ -4767,7 +4767,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location line="-15"/>
         <source>Language</source>
-        <translation>Язык</translation>
+        <translation type="unfinished">Язык</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -4777,7 +4777,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location line="+11"/>
         <source>Community translations</source>
-        <translation>Переводы сообщества</translation>
+        <translation type="unfinished">Переводы сообщества</translation>
     </message>
     <message>
         <location line="-41"/>
@@ -4838,12 +4838,12 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location filename="../qml/settings/SettingsHubPage.qml" line="+18"/>
         <source>Plugins</source>
-        <translation>Плагины</translation>
+        <translation type="unfinished">Плагины</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Hydra catalogs</source>
-        <translation>Каталоги Hydra</translation>
+        <translation type="unfinished">Каталоги Hydra</translation>
     </message>
     <message>
         <location line="+5"/>
@@ -4858,37 +4858,37 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location line="+4"/>
         <source>Storage</source>
-        <translation>Хранилище</translation>
+        <translation type="unfinished">Хранилище</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Library and download folders</source>
-        <translation>Папки библиотеки и загрузок</translation>
+        <translation type="unfinished">Папки библиотеки и загрузок</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Updates</source>
-        <translation>Обновления</translation>
+        <translation type="unfinished">Обновления</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Game and launcher updates</source>
-        <translation>Обновления игр и лаунчера</translation>
+        <translation type="unfinished">Обновления игр и лаунчера</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Launch options and Proton on Linux</source>
-        <translation>Параметры запуска и Proton на Linux</translation>
+        <translation type="unfinished">Параметры запуска и Proton на Linux</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Theme, colors, and language</source>
-        <translation>Тема, цвета и язык</translation>
+        <translation type="unfinished">Тема, цвета и язык</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Version and app data</source>
-        <translation>Версия и данные приложения</translation>
+        <translation type="unfinished">Версия и данные приложения</translation>
     </message>
     <message>
         <location line="+30"/>
@@ -4908,7 +4908,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location line="-43"/>
         <source>Launch</source>
-        <translation>Запуск</translation>
+        <translation type="unfinished">Запуск</translation>
     </message>
     <message>
         <location line="-24"/>
@@ -4923,12 +4923,12 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location line="+24"/>
         <source>Appearance</source>
-        <translation>Оформление</translation>
+        <translation type="unfinished">Оформление</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>About</source>
-        <translation>О приложении</translation>
+        <translation type="unfinished">О приложении</translation>
     </message>
 </context>
 <context>
@@ -4936,62 +4936,62 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location filename="../qml/settings/SettingsLaunchPage.qml" line="+59"/>
         <source>Linux: all games run through Proton (Windows builds).</source>
-        <translation>Linux: все игры запускаются через Proton (Windows-сборки).</translation>
+        <translation type="unfinished">Linux: все игры запускаются через Proton (Windows-сборки).</translation>
     </message>
     <message>
         <location line="+32"/>
         <source>Default: %1</source>
-        <translation>По умолчанию: %1</translation>
+        <translation type="unfinished">По умолчанию: %1</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Required before download: %1</source>
-        <translation>Нужна перед скачиванием: %1</translation>
+        <translation type="unfinished">Нужна перед скачиванием: %1</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Install Proton-GE before downloading games.</source>
-        <translation>Установите Proton-GE перед скачиванием игр.</translation>
+        <translation type="unfinished">Установите Proton-GE перед скачиванием игр.</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Pick default Proton and drag priority with arrows. Steam installs are detected automatically.</source>
-        <translation>Выберите Proton по умолчанию и приоритет стрелками. Установки Steam подхватываются автоматически.</translation>
+        <translation type="unfinished">Выберите Proton по умолчанию и приоритет стрелками. Установки Steam подхватываются автоматически.</translation>
     </message>
     <message>
         <location line="+12"/>
         <source>Download %1</source>
-        <translation>Скачать %1</translation>
+        <translation type="unfinished">Скачать %1</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Rescan</source>
-        <translation>Пересканировать</translation>
+        <translation type="unfinished">Пересканировать</translation>
     </message>
     <message>
         <location line="+98"/>
         <source>No Proton found. Download Proton-GE or install Proton in Steam.</source>
-        <translation>Proton не найден. Скачайте Proton-GE или установите Proton в Steam.</translation>
+        <translation type="unfinished">Proton не найден. Скачайте Proton-GE или установите Proton в Steam.</translation>
     </message>
     <message>
         <location line="-144"/>
         <source>Proton runtime</source>
-        <translation>Среда Proton</translation>
+        <translation type="unfinished">Среда Proton</translation>
     </message>
     <message>
         <location line="-46"/>
         <source>Extra options added to every game launch.</source>
-        <translation>Дополнительные параметры для каждого запуска игры.</translation>
+        <translation type="unfinished">Дополнительные параметры для каждого запуска игры.</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Launch options</source>
-        <translation>Параметры запуска</translation>
+        <translation type="unfinished">Параметры запуска</translation>
     </message>
     <message>
         <location line="+74"/>
         <source>Download Proton-GE</source>
-        <translation>Скачать Proton-GE</translation>
+        <translation type="unfinished">Скачать Proton-GE</translation>
     </message>
 </context>
 <context>
@@ -5001,27 +5001,27 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <location line="+3"/>
         <location line="+138"/>
         <source>Settings</source>
-        <translation>Настройки</translation>
+        <translation type="unfinished">Настройки</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Plugins</source>
-        <translation>Плагины</translation>
+        <translation type="unfinished">Плагины</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Plugin store</source>
-        <translation>Магазин плагинов</translation>
+        <translation type="unfinished">Магазин плагинов</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Hydra catalogs</source>
-        <translation>Каталоги Hydra</translation>
+        <translation type="unfinished">Каталоги Hydra</translation>
     </message>
     <message>
         <location line="+12"/>
         <source>Edit catalog</source>
-        <translation>Изменить каталог</translation>
+        <translation type="unfinished">Изменить каталог</translation>
     </message>
     <message>
         <location line="+0"/>
@@ -5036,37 +5036,37 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location line="+8"/>
         <source>Storage</source>
-        <translation>Хранилище</translation>
+        <translation type="unfinished">Хранилище</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Updates</source>
-        <translation>Обновления</translation>
+        <translation type="unfinished">Обновления</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Launch</source>
-        <translation>Запуск</translation>
+        <translation type="unfinished">Запуск</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Appearance</source>
-        <translation>Оформление</translation>
+        <translation type="unfinished">Оформление</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>About</source>
-        <translation>О приложении</translation>
+        <translation type="unfinished">О приложении</translation>
     </message>
     <message>
         <location line="+60"/>
         <source>Back</source>
-        <translation>Назад</translation>
+        <translation type="unfinished">Назад</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Done</source>
-        <translation>Готово</translation>
+        <translation type="unfinished">Готово</translation>
     </message>
 </context>
 <context>
@@ -5074,12 +5074,12 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location filename="../qml/settings/SettingsPluginStorePage.qml" line="+81"/>
         <source>Refresh list</source>
-        <translation>Обновить список</translation>
+        <translation type="unfinished">Обновить список</translation>
     </message>
     <message>
         <location line="-10"/>
         <source>Loading official plugins…</source>
-        <translation>Загрузка официальных плагинов…</translation>
+        <translation type="unfinished">Загрузка официальных плагинов…</translation>
     </message>
     <message>
         <location line="-8"/>
@@ -5089,27 +5089,27 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location line="+11"/>
         <source>No official plugins available for this platform.</source>
-        <translation>Для этой платформы нет официальных плагинов.</translation>
+        <translation type="unfinished">Для этой платформы нет официальных плагинов.</translation>
     </message>
     <message>
         <location line="+79"/>
         <source>Delete</source>
-        <translation>Удалить</translation>
+        <translation type="unfinished">Удалить</translation>
     </message>
     <message>
         <location line="-30"/>
         <source>Remove plugin?</source>
-        <translation>Удалить плагин?</translation>
+        <translation type="unfinished">Удалить плагин?</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Remove &quot;%1&quot;? Catalogs from this plugin will stop working until you install it again.</source>
-        <translation>Удалить «%1»? Каталоги этого плагина перестанут работать, пока вы не установите его снова.</translation>
+        <translation type="unfinished">Удалить «%1»? Каталоги этого плагина перестанут работать, пока вы не установите его снова.</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Cancel</source>
-        <translation>Отмена</translation>
+        <translation type="unfinished">Отмена</translation>
     </message>
 </context>
 <context>
@@ -5117,22 +5117,22 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location filename="../qml/settings/SettingsPluginsPage.qml" line="+136"/>
         <source>Plugin store</source>
-        <translation>Магазин плагинов</translation>
+        <translation type="unfinished">Магазин плагинов</translation>
     </message>
     <message>
         <location line="-52"/>
         <source>No plugins installed</source>
-        <translation>Нет установленных плагинов</translation>
+        <translation type="unfinished">Нет установленных плагинов</translation>
     </message>
     <message>
         <location line="+117"/>
         <source>Delete</source>
-        <translation>Удалить</translation>
+        <translation type="unfinished">Удалить</translation>
     </message>
     <message>
         <location line="-56"/>
         <source>Install from file…</source>
-        <translation>Установить из файла…</translation>
+        <translation type="unfinished">Установить из файла…</translation>
     </message>
     <message>
         <location line="-66"/>
@@ -5162,23 +5162,23 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location line="+16"/>
         <source>Open folder</source>
-        <translation>Открыть папку</translation>
+        <translation type="unfinished">Открыть папку</translation>
     </message>
     <message>
         <location line="-42"/>
         <location line="+57"/>
         <source>Remove plugin?</source>
-        <translation>Удалить плагин?</translation>
+        <translation type="unfinished">Удалить плагин?</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Remove &quot;%1&quot;? Catalogs from this plugin will stop working until you install it again.</source>
-        <translation>Удалить «%1»? Каталоги этого плагина перестанут работать, пока вы не установите его снова.</translation>
+        <translation type="unfinished">Удалить «%1»? Каталоги этого плагина перестанут работать, пока вы не установите его снова.</translation>
     </message>
     <message>
         <location line="+18"/>
         <source>Cancel</source>
-        <translation>Отмена</translation>
+        <translation type="unfinished">Отмена</translation>
     </message>
 </context>
 <context>
@@ -5249,32 +5249,32 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location filename="../qml/settings/SettingsSourceFormPage.qml" line="+61"/>
         <source>Enter a name and catalog URL.</source>
-        <translation>Укажите название и URL каталога.</translation>
+        <translation type="unfinished">Укажите название и URL каталога.</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Validating catalog…</source>
-        <translation>Проверка каталога…</translation>
+        <translation type="unfinished">Проверка каталога…</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Could not save changes.</source>
-        <translation>Не удалось сохранить изменения.</translation>
+        <translation type="unfinished">Не удалось сохранить изменения.</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Could not add catalog.</source>
-        <translation>Не удалось добавить каталог.</translation>
+        <translation type="unfinished">Не удалось добавить каталог.</translation>
     </message>
     <message>
         <location line="+21"/>
         <source>Could not load catalog from this URL.</source>
-        <translation>Не удалось загрузить каталог по этому URL.</translation>
+        <translation type="unfinished">Не удалось загрузить каталог по этому URL.</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Games found: %1</source>
-        <translation>Найдено игр: %1</translation>
+        <translation type="unfinished">Найдено игр: %1</translation>
     </message>
     <message>
         <location line="+10"/>
@@ -5285,39 +5285,39 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
         <location line="+4"/>
         <location line="+6"/>
         <source>Name</source>
-        <translation>Название</translation>
+        <translation type="unfinished">Название</translation>
     </message>
     <message>
         <location line="+6"/>
         <location line="+6"/>
         <source>Catalog URL</source>
-        <translation>URL каталога</translation>
+        <translation type="unfinished">URL каталога</translation>
     </message>
     <message>
         <location line="+6"/>
         <location line="+6"/>
         <source>Short description (optional)</source>
-        <translation>Краткое описание (необязательно)</translation>
+        <translation type="unfinished">Краткое описание (необязательно)</translation>
     </message>
     <message>
         <location line="+23"/>
         <source>Cancel</source>
-        <translation>Отмена</translation>
+        <translation type="unfinished">Отмена</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Validating…</source>
-        <translation>Проверка…</translation>
+        <translation type="unfinished">Проверка…</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Save</source>
-        <translation>Сохранить</translation>
+        <translation type="unfinished">Сохранить</translation>
     </message>
     <message>
         <location line="+0"/>
         <source>Add</source>
-        <translation>Добавить</translation>
+        <translation type="unfinished">Добавить</translation>
     </message>
 </context>
 <context>
@@ -5325,12 +5325,12 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location filename="../qml/settings/SettingsSourcesPage.qml" line="+28"/>
         <source>Games: …</source>
-        <translation>Игр: …</translation>
+        <translation type="unfinished">Игр: …</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Games: %1</source>
-        <translation>Игры: %1</translation>
+        <translation type="unfinished">Игры: %1</translation>
     </message>
     <message>
         <location line="+107"/>
@@ -5340,7 +5340,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location line="-62"/>
         <source>No catalogs yet</source>
-        <translation>Пока нет каталогов</translation>
+        <translation type="unfinished">Пока нет каталогов</translation>
     </message>
     <message>
         <location line="-37"/>
@@ -5350,7 +5350,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location line="-2"/>
         <source>No URL - catalog will not load</source>
-        <translation>Нет URL - каталог не загрузится</translation>
+        <translation type="unfinished">Нет URL - каталог не загрузится</translation>
     </message>
     <message>
         <location line="+34"/>
@@ -5360,17 +5360,17 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location line="+39"/>
         <source>Edit</source>
-        <translation>Изменить</translation>
+        <translation type="unfinished">Изменить</translation>
     </message>
     <message>
         <location line="+12"/>
         <source>Open URL</source>
-        <translation>Открыть URL</translation>
+        <translation type="unfinished">Открыть URL</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Delete</source>
-        <translation>Удалить</translation>
+        <translation type="unfinished">Удалить</translation>
     </message>
 </context>
 <context>
@@ -5378,32 +5378,32 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location filename="../qml/settings/SettingsStoragePage.qml" line="+122"/>
         <source>Add drive…</source>
-        <translation>Добавить диск…</translation>
+        <translation type="unfinished">Добавить диск…</translation>
     </message>
     <message>
         <location line="+132"/>
         <source>Remove drive?</source>
-        <translation>Удалить диск?</translation>
+        <translation type="unfinished">Удалить диск?</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>“%1” still has games (%2). Remove the drive from Arachnel anyway? Files stay on disk; games stay in the library under another drive.</source>
-        <translation>На «%1» ещё есть игры (%2). Убрать диск из Arachnel всё равно? Файлы на диске останутся; игры останутся в библиотеке на другом диске.</translation>
+        <translation type="unfinished">На «%1» ещё есть игры (%2). Убрать диск из Arachnel всё равно? Файлы на диске останутся; игры останутся в библиотеке на другом диске.</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Remove “%1” from Arachnel? Files on disk are not deleted.</source>
-        <translation>Убрать «%1» из Arachnel? Файлы на диске не удаляются.</translation>
+        <translation type="unfinished">Убрать «%1» из Arachnel? Файлы на диске не удаляются.</translation>
     </message>
     <message>
         <location line="+26"/>
         <source>Remove</source>
-        <translation>Убрать</translation>
+        <translation type="unfinished">Убрать</translation>
     </message>
     <message>
         <location line="-158"/>
         <source>Scan for installed games</source>
-        <translation>Найти установленные игры</translation>
+        <translation type="unfinished">Найти установленные игры</translation>
     </message>
     <message>
         <location line="-67"/>
@@ -5418,37 +5418,37 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location line="+44"/>
         <source>Games: %1</source>
-        <translation>Игры: %1</translation>
+        <translation type="unfinished">Игры: %1</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>No games on this drive yet</source>
-        <translation>На этом диске пока нет игр</translation>
+        <translation type="unfinished">На этом диске пока нет игр</translation>
     </message>
     <message>
         <location line="+42"/>
         <source>Delete</source>
-        <translation>Удалить</translation>
+        <translation type="unfinished">Удалить</translation>
     </message>
     <message>
         <location line="-8"/>
         <source>Move…</source>
-        <translation>Переместить…</translation>
+        <translation type="unfinished">Переместить…</translation>
     </message>
     <message>
         <location line="+34"/>
         <source>Move to drive</source>
-        <translation>Переместить на диск</translation>
+        <translation type="unfinished">Переместить на диск</translation>
     </message>
     <message>
         <location line="+67"/>
         <source>Cancel</source>
-        <translation>Отмена</translation>
+        <translation type="unfinished">Отмена</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Remove anyway</source>
-        <translation>Убрать всё равно</translation>
+        <translation type="unfinished">Убрать всё равно</translation>
     </message>
 </context>
 <context>
@@ -5456,82 +5456,82 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location filename="../qml/settings/SettingsUpdatesPage.qml" line="+23"/>
         <source>Games</source>
-        <translation>Игры</translation>
+        <translation type="unfinished">Игры</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Check for updates on launch</source>
-        <translation>Проверять обновления при запуске</translation>
+        <translation type="unfinished">Проверять обновления при запуске</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Install updates automatically on launch</source>
-        <translation>Устанавливать обновления при запуске</translation>
+        <translation type="unfinished">Устанавливать обновления при запуске</translation>
     </message>
     <message>
         <location line="-10"/>
         <source>Check for game updates and new Arachnel versions.</source>
-        <translation>Проверка обновлений игр и новых версий Arachnel.</translation>
+        <translation type="unfinished">Проверка обновлений игр и новых версий Arachnel.</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Shows once at startup when a newer build is available in the catalog.</source>
-        <translation>Показывает один раз при запуске, если в каталоге есть более новая сборка.</translation>
+        <translation type="unfinished">Показывает один раз при запуске, если в каталоге есть более новая сборка.</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Downloads updates once at startup. You can turn this off per game.</source>
-        <translation>Скачивает обновления один раз при запуске. Можно отключить для отдельной игры.</translation>
+        <translation type="unfinished">Скачивает обновления один раз при запуске. Можно отключить для отдельной игры.</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Check for game updates</source>
-        <translation>Проверять обновления игр</translation>
+        <translation type="unfinished">Проверять обновления игр</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Arachnel</source>
-        <translation>Arachnel</translation>
+        <translation type="unfinished">Arachnel</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Current version: %1</source>
-        <translation>Текущая версия: %1</translation>
+        <translation type="unfinished">Текущая версия: %1</translation>
     </message>
     <message>
         <location line="+45"/>
         <source>Check for Arachnel updates on startup</source>
-        <translation>Проверять обновления Arachnel при запуске</translation>
+        <translation type="unfinished">Проверять обновления Arachnel при запуске</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Checks for new versions in the background.</source>
-        <translation>Проверяет новые версии в фоне.</translation>
+        <translation type="unfinished">Проверяет новые версии в фоне.</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Include pre-releases</source>
-        <translation>Включать пререлизы</translation>
+        <translation type="unfinished">Включать пререлизы</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Offer beta and RC builds from GitHub.</source>
-        <translation>Предлагать beta и RC сборки с GitHub.</translation>
+        <translation type="unfinished">Предлагать beta и RC сборки с GitHub.</translation>
     </message>
     <message>
         <location line="-32"/>
         <source>Check for Arachnel updates</source>
-        <translation>Проверять обновления Arachnel</translation>
+        <translation type="unfinished">Проверять обновления Arachnel</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Download and install</source>
-        <translation>Скачать и установить</translation>
+        <translation type="unfinished">Скачать и установить</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Open release page</source>
-        <translation>Открыть страницу релиза</translation>
+        <translation type="unfinished">Открыть страницу релиза</translation>
     </message>
 </context>
 <context>
@@ -5544,7 +5544,7 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location line="+7"/>
         <source>Step 1</source>
-        <translation>Шаг 1</translation>
+        <translation type="unfinished">Шаг 1</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -5554,22 +5554,22 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location line="+5"/>
         <source>Step 2</source>
-        <translation>Шаг 2</translation>
+        <translation type="unfinished">Шаг 2</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Catalog</source>
-        <translation>Каталог</translation>
+        <translation type="unfinished">Каталог</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Step 3</source>
-        <translation>Шаг 3</translation>
+        <translation type="unfinished">Шаг 3</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Library</source>
-        <translation>Библиотека</translation>
+        <translation type="unfinished">Библиотека</translation>
     </message>
 </context>
 <context>
@@ -5577,12 +5577,12 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <location filename="../qml/settings/SteamidraTrustSheet.qml" line="+25"/>
         <source>Steam CDN + Online Fix</source>
-        <translation>Steam CDN + Online Fix</translation>
+        <translation type="unfinished">Steam CDN + Online Fix</translation>
     </message>
     <message>
         <location line="+34"/>
         <source>Got it</source>
-        <translation>Понятно</translation>
+        <translation type="unfinished">Понятно</translation>
     </message>
 </context>
 <context>
