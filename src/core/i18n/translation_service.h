@@ -2,6 +2,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QVariantList>
 
 class QQmlApplicationEngine;
 class QTranslator;
@@ -19,6 +20,13 @@ public:
     void applyLanguage(const QString& languageCode);
 
     QString currentLanguage() const { return m_currentLanguage; }
+
+    /**
+     * Languages that have a compiled catalog (translations/arachnel_<code>.ts): code, native
+     * name, English name. English first, then by code. Discovered at run time, so a language
+     * added through Weblate shows up in the pickers without touching the UI.
+     */
+    QVariantList availableLanguages() const;
 
 private:
     explicit TranslationService(QObject* parent = nullptr);

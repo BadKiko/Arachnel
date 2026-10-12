@@ -1,5 +1,7 @@
 // Public Q_INVOKABLE surface for CoreController (included in class public section).
 
+    /** Interface languages with a compiled catalog: [{code, name, englishName}]. */
+    Q_INVOKABLE QVariantList uiLanguages() const;
     Q_INVOKABLE void clearCatalogFilters();
     Q_INVOKABLE void setCatalogFilters(int, int, int, bool, const QString&, int = 0);
     Q_INVOKABLE void applyCatalogPresentation(int, int, int, int, bool, const QString&, int = 0);

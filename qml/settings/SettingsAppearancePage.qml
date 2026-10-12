@@ -10,11 +10,6 @@ Flickable {
     property int contentMargin: MD.Token.spacing.large
     property bool applying: false
 
-    readonly property var languageOptions: [
-        { code: "en", label: qsTr("English") },
-        { code: "ru", label: qsTr("Russian") }
-    ]
-
     readonly property string weblateTranslateUrl: "https://hosted.weblate.org/projects/arachnel/application/"
 
     contentWidth: width
@@ -83,10 +78,9 @@ Flickable {
                 title: qsTr("Interface language")
                 iconName: MD.Token.icon.language
 
-                ConnectedTextToggle {
-                    labels: root.languageOptions.map(o => o.label)
-                    currentIndex: Math.max(0, root.languageOptions.findIndex(o => o.code === Core.settings.uiLanguage))
-                    onPicked: function (index) { Core.settings.uiLanguage = root.languageOptions[index].code }
+                LanguageSelect {
+                    currentCode: Core.settings.uiLanguage
+                    onPicked: function (code) { Core.settings.uiLanguage = code }
                 }
             }
 

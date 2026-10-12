@@ -38,6 +38,7 @@
 #include "windows_runner.h"
 #include "app_updater.h"
 #include "settings_store.h"
+#include "translation_service.h"
 #include "social_controller.h"
 #include "storage_library_model.h"
 #include "torrent_session.h"
@@ -200,6 +201,11 @@ bool CoreController::gamingMode() const
 void CoreController::setCrashReporterMode(bool enabled)
 {
     g_crashReporterMode = enabled;
+}
+
+QVariantList CoreController::uiLanguages() const
+{
+    return TranslationService::instance().availableLanguages();
 }
 
 CoreController::CoreController(QObject* parent)

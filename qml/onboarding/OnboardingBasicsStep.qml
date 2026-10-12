@@ -55,17 +55,16 @@ ColumnLayout {
             color: MD.Token.color.on_surface_variant
             typescale: MD.Token.typescale.body_medium
         }
+        // One row per language that has a translation; a new Weblate language shows up here by itself.
         Repeater {
-            model: [
-                { code: "en", label: "English" },
-                { code: "ru", label: "Русский" }
-            ]
-            MD.Button {
+            model: Core.uiLanguages()
+            LanguageRow {
                 required property var modelData
                 Layout.fillWidth: true
-                text: modelData.label
-                mdState.type: Core.settings.uiLanguage === modelData.code
-                              ? MD.Enum.BtFilled : MD.Enum.BtOutlined
+                code: modelData.code
+                name: modelData.name
+                englishName: modelData.englishName
+                selected: Core.settings.uiLanguage === modelData.code
                 onClicked: Core.settings.uiLanguage = modelData.code
             }
         }

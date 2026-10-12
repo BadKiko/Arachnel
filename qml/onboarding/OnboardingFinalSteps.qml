@@ -139,7 +139,7 @@ ColumnLayout {
                 spacing: MD.Token.spacing.extra_small
                 Repeater {
                     model: [
-                        { label: qsTr("Language"), value: Core.settings.uiLanguage === "ru" ? "Русский" : "English" },
+                        { label: qsTr("Language"), value: (Core.uiLanguages().find(l => l.code === Core.settings.uiLanguage) || { name: Core.settings.uiLanguage }).name },
                         { label: qsTr("Games folder"), value: Core.settings.libraryRoot },
                         { label: qsTr("Game source"), value: root.hasSource ? root.sourceNames : qsTr("None yet") }
                     ]

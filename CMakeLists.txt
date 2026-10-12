@@ -134,6 +134,14 @@ qt_add_resources(arachnel_app "arachnel_app_icons"
         resources/icons/png/512.png
 )
 
+# Country flags for the language pickers (simplified, no emblems).
+file(GLOB _arachnel_flag_files CONFIGURE_DEPENDS RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/resources/flags/*.svg")
+qt_add_resources(arachnel_app "arachnel_flags"
+    PREFIX "/flags"
+    BASE "${CMAKE_CURRENT_SOURCE_DIR}/resources/flags"
+    FILES ${_arachnel_flag_files}
+)
+
 # MinGW i686 runtime for Steamless.CLI.exe under Wine Mono (Linux only at runtime).
 qt_add_resources(arachnel_app "arachnel_steamless"
     PREFIX "/steamless"

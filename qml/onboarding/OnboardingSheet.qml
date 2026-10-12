@@ -15,10 +15,6 @@ Item {
     signal finished()
 
     readonly property bool onLinux: Qt.platform.os === "linux"
-    readonly property var languageOptions: [
-        { code: "en", label: "English" },
-        { code: "ru", label: "Русский" }
-    ]
 
     // Step ids in display order (Proton only on Linux).
     readonly property var steps: {

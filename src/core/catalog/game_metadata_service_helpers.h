@@ -92,6 +92,8 @@ QString steamLanguageForUi(const QString& languageCode)
     const QString code = languageCode.trimmed().toLower();
     if (code == QStringLiteral("ru"))
         return QStringLiteral("russian");
+    if (code == QStringLiteral("uk"))
+        return QStringLiteral("ukrainian");
     if (code == QStringLiteral("de"))
         return QStringLiteral("german");
     if (code == QStringLiteral("fr"))
