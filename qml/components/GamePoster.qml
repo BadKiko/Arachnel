@@ -100,6 +100,15 @@ Item {
         return s.slice(0, Math.min(2, s.length)).toUpperCase()
     }
 
+    // 0..3, stable per title.
+    readonly property int tone: {
+        const s = seed || fallbackText || ""
+        let h = 0
+        for (let i = 0; i < s.length; ++i)
+            h = (h * 31 + s.charCodeAt(i)) & 0xffff
+        return h % 4
+    }
+
     signal clicked()
     signal loadFailed()
 
@@ -150,11 +159,19 @@ Item {
             color: MD.Token.color.surface_container_high
         }
 
+        // Each title gets one of a few tonal washes (cheap: no shapes, no effects), so a wall
+        // of cover-less posters reads as a pattern instead of one grey slab.
         Rectangle {
             anchors.fill: parent
             gradient: Gradient {
-                GradientStop { position: 0.0; color: MD.Util.transparent(MD.Token.color.primary, 0.08) }
-                GradientStop { position: 1.0; color: MD.Util.transparent(MD.Token.color.primary, 0.02) }
+                GradientStop {
+                    position: 0.0
+                    color: MD.Util.transparent(MD.Token.color.primary, 0.05 + 0.04 * root.tone)
+                }
+                GradientStop {
+                    position: 1.0
+                    color: MD.Util.transparent(MD.Token.color.on_surface, 0.02 + 0.015 * root.tone)
+                }
             }
         }
 
@@ -193,25 +210,14 @@ Item {
             }
         }
 
-        Column {
+        Text {
             anchors.centerIn: parent
-            spacing: MD.Token.spacing.small
             visible: !root.showShimmer
-            opacity: 0.9
-
-            MD.Icon {
-                anchors.horizontalCenter: parent.horizontalCenter
-                name: MD.Token.icon.sports_esports
-                size: 32
-                color: MD.Token.color.on_surface_variant
-            }
-
-            MD.Label {
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: root.monogram
-                typescale: MD.Token.typescale.title_large
-                color: MD.Token.color.on_surface_variant
-            }
+            text: root.monogram
+            font.pixelSize: Math.max(24, Math.min(root.width, root.height) * 0.26)
+            font.weight: Font.DemiBold
+            font.letterSpacing: 1
+            color: MD.Util.transparent(MD.Token.color.on_surface, 0.42)
         }
     }
 

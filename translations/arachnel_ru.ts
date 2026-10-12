@@ -615,6 +615,10 @@
         <source>Players</source>
         <translation>Игроки</translation>
     </message>
+    <message>
+        <source>Hidden: %1</source>
+        <translation>Скрыто: %1</translation>
+    </message>
 </context>
 <context>
     <name>Core</name>
@@ -5870,6 +5874,13 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
             <numerusform>Фильтры: %n активно</numerusform>
             <numerusform>Фильтры: %n активно</numerusform>
         </translation>
+    </message>
+</context>
+<context>
+    <name>CatalogActiveChip</name>
+    <message>
+        <source>Remove filter: %1</source>
+        <translation>Убрать фильтр: %1</translation>
     </message>
 </context>
 </TS>

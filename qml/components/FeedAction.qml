@@ -13,6 +13,8 @@ Column {
 
     signal triggered()
 
+    // Fixed width so the bubbles of a rail line up whatever their captions measure.
+    width: 76
     spacing: 4
 
     Rectangle {
@@ -44,6 +46,9 @@ Column {
 
     MD.Label {
         anchors.horizontalCenter: parent.horizontalCenter
+        width: parent.width
+        horizontalAlignment: Text.AlignHCenter
+        elide: Text.ElideRight
         text: root.label
         color: "white"
         typescale: MD.Token.typescale.label_medium

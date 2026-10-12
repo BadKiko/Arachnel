@@ -315,8 +315,25 @@ FocusScope {
                             color: MD.Token.color.surface_container_high
                         }
 
+                        // Until the banner is in (or when a game has none) the cover, blurred, fills the
+                        // card instead of a blank slab.
+                        HeroBackdrop {
+                            anchors.fill: parent
+                            source: card.info.coverUrl ?? ""
+                            coverOpacity: 0.9
+                            opacity: bannerImage.status === Image.Ready ? 0 : 1
+                            visible: opacity > 0.01
+                            Behavior on opacity { NumberAnimation { duration: AppMotion.long } }
+                            layer.enabled: visible
+                            layer.effect: MD.RoundClip {
+                                corners: MD.Util.corners(32)
+                                size: Qt.vector2d(media.width, media.height)
+                            }
+                        }
+
                         // Still: hero banner (or first screenshot) while not playing.
                         MD.Image {
+                            id: bannerImage
                             anchors.fill: parent
                             radius: 32
                             source: card.banner

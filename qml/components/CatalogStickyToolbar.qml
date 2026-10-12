@@ -98,59 +98,48 @@ Item {
                 }
             }
 
-            MD.FilterChip {
+            CatalogActiveChip {
                 visible: Core.catalogTypeFilter >= 0
                 text: (page.typeFilterLabels[String(Core.catalogTypeFilter)] || qsTr("Type"))
-                      + " ×"
-                checked: true
                 onClicked: Core.catalogTypeFilter = -1
             }
 
-            MD.FilterChip {
+            CatalogActiveChip {
                 visible: Core.catalogSizeFilter > 0
                 text: (page.sizeFilterLabels[String(Core.catalogSizeFilter)] || qsTr("Size"))
-                      + " ×"
-                checked: true
                 onClicked: Core.catalogSizeFilter = 0
             }
 
-            MD.FilterChip {
+            CatalogActiveChip {
                 visible: Core.catalogRecencyFilter > 0
                 text: (page.recencyFilterLabels[String(Core.catalogRecencyFilter)] || qsTr("Added"))
-                      + " ×"
-                checked: true
                 onClicked: Core.catalogRecencyFilter = 0
             }
 
-            MD.FilterChip {
+            CatalogActiveChip {
                 visible: Core.catalogHasAddonsFilter
-                text: qsTr("Has add-ons") + " ×"
-                checked: true
+                text: qsTr("Has add-ons")
                 onClicked: Core.catalogHasAddonsFilter = false
             }
 
-            MD.FilterChip {
+            CatalogActiveChip {
                 visible: Core.catalogGenreFilter.length > 0
-                text: Core.catalogGenreLabel(Core.catalogGenreFilter) + " ×"
-                checked: true
+                text: Core.catalogGenreLabel(Core.catalogGenreFilter)
                 onClicked: Core.catalogGenreFilter = ""
             }
 
-            MD.FilterChip {
+            CatalogActiveChip {
                 visible: Core.catalogPlayModeFilter > 0
                 text: (page.playModeFilterLabels[String(Core.catalogPlayModeFilter)] || qsTr("Players"))
-                      + " ×"
-                checked: true
                 onClicked: Core.catalogPlayModeFilter = 0
             }
 
             Repeater {
                 model: Core.hiddenCatalogSourceIds
 
-                MD.FilterChip {
+                CatalogActiveChip {
                     required property string modelData
-                    text: (Core.sources.nameForId(modelData) || modelData) + " ×"
-                    checked: true
+                    text: qsTr("Hidden: %1").arg(Core.sources.nameForId(modelData) || modelData)
                     onClicked: Core.setCatalogSourceHidden(modelData, false)
                 }
             }

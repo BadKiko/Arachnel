@@ -70,7 +70,8 @@ Item {
                 MD.Button {
                     Layout.alignment: Qt.AlignHCenter
                     text: qsTr("Change in settings")
-                    mdState.type: MD.Enum.BtText
+                    icon.name: MD.Token.icon.edit
+                    mdState.type: MD.Enum.BtFilledTonal
                     onClicked: root.openSettings()
                 }
             }
