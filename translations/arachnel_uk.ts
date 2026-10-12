@@ -29,32 +29,32 @@
     <message>
         <location filename="../qml/components/AppUpdateSheet.qml" line="39"/>
         <source>Arachnel %1 is ready to install. Update now to get the latest fixes and features.</source>
-        <translation type="unfinished"></translation>
+        <translation>Aarchnel %1 готовий до установки. Оновіть зараз, щоб отримати останні виправлення та функції.</translation>
     </message>
     <message>
         <location filename="../qml/components/AppUpdateSheet.qml" line="52"/>
         <source>Current version: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Поточна версія: %1</translation>
     </message>
     <message>
         <location filename="../qml/components/AppUpdateSheet.qml" line="67"/>
         <source>Later</source>
-        <translation type="unfinished"></translation>
+        <translation>Пізніше</translation>
     </message>
     <message>
         <location filename="../qml/components/AppUpdateSheet.qml" line="75"/>
         <source>Release page</source>
-        <translation type="unfinished"></translation>
+        <translation>Сторінка релізної версії</translation>
     </message>
     <message>
         <location filename="../qml/components/AppUpdateSheet.qml" line="87"/>
         <source>Downloading… %1%</source>
-        <translation type="unfinished"></translation>
+        <translation>Завантаження...%1%</translation>
     </message>
     <message>
         <location filename="../qml/components/AppUpdateSheet.qml" line="88"/>
         <source>Update now</source>
-        <translation type="unfinished"></translation>
+        <translation>Оновіть зараз</translation>
     </message>
 </context>
 <context>
@@ -62,27 +62,37 @@
     <message>
         <location filename="../qml/app/AppWindow.qml" line="16"/>
         <source>Arachnel</source>
-        <translation type="unfinished"></translation>
+        <translation>Arachnel</translation>
     </message>
     <message>
         <location filename="../qml/app/AppWindow.qml" line="120"/>
         <source>Library</source>
-        <translation type="unfinished"></translation>
+        <translation>Бібліотека</translation>
     </message>
     <message>
         <location filename="../qml/app/AppWindow.qml" line="124"/>
         <source>Discover</source>
-        <translation type="unfinished"></translation>
+        <translation>Добірка</translation>
     </message>
     <message>
         <location filename="../qml/app/AppWindow.qml" line="128"/>
         <source>Catalog</source>
-        <translation type="unfinished"></translation>
+        <translation>Каталог</translation>
     </message>
     <message>
         <location filename="../qml/app/AppWindow.qml" line="132"/>
         <source>Downloads</source>
-        <translation type="unfinished"></translation>
+        <translation>Завантаження</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Friends</source>
+        <translation>Друзі</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Favorites</source>
+        <translation>Улюблені</translation>
     </message>
 </context>
 <context>
@@ -90,17 +100,25 @@
     <message>
         <location filename="../qml/components/CatalogCompactBar.qml" line="45"/>
         <source>Catalog</source>
-        <translation type="unfinished"></translation>
+        <translation>Каталог</translation>
     </message>
     <message>
         <location filename="../qml/components/CatalogCompactBar.qml" line="54"/>
         <source>Loading…</source>
-        <translation type="unfinished"></translation>
+        <translation>Завантаження…</translation>
     </message>
     <message>
         <location filename="../qml/components/CatalogCompactBar.qml" line="55"/>
         <source>Found: %1</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message numerus="yes">
+        <source>%n game(s)</source>
+        <translation>
+            <numerusform>гра</numerusform>
+            <numerusform>iгри</numerusform>
+            <numerusform>iгор</numerusform>
+        </translation>
     </message>
 </context>
 <context>
@@ -108,7 +126,7 @@
     <message>
         <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="43"/>
         <source>All games</source>
-        <translation type="unfinished"></translation>
+        <translation>Усi iгри</translation>
     </message>
     <message>
         <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="86"/>
@@ -123,7 +141,12 @@
     <message>
         <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="28"/>
         <source>Surprise me</source>
-        <translation type="unfinished"></translation>
+        <translation>Здивуйте мене</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CatalogDiscoveryHeader.qml" line="+21"/>
+        <source>Discover</source>
+        <translation>Добірка</translation>
     </message>
 </context>
 <context>
@@ -133,22 +156,22 @@
         <location filename="../qml/components/CatalogDiscoveryHero.qml" line="78"/>
         <location filename="../qml/components/CatalogDiscoveryHero.qml" line="79"/>
         <source>playing now</source>
-        <translation type="unfinished"></translation>
+        <translation>грає зараз</translation>
     </message>
     <message>
         <location filename="../qml/components/CatalogDiscoveryHero.qml" line="146"/>
         <source>Tonight&apos;s pick</source>
-        <translation type="unfinished"></translation>
+        <translation>Вибір на вечір</translation>
     </message>
     <message>
         <location filename="../qml/components/CatalogDiscoveryHero.qml" line="177"/>
         <source>Open game</source>
-        <translation type="unfinished"></translation>
+        <translation>Вiдкрити гру</translation>
     </message>
     <message>
         <location filename="../qml/components/CatalogDiscoveryHero.qml" line="183"/>
         <source>Another pick</source>
-        <translation type="unfinished"></translation>
+        <translation>Ще один вибір</translation>
     </message>
 </context>
 <context>
@@ -156,22 +179,22 @@
     <message>
         <location filename="../qml/components/CatalogEmptyResults.qml" line="53"/>
         <source>Select sources</source>
-        <translation type="unfinished"></translation>
+        <translation>Виберіть джерела</translation>
     </message>
     <message>
         <location filename="../qml/components/CatalogEmptyResults.qml" line="54"/>
         <source>Nothing found</source>
-        <translation type="unfinished"></translation>
+        <translation>Нічого не знайдено</translation>
     </message>
     <message>
         <location filename="../qml/components/CatalogEmptyResults.qml" line="62"/>
         <source>Try another search or refresh the catalog.</source>
-        <translation type="unfinished"></translation>
+        <translation>Спробуйте інший пошук або оновiть каталог.</translation>
     </message>
     <message>
         <location filename="../qml/components/CatalogEmptyResults.qml" line="70"/>
         <source>Refresh</source>
-        <translation type="unfinished"></translation>
+        <translation>Оновiть</translation>
     </message>
 </context>
 <context>
@@ -202,12 +225,12 @@
         <location filename="../qml/components/CatalogFilterSheet.qml" line="49"/>
         <location filename="../qml/components/CatalogFilterSheet.qml" line="341"/>
         <source>Any</source>
-        <translation type="unfinished"></translation>
+        <translation>Будь-яка</translation>
     </message>
     <message>
         <location filename="../qml/components/CatalogFilterSheet.qml" line="35"/>
         <source>Single-player</source>
-        <translation type="unfinished"></translation>
+        <translation>Одиночна</translation>
     </message>
     <message>
         <location filename="../qml/components/CatalogFilterSheet.qml" line="36"/>
@@ -217,27 +240,27 @@
     <message>
         <location filename="../qml/components/CatalogFilterSheet.qml" line="37"/>
         <source>Multiplayer</source>
-        <translation type="unfinished"></translation>
+        <translation>Мультиплеєр</translation>
     </message>
     <message>
         <location filename="../qml/components/CatalogFilterSheet.qml" line="42"/>
         <source>&lt; 1 GB</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt; 1 гб</translation>
     </message>
     <message>
         <location filename="../qml/components/CatalogFilterSheet.qml" line="43"/>
         <source>1-5 GB</source>
-        <translation type="unfinished"></translation>
+        <translation>1-5 гб</translation>
     </message>
     <message>
         <location filename="../qml/components/CatalogFilterSheet.qml" line="44"/>
         <source>5-20 GB</source>
-        <translation type="unfinished"></translation>
+        <translation>5-20 гб</translation>
     </message>
     <message>
         <location filename="../qml/components/CatalogFilterSheet.qml" line="45"/>
         <source>20+ GB</source>
-        <translation type="unfinished"></translation>
+        <translation>20+ гб</translation>
     </message>
     <message>
         <location filename="../qml/components/CatalogFilterSheet.qml" line="50"/>
@@ -277,17 +300,17 @@
     <message>
         <location filename="../qml/components/CatalogFilterSheet.qml" line="201"/>
         <source>Players</source>
-        <translation type="unfinished"></translation>
+        <translation>Гравці</translation>
     </message>
     <message>
         <location filename="../qml/components/CatalogFilterSheet.qml" line="232"/>
         <source>Size</source>
-        <translation type="unfinished"></translation>
+        <translation>Розмір</translation>
     </message>
     <message>
         <location filename="../qml/components/CatalogFilterSheet.qml" line="263"/>
         <source>Added</source>
-        <translation type="unfinished"></translation>
+        <translation>Додано</translation>
     </message>
     <message>
         <location filename="../qml/components/CatalogFilterSheet.qml" line="294"/>
@@ -302,12 +325,12 @@
     <message>
         <location filename="../qml/components/CatalogFilterSheet.qml" line="324"/>
         <source>Genre</source>
-        <translation type="unfinished"></translation>
+        <translation>Жанр</translation>
     </message>
     <message>
         <location filename="../qml/components/CatalogFilterSheet.qml" line="331"/>
         <source>Search genres</source>
-        <translation type="unfinished"></translation>
+        <translation>Пошук жанрів</translation>
     </message>
     <message>
         <location filename="../qml/components/CatalogFilterSheet.qml" line="366"/>
@@ -323,6 +346,11 @@
         <location filename="../qml/components/CatalogFilterSheet.qml" line="396"/>
         <source>Apply</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-24"/>
+        <source>Filters</source>
+        <translation>Фільтри</translation>
     </message>
 </context>
 <context>
@@ -4195,6 +4223,33 @@ Many multiplayer titles need an **Online Fix** (Steam API shim). The Steam plugi
     <message>
         <source>Search</source>
         <translation>Пошук</translation>
+    </message>
+</context>
+<context>
+    <name>BookmarksPage</name>
+    <message>
+        <location filename="../qml/app/BookmarksPage.qml" line="+138"/>
+        <source>No favorites</source>
+        <translation>Немає улюбленіх</translation>
+    </message>
+    <message>
+        <location line="+29"/>
+        <source>Favorites</source>
+        <translation>Улюблені</translation>
+    </message>
+    <message numerus="yes">
+        <location line="+1"/>
+        <source>%n game(s)</source>
+        <translation>
+            <numerusform>гра</numerusform>
+            <numerusform>iгри</numerusform>
+            <numerusform>iгор</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location line="-26"/>
+        <source>Open catalog</source>
+        <translation>Відкритий каталог</translation>
     </message>
 </context>
 </TS>
