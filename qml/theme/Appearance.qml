@@ -10,9 +10,9 @@ Item {
     property bool applying: false
 
     readonly property int defaultThemeMode: MD.Enum.Dark
-    // Launcher v2 starts colourful: the Expressive palette from a violet seed. It keeps its own
-    // settings group, so the classic look's choices are untouched.
-    readonly property int defaultPaletteType: MD.Enum.PaletteExpressive
+    // Launcher v2 is monochrome (black, white and grey) by default. It keeps its own settings
+    // group, so the classic look's choices are untouched.
+    readonly property int defaultPaletteType: MD.Enum.PaletteMonochrome
     readonly property string defaultAccentColor: "#7C5CFF"
 
     Settings {
@@ -21,6 +21,8 @@ Item {
         property int themeMode: root.defaultThemeMode
         property int paletteType: root.defaultPaletteType
         property string accentColor: root.defaultAccentColor
+        // Bumped when a default changes for everyone (see migrateDefaults).
+        property int defaultsVersion: 0
         property bool reduceMotion: false
         // Muting one trailer mutes the next ones too, until the user turns the sound back on.
         property bool trailerMuted: false
@@ -35,8 +37,20 @@ Item {
     // One page gutter for every top-level page.
     readonly property int pageMargin: MD.Token.spacing.large
 
-    function apply() {
+    readonly property int currentDefaultsVersion: 1
 
+    // Settings stores the defaults on first run, so changing a default only reaches new installs.
+    // Version 1 made the palette monochrome for everyone: the stored palette is replaced once, and
+    // whatever the user picks afterwards is kept.
+    function migrateDefaults() {
+        if (store.defaultsVersion >= root.currentDefaultsVersion)
+            return
+        store.paletteType = root.defaultPaletteType
+        store.defaultsVersion = root.currentDefaultsVersion
+    }
+
+    function apply() {
+        migrateDefaults()
         MD.Token.color.useSysColorSM = false
         MD.Token.color.useSysAccentColor = false
         MD.Token.themeMode = store.themeMode
