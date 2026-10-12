@@ -15,12 +15,16 @@ Item {
         return Core.hasGameLaunchLog(page.gameId)
     }
 
-    // ---------- The page takes its accent from the poster ----------
-    property color accent: MD.Token.color.primary
+    // ---------- Colours ----------
+    // Interface colour (buttons, chips, icons) always follows the user's theme: a red theme must
+    // not turn into a blue page because the poster is blue. The poster's own colour only tints
+    // the glow behind it.
+    readonly property color accent: MD.Token.color.primary
     readonly property color accentContainer: Qt.rgba(accent.r, accent.g, accent.b, 0.20)
-    readonly property color accentInk: "#121216"
+    readonly property color accentInk: MD.Token.color.on_primary
+    property color posterTint: MD.Token.color.primary
 
-    Behavior on accent {
+    Behavior on posterTint {
         ColorAnimation { duration: AppMotion.scaled(600) }
     }
 
@@ -65,7 +69,7 @@ Item {
             if (w <= 0)
                 return
             const c = Qt.rgba(r / w / 255, g / w / 255, b / w / 255, 1)
-            detailsRoot.accent = Qt.hsla(Math.max(0, c.hslHue),
+            detailsRoot.posterTint = Qt.hsla(Math.max(0, c.hslHue),
                                          Math.max(0.45, Math.min(0.9, c.hslSaturation)),
                                          Math.max(0.64, Math.min(0.76, c.hslLightness + 0.15)), 1)
         }
@@ -191,6 +195,7 @@ Item {
                 y: flick.contentY * 0.5
                 z: -1
                 source: page.info.coverUrl ?? ""
+                coverOpacity: 0.35
             }
 
             // A wash of the poster's colour over the top of the page.
@@ -231,7 +236,7 @@ Item {
                             width: parent.width * 0.92
                             height: parent.height * 0.92
                             radius: 40
-                            color: detailsRoot.accent
+                            color: detailsRoot.posterTint
                             opacity: 0.38
                             layer.enabled: true
                             layer.effect: MultiEffect {
@@ -258,26 +263,6 @@ Item {
                         Layout.fillWidth: true
                         Layout.alignment: Qt.AlignTop
                         spacing: MD.Token.spacing.medium
-
-                        // Source · install kind, in the poster's colour.
-                        MD.Label {
-                            Layout.fillWidth: true
-                            text: {
-                                const parts = []
-                                if ((page.sourceLabel || "").length)
-                                    parts.push(page.sourceLabel)
-                                if ((page.info.installKindLabel ?? "").length)
-                                    parts.push(page.info.installKindLabel)
-                                return parts.join("  ·  ").toUpperCase()
-                            }
-                            visible: text.length > 0
-                            typescale: MD.Token.typescale.label_large
-                            font.letterSpacing: 1.6
-                            color: detailsRoot.accent
-                            elide: Text.ElideRight
-                            maximumLineCount: 1
-                            RevealIn { delay: 40 }
-                        }
 
                         Text {
                             Layout.fillWidth: true
